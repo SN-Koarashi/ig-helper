@@ -5,7 +5,7 @@
 // @name:ja            IG助手
 // @name:ko            IG조수
 // @namespace          https://github.snkms.com/
-// @version            2.0.19
+// @version            2.1.4
 // @description        Downloading Instagram posts photos and videos or their stories!
 // @description:zh-TW  一鍵下載對方 Instagram 貼文中的相片、影片甚至是他們的限時動態！
 // @description:zh-CN  一键下载对方 Instagram 帖子中的相片、视频甚至是他们的快拍！
@@ -82,11 +82,21 @@
         if(a){
             if($('video.y-yJ5').length){
                 // Download stories if it is video
-                window.open($('video.y-yJ5 source').attr('src')+'&dl=1');
+                let downloadLink = $('video.y-yJ5 source').attr('src')+'&dl=1';
+                let date = new Date().getTime();
+                let timestamp = Math.floor(date / 1000);
+                let type = 'mp4';
+				let username = $("._8XqED .QgJA_ .aOX72 .MS2JH .soMvl ._4EzTm .yn6BW").text();
+                saveFiles(downloadLink,username,0,timestamp,type);
             }
             else{
                 // Download stories if it is image
-                window.open($('img.y-yJ5').attr('src')+'&dl=1');
+                let downloadLink = $('img.y-yJ5').attr('src')+'&dl=1';
+                let date = new Date().getTime();
+                let timestamp = Math.floor(date / 1000);
+                let type = 'jpg';
+				let username = $("._8XqED .QgJA_ .aOX72 .MS2JH .soMvl ._4EzTm .yn6BW").text();
+                saveFiles(downloadLink,username,0,timestamp,type);
             }
         }
         else{
@@ -97,7 +107,6 @@
             }
         }
     }
-
     // URL change function
     function onChangeURL(){
         var reA = /^(https:\/\/www.instagram.com\/p\/)/g;
@@ -140,35 +149,44 @@
 
                 // Running if user click the download icon
                 $(this).on('click','.SNKMS_IG_DW_MAIN',function(e){
-                    GM_setValue('Index',0);
+                    GM_setValue('username',$(this).parent().attr('data-username'));
                     // Create element that download dailog
                     IG_createDM(GM_getValue('AutoDownload'));
 
                     var style = 'margin:5px 0px;padding:5px 0px;color:#111;font-size:1rem;line-height:1rem;text-align:center;border:1px solid #000;border-radius: 5px;';
 
-                    // Find video element and add the download icon
-                    var i = 0;
-                    $(this).parent().find('video.tWeCl').each(function(){
-                        i++;
-                        GM_setValue('Index',GM_getValue('Index')+1);
-                        // Display its link info in browser console
-                        console.log($(this).attr('src'));
+                    // Find video/image element and add the download icon
+                    var s = 0;
+                    var multiple = $(this).parent().find('.EcJQs .RzuR0').length;
 
-                        // Add the download icon element
-                        $('.IG_SN_DIG .IG_SN_DIG_MAIN').append('<a data-globalIndex="'+GM_getValue('Index')+'" style="'+style+'" target="_blank" href="'+$(this).attr('src')+'&dl=1"><img width="100" src="'+$(this).next().attr('src')+'" /><br/>Video '+i+'</a>');
+                    // If posts have more than one images or videos.
+                    if(multiple){
+                        $(this).parent().find('.EcJQs .RzuR0').each(function(){
+                            s++;
+							let element_videos = $(this).children().find('video.tWeCl');
+							let element_images = $(this).children().find('.FFVAD');
 
-                    });
+                            if(element_videos && element_videos.attr('src')){
+                                $('.IG_SN_DIG .IG_SN_DIG_MAIN').append('<a data-type="mp4" data-globalIndex="'+s+'" style="'+style+'" target="_blank" href="'+element_videos.attr('src')+'&dl=1"><img width="100" src="'+element_videos.next().attr('src')+'" /><br/>- Video '+s+' -</a>');
+                            }
+                            if(element_images && element_images.attr('src')){
+                                $('.IG_SN_DIG .IG_SN_DIG_MAIN').append('<a data-type="jpg" data-globalIndex="'+s+'" style="'+style+'" target="_blank" href="'+element_images.attr('src')+'&dl=1"><img width="100" src="'+element_images.attr('src')+'" /><br/>- Image '+s+' -</a>');
+                            }
+                        });
+                    }
+                    else{
+                        s++;
+						let element_videos = $(this).parent().find('video.tWeCl');
+						let element_images = $(this).parent().find('.FFVAD');
 
-                    // Find image element and add the download icon
-                    var n = 0;
-                    $(this).parent().find('.FFVAD').each(function(){
-                        n++;
-                        GM_setValue('Index',GM_getValue('Index')+1);
-                        // Display its link info in browser console
-                        console.log($(this).attr('src'));
-                        // Add the download icon element
-                        $('.IG_SN_DIG .IG_SN_DIG_MAIN').append('<a data-globalIndex="'+GM_getValue('Index')+'" style="'+style+'" target="_blank" href="'+$(this).attr('src')+'&dl=1"><img width="100" src="'+$(this).attr('src')+'" /><br/>Image '+n+'</a>');
-                    });
+                        if(element_videos && element_videos.attr('src')){
+							$('.IG_SN_DIG .IG_SN_DIG_MAIN').append('<a data-type="mp4" data-globalIndex="'+s+'" style="'+style+'" target="_blank" href="'+element_videos.attr('src')+'&dl=1"><img width="100" src="'+element_videos.next().attr('src')+'" /><br/>- Video '+s+' -</a>');
+                        }
+                        if(element_images && element_images.attr('src')){
+							$('.IG_SN_DIG .IG_SN_DIG_MAIN').append('<a data-type="jpg" data-globalIndex="'+s+'" style="'+style+'" target="_blank" href="'+element_images.attr('src')+'&dl=1"><img width="100" src="'+element_images.attr('src')+'" /><br/>- Image '+s+' -</a>');
+                        }
+                    }
+
 
                     if(GM_getValue('AutoDownload')){
                         GM_setValue('GB_Index',0);
@@ -188,8 +206,13 @@
                             GM_setValue('GB_Index',2);
                         }
 
+                        var downloadLink = $('.IG_SN_DIG').find('a[data-globalindex="'+GM_getValue('GB_Index')+'"]').attr('href');
+                        var date = new Date().getTime();
+                        var timestamp = Math.floor(date / 1000);
+                        var type = $('.IG_SN_DIG').find('a[data-globalindex="'+GM_getValue('GB_Index')+'"]').attr('data-type');
 
-                        window.open($('.IG_SN_DIG').find('a[data-globalindex="'+GM_getValue('GB_Index')+'"]').attr('href'));
+                        saveFiles(downloadLink,GM_getValue('username'),GM_getValue('GB_Index'),timestamp,type);
+
 
                         $('.IG_SN_DIG').remove();
                     }
@@ -197,10 +220,24 @@
 
                 // Add the mark that download is ready
                 $(this).attr('data-snig','canDownload');
+                $(this).attr('data-username',$(this).prev().prev().find(".o-MQd .RqtMr .e1e1d .Jv7Aj a").text());
             }
         });
     }
 
+    // Download and rename files
+    function saveFiles(downloadLink,username,index,timestamp,type){
+        fetch(downloadLink).then(res => {
+          return res.blob().then(dwel => {
+                 const a = document.createElement("a");
+                 const name = username+'-'+index+'-'+timestamp+'.'+type;
+                 a.href = URL.createObjectURL(dwel);
+                 a.setAttribute("download", name);
+                 a.click();
+                 a.remove();
+          });
+        });
+    }
     // Create the download dialog element funcion
     function IG_createDM(a){
         var style = (!a)?"position: fixed;left: 0px;right: 0px;bottom: 0px;top: 0px;":"display:none;";
@@ -232,6 +269,7 @@
                 GM_setValue('AutoDownload',false);
             }
         });
+
         // Running if user click download icon in stories
         $('body').on('click','.IG_DWSTORY',function(){
             onStoryDW(true);
