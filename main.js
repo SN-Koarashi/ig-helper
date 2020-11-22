@@ -5,7 +5,7 @@
 // @name:ja            IG助手
 // @name:ko            IG조수
 // @namespace          https://github.snkms.com/
-// @version            2.1.4
+// @version            2.1.5
 // @description        Downloading Instagram posts photos and videos or their stories!
 // @description:zh-TW  一鍵下載對方 Instagram 貼文中的相片、影片甚至是他們的限時動態！
 // @description:zh-CN  一键下载对方 Instagram 帖子中的相片、视频甚至是他们的快拍！
@@ -158,16 +158,31 @@
                     // Find video/image element and add the download icon
                     var s = 0;
                     var multiple = $(this).parent().find('.EcJQs .RzuR0').length;
+                    var pathname = window.location.pathname;
+                    var fullpathname = "/"+pathname.split('/')[1]+"/"+pathname.split('/')[2]+"/";
 
                     // If posts have more than one images or videos.
                     if(multiple){
                         $(this).parent().find('.EcJQs .RzuR0').each(function(){
                             s++;
-							let element_videos = $(this).children().find('video.tWeCl');
-							let element_images = $(this).children().find('.FFVAD');
+                            let element_videos = $(this).parent().find('video.tWeCl');
+                            let element_images = $(this).parent().find('.FFVAD');
 
                             if(element_videos && element_videos.attr('src')){
-                                $('.IG_SN_DIG .IG_SN_DIG_MAIN').append('<a data-type="mp4" data-globalIndex="'+s+'" style="'+style+'" target="_blank" href="'+element_videos.attr('src')+'&dl=1"><img width="100" src="'+element_videos.next().attr('src')+'" /><br/>- Video '+s+' -</a>');
+                                let video_image = (__additionalData[fullpathname])?__additionalData[fullpathname]["data"]["graphql"]["shortcode_media"]["display_url"]:element_videos.next().attr('src');
+                                let video_url = (__additionalData[fullpathname])?__additionalData[fullpathname]["data"]["graphql"]["shortcode_media"]["video_url"]:element_videos.attr('src');
+
+                                if(element_videos.attr('src').match(/^blob:/ig)){
+                                    if(video_url == element_videos.attr('src')){
+                                        alert("Can not get the video url, please press F5 to refresh this page.");
+                                        $('.IG_SN_DIG').remove();
+                                        return false;
+                                    }
+                                    $('.IG_SN_DIG .IG_SN_DIG_MAIN').append('<a data-type="mp4" data-globalIndex="'+s+'" style="'+style+'" target="_blank" href="'+video_url+'&dl=1"><img width="100" src="'+video_image+'" /><br/>- IGTV '+s+' -</a>');
+                                }
+                                else{
+                                    $('.IG_SN_DIG .IG_SN_DIG_MAIN').append('<a data-type="mp4" data-globalIndex="'+s+'" style="'+style+'" target="_blank" href="'+video_url+'&dl=1"><img width="100" src="'+video_image+'" /><br/>- Video '+s+' -</a>');
+                                }
                             }
                             if(element_images && element_images.attr('src')){
                                 $('.IG_SN_DIG .IG_SN_DIG_MAIN').append('<a data-type="jpg" data-globalIndex="'+s+'" style="'+style+'" target="_blank" href="'+element_images.attr('src')+'&dl=1"><img width="100" src="'+element_images.attr('src')+'" /><br/>- Image '+s+' -</a>');
@@ -180,7 +195,20 @@
 						let element_images = $(this).parent().find('.FFVAD');
 
                         if(element_videos && element_videos.attr('src')){
-							$('.IG_SN_DIG .IG_SN_DIG_MAIN').append('<a data-type="mp4" data-globalIndex="'+s+'" style="'+style+'" target="_blank" href="'+element_videos.attr('src')+'&dl=1"><img width="100" src="'+element_videos.next().attr('src')+'" /><br/>- Video '+s+' -</a>');
+                            let video_image = (__additionalData[fullpathname])?__additionalData[fullpathname]["data"]["graphql"]["shortcode_media"]["display_url"]:element_videos.next().attr('src');
+                            let video_url = (__additionalData[fullpathname])?__additionalData[fullpathname]["data"]["graphql"]["shortcode_media"]["video_url"]:element_videos.attr('src');
+
+                            if(element_videos.attr('src').match(/^blob:/ig)){
+                                if(video_url == element_videos.attr('src')){
+                                    alert("Can not get the video url, please press F5 to refresh this page.");
+                                    $('.IG_SN_DIG').remove();
+                                    return false;
+                                }
+                                $('.IG_SN_DIG .IG_SN_DIG_MAIN').append('<a data-type="mp4" data-globalIndex="'+s+'" style="'+style+'" target="_blank" href="'+video_url+'&dl=1"><img width="100" src="'+video_image+'" /><br/>- IGTV '+s+' -</a>');
+                            }
+                            else{
+                                $('.IG_SN_DIG .IG_SN_DIG_MAIN').append('<a data-type="mp4" data-globalIndex="'+s+'" style="'+style+'" target="_blank" href="'+video_url+'&dl=1"><img width="100" src="'+video_image+'" /><br/>- Video '+s+' -</a>');
+                            }
                         }
                         if(element_images && element_images.attr('src')){
 							$('.IG_SN_DIG .IG_SN_DIG_MAIN').append('<a data-type="jpg" data-globalIndex="'+s+'" style="'+style+'" target="_blank" href="'+element_images.attr('src')+'&dl=1"><img width="100" src="'+element_images.attr('src')+'" /><br/>- Image '+s+' -</a>');
