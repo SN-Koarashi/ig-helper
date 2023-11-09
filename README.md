@@ -1,4 +1,6 @@
 # ig-helper
+<a href='https://ko-fi.com/F1F1J6VZH' target='_blank'><img height='36' style='border:0px;height:36px;' src='https://storage.ko-fi.com/cdn/kofi3.png?v=3' border='0' alt='Buy Me a Coffee at ko-fi.com' /></a>
+
 Downloading is possible for both photos and videos from posts, as well as for stories or reels.
 ## Features
 - It can only download three images most.
@@ -17,7 +19,6 @@ Downloading is possible for both photos and videos from posts, as well as for st
 2. Due to the framework and personal differences used in Instagram development, the page layout and node names presented by each person may be different. Therefore, all development and testing are based on the pages I have seen, which may cause a few people to The script does not work, please forgive me.
 
 If you want to contact me, you can join my discord server: " https://discord.gg/Sh8HJ4d " and then calling my discord 5026.
-<a href='https://ko-fi.com/F1F1J6VZH' target='_blank'><img height='36' style='border:0px;height:36px;' src='https://storage.ko-fi.com/cdn/kofi3.png?v=3' border='0' alt='Buy Me a Coffee at ko-fi.com' /></a>
 
 On GreasyFork: https://greasyfork.org/en/scripts/404535-ig-helper
 
