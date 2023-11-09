@@ -5,7 +5,7 @@
 // @name:ja            IG助手
 // @name:ko            IG조수
 // @namespace          https://github.snkms.com/
-// @version            2.7.0
+// @version            2.7.1
 // @description        Downloading is possible for both photos and videos from posts, as well as for stories or reels.
 // @description:zh-TW  一鍵下載對方 Instagram 貼文中的相片、影片甚至是他們的限時動態、連續短片！
 // @description:zh-CN  一键下载对方 Instagram 帖子中的相片、视频甚至是他们的快拍、Reels！
@@ -60,78 +60,77 @@
     var timer = setInterval(function(){
         currentHeight = $(document).height();
         // Call Instagram dialog function if url changed.
-        if($('div[id^="mount"] > div > div > div').first().data('visualcompletion') != 'loading-state'){
-            if(currentURL != location.href || !firstStarted || !pageLoaded){
-                clearInterval(GL_repeat);
-                pageLoaded = false;
-                firstStarted = true;
-                currentURL = location.href;
+        if(currentURL != location.href || !firstStarted || !pageLoaded){
+            clearInterval(GL_repeat);
+            pageLoaded = false;
+            firstStarted = true;
+            currentURL = location.href;
 
-                if(location.href.startsWith("https://www.instagram.com/p/") || location.href.startsWith("https://www.instagram.com/reel/")){
-                    GL_dataCache.stories = {};
+            if(location.href.startsWith("https://www.instagram.com/p/") || location.href.startsWith("https://www.instagram.com/reel/")){
+                GL_dataCache.stories = {};
 
-                    console.log('isDialog');
-                    setTimeout(()=>{
-                        onReadyMyDW(false);
-                    },150);
-                    pageLoaded = true;
-                }
-
-                if(location.href.startsWith("https://www.instagram.com/reels/")){
-                    console.log('isReels');
-                    setTimeout(()=>{
-                        onReelsDW(false);
-                    },150);
-                    pageLoaded = true;
-                }
-
-                if(location.href.split("?")[0] == "https://www.instagram.com/"){
-                    GL_dataCache.stories = {};
-
-                    console.log('isHomepage');
-                    setTimeout(()=>{
-                        onReadyMyDW(false);
-                    },150);
-                    pageLoaded = true;
-                }
-                if(!$('body > div div.x9f619 div._adqx[data-visualcompletion="loading-state"]').length && $('canvas._aarh').length && location.href.match(/^(https:\/\/www\.instagram\.com\/)([0-9A-Za-z\.\-_]+)\/?$/ig) && !location.href.match(/^(https:\/\/www\.instagram\.com\/(stories|explore)\/?)/ig)){
-                    console.log('isProfile');
-                    setTimeout(()=>{
-                        onProfileDW(false);
-                    },150);
-                    pageLoaded = true;
-                }
-
-                if(!pageLoaded){
-                    // Call Instagram stories function
-                    if(location.href.match(/^(https:\/\/www\.instagram\.com\/stories\/highlights\/)/ig)){
-                        GL_dataCache.highlights = {};
-
-                        console.log('isHighlightsStory');
-                        onHighlightsStoryDW(false);
-                        GL_repeat = setInterval(()=>{
-                            onHighlightsStoryThumbnailDW(false);
-                        },checkInterval);
-
-                        if($(".IG_DWHISTORY").length) setTimeout(()=>{pageLoaded = true;},150);
-                    }
-                    else if(location.href.match(/^(https:\/\/www\.instagram\.com\/stories\/)/ig)){
-                        console.log('isStory');
-                        onStoryDW(false);
-                        onStoryThumbnailDW(false);
-
-                        if($(".IG_DWSTORY").length) setTimeout(()=>{pageLoaded = true;},150);
-                    }
-                    else{
-                        pageLoaded = false;
-                        // Remove the download icon
-                        $('.IG_DWSTORY').remove();
-                        $('.IG_DWSTORY_THUMBNAIL').remove();
-                    }
-                }
-
+                console.log('isDialog');
+                setTimeout(()=>{
+                    onReadyMyDW(false);
+                },150);
+                pageLoaded = true;
             }
+
+            if(location.href.startsWith("https://www.instagram.com/reels/")){
+                console.log('isReels');
+                setTimeout(()=>{
+                    onReelsDW(false);
+                },150);
+                pageLoaded = true;
+            }
+
+            if(location.href.split("?")[0] == "https://www.instagram.com/"){
+                GL_dataCache.stories = {};
+
+                console.log('isHomepage');
+                setTimeout(()=>{
+                    onReadyMyDW(false);
+                },150);
+                pageLoaded = true;
+            }
+            if($('div[id^="mount"] > div > div > div').first().is(':hidden') && $('canvas._aarh').length && location.href.match(/^(https:\/\/www\.instagram\.com\/)([0-9A-Za-z\.\-_]+)\/?$/ig) && !location.href.match(/^(https:\/\/www\.instagram\.com\/(stories|explore)\/?)/ig)){
+                console.log('isProfile');
+                setTimeout(()=>{
+                    onProfileDW(false);
+                },150);
+                pageLoaded = true;
+            }
+
+            if(!pageLoaded){
+                // Call Instagram stories function
+                if(location.href.match(/^(https:\/\/www\.instagram\.com\/stories\/highlights\/)/ig)){
+                    GL_dataCache.highlights = {};
+
+                    console.log('isHighlightsStory');
+                    onHighlightsStoryDW(false);
+                    GL_repeat = setInterval(()=>{
+                        onHighlightsStoryThumbnailDW(false);
+                    },checkInterval);
+
+                    if($(".IG_DWHISTORY").length) setTimeout(()=>{pageLoaded = true;},150);
+                }
+                else if(location.href.match(/^(https:\/\/www\.instagram\.com\/stories\/)/ig)){
+                    console.log('isStory');
+                    onStoryDW(false);
+                    onStoryThumbnailDW(false);
+
+                    if($(".IG_DWSTORY").length) setTimeout(()=>{pageLoaded = true;},150);
+                }
+                else{
+                    pageLoaded = false;
+                    // Remove the download icon
+                    $('.IG_DWSTORY').remove();
+                    $('.IG_DWSTORY_THUMBNAIL').remove();
+                }
+            }
+
         }
+
         // Direct Download Checkbox
         /*
         if(!$('.AutoDownload_dom').length){
