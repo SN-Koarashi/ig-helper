@@ -5,7 +5,7 @@
 // @name:ja            IG助手
 // @name:ko            IG조수
 // @namespace          https://github.snkms.com/
-// @version            2.7.1
+// @version            2.8.0
 // @description        Downloading is possible for both photos and videos from posts, as well as for stories or reels.
 // @description:zh-TW  一鍵下載對方 Instagram 貼文中的相片、影片甚至是他們的限時動態、連續短片！
 // @description:zh-CN  一键下载对方 Instagram 帖子中的相片、视频甚至是他们的快拍、Reels！
@@ -18,6 +18,7 @@
 // @grant              GM_getValue
 // @grant              GM_xmlhttpRequest
 // @grant              GM_registerMenuCommand
+// @connect            i.instagram.com
 // @require            https://code.jquery.com/jquery-3.6.3.min.js#sha256-pvPw+upLPUjgMXY0G+8O0xUf+/Im1MZjXxxgOcBQBXU=
 // @supportURL         https://discord.gg/Sh8HJ4d
 // @contributionURL    https://ko-fi.com/snkoarashi
@@ -155,8 +156,13 @@
             let timestamp = Math.floor(date / 1000);
             let username = location.href.replace(/\/$/ig,'').split('/').at(-1);
             let userInfo = await getUserId(username);
-
-            saveFiles(userInfo.user.profile_pic_url,username,"avatar",timestamp,'jpg');
+            try{
+                let dataURL = await getUserHighSizeProfile(userInfo.user.pk);
+                saveFiles(dataURL,username,"avatar",timestamp,'jpg');
+            }
+            catch(err){
+                saveFiles(userInfo.user.profile_pic_url,username,"avatar",timestamp,'jpg');
+            }
         }
         else{
             // Add the profile download button
@@ -482,6 +488,33 @@
                 onload: function(response) {
                     let obj = JSON.parse(response.response);
                     resolve(obj.users[0]);
+                },
+                onerror: function(err){
+                    reject(err);
+                }
+            });
+        });
+    }
+
+    // Prepare promise to fetch user profile picture by user id
+    function getUserHighSizeProfile(userId){
+        return new Promise((resolve,reject)=>{
+            let getURL = `https://i.instagram.com/api/v1/users/${userId}/info/`;
+
+            GM_xmlhttpRequest({
+                method: "GET",
+                url: getURL,
+                headers: {
+                    'User-Agent': 'Mozilla/5.0 (Linux; Android 10; Pixel 7 XL)Build/RP1A.20845.002; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/5.0 Chrome/117.0.5938.60 Mobile Safari/537.36 Instagram 307.0.0.34.111'
+                },
+                onload: function(response) {
+                    let obj = JSON.parse(response.response);
+                    if(obj.status !== 'ok'){
+                        reject('faild');
+                    }
+                    else{
+                        resolve(obj.user.hd_profile_pic_url_info?.url);
+                    }
                 },
                 onerror: function(err){
                     reject(err);
