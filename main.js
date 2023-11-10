@@ -5,7 +5,7 @@
 // @name:ja            IG助手
 // @name:ko            IG조수
 // @namespace          https://github.snkms.com/
-// @version            2.8.0
+// @version            2.9.1
 // @description        Downloading is possible for both photos and videos from posts, as well as for stories or reels.
 // @description:zh-TW  一鍵下載對方 Instagram 貼文中的相片、影片甚至是他們的限時動態、連續短片！
 // @description:zh-CN  一键下载对方 Instagram 帖子中的相片、视频甚至是他们的快拍、Reels！
@@ -37,8 +37,9 @@
     // !!! DO NOT CHANGE THIS AREA !!!
     // PLEASE CHANGE SETTING WITH MENU
     var AUTO_RENAME = (GM_getValue('AUTO_RENAME'))?GM_getValue('AUTO_RENAME'):true;
-    var RENAME_SHORTCODE = (GM_getValue('RENAME_SHORTCODE'))?GM_getValue('AUTO_RENAME'):true;
-    var DISABLE_VIDEO_LOOPING = (GM_getValue('DISABLE_VIDEO_LOOPING'))?GM_getValue('AUTO_RENAME'):false;
+    var RENAME_SHORTCODE = (GM_getValue('RENAME_SHORTCODE'))?GM_getValue('RENAME_SHORTCODE'):true;
+    var DISABLE_VIDEO_LOOPING = (GM_getValue('DISABLE_VIDEO_LOOPING'))?GM_getValue('DISABLE_VIDEO_LOOPING'):false;
+    var REDIRECT_RIGHT_CLICK_USER_STORY_PICTURE = (GM_getValue('REDIRECT_RIGHT_CLICK_USER_STORY_PICTURE'))?GM_getValue('REDIRECT_RIGHT_CLICK_USER_STORY_PICTURE'):false;
     /*******************************/
 
     const checkInterval = 250;
@@ -785,9 +786,11 @@
                 "AUTO_RENAME": "自動重新命名檔案",
                 "RENAME_SHORTCODE": "重新命名檔案並包含 Shortcode",
                 "DISABLE_VIDEO_LOOPING": "關閉影片自動循環播放",
+                "REDIRECT_RIGHT_CLICK_USER_STORY_PICTURE": "右鍵點擊使用者限時動態區域頭貼時重定向",
                 "AUTO_RENAME_INTRO": "將檔案自動重新命名為以下格式：\n使用者名稱-類型-時間戳.檔案類型\n例如：instagram-photo-1670350000.jpg\n\n若設為 false，則檔案名稱將保持原始樣貌。 \n例如：instagram_321565527_679025940443063_4318007696887450953_n.jpg",
                 "RENAME_SHORTCODE_INTRO": "將檔案自動重新命名為以下格式：\n使用者名稱-類型-Shortcode-時間戳.檔案類型\n示例：instagram-photo-CwkxyiVynpW-1670350000.jpg\n\n此功能僅在[自動重新命名檔案]設定為 TRUE 時有效。",
-                "DISABLE_VIDEO_LOOPING_INTRO": "關閉連續短片和貼文中影片自動循環播放。"
+                "DISABLE_VIDEO_LOOPING_INTRO": "關閉連續短片和貼文中影片自動循環播放。",
+                "REDIRECT_RIGHT_CLICK_USER_STORY_PICTURE_INTRO": "右鍵點選首頁限時動態區域中的使用者頭貼時，重新導向到使用者的個人資料頁面。"
             },
             "zh-CN": {
                 "CLOSE": "关闭",
@@ -805,9 +808,11 @@
                 "AUTO_RENAME": "自动重命名文件",
                 "RENAME_SHORTCODE": "重命名文件并包含物件短码",
                 "DISABLE_VIDEO_LOOPING": "禁用视频自动循环",
+                "REDIRECT_RIGHT_CLICK_USER_STORY_PICTURE": "右键单击用户故事区域头像时重定向",
                 "AUTO_RENAME_INTRO": "将文件自动重新命名为以下格式类型：\n用户名-类型-时间戳.文件类型\n例如：instagram-photo-1670350000.jpg\n\n若设为false，则文件名将保持原样。 \n例如：instagram_321565527_679025940443063_4318007696887450953_n.jpg",
                 "RENAME_SHORTCODE_INTRO": "自动重命名文件为以下格式类型：\n用户名-类型-短码-时间戳.文件类型\n示例：instagram-photo-CwkxyiVynpW-1670350000.jpg\n\n它仅在[自动重命名文件]设置为 TRUE 时有效。",
-                "DISABLE_VIDEO_LOOPING_INTRO": "禁用 Reels 和帖子中的视频自动播放。"
+                "DISABLE_VIDEO_LOOPING_INTRO": "禁用 Reels 和帖子中的视频自动播放。",
+                "REDIRECT_RIGHT_CLICK_USER_STORY_PICTURE_INTRO": "右键单击主页故事区域中的用户头像，重定向到用户的个人资料页面。"
             },
             "en-US": {
                 "CLOSE": "Close",
@@ -825,9 +830,11 @@
                 "AUTO_RENAME": "Automatically Rename Files",
                 "RENAME_SHORTCODE": "Rename The File and Include Shortcode",
                 "DISABLE_VIDEO_LOOPING": "Disable Video Auto-looping",
+                "REDIRECT_RIGHT_CLICK_USER_STORY_PICTURE": "Redirect When Right-Clicking User Story Picture",
                 "AUTO_RENAME_INTRO": "Auto rename file to format type following:\nUSERNAME-TYPE-TIMESTAMP.FILETYPE\nExample: instagram-photo-1670350000.jpg\n\nIf set to false, the file name will remain as it is.\nExample: instagram_321565527_679025940443063_4318007696887450953_n.jpg",
                 "RENAME_SHORTCODE_INTRO": "Auto rename file to format type following:\nUSERNAME-TYPE-SHORTCODE-TIMESTAMP.FILETYPE\nExample: instagram-photo-CwkxyiVynpW-1670350000.jpg\n\nIt will ONLY work in [Automatically Rename Files] setting to TRUE.",
-                "DISABLE_VIDEO_LOOPING_INTRO": "Disable video auto-looping in reels and posts."
+                "DISABLE_VIDEO_LOOPING_INTRO": "Disable video auto-looping in reels and posts.",
+                "REDIRECT_RIGHT_CLICK_USER_STORY_PICTURE_INTRO": "Redirect to a user's profile page when right-clicking on their user avatar in the story area on the homepage."
             }
         };
     }
@@ -869,6 +876,7 @@
         $('.IG_SN_DIG .IG_SN_DIG_BODY').append(`<label class="globalSettings" title="${_i18n('AUTO_RENAME_INTRO')}"><span>${_i18n('AUTO_RENAME')}</span> <input id="AUTO_RENAME" value="box" type="checkbox" ${(AUTO_RENAME)?'checked':''}><div class="chbtn"><div class="rounds"></div></div></label>`);
         $('.IG_SN_DIG .IG_SN_DIG_BODY').append(`<label class="globalSettings" title="${_i18n('RENAME_SHORTCODE_INTRO')}"><span>${_i18n('RENAME_SHORTCODE')}</span> <input id="RENAME_SHORTCODE" value="box" type="checkbox" ${(RENAME_SHORTCODE)?'checked':''}><div class="chbtn"><div class="rounds"></div></div></label>`);
         $('.IG_SN_DIG .IG_SN_DIG_BODY').append(`<label class="globalSettings" title="${_i18n('DISABLE_VIDEO_LOOPING_INTRO')}"><span>${_i18n('DISABLE_VIDEO_LOOPING')}</span> <input id="DISABLE_VIDEO_LOOPING" value="box" type="checkbox" ${(DISABLE_VIDEO_LOOPING)?'checked':''}><div class="chbtn"><div class="rounds"></div></div></label>`);
+        $('.IG_SN_DIG .IG_SN_DIG_BODY').append(`<label class="globalSettings" title="${_i18n('REDIRECT_RIGHT_CLICK_USER_STORY_PICTURE_INTRO')}"><span>${_i18n('REDIRECT_RIGHT_CLICK_USER_STORY_PICTURE')}</span> <input id="REDIRECT_RIGHT_CLICK_USER_STORY_PICTURE" value="box" type="checkbox" ${(REDIRECT_RIGHT_CLICK_USER_STORY_PICTURE)?'checked':''}><div class="chbtn"><div class="rounds"></div></div></label>`);
     }
 
     // Running if document is ready
@@ -907,6 +915,11 @@
         $('body').on('change','.IG_SN_DIG #DISABLE_VIDEO_LOOPING',function(){
             DISABLE_VIDEO_LOOPING = $(this).prop('checked');
             GM_setValue('DISABLE_VIDEO_LOOPING', DISABLE_VIDEO_LOOPING);
+        });
+
+        $('body').on('change','.IG_SN_DIG #REDIRECT_RIGHT_CLICK_USER_STORY_PICTURE',function(){
+            REDIRECT_RIGHT_CLICK_USER_STORY_PICTURE = $(this).prop('checked');
+            GM_setValue('REDIRECT_RIGHT_CLICK_USER_STORY_PICTURE', REDIRECT_RIGHT_CLICK_USER_STORY_PICTURE);
         });
 
         $('body').on('click','a[data-needed="direct"]',async function(){
@@ -955,6 +968,15 @@
         // Running if user left-click download icon in reels
         $('body').on('click','.IG_REELS_THUMBNAIL',function(){
             onReelsDW(true,false);
+        });
+
+        // Running if user right-click profile picture in stories area
+        $('body').on('contextmenu','button[role="menuitem"]',function(){
+            if(location.href === 'https://www.instagram.com/' && REDIRECT_RIGHT_CLICK_USER_STORY_PICTURE){
+                if($(this).find('canvas._aarh').length > 0){
+                    location.href = 'https://www.instagram.com/'+$(this).children('div').last().text();
+                }
+            }
         });
     });
 
