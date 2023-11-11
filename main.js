@@ -5,7 +5,7 @@
 // @name:ja            IG助手
 // @name:ko            IG조수
 // @namespace          https://github.snkms.com/
-// @version            2.10.2
+// @version            2.11.2
 // @description        Downloading is possible for both photos and videos from posts, as well as for stories, reels or profile picture.
 // @description:zh-TW  一鍵下載對方 Instagram 貼文中的相片、影片甚至是他們的限時動態、連續短片及大頭貼圖片！
 // @description:zh-CN  一键下载对方 Instagram 帖子中的相片、视频甚至是他们的快拍、Reels及头像图片！
@@ -629,7 +629,7 @@
                     // Create element that download dailog
                     IG_createDM(GM_getValue('AutoDownload'), true);
 
-                    $("#article-id").text(GL_postPath);
+                    $("#article-id").html(`<a href="https://www.instagram.com/p/${GL_postPath}">${GL_postPath}</a>`);
 
                     // Find video/image element and add the download icon
                     var s = 0;
@@ -711,7 +711,7 @@
 
                     $('.IG_SN_DIG .IG_SN_DIG_MAIN .IG_SN_DIG_BODY a').each(function(){
                         $(this).wrap('<div></div>');
-                        $(this).before('<input class="inner_box" type="checkbox">');
+                        $(this).before('<label class="inner_box_wrapper"><input class="inner_box" type="checkbox"><span></span></label>');
                     });
                 });
 
@@ -751,17 +751,23 @@
             }
         }
         $("#_SNLOAD").remove();
+        $('.IG_SN_DIG .IG_SN_DIG_MAIN .IG_SN_DIG_BODY a').each(function(){
+            $(this).wrap('<div></div>');
+            $(this).before('<label class="inner_box_wrapper"><input class="inner_box" type="checkbox"><span></span></label>');
+        });
     }
 
     // Create the download dialog element funcion
     function IG_createDM(hasHidden, hasCheckbox){
         let isHidden = (hasHidden)?"hidden":"";
         $('body').append('<div class="IG_SN_DIG '+isHidden+'"><div class="IG_SN_DIG_BG"></div><div class="IG_SN_DIG_MAIN"><div class="IG_SN_DIG_TITLE"></div><div class="IG_SN_DIG_BODY"></div></div></div>');
-        $('.IG_SN_DIG .IG_SN_DIG_MAIN .IG_SN_DIG_TITLE').append('<div style="position:relative;height:36px;text-align:center;"><div style="position:absolute;left:0px;line-height: 18px;">Alt+Q ['+_i18n("CLOSE")+']</div><div style="line-height: 18px;">IG Helper</div><div style="line-height: 14px;font-size:14px;">Article: <span id="article-id"></span></div><svg width="26" height="26" class="IG_SN_DIG_BTN" style="cursor:pointer;position:absolute;right:0px;top:0px;fill: rgb(var(--ig-primary-text));" xmlns="http://www.w3.org/2000/svg" id="bold" enable-background="new 0 0 24 24" height="512" viewBox="0 0 24 24" width="512"><path d="m14.828 12 5.303-5.303c.586-.586.586-1.536 0-2.121l-.707-.707c-.586-.586-1.536-.586-2.121 0l-5.303 5.303-5.303-5.304c-.586-.586-1.536-.586-2.121 0l-.708.707c-.586.586-.586 1.536 0 2.121l5.304 5.304-5.303 5.303c-.586.586-.586 1.536 0 2.121l.707.707c.586.586 1.536.586 2.121 0l5.303-5.303 5.303 5.303c.586.586 1.536.586 2.121 0l.707-.707c.586-.586.586-1.536 0-2.121z"/></svg></div>');
+        $('.IG_SN_DIG .IG_SN_DIG_MAIN .IG_SN_DIG_TITLE').append('<div style="position:relative;height:36px;text-align:center;margin-bottom: 7px;"><div style="position:absolute;left:0px;line-height: 18px;"><kbd>Alt</kbd>+<kbd>Q</kbd> ['+_i18n("CLOSE")+']</div><div style="line-height: 18px;">IG Helper</div><div style="line-height: 14px;font-size:14px;">Article: <span id="article-id"></span></div><svg width="26" height="26" class="IG_SN_DIG_BTN" style="cursor:pointer;position:absolute;right:0px;top:0px;fill: rgb(var(--ig-primary-text));" xmlns="http://www.w3.org/2000/svg" id="bold" enable-background="new 0 0 24 24" height="512" viewBox="0 0 24 24" width="512"><path d="m14.828 12 5.303-5.303c.586-.586.586-1.536 0-2.121l-.707-.707c-.586-.586-1.536-.586-2.121 0l-5.303 5.303-5.303-5.304c-.586-.586-1.536-.586-2.121 0l-.708.707c-.586.586-.586 1.536 0 2.121l5.304 5.304-5.303 5.303c-.586.586-.586 1.536 0 2.121l.707.707c.586.586 1.536.586 2.121 0l5.303-5.303 5.303 5.303c.586.586 1.536.586 2.121 0l.707-.707c.586-.586.586-1.536 0-2.121z"/></svg></div>');
 
         if(hasCheckbox){
-            $('.IG_SN_DIG .IG_SN_DIG_MAIN .IG_SN_DIG_TITLE').append(`<label class="checkbox"><input value="yes" type="checkbox" />${_i18n('ALL_CHECK')}</label>`);
-            $('.IG_SN_DIG .IG_SN_DIG_MAIN .IG_SN_DIG_TITLE').append(`<button id="batch_download">${_i18n('BATCH_DOWNLOAD')}</button>`);
+            $('.IG_SN_DIG .IG_SN_DIG_MAIN .IG_SN_DIG_TITLE').append(`<div style="text-align: center;" id="button_group"></div>`);
+            $('.IG_SN_DIG .IG_SN_DIG_MAIN .IG_SN_DIG_TITLE > div#button_group').append(`<button id="batch_download_selected">${_i18n('BATCH_DOWNLOAD_SELECTED')}</button>`);
+            $('.IG_SN_DIG .IG_SN_DIG_MAIN .IG_SN_DIG_TITLE > div#button_group').append(`<button id="batch_download_direct">${_i18n('BATCH_DOWNLOAD_DIRECT')}</button>`);
+            $('.IG_SN_DIG .IG_SN_DIG_MAIN .IG_SN_DIG_TITLE').append(`<br/><label class="checkbox"><input value="yes" type="checkbox" />${_i18n('ALL_CHECK')}</label>`);
         }
     }
 
@@ -787,7 +793,8 @@
             "zh-TW": {
                 "CLOSE": "關閉",
                 "ALL_CHECK": "全選",
-                "BATCH_DOWNLOAD": "批次下載",
+                "BATCH_DOWNLOAD_SELECTED": "批次下載已勾選資源",
+                "BATCH_DOWNLOAD_DIRECT": "批次下載全部資源",
                 "IMG": "相片",
                 "VID": "影片",
                 "DDL": "快速下載",
@@ -814,7 +821,8 @@
             "zh-CN": {
                 "CLOSE": "关闭",
                 "ALL_CHECK": "全选",
-                "BATCH_DOWNLOAD": "批量下载",
+                "BATCH_DOWNLOAD_SELECTED": "批量下载已勾选资源",
+                "BATCH_DOWNLOAD_DIRECT": "批量下载全部资源",
                 "IMG": "图像",
                 "VID": "视频",
                 "DDL": "便捷下载",
@@ -841,7 +849,8 @@
             "en-US": {
                 "CLOSE": "Close",
                 "ALL_CHECK": "Select All",
-                "BATCH_DOWNLOAD": "Batch-download",
+                "BATCH_DOWNLOAD_SELECTED": "Download Selected Resources",
+                "BATCH_DOWNLOAD_DIRECT": "Download All Resources",
                 "IMG": "Image",
                 "VID": "Video",
                 "DDL": "Quick Download",
@@ -1017,7 +1026,7 @@
             $('.IG_SN_DIG_TITLE .checkbox').find('input').prop('checked', checked == total);
         });
 
-        $('body').on('click', '.IG_SN_DIG_TITLE #batch_download', function(){
+        $('body').on('click', '.IG_SN_DIG_TITLE #batch_download_selected', function(){
             let index = 0;
             $('.IG_SN_DIG_BODY a[data-needed="direct"]').each(function(){
                 if($(this).prev().prop('checked')){
@@ -1029,6 +1038,12 @@
             if(index == 0){
                 alert(_i18n('NO_CHECK_RESOURCE'));
             }
+        });
+
+        $('body').on('click', '.IG_SN_DIG_TITLE #batch_download_direct', function(){
+            $('.IG_SN_DIG_BODY a[data-needed="direct"]').each(function(){
+                $(this).click();
+            });
         });
     });
 
@@ -1069,20 +1084,17 @@
 		}
 		.IG_SN_DIG_BODY{
 			min-height: 100px;
-			max-height: 80vh;
+			max-height: 70vh;
 			overflow-y:auto;
 		}
 		.IG_SN_DIG_BODY a{
 			display:block;
-			margin:5px 0px;
 			padding:5px 0px;
 			color: #111;
 			color: rgb(var(--ig-primary-text));
 			font-size:1rem;
 			line-height:1rem;
 			text-align:center;
-			border:1px solid #000;
-			border:1px solid rgb(var(--ig-primary-text));
 			border-radius: 5px;
 		}
 		.SNKMS_IG_DW_MAIN{
@@ -1208,20 +1220,75 @@
 			transform: scale(1.5);
 			margin-right: 10px;
 		}
+		.inner_box_wrapper{
+			display: block;
+			position: absolute;
+			left: 0px;
+			top: 0px;
+			width: 50px;
+			height: 100%;
+			border-right: 1px solid;
+			background: #e7e7e7;
+			background: rgb(var(--ig-secondary-button-hover));
+			cursor: pointer;
+		}
+		.inner_box ~ span{
+			position: relative;
+			height: 100%;
+			width: 100%;
+			display: block;
+		}
+		.inner_box:checked ~ span{
+			background: rgb(var(--ig-success));
+		}
+		.inner_box ~ span:after {
+			content: "";
+			position: absolute;
+			display: none;
+			left: 12px;
+			top: 50%;
+			width: 10px;
+			height: 20px;
+			margin-top: -8px;
+			border: solid black;
+			border: solid rgb(var(--ig-primary-text));
+			border-width: 0 3px 3px 0;
+			-webkit-transform: rotate(45deg) translateY(-50%);
+			-ms-transform: rotate(45deg) translateY(-50%);
+			transform: rotate(45deg) translateY(-50%);
+		}
+		.inner_box:checked ~ span:after{
+			display:block;
+		}
 		.inner_box{
 			position: absolute;
 			top: 10px;
-			left: 10px;
-			transform: scale(2.5);
+			left: 50%;
+			transform: scale(2.5) translateY(-50%);
 			cursor: pointer;
+            appearance: none;
+            opacity: 0;
 		}
 		.IG_SN_DIG_BODY > div{
 			position: relative;
+			border:1px solid #000;
+			border:1px solid rgb(var(--ig-primary-text));
+			margin: 5px 0px;
+		}
+		.IG_SN_DIG_BODY > div:hover{
+			background: rgba(var(--ig-hover-overlay));
 		}
 		.IG_SN_DIG_TITLE button{
 			font-size: 14px;
 			vertical-align: middle;
-            margin: 0px 7px;
+			margin: 0px 7px;
+		}
+		kbd {
+			font-weight: bold;
+			padding: 4px 5px;
+			background: rgb(var(--ig-primary-background));
+			border-radius: 3px;
+			border: 1px solid rgb(var(--ig-primary-text));
 		}
     `);
     GM_registerMenuCommand(_i18n('SETTING'), () => {
