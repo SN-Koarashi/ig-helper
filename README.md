@@ -29,3 +29,8 @@ If you want to contact me, you can join my discord server: " https://discord.gg/
 > On GreasyFork: https://greasyfork.org/en/scripts/404535-ig-helper
 > 
 > The extensions we support and test is Tampermonkey and make sure that you are downloaded the script from GreasyFork.
+
+## Contributiner
+> [Yomisana](https://github.com/yomisana) - 
+> Menu design suggestions and batch-download ideas
+
