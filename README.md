@@ -15,12 +15,17 @@ Downloading is possible for both photos and videos from posts, as well as for st
 3. See following:
 <img src="https://cdn.discordapp.com/attachments/631735793961926656/1172091063603826748/ITNR.gif" />
 
+## Hot keys
+- `ALT+Q` - Close pop-up window
+- `ALT+W` - Open the settings menu
+
 ## Developer Statement
 1. All code development and testing are based on the Chrome browser and the extension Tampermonkey.
 2. Due to the framework and personal differences used in Instagram development, the page layout and node names presented by each person may be different. Therefore, all development and testing are based on the pages I have seen, which may cause a few people to The script does not work, please forgive me.
 
 If you want to contact me, you can join my discord server: " https://discord.gg/Sh8HJ4d " and then calling my discord 5026.
 
-On GreasyFork: https://greasyfork.org/en/scripts/404535-ig-helper
-
-The extensions we support and test is Tampermonkey and make sure that you are downloaded the script from GreasyFork.
+> [!IMPORTANT]
+> On GreasyFork: https://greasyfork.org/en/scripts/404535-ig-helper
+> 
+> The extensions we support and test is Tampermonkey and make sure that you are downloaded the script from GreasyFork.
