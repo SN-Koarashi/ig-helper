@@ -28,7 +28,7 @@
 // @compatible         firefox >= 87
 // @compatible         chrome >= 90
 // @compatible         edge >= 90
-// @license            GPLv3
+// @license            GPL-3.0-only
 // ==/UserScript==
 
 (function($) {
