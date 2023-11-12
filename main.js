@@ -5,7 +5,7 @@
 // @name:ja            IG助手
 // @name:ko            IG조수
 // @namespace          https://github.snkms.com/
-// @version            2.11.2
+// @version            2.11.3
 // @description        Downloading is possible for both photos and videos from posts, as well as for stories, reels or profile picture.
 // @description:zh-TW  一鍵下載對方 Instagram 貼文中的相片、影片甚至是他們的限時動態、連續短片及大頭貼圖片！
 // @description:zh-CN  一键下载对方 Instagram 帖子中的相片、视频甚至是他们的快拍、Reels及头像图片！
@@ -18,8 +18,10 @@
 // @grant              GM_getValue
 // @grant              GM_xmlhttpRequest
 // @grant              GM_registerMenuCommand
+// @grant              GM_getResourceText
 // @connect            i.instagram.com
 // @require            https://code.jquery.com/jquery-3.6.3.min.js#sha256-pvPw+upLPUjgMXY0G+8O0xUf+/Im1MZjXxxgOcBQBXU=
+// @resource           INTERNAL_CSS https://raw.githubusercontent.com/SN-Koarashi/ig-helper/master/style.css
 // @supportURL         https://discord.gg/Sh8HJ4d
 // @contributionURL    https://ko-fi.com/snkoarashi
 // @icon               https://www.google.com/s2/favicons?domain=www.instagram.com
@@ -47,6 +49,12 @@
 
     const checkInterval = 250;
     const lang = navigator.language || navigator.userLanguage;
+    const style = GM_getResourceText("INTERNAL_CSS");
+
+    GM_addStyle(style);
+    GM_registerMenuCommand(_i18n('SETTING'), () => {
+        showSetting();
+    });
 
     var currentURL = location.href;
     var currentHeight = $(document).height();
@@ -55,7 +63,7 @@
 
     var GL_postPath;
     var GL_username;
-    var GL_repeat
+    var GL_repeat;
     var GL_dataCache = {
         stories: {},
         highlights: {}
@@ -937,14 +945,6 @@
                 e.preventDefault();
             }
         });
-        $('body').on('click','.AutoDownload',function(){
-            if($('.AutoDownload:checked').length){
-                GM_setValue('AutoDownload',true);
-            }
-            else{
-                GM_setValue('AutoDownload',false);
-            }
-        });
 
         $('body').on('change', '.IG_SN_DIG input',function(){
             var isChecked =  $(this).prop('checked');
@@ -1045,253 +1045,5 @@
                 $(this).click();
             });
         });
-    });
-
-    GM_addStyle(`
-		.IG_SN_DIG{
-			position: fixed;
-			left: 0px;
-			right: 0px;
-			bottom: 0px;
-			top: 0px;
-			z-index: 500;
-		}
-		.IG_SN_DIG.hidden{
-			display:none;
-		}
-		.IG_SN_DIG_BG{
-			position: fixed;
-			left: 0px;
-			right: 0px;
-			bottom: 0px;
-			top: 0px;
-			z-index:502;
-			background: rgba(0,0,0,.75);
-		}
-		.IG_SN_DIG_MAIN{
-			z-index: 510;
-			padding:10px 15px;
-			top:7%;
-			position: absolute;
-			left: 50%;
-			transform: translateX(-50%);
-			width: 500px;
-			background:#fff;
-			background: rgb(var(--ig-secondary-background));
-			color: #000;
-			color: rgb(var(--ig-primary-text));
-			border-radius: 7px;
-		}
-		.IG_SN_DIG_BODY{
-			min-height: 100px;
-			max-height: 70vh;
-			overflow-y:auto;
-		}
-		.IG_SN_DIG_BODY a{
-			display:block;
-			padding:5px 0px;
-			color: #111;
-			color: rgb(var(--ig-primary-text));
-			font-size:1rem;
-			line-height:1rem;
-			text-align:center;
-			border-radius: 5px;
-		}
-		.SNKMS_IG_DW_MAIN{
-			position: absolute;
-			top:15px;
-			padding:6px;
-			line-height:1;
-			background:#fff;
-			border-radius: 50%;
-			cursor:pointer;
-		}
-		#_SNLOAD{
-			text-align:center;
-			font-size:20px;
-		}
-		.IG_REELS, .IG_DWSTORY, .IG_DWHISTORY{
-			position: absolute;
-			right:40px;
-			top:15px;
-			padding:5px;
-			line-height:1;
-			background:#fff;
-			border-radius: 5px;
-			cursor:pointer;
-		}
-
-		.IG_REELS_THUMBNAIL, .IG_DWSTORY_THUMBNAIL, .IG_DWHISTORY_THUMBNAIL{
-			position: absolute;
-			right:40px;
-			top:45px;
-			padding:5px;
-			line-height:1;
-			background:#fff;
-			border-radius: 5px;
-			cursor:pointer;
-		}
-		.IG_DWSTORY, .IG_DWHISTORY, .IG_DWSTORY_THUMBNAIL, .IG_DWHISTORY_THUMBNAIL{
-			right:-40px;
-		}
-		.IG_DWPROFILE{
-			position: absolute;
-			right:0px;
-			top:0px;
-			padding:5px;
-			line-height:1;
-			background:#fff;
-			border-radius: 50%;
-			cursor:pointer;
-			border: 1px solid #ccc
-		}
-		.globalSettings{
-			position:relative;
-			display:inline-block;
-			color: #000;
-			color: rgb(var(--ig-primary-text));
-			text-decoration:none;
-			text-align:left;
-			width:100%;
-			height:30px;
-			padding:5px;
-			line-height:18px;
-			font-size:18px;
-			box-sizing: border-box;
-			border-radius:5px;
-			vertical-align:middle;
-			outline:none;
-			cursor:pointer;
-			-ms-user-select: none;
-			-moz-user-select: none;
-			-webkit-user-select: none;
-			user-select: none;
-			margin: 5px 0px;
-		}
-		.globalSettings:hover{
-			background: #e7e7e7;
-			background: rgb(var(--ig-secondary-button-hover));
-		}
-		.globalSettings:hover > span{
-			cursor: help;
-		}
-		.globalSettings input {
-			display: none;
-		}
-		.globalSettings .chbtn {
-			width: 40px;
-			height: 15px;
-			background: #9c9c9c;
-			display: inline-block;
-			vertical-align: middle;
-			border-radius: 7px;
-			position: absolute;
-            right: 15px;
-            top: 7px;
-			transition: background 0.2s;
-		}
-		.globalSettings .chbtn .rounds {
-			width: 20px;
-			height: 20px;
-			background: #777;
-			display: inline-block;
-			vertical-align: middle;
-			border-radius: 50%;
-			position: absolute;
-			left: 0px;
-			top: -3px;
-			transition: left 0.15s,background 0.15s;
-		}
-		.globalSettings input:checked ~ .chbtn{
-			background: #004c5a;
-		}
-		.globalSettings input:checked ~ .chbtn .rounds{
-			left: 20px;
-			background: #048aa4;
-		}
-		.checkbox{
-			font-size: 18px;
-			vertical-align: middle;
-			margin: 0px 7px;
-			user-select: none;
-			margin-left: 0px;
-		}
-		.checkbox input{
-			transform: scale(1.5);
-			margin-right: 10px;
-		}
-		.inner_box_wrapper{
-			display: block;
-			position: absolute;
-			left: 0px;
-			top: 0px;
-			width: 50px;
-			height: 100%;
-			border-right: 1px solid;
-			background: #e7e7e7;
-			background: rgb(var(--ig-secondary-button-hover));
-			cursor: pointer;
-		}
-		.inner_box ~ span{
-			position: relative;
-			height: 100%;
-			width: 100%;
-			display: block;
-		}
-		.inner_box:checked ~ span{
-			background: rgb(var(--ig-success));
-		}
-		.inner_box ~ span:after {
-			content: "";
-			position: absolute;
-			display: none;
-			left: 12px;
-			top: 50%;
-			width: 10px;
-			height: 20px;
-			margin-top: -8px;
-			border: solid black;
-			border: solid rgb(var(--ig-primary-text));
-			border-width: 0 3px 3px 0;
-			-webkit-transform: rotate(45deg) translateY(-50%);
-			-ms-transform: rotate(45deg) translateY(-50%);
-			transform: rotate(45deg) translateY(-50%);
-		}
-		.inner_box:checked ~ span:after{
-			display:block;
-		}
-		.inner_box{
-			position: absolute;
-			top: 10px;
-			left: 50%;
-			transform: scale(2.5) translateY(-50%);
-			cursor: pointer;
-            appearance: none;
-            opacity: 0;
-		}
-		.IG_SN_DIG_BODY > div{
-			position: relative;
-			border:1px solid #000;
-			border:1px solid rgb(var(--ig-primary-text));
-			margin: 5px 0px;
-		}
-		.IG_SN_DIG_BODY > div:hover{
-			background: rgba(var(--ig-hover-overlay));
-		}
-		.IG_SN_DIG_TITLE button{
-			font-size: 14px;
-			vertical-align: middle;
-			margin: 0px 7px;
-		}
-		kbd {
-			font-weight: bold;
-			padding: 4px 5px;
-			background: rgb(var(--ig-primary-background));
-			border-radius: 3px;
-			border: 1px solid rgb(var(--ig-primary-text));
-		}
-    `);
-    GM_registerMenuCommand(_i18n('SETTING'), () => {
-        showSetting();
     });
 })(jQuery);
