@@ -5,7 +5,7 @@
 // @name:ja            IG助手
 // @name:ko            IG조수
 // @namespace          https://github.snkms.com/
-// @version            2.11.5
+// @version            2.11.6
 // @description        Downloading is possible for both photos and videos from posts, as well as for stories, reels or profile picture.
 // @description:zh-TW  一鍵下載對方 Instagram 貼文中的相片、影片甚至是他們的限時動態、連續短片及大頭貼圖片！
 // @description:zh-CN  一键下载对方 Instagram 帖子中的相片、视频甚至是他们的快拍、Reels及头像图片！
@@ -92,7 +92,7 @@
             if(location.href.startsWith("https://www.instagram.com/reels/")){
                 console.log('isReels');
                 setTimeout(()=>{
-                    onReelsDW(false);
+                    onReels(false);
                 },150);
                 pageLoaded = true;
             }
@@ -109,7 +109,7 @@
             if($('div[id^="mount"] > div > div > div').first().is(':hidden') && $('canvas._aarh').length && location.href.match(/^(https:\/\/www\.instagram\.com\/)([0-9A-Za-z\.\-_]+)\/?$/ig) && !location.href.match(/^(https:\/\/www\.instagram\.com\/(stories|explore)\/?)/ig)){
                 console.log('isProfile');
                 setTimeout(()=>{
-                    onProfileDW(false);
+                    onProfileAvatar(false);
                 },150);
                 pageLoaded = true;
             }
@@ -120,17 +120,17 @@
                     GL_dataCache.highlights = {};
 
                     console.log('isHighlightsStory');
-                    onHighlightsStoryDW(false);
+                    onHighlightsStory(false);
                     GL_repeat = setInterval(()=>{
-                        onHighlightsStoryThumbnailDW(false);
+                        onHighlightsStoryThumbnail(false);
                     },checkInterval);
 
                     if($(".IG_DWHISTORY").length) setTimeout(()=>{pageLoaded = true;},150);
                 }
                 else if(location.href.match(/^(https:\/\/www\.instagram\.com\/stories\/)/ig)){
                     console.log('isStory');
-                    onStoryDW(false);
-                    onStoryThumbnailDW(false);
+                    onStory(false);
+                    onStoryThumbnail(false);
 
                     if($(".IG_DWSTORY").length) setTimeout(()=>{pageLoaded = true;},150);
                 }
@@ -143,15 +143,6 @@
             }
 
         }
-
-        // Direct Download Checkbox
-        /*
-        if(!$('.AutoDownload_dom').length){
-            let ckValue = (GM_getValue('AutoDownload'))?'checked':'';
-            $('body div.mfclru0v.astyfpdk.om3e55n1.jez8cy9q').css('position','relative');
-            $('body div.mfclru0v.astyfpdk.om3e55n1.jez8cy9q').append(`<div class="AutoDownload_dom" style="position:absolute;left:10px;bottom:7px;padding:0px;line-height:1;display:inline-block;width:fit-content;"><label title="${_i18n("DDL_INTRO")}" style="cursor:help;"><input type="checkbox" value="1" class="AutoDownload" name="AutoDownload" ${ckValue} />${_i18n("DDL")}</label></div>`);
-        }
-        */
     },checkInterval);
 
     // Call general function when user scroll the page
@@ -161,8 +152,14 @@
         }
     });
 
-    // Profile funcion
-    async function onProfileDW(isDownload){
+    /**
+     * onProfileAvatar
+     * Trigger user avatar download event or button display event.
+     *
+     * @param  {Boolean}  isDownload - Check if it is a download operation
+     * @return {void}
+     */
+    async function onProfileAvatar(isDownload){
         if(isDownload){
             let date = new Date().getTime();
             let timestamp = Math.floor(date / 1000);
@@ -184,14 +181,18 @@
 
                     $('body > div main canvas._aarh').parent().append(`<div title="${_i18n("DW")}" class="IG_DWPROFILE"><svg width="16" height="16" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" id="Capa_1" x="0px" y="0px" viewBox="0 0 512 512" style="enable-background:new 0 0 512 512;" xml:space="preserve"><g><g><path d="M382.56,233.376C379.968,227.648,374.272,224,368,224h-64V16c0-8.832-7.168-16-16-16h-64c-8.832,0-16,7.168-16,16v208h-64    c-6.272,0-11.968,3.68-14.56,9.376c-2.624,5.728-1.6,12.416,2.528,17.152l112,128c3.04,3.488,7.424,5.472,12.032,5.472    c4.608,0,8.992-2.016,12.032-5.472l112-128C384.192,245.824,385.152,239.104,382.56,233.376z"/></g></g><g><g><path d="M432,352v96H80v-96H16v128c0,17.696,14.336,32,32,32h416c17.696,0,32-14.304,32-32V352H432z"/></g></g></div>`);
                 },150);
-
-                return true;
             }
         }
     }
 
-    // Highlight Stories funcion
-    async function onHighlightsStoryDW(isDownload){
+    /**
+     * onHighlightsStory
+     * Trigger user's highlight download event or button display event.
+     *
+     * @param  {Boolean}  isDownload - Check if it is a download operation
+     * @return {void}
+     */
+    async function onHighlightsStory(isDownload){
         if(isDownload){
             let date = new Date().getTime();
             let timestamp = Math.floor(date / 1000);
@@ -208,7 +209,7 @@
                 target = GL_dataCache.highlights[highlightId].data.reels_media[0].items[totIndex-nowIndex];
             }
             else{
-                let highStories = await getHighlightsStories(highlightId);
+                let highStories = await getHighlightStories(highlightId);
                 let totIndex = highStories.data.reels_media[0].items.length;
                 username = highStories.data.reels_media[0].owner.username;
                 target = highStories.data.reels_media[0].items[totIndex-nowIndex];
@@ -227,13 +228,18 @@
             // Add the stories download button
             if(!$('.IG_DWHISTORY').length){
                 $('body > div section._ac0a').append(`<div title="${_i18n("DW")}" class="IG_DWHISTORY"><svg width="16" height="16" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" id="Capa_1" x="0px" y="0px" viewBox="0 0 512 512" style="enable-background:new 0 0 512 512;" xml:space="preserve"><g><g><path d="M382.56,233.376C379.968,227.648,374.272,224,368,224h-64V16c0-8.832-7.168-16-16-16h-64c-8.832,0-16,7.168-16,16v208h-64    c-6.272,0-11.968,3.68-14.56,9.376c-2.624,5.728-1.6,12.416,2.528,17.152l112,128c3.04,3.488,7.424,5.472,12.032,5.472    c4.608,0,8.992-2.016,12.032-5.472l112-128C384.192,245.824,385.152,239.104,382.56,233.376z"/></g></g><g><g><path d="M432,352v96H80v-96H16v128c0,17.696,14.336,32,32,32h416c17.696,0,32-14.304,32-32V352H432z"/></g></g></div>`);
-                return true;
             }
         }
     }
 
-    // Highlight Stories Thumbnail funcion
-    async function onHighlightsStoryThumbnailDW(isDownload){
+    /**
+     * onHighlightsStoryThumbnail
+     * Trigger user's highlight video thumbnail download event or button display event.
+     *
+     * @param  {Boolean}  isDownload - Check if it is a download operation
+     * @return {void}
+     */
+    async function onHighlightsStoryThumbnail(isDownload){
         if(isDownload){
             let date = new Date().getTime();
             let timestamp = Math.floor(date / 1000);
@@ -250,7 +256,7 @@
                 target = GL_dataCache.highlights[highlightId].data.reels_media[0].items[totIndex-nowIndex];
             }
             else{
-                let highStories = await getHighlightsStories(highlightId);
+                let highStories = await getHighlightStories(highlightId);
                 let totIndex = highStories.data.reels_media[0].items.length;
                 username = highStories.data.reels_media[0].owner.username;
                 target = highStories.data.reels_media[0].items[totIndex-nowIndex];
@@ -273,8 +279,14 @@
         }
     }
 
-    // Stories funcion
-    async function onStoryDW(isDownload,isForce){
+    /**
+     * onStory
+     * Trigger user's story download event or button display event.
+     *
+     * @param  {Boolean}  isDownload - Check if it is a download operation
+     * @return {void}
+     */
+    async function onStory(isDownload,isForce){
         if(isDownload){
             let date = new Date().getTime();
             let timestamp = Math.floor(date / 1000);
@@ -296,7 +308,7 @@
 
                     if(videoURL.length == 0){
                         console.log('Memory cache not found, try fetch from API:', username);
-                        onStoryDW(true,true);
+                        onStory(true,true);
                         return;
                     }
                 }
@@ -339,13 +351,18 @@
             if(!$('.IG_DWSTORY').length){
                 GL_dataCache.stories = {};
                 $('body > div section._ac0a').append(`<div title="${_i18n("DW")}" class="IG_DWSTORY"><svg width="16" height="16" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" id="Capa_1" x="0px" y="0px" viewBox="0 0 512 512" style="enable-background:new 0 0 512 512;" xml:space="preserve"><g><g><path d="M382.56,233.376C379.968,227.648,374.272,224,368,224h-64V16c0-8.832-7.168-16-16-16h-64c-8.832,0-16,7.168-16,16v208h-64    c-6.272,0-11.968,3.68-14.56,9.376c-2.624,5.728-1.6,12.416,2.528,17.152l112,128c3.04,3.488,7.424,5.472,12.032,5.472    c4.608,0,8.992-2.016,12.032-5.472l112-128C384.192,245.824,385.152,239.104,382.56,233.376z"/></g></g><g><g><path d="M432,352v96H80v-96H16v128c0,17.696,14.336,32,32,32h416c17.696,0,32-14.304,32-32V352H432z"/></g></g></div>`);
-                return true;
             }
         }
     }
 
-    // Stories Thumbnail funcion
-    async function onStoryThumbnailDW(isDownload,isForce){
+    /**
+     * onStoryThumbnail
+     * Trigger user's story video thumbnail download event or button display event.
+     *
+     * @param  {Boolean}  isDownload - Check if it is a download operation
+     * @return {void}
+     */
+    async function onStoryThumbnail(isDownload,isForce){
         if(isDownload){
             // Download stories if it is video
             let date = new Date().getTime();
@@ -368,7 +385,7 @@
 
                 if(videoThumbnailURL.length == 0){
                     console.log('Memory cache not found, try fetch from API:', username);
-                    onStoryThumbnailDW(true,true);
+                    onStoryThumbnail(true,true);
                     return;
                 }
             }
@@ -399,8 +416,15 @@
         }
     }
 
-    // Reels funcion
-    async function onReelsDW(isDownload, isVideo){
+    /**
+     * onReels
+     * Trigger user's reels download event or button display event.
+     *
+     * @param  {Boolean}  isDownload - Check if it is a download operation
+     * @param  {Boolean}  isVideo - Check if reel is a video element
+     * @return {void}
+     */
+    async function onReels(isDownload, isVideo){
         if(isDownload){
             let reelsPath = location.href.split('?').at(0).split('instagram.com/reels/').at(-1).replaceAll('/','');
             let data = await getBlobMedia(reelsPath);
@@ -451,8 +475,14 @@
         }
     }
 
-    // Prepare promise to fetch user stories
-    function getHighlightsStories(highlightId){
+    /**
+     * getHighlightStories
+     * Get a list of all stories in highlight Id.
+     *
+     * @param  {Integer}  highlightId
+     * @return {Object}
+     */
+    function getHighlightStories(highlightId){
         return new Promise((resolve,reject)=>{
             let getURL = `https://www.instagram.com/graphql/query/?query_hash=45246d3fe16ccc6577e0bd297a5db1ab&variables=%7B%22highlight_reel_ids%22:%5B%22${highlightId}%22%5D,%22precomposed_overlay%22:false%7D`;
 
@@ -470,7 +500,13 @@
         });
     }
 
-    // Prepare promise to fetch user stories
+    /**
+     * getStories
+     * Get a list of all stories in user Id.
+     *
+     * @param  {Integer}  userId
+     * @return {Object}
+     */
     function getStories(userId){
         return new Promise((resolve,reject)=>{
             let getURL = `https://www.instagram.com/graphql/query/?query_hash=15463e8449a83d3d60b06be7e90627c7&variables=%7B%22reel_ids%22:%5B%22${userId}%22%5D,%22precomposed_overlay%22:false%7D`;
@@ -489,7 +525,13 @@
         });
     }
 
-    // Prepare promise to fetch user id by username
+    /**
+     * getUserId
+     * Get user's id with username
+     *
+     * @param  {String}  username
+     * @return {Integer}
+     */
     function getUserId(username){
         return new Promise((resolve,reject)=>{
             let getURL = `https://www.instagram.com/web/search/topsearch/?query=${username}`;
@@ -508,7 +550,13 @@
         });
     }
 
-    // Prepare promise to fetch user profile picture by user id
+    /**
+     * getUserHighSizeProfile
+     * Get user's high quality avatar image.
+     *
+     * @param  {Integer}  userId
+     * @return {String}
+     */
     function getUserHighSizeProfile(userId){
         return new Promise((resolve,reject)=>{
             let getURL = `https://i.instagram.com/api/v1/users/${userId}/info/`;
@@ -535,7 +583,13 @@
         });
     }
 
-    // Prepare promise to catch article author using shortcode
+    /**
+     * getPostOwner
+     * Get post's author with post shortcode
+     *
+     * @param  {String}  postPath
+     * @return {String}
+     */
     function getPostOwner(postPath){
         return new Promise((resolve,reject)=>{
             if(!postPath) reject("NOPATH");
@@ -556,7 +610,13 @@
         });
     }
 
-    // Prepare promise to cache article which contains blob media
+    /**
+     * getBlobMedia
+     * Get list of all media files in post with post shortcode
+     *
+     * @param  {String}  postPath
+     * @return {Object}
+     */
     function getBlobMedia(postPath){
         return new Promise((resolve,reject)=>{
             if(!postPath) reject("NOPATH");
@@ -578,7 +638,13 @@
         });
     }
 
-    // Main function
+    /**
+     * onReadyMyDW
+     * Create an event entry point for the download button for the post
+     *
+     * @param  {Boolean}  NoDialog - Check if it not showing the dialog
+     * @return {void}
+     */
     function onReadyMyDW(NoDialog){
         // Whether is Instagram dialog?
         if(!NoDialog){
@@ -601,6 +667,12 @@
         }
     }
 
+    /**
+     * createDownloadButton
+     * Create a download button in the upper right corner of each post
+     *
+     * @return {void}
+     */
     function createDownloadButton(){
         // Add download icon per each posts
         $('article, main > div > div.xdt5ytf > div').each(function(){
@@ -658,7 +730,7 @@
 
 
                         if(blob){
-                            createMediaCacheDOM(GL_postPath,".IG_SN_DIG .IG_SN_DIG_MAIN .IG_SN_DIG_BODY",_i18n("LOAD_BLOB_MULTIPLE"));
+                            createMediaListDOM(GL_postPath,".IG_SN_DIG .IG_SN_DIG_MAIN .IG_SN_DIG_BODY",_i18n("LOAD_BLOB_MULTIPLE"));
                         }
                         else{
                             $(this).parent().find('._aap0 ._acaz').each(function(){
@@ -685,7 +757,7 @@
                             });
 
                             if(blob){
-                                createMediaCacheDOM(GL_postPath,".IG_SN_DIG .IG_SN_DIG_MAIN .IG_SN_DIG_BODY",_i18n("LOAD_BLOB_RELOAD"));
+                                createMediaListDOM(GL_postPath,".IG_SN_DIG .IG_SN_DIG_MAIN .IG_SN_DIG_BODY",_i18n("LOAD_BLOB_RELOAD"));
                             }
                         }
                     }
@@ -697,14 +769,14 @@
 
 
                         if(element_videos && element_videos.attr('src')){
-                            createMediaCacheDOM(GL_postPath,".IG_SN_DIG .IG_SN_DIG_MAIN .IG_SN_DIG_BODY",_i18n("LOAD_BLOB_ONE"));
+                            createMediaListDOM(GL_postPath,".IG_SN_DIG .IG_SN_DIG_MAIN .IG_SN_DIG_BODY",_i18n("LOAD_BLOB_ONE"));
 
                             /*
                             let video_image = element_videos.attr('poster');
                             let video_url = element_videos.attr('src');
 
                             if(element_videos.attr('src').match(/^blob:/ig)){
-                                createMediaCacheDOM(GL_postPath,".IG_SN_DIG .IG_SN_DIG_MAIN .IG_SN_DIG_BODY",_i18n("LOAD_BLOB_ONE"));
+                                createMediaListDOM(GL_postPath,".IG_SN_DIG .IG_SN_DIG_MAIN .IG_SN_DIG_BODY",_i18n("LOAD_BLOB_ONE"));
                             }
                             else{
                                 $('.IG_SN_DIG .IG_SN_DIG_MAIN .IG_SN_DIG_BODY').append(`<a data-needed="direct" data-path="${GL_postPath}" data-name="video" data-type="mp4" data-globalIndex="${s}" href="javascript:;" data-href="${video_url}"><img width="100" src="${video_image}" /><br/>- ${_i18n("VID")} ${s} -</a>`);
@@ -732,8 +804,16 @@
         });
     }
 
-    // Create media element from blob media
-    async function createMediaCacheDOM(postURL,selector,message){
+    /**
+     * createMediaListDOM
+     * Create a list of media elements from post URLs
+     *
+     * @param  {String}  postURL
+     * @param  {String}  selector - Use CSS element selectors to choose where it appears.
+     * @param  {String}  message - i18n display loading message
+     * @return {void}
+     */
+    async function createMediaListDOM(postURL,selector,message){
         $(`${selector} a`).remove();
         $(selector).append('<p id="_SNLOAD">'+ message +'</p>');
         let media = await getBlobMedia(postURL);
@@ -765,7 +845,14 @@
         });
     }
 
-    // Create the download dialog element funcion
+    /**
+     * IG_createDM
+     * A dialog showing a list of all media files in the post
+     *
+     * @param  {Boolean}  hasHidden
+     * @param  {Boolean}  hasCheckbox
+     * @return {void}
+     */
     function IG_createDM(hasHidden, hasCheckbox){
         let isHidden = (hasHidden)?"hidden":"";
         $('body').append('<div class="IG_SN_DIG '+isHidden+'"><div class="IG_SN_DIG_BG"></div><div class="IG_SN_DIG_MAIN"><div class="IG_SN_DIG_TITLE"></div><div class="IG_SN_DIG_BODY"></div></div></div>');
@@ -779,12 +866,23 @@
         }
     }
 
-    // Download and rename files
-    function saveFiles(downloadLink,username,index,timestamp,type,shortcode){
+    /**
+     * saveFiles
+     * Download the specified media URL to the computer
+     *
+     * @param  {String}  downloadLink
+     * @param  {String}  username
+     * @param  {String}  sourceType
+     * @param  {Integer}  timestamp
+     * @param  {String}  filetype
+     * @param  {String}  shortcode
+     * @return {void}
+     */
+    function saveFiles(downloadLink,username,sourceType,timestamp,filetype,shortcode){
         fetch(downloadLink).then(res => {
             return res.blob().then(dwel => {
                 const a = document.createElement("a");
-                const name = username+'-'+index+'-'+((USER_SETTING.RENAME_SHORTCODE && shortcode)?shortcode+'-':'')+timestamp+'.'+type;
+                const name = username+'-'+sourceType+'-'+((USER_SETTING.RENAME_SHORTCODE && shortcode)?shortcode+'-':'')+timestamp+'.'+filetype;
                 const originally = username + '_' + downloadLink.split('/').at(-1).split('?').at(0);
 
                 a.href = URL.createObjectURL(dwel);
@@ -795,7 +893,13 @@
         });
     }
 
-    // Supported language list
+    /**
+     * translateText
+     * i18n translation text
+     *
+     * @param  {String}  lang
+     * @return {void}
+     */
     function translateText(lang){
         return {
             "zh-TW": {
@@ -885,7 +989,13 @@
         };
     }
 
-    // Translate display text to user country
+    /**
+     * _i18n
+     * Perform i18n translation
+     *
+     * @param  {String}  text
+     * @return {void}
+     */
     function _i18n(text){
         let userLang = (lang)?lang:"en-US";
         let translate = {
@@ -914,6 +1024,12 @@
         }
     }
 
+    /**
+     * showSetting
+     * Show script settings window
+     *
+     * @return {void}
+     */
     function showSetting(){
         $('.IG_SN_DIG').remove();
         IG_createDM();
@@ -968,38 +1084,38 @@
 
         // Running if user left-click download icon in stories
         $('body').on('click','.IG_DWSTORY',function(){
-            onStoryDW(true);
+            onStory(true);
         });
 
         // Running if user left-click download icon in stories
         $('body').on('click','.IG_DWSTORY_THUMBNAIL',function(){
-            onStoryThumbnailDW(true);
+            onStoryThumbnail(true);
         });
 
         // Running if user left-click download icon in profile
         $('body').on('click','.IG_DWPROFILE',function(e){
             e.stopPropagation();
-            onProfileDW(true);
+            onProfileAvatar(true);
         });
 
         // Running if user left-click download icon in highlight stories
         $('body').on('click','.IG_DWHISTORY',function(){
-            onHighlightsStoryDW(true);
+            onHighlightsStory(true);
         });
 
         // Running if user left-click download icon in highlight stories
         $('body').on('click','.IG_DWHISTORY_THUMBNAIL',function(){
-            onHighlightsStoryThumbnailDW(true);
+            onHighlightsStoryThumbnail(true);
         });
 
         // Running if user left-click download icon in reels
         $('body').on('click','.IG_REELS',function(){
-            onReelsDW(true,true);
+            onReels(true,true);
         });
 
         // Running if user left-click download icon in reels
         $('body').on('click','.IG_REELS_THUMBNAIL',function(){
-            onReelsDW(true,false);
+            onReels(true,false);
         });
 
         // Running if user right-click profile picture in stories area
