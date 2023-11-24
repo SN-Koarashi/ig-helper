@@ -5,7 +5,7 @@
 // @name:ja            IG助手
 // @name:ko            IG조수
 // @namespace          https://github.snkms.com/
-// @version            2.11.9
+// @version            2.11.10
 // @description        Downloading is possible for both photos and videos from posts, as well as for stories, reels or profile picture.
 // @description:zh-TW  一鍵下載對方 Instagram 貼文中的相片、影片甚至是他們的限時動態、連續短片及大頭貼圖片！
 // @description:zh-CN  一键下载对方 Instagram 帖子中的相片、视频甚至是他们的快拍、Reels及头像图片！
@@ -229,11 +229,17 @@
             if(!$('.IG_DWHISTORY').length){
                 let $element = null;
                 if($('body > div section._ac0a').length > 0){
-                    $element = $('body > div section._ac0a');
+                    $element = $('body > div section:visible._ac0a');
                 }
                 else{
-                    $element = $('body > div section > div > div:not([class])');
+                    $element = $('body > div section:visible > div > div:not([class])');
                 }
+
+                // GitHub issue #3: DiceMast3r
+                if($element.length === 0){
+                    $element = $('body > div section:visible > div div[style]:not([class])').first().next();
+                }
+
 
                 if($element != null){
                     $element.css('position','relative');
@@ -283,10 +289,15 @@
                 if(!$('.IG_DWHISTORY_THUMBNAIL').length){
                     let $element = null;
                     if($('body > div section._ac0a').length > 0){
-                        $element = $('body > div section._ac0a');
+                        $element = $('body > div section:visible._ac0a');
                     }
                     else{
-                        $element = $('body > div section > div > div:not([class])');
+                        $element = $('body > div section:visible > div > div:not([class])');
+                    }
+
+                    // GitHub issue #3: DiceMast3r
+                    if($element.length === 0){
+                        $element = $('body > div section:visible > div div[style]:not([class])').first().next();
                     }
 
                     if($element != null){
@@ -374,10 +385,15 @@
                 GL_dataCache.stories = {};
                 let $element = null;
                 if($('body > div section._ac0a').length > 0){
-                    $element = $('body > div section._ac0a');
+                    $element = $('body > div section:visible._ac0a');
                 }
                 else{
-                    $element = $('body > div section > div > div:not([class])');
+                    $element = $('body > div section:visible > div > div:not([class])');
+                }
+
+                // GitHub issue #3: DiceMast3r
+                if($element.length === 0){
+                    $element = $('body > div section:visible > div div[style]:not([class])').first().next();
                 }
 
                 if($element != null){
@@ -442,10 +458,15 @@
                 if(!$('.IG_DWSTORY_THUMBNAIL').length){
                     let $element = null;
                     if($('body > div section._ac0a').length > 0){
-                        $element = $('body > div section._ac0a');
+                        $element = $('body > div section:visible._ac0a');
                     }
                     else{
-                        $element = $('body > div section > div > div:not([class])');
+                        $element = $('body > div section:visible > div > div:not([class])');
+                    }
+
+                    // GitHub issue #3: DiceMast3r
+                    if($element.length === 0){
+                        $element = $('body > div section:visible > div div[style]:not([class])').first().next();
                     }
 
                     if($element != null){
