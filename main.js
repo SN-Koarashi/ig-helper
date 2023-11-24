@@ -5,7 +5,7 @@
 // @name:ja            IG助手
 // @name:ko            IG조수
 // @namespace          https://github.snkms.com/
-// @version            2.11.10
+// @version            2.11.11
 // @description        Downloading is possible for both photos and videos from posts, as well as for stories, reels or profile picture.
 // @description:zh-TW  一鍵下載對方 Instagram 貼文中的相片、影片甚至是他們的限時動態、連續短片及大頭貼圖片！
 // @description:zh-CN  一键下载对方 Instagram 帖子中的相片、视频甚至是他们的快拍、Reels及头像图片！
@@ -197,7 +197,9 @@
             let date = new Date().getTime();
             let timestamp = Math.floor(date / 1000);
             let highlightId = location.href.replace(/\/$/ig,'').split('/').at(-1);
-            let nowIndex = $("body > div section._ac0a header._ac0k > ._ac3r ._ac3n ._ac3p[style]").length;
+            let nowIndex = $("body > div section._ac0a header._ac0k > ._ac3r ._ac3n ._ac3p[style]").length ||
+                $('body > div section:visible > div > div:not([class]) > div > div div.x1ned7t2.x78zum5 div.x1caxmr6').length ||
+                $('body > div section:visible > div div[style]:not([class])').first().next().find('div div.x1ned7t2.x78zum5 div.x1caxmr6').length;
             let username = "";
             let target = 0;
 
@@ -216,6 +218,8 @@
 
                 GL_dataCache.highlights[highlightId] = highStories;
             }
+
+
 
             if(target.is_video){
                 saveFiles(target.video_resources.at(-1).src,username,"highlights",timestamp,'mp4', highlightId);
@@ -237,7 +241,14 @@
 
                 // GitHub issue #3: DiceMast3r
                 if($element.length === 0){
-                    $element = $('body > div section:visible > div div[style]:not([class])').first().next();
+                    let $$element = $('body > div section:visible > div div[style]:not([class])');
+
+                    if($$element.first().width() > $$element.first().next().width()){
+                        $element = $$element.first();
+                    }
+                    else{
+                        $element = $$element.first().next();
+                    }
                 }
 
 
@@ -262,7 +273,9 @@
             let timestamp = Math.floor(date / 1000);
             let highlightId = location.href.replace(/\/$/ig,'').split('/').at(-1);
             let username = "";
-            let nowIndex = $("body > div section._ac0a header._ac0k > ._ac3r ._ac3n ._ac3p[style]").length;
+            let nowIndex = $("body > div section._ac0a header._ac0k > ._ac3r ._ac3n ._ac3p[style]").length ||
+                $('body > div section:visible > div > div:not([class]) > div > div div.x1ned7t2.x78zum5 div.x1caxmr6').length ||
+                $('body > div section:visible > div div[style]:not([class])').first().next().find('div div.x1ned7t2.x78zum5 div.x1caxmr6').length;
             let target = "";
 
             if(GL_dataCache.highlights[highlightId]){
@@ -297,7 +310,14 @@
 
                     // GitHub issue #3: DiceMast3r
                     if($element.length === 0){
-                        $element = $('body > div section:visible > div div[style]:not([class])').first().next();
+                        let $$element = $('body > div section:visible > div div[style]:not([class])');
+
+                        if($$element.first().width() > $$element.first().next().width()){
+                            $element = $$element.first();
+                        }
+                        else{
+                            $element = $$element.first().next();
+                        }
                     }
 
                     if($element != null){
@@ -393,7 +413,14 @@
 
                 // GitHub issue #3: DiceMast3r
                 if($element.length === 0){
-                    $element = $('body > div section:visible > div div[style]:not([class])').first().next();
+                    let $$element = $('body > div section:visible > div div[style]:not([class])');
+
+                    if($$element.first().width() > $$element.first().next().width()){
+                        $element = $$element.first();
+                    }
+                    else{
+                        $element = $$element.first().next();
+                    }
                 }
 
                 if($element != null){
@@ -466,7 +493,14 @@
 
                     // GitHub issue #3: DiceMast3r
                     if($element.length === 0){
-                        $element = $('body > div section:visible > div div[style]:not([class])').first().next();
+                        let $$element = $('body > div section:visible > div div[style]:not([class])');
+
+                        if($$element.first().width() > $$element.first().next().width()){
+                            $element = $$element.first();
+                        }
+                        else{
+                            $element = $$element.first().next();
+                        }
                     }
 
                     if($element != null){
