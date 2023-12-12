@@ -5,7 +5,7 @@
 // @name:ja            IG助手
 // @name:ko            IG조수
 // @namespace          https://github.snkms.com/
-// @version            2.11.15
+// @version            2.11.16
 // @description        Downloading is possible for both photos and videos from posts, as well as for stories, reels or profile picture.
 // @description:zh-TW  一鍵下載對方 Instagram 貼文中的相片、影片甚至是他們的限時動態、連續短片及大頭貼圖片！
 // @description:zh-CN  一键下载对方 Instagram 帖子中的相片、视频甚至是他们的快拍、Reels及头像图片！
@@ -356,11 +356,11 @@
             let timestamp = Math.floor(date / 1000);
             let username = $("body > div section._ac0a header._ac0k ._ac0l a + div a").first().text() || location.pathname.split('/').at(2);
 
-            if($('body > div section._ac0a div._ac0b video.x1lliihq').length){
+            if($('body > div section:visible video[playsinline]').length > 0){
                 // Download stories if it is video
                 let type = "mp4";
                 let videoURL = "";
-                let targetURL = location.href.replace(/\/$/ig,'').split("/").at(-1);
+                let targetURL = location.pathname.replace(/\/$/ig,'').split("/").at(-1);
 
                 if(GL_dataCache.stories[username] && !isForce){
                     console.log('Fetch from memory cache:', username);
@@ -387,6 +387,17 @@
                         }
                     });
 
+                    // GitHub issue #4: thinkpad4
+                    if(videoURL.length == 0){
+                        $('body > div section:visible div.x1ned7t2.x78zum5 > div').each(function(index){
+                            if($(this).hasClass('x1lix1fw')){
+                                if($(this).children().length > 0){
+                                    videoURL = stories.data.reels_media[0].items[index].video_resources[0].src;
+                                }
+                            }
+                        });
+                    }
+
                     GL_dataCache.stories[username] = stories;
                 }
 
@@ -400,8 +411,8 @@
             }
             else{
                 // Download stories if it is image
-                let srcset = $('section._ac0a ._aa64 img._aa63').attr('srcset').split(',')[0].split(' ')[0];
-                let link = (srcset)?srcset:$('section._ac0a ._aa64 img._aa63').attr('src');
+                let srcset = $('body > div section:visible img[referrerpolicy]').attr('srcset')?.split(',')[0]?.split(' ')[0];
+                let link = (srcset)?srcset:$('body > div section:visible img[referrerpolicy]').attr('src');
 
                 let downloadLink = link;
                 let type = 'jpg';
@@ -419,10 +430,12 @@
                 if($('body > div section._ac0a').length > 0){
                     $element = $('body > div section:visible._ac0a');
                 }
+                // detecter (single story layout mode)
                 else{
                     $element = $('body > div section:visible > div > div[style]:not([class])');
                     $element.css('position','relative');
                 }
+
 
                 // Detecter for div layout mode
                 // GitHub issue #3: DiceMast3r
@@ -437,6 +450,7 @@
                         }
                     });
                 }
+
 
                 if($element != null){
                     $element.css('position','relative');
@@ -462,7 +476,7 @@
             let username = $("body > div section._ac0a header._ac0k ._ac0l a + div a").first().text() || location.pathname.split('/').at(2);
             let style = 'margin:5px 0px;padding:5px 0px;color:#111;font-size:1rem;line-height:1rem;text-align:center;border:1px solid #000;border-radius: 5px;';
             // Download thumbnail
-            let targetURL = location.href.replace(/\/$/ig,'').split("/").at(-1);
+            let targetURL = location.pathname.replace(/\/$/ig,'').split("/").at(-1);
             let videoThumbnailURL = "";
 
 
@@ -490,6 +504,17 @@
                         videoThumbnailURL = item.display_url;
                     }
                 });
+
+                // GitHub issue #4: thinkpad4
+                if(videoThumbnailURL.length == 0){
+                    $('body > div section:visible div.x1ned7t2.x78zum5 > div').each(function(index){
+                        if($(this).hasClass('x1lix1fw')){
+                            if($(this).children().length > 0){
+                                videoThumbnailURL = stories.data.reels_media[0].items[index].display_url;
+                            }
+                        }
+                    });
+                }
             }
 
             saveFiles(videoThumbnailURL,username,"thumbnail",timestamp,type);
@@ -503,6 +528,7 @@
                     if($('body > div section._ac0a').length > 0){
                         $element = $('body > div section:visible._ac0a');
                     }
+                    // detecter (single story layout mode)
                     else{
                         $element = $('body > div section:visible > div > div[style]:not([class])');
                         $element.css('position','relative');
@@ -521,6 +547,7 @@
                             }
                         });
                     }
+
 
                     if($element != null){
                         $element.css('position','relative');
