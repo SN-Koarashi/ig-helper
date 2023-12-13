@@ -5,7 +5,7 @@
 // @name:ja            IG助手
 // @name:ko            IG조수
 // @namespace          https://github.snkms.com/
-// @version            2.11.17
+// @version            2.12.1
 // @description        Downloading is possible for both photos and videos from posts, as well as for stories, reels or profile picture.
 // @description:zh-TW  一鍵下載對方 Instagram 貼文中的相片、影片甚至是他們的限時動態、連續短片及大頭貼圖片！
 // @description:zh-CN  一键下载对方 Instagram 帖子中的相片、视频甚至是他们的快拍、Reels及头像图片！
@@ -56,6 +56,9 @@
     GM_addStyle(style);
     GM_registerMenuCommand(_i18n('SETTING'), () => {
         showSetting();
+    });
+    GM_registerMenuCommand(_i18n('DEBUG'), () => {
+        showDebugDOM();
     });
 
     var currentURL = location.href;
@@ -1053,6 +1056,7 @@
                 "DOWNLOAD_DOM_TREE": "將 DOM Tree 下載為文字文件",
                 "REPORT_GITHUB": "在 GitHub 上回報問題",
                 "REPORT_DISCORD": "在 Discord 支援伺服器上回報問題",
+                "DEBUG": "偵錯視窗",
                 "CLOSE": "關閉",
                 "ALL_CHECK": "全選",
                 "BATCH_DOWNLOAD_SELECTED": "批次下載已勾選資源",
@@ -1086,6 +1090,7 @@
                 "DOWNLOAD_DOM_TREE": "将 DOM Tree 下载为文本文件",
                 "REPORT_GITHUB": "在 GitHub 上报告问题",
                 "REPORT_DISCORD": "在 Discord 支援服务器上报告问题",
+                "DEBUG": "调试窗口",
                 "CLOSE": "关闭",
                 "ALL_CHECK": "全选",
                 "BATCH_DOWNLOAD_SELECTED": "批量下载已勾选资源",
@@ -1119,6 +1124,7 @@
                 "DOWNLOAD_DOM_TREE": "Download DOM Tree as Text File",
                 "REPORT_GITHUB": "Report Issue On GitHub",
                 "REPORT_DISCORD": "Report Issue On Discord Support Server",
+                "DEBUG": "Debug Window",
                 "CLOSE": "Close",
                 "ALL_CHECK": "Select All",
                 "BATCH_DOWNLOAD_SELECTED": "Download Selected Resources",
@@ -1226,7 +1232,7 @@
     $(function(){
         $('body').on('click','.IG_SN_DIG .IG_SN_DIG_BODY .IG_DISPLAY_DOM_TREE',function(){
             let text = $('div[id^="mount"]')[0];
-            $('.IG_SN_DIG .IG_SN_DIG_BODY textarea').text(text.innerHTML);
+            $('.IG_SN_DIG .IG_SN_DIG_BODY textarea').text("Location: " + location.pathname + "\nDOM Tree:\n" + text.innerHTML);
         });
 
         $('body').on('click','.IG_SN_DIG .IG_SN_DIG_BODY .IG_SELECT_DOM_TREE',function(){
@@ -1235,7 +1241,7 @@
         });
 
         $('body').on('click','.IG_SN_DIG .IG_SN_DIG_BODY .IG_DOWNLOAD_DOM_TREE',function(){
-            var text = ($('.IG_SN_DIG .IG_SN_DIG_BODY textarea').text().length > 0)?$('.IG_SN_DIG .IG_SN_DIG_BODY textarea').text():$('div[id^="mount"]')[0].innerHTML;
+            var text = ($('.IG_SN_DIG .IG_SN_DIG_BODY textarea').text().length > 0)?$('.IG_SN_DIG .IG_SN_DIG_BODY textarea').text():"Location: " + location.pathname + "\nDOM Tree:\n" +$('div[id^="mount"]')[0].innerHTML;
             var a = document.createElement("a");
             var file = new Blob([text], {type: "text/plain"});
             a.href = URL.createObjectURL(file);
