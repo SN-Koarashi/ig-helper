@@ -18,6 +18,7 @@ Downloading is possible for both photos and videos from posts, as well as for st
 ## Hot keys
 - `ALT+Q` - Close pop-up window
 - `ALT+W` - Open the settings menu
+- `ALT+Z` - Open the debug menu
 
 ## Developer Statement
 1. All code development and testing are based on the Chrome browser and the extension Tampermonkey.
