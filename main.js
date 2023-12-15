@@ -5,7 +5,7 @@
 // @name:ja            IG助手
 // @name:ko            IG조수
 // @namespace          https://github.snkms.com/
-// @version            2.12.3
+// @version            2.12.4
 // @description        Downloading is possible for both photos and videos from posts, as well as for stories, reels or profile picture.
 // @description:zh-TW  一鍵下載對方 Instagram 貼文中的相片、影片甚至是他們的限時動態、連續短片及大頭貼圖片！
 // @description:zh-CN  一键下载对方 Instagram 帖子中的相片、视频甚至是他们的快拍、Reels及头像图片！
@@ -414,8 +414,14 @@
             }
             else{
                 // Download stories if it is image
-                let srcset = $('body > div section:visible img[referrerpolicy][class]:not([alt]), body > div section:visible img[crossorigin][class]:not([alt])').attr('srcset')?.split(',')[0]?.split(' ')[0];
-                let link = (srcset)?srcset:$('body > div section:visible img[referrerpolicy][class]:not([alt]), body > div section:visible img[crossorigin][class]:not([alt])').attr('src');
+                let srcset = $('body > div section:visible img[referrerpolicy][class], body > div section:visible img[crossorigin][class]:not([alt])').attr('srcset')?.split(',')[0]?.split(' ')[0];
+                let link = (srcset)?srcset:$('body > div section:visible img[referrerpolicy][class], body > div section:visible img[crossorigin][class]:not([alt])').attr('src');
+
+                if(link){
+                    // _aa63 mean stories picture in stories page (not avatar)
+                    let $element = $('body > div section:visible img._aa63');
+                    link = ($element.attr('srcset'))?$element.attr('srcset')?.split(',')[0]?.split(' ')[0]:$element.attr('src');
+                }
 
                 let downloadLink = link;
                 let type = 'jpg';
