@@ -5,7 +5,7 @@
 // @name:ja            IG助手
 // @name:ko            IG조수
 // @namespace          https://github.snkms.com/
-// @version            2.12.6
+// @version            2.12.7
 // @description        Downloading is possible for both photos and videos from posts, as well as for stories, reels or profile picture.
 // @description:zh-TW  一鍵下載對方 Instagram 貼文中的相片、影片甚至是他們的限時動態、連續短片及大頭貼圖片！
 // @description:zh-CN  一键下载对方 Instagram 帖子中的相片、视频甚至是他们的快拍、Reels及头像图片！
@@ -829,22 +829,31 @@
      */
     function createDownloadButton(){
         // Add download icon per each posts
-        $('article, section:visible > main > div > div.xdt5ytf').each(function(index){
+        $('article, section:visible > main > div > div.xdt5ytf, div._aap0[role="presentation"]').each(function(index){
             // If it is have not download icon
             // class x1iyjqo2 mean user profile pages post list container
             if(!$(this).attr('data-snig') && !$(this).hasClass('x1iyjqo2') && !$(this).children('article')?.hasClass('x1iyjqo2')){
                 console.log("Found article");
                 var rightPos = 15;
+                var topPos = 15;
+                var $mainElement = $(this);
 
                 // not loop each in single top post
                 if(this.tagName === "DIV" && index != 0){
                     return;
                 }
 
+                // New post UI by Discord: ken
+                if(this.tagName === "DIV" && $(this).attr('role') === "presentation"){
+                    rightPos = 28;
+                    topPos = 75;
+                    $mainElement = $('div._aap0[role="presentation"]').parents('div._aamm').parent().parent().parent().parent().parent();
+                }
+
 
                 // Add the download icon
-                let $childElement = $(this).children("div").children("div");
-                $childElement.eq((this.tagName === "DIV")? 0 : $childElement.length - 2).append(`<div title="${_i18n("DW")}" class="SNKMS_IG_DW_MAIN" style="right:${rightPos}px;"><svg width="16" height="16" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" id="Capa_1" x="0px" y="0px" viewBox="0 0 512 512" style="enable-background:new 0 0 512 512;" xml:space="preserve"><g><g><path d="M382.56,233.376C379.968,227.648,374.272,224,368,224h-64V16c0-8.832-7.168-16-16-16h-64c-8.832,0-16,7.168-16,16v208h-64    c-6.272,0-11.968,3.68-14.56,9.376c-2.624,5.728-1.6,12.416,2.528,17.152l112,128c3.04,3.488,7.424,5.472,12.032,5.472    c4.608,0,8.992-2.016,12.032-5.472l112-128C384.192,245.824,385.152,239.104,382.56,233.376z"/></g></g><g><g><path d="M432,352v96H80v-96H16v128c0,17.696,14.336,32,32,32h416c17.696,0,32-14.304,32-32V352H432z"/></g></g></div>`);
+                let $childElement = $mainElement.children("div").children("div");
+                $childElement.eq((this.tagName === "DIV")? 0 : $childElement.length - 2).append(`<div title="${_i18n("DW")}" class="SNKMS_IG_DW_MAIN" style="right:${rightPos}px;top:${topPos}px;"><svg width="16" height="16" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" id="Capa_1" x="0px" y="0px" viewBox="0 0 512 512" style="enable-background:new 0 0 512 512;" xml:space="preserve"><g><g><path d="M382.56,233.376C379.968,227.648,374.272,224,368,224h-64V16c0-8.832-7.168-16-16-16h-64c-8.832,0-16,7.168-16,16v208h-64    c-6.272,0-11.968,3.68-14.56,9.376c-2.624,5.728-1.6,12.416,2.528,17.152l112,128c3.04,3.488,7.424,5.472,12.032,5.472    c4.608,0,8.992-2.016,12.032-5.472l112-128C384.192,245.824,385.152,239.104,382.56,233.376z"/></g></g><g><g><path d="M432,352v96H80v-96H16v128c0,17.696,14.336,32,32,32h416c17.696,0,32-14.304,32-32V352H432z"/></g></g></div>`);
                 $childElement.css('position','relative');
 
                 // Disable video autoplay
