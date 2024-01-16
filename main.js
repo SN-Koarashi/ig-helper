@@ -5,7 +5,7 @@
 // @name:ja            IG助手
 // @name:ko            IG조수
 // @namespace          https://github.snkms.com/
-// @version            2.13.1
+// @version            2.14.1
 // @description        Downloading is possible for both photos and videos from posts, as well as for stories, reels or profile picture.
 // @description:zh-TW  一鍵下載對方 Instagram 貼文中的相片、影片甚至是他們的限時動態、連續短片及大頭貼圖片！
 // @description:zh-CN  一键下载对方 Instagram 帖子中的相片、视频甚至是他们的快拍、Reels及头像图片！
@@ -46,7 +46,8 @@
         'DISABLE_VIDEO_LOOPING': (GM_getValue('DISABLE_VIDEO_LOOPING'))?GM_getValue('DISABLE_VIDEO_LOOPING'):false,
         'REDIRECT_RIGHT_CLICK_USER_STORY_PICTURE': (GM_getValue('REDIRECT_RIGHT_CLICK_USER_STORY_PICTURE'))?GM_getValue('REDIRECT_RIGHT_CLICK_USER_STORY_PICTURE'):false,
         'FORCE_FETCH_ALL_RESOURCES': (GM_getValue('FORCE_FETCH_ALL_RESOURCES'))?GM_getValue('FORCE_FETCH_ALL_RESOURCES'):false,
-        'DIRECT_DOWNLOAD_WHEN_SINGLE': (GM_getValue('DIRECT_DOWNLOAD_WHEN_SINGLE'))?GM_getValue('DIRECT_DOWNLOAD_WHEN_SINGLE'):false
+        'DIRECT_DOWNLOAD_WHEN_SINGLE': (GM_getValue('DIRECT_DOWNLOAD_WHEN_SINGLE'))?GM_getValue('DIRECT_DOWNLOAD_WHEN_SINGLE'):false,
+        'DIRECT_DOWNLOAD_ALL': (GM_getValue('DIRECT_DOWNLOAD_ALL'))?GM_getValue('DIRECT_DOWNLOAD_ALL'):false
     };
     /*******************************/
 
@@ -876,99 +877,94 @@
                     GL_postPath = location.pathname.replace(/\/$/,'').split('/').at(-1) || $(this).parent().parent().children("div:last-child").children("div").children("div:last-child").find('a[href^="/p/"]').last().attr("href").split("/").at(2);
 
                     // Create element that download dailog
-                    IG_createDM(GM_getValue('AutoDownload'), true);
+                    IG_createDM(USER_SETTING.DIRECT_DOWNLOAD_ALL, true);
 
                     $("#article-id").html(`<a href="https://www.instagram.com/p/${GL_postPath}">${GL_postPath}</a>`);
 
-                    // Find video/image element and add the download icon
-                    var s = 0;
-                    var multiple = $(this).parent().parent().find('._aap0 ._acaz').length;
-                    var pathname = window.location.pathname;
-                    var fullpathname = "/"+pathname.split('/')[1]+"/"+pathname.split('/')[2]+"/";
-                    var blob = USER_SETTING.FORCE_FETCH_ALL_RESOURCES;
+                    if(!USER_SETTING.DIRECT_DOWNLOAD_ALL){
+                        // Find video/image element and add the download icon
+                        var s = 0;
+                        var multiple = $(this).parent().parent().find('._aap0 ._acaz').length;
+                        var pathname = window.location.pathname;
+                        var fullpathname = "/"+pathname.split('/')[1]+"/"+pathname.split('/')[2]+"/";
+                        var blob = USER_SETTING.FORCE_FETCH_ALL_RESOURCES;
 
-                    // If posts have more than one images or videos.
-                    if(multiple){
-                        $(this).parent().find('._aap0 ._acaz').each(function(){
-                            let element_videos = $(this).parent().parent().find('video');
-                            //if(element_videos && element_videos.attr('src') && element_videos.attr('src').match(/^blob:/ig)){
-                            if(element_videos && element_videos.attr('src')){
-                                blob = true;
-                            }
-                        });
-
-
-                        if(blob){
-                            createMediaListDOM(GL_postPath,".IG_SN_DIG .IG_SN_DIG_MAIN .IG_SN_DIG_BODY",_i18n("LOAD_BLOB_MULTIPLE"));
-                        }
-                        else{
+                        // If posts have more than one images or videos.
+                        if(multiple){
                             $(this).parent().find('._aap0 ._acaz').each(function(){
-                                s++;
-                                let element_videos = $(this).find('video');
-                                let element_images = $(this).find('._aagv img');
-                                let imgLink = (element_images.attr('srcset'))?element_images.attr('srcset').split(" ")[0]:element_images.attr('src');
-
+                                let element_videos = $(this).parent().parent().find('video');
+                                //if(element_videos && element_videos.attr('src') && element_videos.attr('src').match(/^blob:/ig)){
                                 if(element_videos && element_videos.attr('src')){
                                     blob = true;
-                                    /*
-                                    let video_image = element_videos.attr('poster');
-                                    let video_url = element_videos.attr('src');
-
-                                    $('.IG_SN_DIG .IG_SN_DIG_MAIN .IG_SN_DIG_BODY').append(`<a data-needed="direct" data-path="${GL_postPath}" data-name="IGTV" data-type="mp4" data-globalIndex="${s}" href="javascript:;" data-href="${video_url}"><img width="100" src="${video_image}" /><br/>- ${_i18n("VID")} ${s} -</a>`);
-
-                                    if(video_url.match(/^blob:/ig)) blob = true;
-                                    */
                                 }
-                                if(element_images && imgLink){
-                                    $('.IG_SN_DIG .IG_SN_DIG_MAIN .IG_SN_DIG_BODY').append(`<a data-needed="direct" data-path="${GL_postPath}" data-name="photo" data-type="jpg" data-globalIndex="${s}" href="javascript:;" data-href="${imgLink}"><img width="100" src="${imgLink}" /><br/>- ${_i18n("IMG")} ${s} -</a>`);
-                                }
-
                             });
 
+
                             if(blob){
-                                createMediaListDOM(GL_postPath,".IG_SN_DIG .IG_SN_DIG_MAIN .IG_SN_DIG_BODY",_i18n("LOAD_BLOB_RELOAD"));
-                            }
-                        }
-                    }
-                    else{
-                        s++;
-                        let element_videos = $(this).parent().parent().find('video');
-                        let element_images = $(this).parent().parent().find('._aagv img');
-                        let imgLink = (element_images.attr('srcset'))?element_images.attr('srcset').split(" ")[0]:element_images.attr('src');
-
-
-                        if(element_videos && element_videos.attr('src')){
-                            createMediaListDOM(GL_postPath,".IG_SN_DIG .IG_SN_DIG_MAIN .IG_SN_DIG_BODY",_i18n("LOAD_BLOB_ONE"));
-
-                            /*
-                            let video_image = element_videos.attr('poster');
-                            let video_url = element_videos.attr('src');
-
-                            if(element_videos.attr('src').match(/^blob:/ig)){
-                                createMediaListDOM(GL_postPath,".IG_SN_DIG .IG_SN_DIG_MAIN .IG_SN_DIG_BODY",_i18n("LOAD_BLOB_ONE"));
+                                createMediaListDOM(GL_postPath,".IG_SN_DIG .IG_SN_DIG_MAIN .IG_SN_DIG_BODY",_i18n("LOAD_BLOB_MULTIPLE"));
                             }
                             else{
-                                $('.IG_SN_DIG .IG_SN_DIG_MAIN .IG_SN_DIG_BODY').append(`<a data-needed="direct" data-path="${GL_postPath}" data-name="video" data-type="mp4" data-globalIndex="${s}" href="javascript:;" data-href="${video_url}"><img width="100" src="${video_image}" /><br/>- ${_i18n("VID")} ${s} -</a>`);
+                                $(this).parent().find('._aap0 ._acaz').each(function(){
+                                    s++;
+                                    let element_videos = $(this).find('video');
+                                    let element_images = $(this).find('._aagv img');
+                                    let imgLink = (element_images.attr('srcset'))?element_images.attr('srcset').split(" ")[0]:element_images.attr('src');
+
+                                    if(element_videos && element_videos.attr('src')){
+                                        blob = true;
+                                    }
+                                    if(element_images && imgLink){
+                                        $('.IG_SN_DIG .IG_SN_DIG_MAIN .IG_SN_DIG_BODY').append(`<a data-needed="direct" data-path="${GL_postPath}" data-name="photo" data-type="jpg" data-globalIndex="${s}" href="javascript:;" data-href="${imgLink}"><img width="100" src="${imgLink}" /><br/>- ${_i18n("IMG")} ${s} -</a>`);
+                                    }
+
+                                });
+
+                                if(blob){
+                                    createMediaListDOM(GL_postPath,".IG_SN_DIG .IG_SN_DIG_MAIN .IG_SN_DIG_BODY",_i18n("LOAD_BLOB_RELOAD"));
+                                }
                             }
-                            */
                         }
-                        if(element_images && imgLink){
-                            $('.IG_SN_DIG .IG_SN_DIG_MAIN .IG_SN_DIG_BODY').append(`<a data-needed="direct" data-path="${GL_postPath}" data-name="photo" data-type="jpg" data-globalIndex="${s}" href="javascript:;" href="" data-href="${imgLink}"><img width="100" src="${imgLink}" /><br/>- ${_i18n("IMG")} ${s} -</a>`);
+                        else{
+                            s++;
+                            let element_videos = $(this).parent().parent().find('video');
+                            let element_images = $(this).parent().parent().find('._aagv img');
+                            let imgLink = (element_images.attr('srcset'))?element_images.attr('srcset').split(" ")[0]:element_images.attr('src');
+
+
+                            if(element_videos && element_videos.attr('src')){
+                                createMediaListDOM(GL_postPath,".IG_SN_DIG .IG_SN_DIG_MAIN .IG_SN_DIG_BODY",_i18n("LOAD_BLOB_ONE"));
+                            }
+                            if(element_images && imgLink){
+                                $('.IG_SN_DIG .IG_SN_DIG_MAIN .IG_SN_DIG_BODY').append(`<a data-needed="direct" data-path="${GL_postPath}" data-name="photo" data-type="jpg" data-globalIndex="${s}" href="javascript:;" href="" data-href="${imgLink}"><img width="100" src="${imgLink}" /><br/>- ${_i18n("IMG")} ${s} -</a>`);
+                            }
                         }
                     }
-
 
                     $('.IG_SN_DIG .IG_SN_DIG_MAIN .IG_SN_DIG_BODY a').each(function(){
                         $(this).wrap('<div></div>');
                         $(this).before('<label class="inner_box_wrapper"><input class="inner_box" type="checkbox"><span></span></label>');
                     });
 
-                    if(s === 1 && USER_SETTING.DIRECT_DOWNLOAD_WHEN_SINGLE){
+                    if(USER_SETTING.DIRECT_DOWNLOAD_ALL){
+                        createMediaListDOM(GL_postPath,".IG_SN_DIG .IG_SN_DIG_MAIN .IG_SN_DIG_BODY",_i18n("LOAD_BLOB_MULTIPLE"));
+                        let checkBlob = setInterval(()=>{
+                            if($('.IG_SN_DIG .IG_SN_DIG_MAIN .IG_SN_DIG_BODY a').length > 0){
+                                clearInterval(checkBlob);
+                                $('.IG_SN_DIG .IG_SN_DIG_MAIN .IG_SN_DIG_BODY a').each(function(){
+                                    $(this).click();
+                                });
+
+                                $('.IG_SN_DIG').remove();
+                            }
+                        },250);
+                    }
+                    else if(s === 1 && USER_SETTING.DIRECT_DOWNLOAD_WHEN_SINGLE){
                         IG_setDM(true);
                         let checkBlob = setInterval(()=>{
                             if($('.IG_SN_DIG .IG_SN_DIG_MAIN .IG_SN_DIG_BODY a').length > 0){
                                 clearInterval(checkBlob);
                                 $('.IG_SN_DIG .IG_SN_DIG_MAIN .IG_SN_DIG_BODY a').first()?.click();
+                                $('.IG_SN_DIG').remove();
                             }
                         },250);
                     }
@@ -1004,6 +1000,11 @@
             $(selector).append(`<a data-blob="true" data-needed="direct" data-path="${resource.shortcode}" data-name="video" data-type="mp4" data-username="${resource.owner.username}" data-globalIndex="${idx}" href="javascript:;" data-href="${resource.video_url}"><img width="100" src="${resource.display_resources[1].src}" /><br/>- ${_i18n("VID")} ${idx} -</a>`);
             idx++;
         }
+        // GraphImage
+        if(resource.__typename == "GraphImage"){
+            $(selector).append(`<a data-blob="true" data-needed="direct" data-path="${resource.shortcode}" data-name="photo" data-type="jpg" data-username="${resource.owner.username}" data-globalIndex="${idx}" href="javascript:;" data-href="${resource.display_resources[resource.display_resources.length - 1].src}"><img width="100" src="${resource.display_resources[1].src}" /><br/>- ${_i18n("IMG")} ${idx} -</a>`);
+            idx++;
+        }
         // GraphSidecar
         if(resource.__typename == "GraphSidecar" && resource.edge_sidecar_to_children){
             for(let e of resource.edge_sidecar_to_children.edges){
@@ -1017,6 +1018,7 @@
                 idx++;
             }
         }
+
         $("#_SNLOAD").remove();
         $('.IG_SN_DIG .IG_SN_DIG_MAIN .IG_SN_DIG_BODY a').each(function(){
             $(this).wrap('<div></div>');
@@ -1076,11 +1078,11 @@
      * @return {void}
      */
     function saveFiles(downloadLink,username,sourceType,timestamp,filetype,shortcode){
-         $('div[id^="mount"] > div > div > div:first').removeClass('x1s85apg');
+        $('div[id^="mount"] > div > div > div:first').removeClass('x1s85apg');
         $('div[id^="mount"] > div > div > div:first').css('z-index','20000');
         fetch(downloadLink).then(res => {
             return res.blob().then(dwel => {
-                 $('div[id^="mount"] > div > div > div:first').addClass('x1s85apg');
+                $('div[id^="mount"] > div > div > div:first').addClass('x1s85apg');
                 $('div[id^="mount"] > div > div > div:first').css('z-index','');
                 createSaveFileElement(downloadLink,dwel,username,sourceType,timestamp,filetype,shortcode);
             });
@@ -1170,12 +1172,14 @@
                 "REDIRECT_RIGHT_CLICK_USER_STORY_PICTURE": "右鍵點擊使用者限時動態區域頭貼時重定向",
                 "FORCE_FETCH_ALL_RESOURCES": "強制提取貼文中所有資源",
                 "DIRECT_DOWNLOAD_WHEN_SINGLE": "直接下載貼文中的單一資源",
+                "DIRECT_DOWNLOAD_ALL": "直接下載貼文中的所有資源",
                 "AUTO_RENAME_INTRO": "將檔案自動重新命名為以下格式：\n使用者名稱-類型-時間戳.檔案類型\n例如：instagram-photo-1670350000.jpg\n\n若設為 false，則檔案名稱將保持原始樣貌。 \n例如：instagram_321565527_679025940443063_4318007696887450953_n.jpg",
                 "RENAME_SHORTCODE_INTRO": "將檔案自動重新命名為以下格式：\n使用者名稱-類型-Shortcode-時間戳.檔案類型\n示例：instagram-photo-CwkxyiVynpW-1670350000.jpg\n\n此功能僅在[自動重新命名檔案]設定為 TRUE 時有效。",
                 "DISABLE_VIDEO_LOOPING_INTRO": "關閉連續短片和貼文中影片自動循環播放。",
                 "REDIRECT_RIGHT_CLICK_USER_STORY_PICTURE_INTRO": "右鍵點選首頁限時動態區域中的使用者頭貼時，重新導向到使用者的個人資料頁面。",
                 "FORCE_FETCH_ALL_RESOURCES_INTRO": "透過 Instagram API 強制取得貼文中的所有資源（照片和影片），以取消每個貼文單次提取三個資源的限制。",
-                "DIRECT_DOWNLOAD_WHEN_SINGLE_INTRO": "當貼文僅有單一資源時直接下載。"
+                "DIRECT_DOWNLOAD_WHEN_SINGLE_INTRO": "當貼文僅有單一資源時直接下載。",
+                "DIRECT_DOWNLOAD_ALL_INTRO": "按下下載按鈕時將直接強制提取貼文中的所有資源並下載。"
             },
             "zh-CN": {
                 "SHOW_DOM_TREE": "显示 DOM Tree",
@@ -1206,12 +1210,14 @@
                 "REDIRECT_RIGHT_CLICK_USER_STORY_PICTURE": "右键单击用户故事区域头像时重定向",
                 "FORCE_FETCH_ALL_RESOURCES": "强制抓取帖子中所有资源",
                 "DIRECT_DOWNLOAD_WHEN_SINGLE": "直接下载帖子中的单个资源",
+                "DIRECT_DOWNLOAD_ALL": "直接下载帖子中的所有资源",
                 "AUTO_RENAME_INTRO": "将文件自动重新命名为以下格式类型：\n用户名-类型-时间戳.文件类型\n例如：instagram-photo-1670350000.jpg\n\n若设为false，则文件名将保持原样。 \n例如：instagram_321565527_679025940443063_4318007696887450953_n.jpg",
                 "RENAME_SHORTCODE_INTRO": "自动重命名文件为以下格式类型：\n用户名-类型-短码-时间戳.文件类型\n示例：instagram-photo-CwkxyiVynpW-1670350000.jpg\n\n它仅在[自动重命名文件]设置为 TRUE 时有效。",
                 "DISABLE_VIDEO_LOOPING_INTRO": "禁用 Reels 和帖子中的视频自动播放。",
                 "REDIRECT_RIGHT_CLICK_USER_STORY_PICTURE_INTRO": "右键单击主页故事区域中的用户头像，重定向到用户的个人资料页面。",
                 "FORCE_FETCH_ALL_RESOURCES_INTRO": "通过 Instagram API 强制获取帖子中的所有资源（照片和视频），以取消每个帖子单次抓取三个资源的限制。",
-                "DIRECT_DOWNLOAD_WHEN_SINGLE_INTRO": "当帖子只有单一资源时直接下载。"
+                "DIRECT_DOWNLOAD_WHEN_SINGLE_INTRO": "当帖子只有单一资源时直接下载。",
+                "DIRECT_DOWNLOAD_ALL": "当您点击下载按钮时，帖子中的所有资源将被直接强制抓取并下载。"
             },
             "en-US": {
                 "SHOW_DOM_TREE": "Show DOM Tree",
@@ -1241,13 +1247,15 @@
                 "DISABLE_VIDEO_LOOPING": "Disable Video Auto-looping",
                 "REDIRECT_RIGHT_CLICK_USER_STORY_PICTURE": "Redirect When Right-Clicking User Story Picture",
                 "FORCE_FETCH_ALL_RESOURCES": "Forcing Fetch All Resources In the Post",
-                "DIRECT_DOWNLOAD_WHEN_SINGLE": "Download Directly Single Resource In the Post",
+                "DIRECT_DOWNLOAD_WHEN_SINGLE": "Directly Download Single Resource In the Post",
+                "DIRECT_DOWNLOAD_ALL": "Directly Download All Resources In the Post",
                 "AUTO_RENAME_INTRO": "Auto rename file to format type following:\nUSERNAME-TYPE-TIMESTAMP.FILETYPE\nExample: instagram-photo-1670350000.jpg\n\nIf set to false, the file name will remain as it is.\nExample: instagram_321565527_679025940443063_4318007696887450953_n.jpg",
                 "RENAME_SHORTCODE_INTRO": "Auto rename file to format type following:\nUSERNAME-TYPE-SHORTCODE-TIMESTAMP.FILETYPE\nExample: instagram-photo-CwkxyiVynpW-1670350000.jpg\n\nIt will ONLY work in [Automatically Rename Files] setting to TRUE.",
                 "DISABLE_VIDEO_LOOPING_INTRO": "Disable video auto-looping in reels and posts.",
                 "REDIRECT_RIGHT_CLICK_USER_STORY_PICTURE_INTRO": "Redirect to a user's profile page when right-clicking on their user avatar in the story area on the homepage.",
                 "FORCE_FETCH_ALL_RESOURCES_INTRO": "Force fetching of all resources (photos and videos) in a post via the Instagram API to remove the limit of three resources per post.",
-                "DIRECT_DOWNLOAD_WHEN_SINGLE_INTRO": "Download directly when the post only has a single resource."
+                "DIRECT_DOWNLOAD_WHEN_SINGLE_INTRO": "Download directly when the post only has a single resource.",
+                "DIRECT_DOWNLOAD_ALL_INTRO": "When you click the download button, all resources in the post will be directly forced to be fetched and downloaded."
             }
         };
     }
@@ -1373,11 +1381,13 @@
         });
 
         $('body').on('change', '.IG_SN_DIG input',function(){
-            var isChecked =  $(this).prop('checked');
             var name = $(this).attr('id');
 
-            GM_setValue(name, isChecked);
-            USER_SETTING[name] = isChecked;
+            if(name && USER_SETTING[name] !== undefined){
+                let isChecked =  $(this).prop('checked');
+                GM_setValue(name, isChecked);
+                USER_SETTING[name] = isChecked;
+            }
         });
 
         $('body').on('click','a[data-needed="direct"]',async function(){
@@ -1447,7 +1457,7 @@
         $('body').on('click', '.IG_SN_DIG_TITLE #batch_download_selected', function(){
             let index = 0;
             $('.IG_SN_DIG_BODY a[data-needed="direct"]').each(function(){
-                if($(this).prev().prop('checked')){
+                if($(this).prev().children('input').prop('checked')){
                     $(this).click();
                     index++;
                 }
