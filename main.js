@@ -5,7 +5,7 @@
 // @name:ja            IG助手
 // @name:ko            IG조수
 // @namespace          https://github.snkms.com/
-// @version            2.12.9
+// @version            2.13.1
 // @description        Downloading is possible for both photos and videos from posts, as well as for stories, reels or profile picture.
 // @description:zh-TW  一鍵下載對方 Instagram 貼文中的相片、影片甚至是他們的限時動態、連續短片及大頭貼圖片！
 // @description:zh-CN  一键下载对方 Instagram 帖子中的相片、视频甚至是他们的快拍、Reels及头像图片！
@@ -23,14 +23,14 @@
 // @require            https://code.jquery.com/jquery-3.6.3.min.js#sha256-pvPw+upLPUjgMXY0G+8O0xUf+/Im1MZjXxxgOcBQBXU=
 // @resource           INTERNAL_CSS https://raw.githubusercontent.com/SN-Koarashi/ig-helper/master/style.css
 // @supportURL         https://github.com/SN-Koarashi/ig-helper/
+// @downloadURL        https://update.greasyfork.org/scripts/404535/IG%20Helper.user.js
+// @updateURL          https://update.greasyfork.org/scripts/404535/IG%20Helper.meta.js
 // @contributionURL    https://ko-fi.com/snkoarashi
 // @icon               https://www.google.com/s2/favicons?domain=www.instagram.com
 // @compatible         firefox >= 87
 // @compatible         chrome >= 90
 // @compatible         edge >= 90
 // @license            GPL-3.0-only
-// @downloadURL https://update.greasyfork.org/scripts/404535/IG%20Helper.user.js
-// @updateURL https://update.greasyfork.org/scripts/404535/IG%20Helper.meta.js
 // ==/UserScript==
 
 (function($) {
@@ -45,7 +45,8 @@
         'RENAME_SHORTCODE': (GM_getValue('RENAME_SHORTCODE'))?GM_getValue('RENAME_SHORTCODE'):true,
         'DISABLE_VIDEO_LOOPING': (GM_getValue('DISABLE_VIDEO_LOOPING'))?GM_getValue('DISABLE_VIDEO_LOOPING'):false,
         'REDIRECT_RIGHT_CLICK_USER_STORY_PICTURE': (GM_getValue('REDIRECT_RIGHT_CLICK_USER_STORY_PICTURE'))?GM_getValue('REDIRECT_RIGHT_CLICK_USER_STORY_PICTURE'):false,
-        'FORCE_FETCH_ALL_RESOURCES': (GM_getValue('FORCE_FETCH_ALL_RESOURCES'))?GM_getValue('FORCE_FETCH_ALL_RESOURCES'):false
+        'FORCE_FETCH_ALL_RESOURCES': (GM_getValue('FORCE_FETCH_ALL_RESOURCES'))?GM_getValue('FORCE_FETCH_ALL_RESOURCES'):false,
+        'DIRECT_DOWNLOAD_WHEN_SINGLE': (GM_getValue('DIRECT_DOWNLOAD_WHEN_SINGLE'))?GM_getValue('DIRECT_DOWNLOAD_WHEN_SINGLE'):false
     };
     /*******************************/
 
@@ -961,6 +962,16 @@
                         $(this).wrap('<div></div>');
                         $(this).before('<label class="inner_box_wrapper"><input class="inner_box" type="checkbox"><span></span></label>');
                     });
+
+                    if(s === 1 && USER_SETTING.DIRECT_DOWNLOAD_WHEN_SINGLE){
+                        IG_setDM(true);
+                        let checkBlob = setInterval(()=>{
+                            if($('.IG_SN_DIG .IG_SN_DIG_MAIN .IG_SN_DIG_BODY a').length > 0){
+                                clearInterval(checkBlob);
+                                $('.IG_SN_DIG .IG_SN_DIG_MAIN .IG_SN_DIG_BODY a').first()?.click();
+                            }
+                        },250);
+                    }
                 });
 
                 // Add the mark that download is ready
@@ -1035,6 +1046,24 @@
     }
 
     /**
+     * IG_setDM
+     * Set a dialog status
+     *
+     * @param  {Boolean}  hasHidden
+     * @return {void}
+     */
+    function IG_setDM(hasHidden){
+        if($('.IG_SN_DIG').length){
+            if(hasHidden){
+                $('.IG_SN_DIG').addClass("hidden");
+            }
+            else{
+                $('.IG_SN_DIG').removeClass("hidden");
+            }
+        }
+    }
+
+    /**
      * saveFiles
      * Download the specified media URL to the computer
      *
@@ -1047,18 +1076,60 @@
      * @return {void}
      */
     function saveFiles(downloadLink,username,sourceType,timestamp,filetype,shortcode){
+         $('div[id^="mount"] > div > div > div:first').removeClass('x1s85apg');
+        $('div[id^="mount"] > div > div > div:first').css('z-index','20000');
         fetch(downloadLink).then(res => {
             return res.blob().then(dwel => {
-                const a = document.createElement("a");
-                const name = username+'-'+sourceType+'-'+((USER_SETTING.RENAME_SHORTCODE && shortcode)?shortcode+'-':'')+timestamp+'.'+filetype;
-                const originally = username + '_' + downloadLink.split('/').at(-1).split('?').at(0);
-
-                a.href = URL.createObjectURL(dwel);
-                a.setAttribute("download", (USER_SETTING.AUTO_RENAME)?name:originally);
-                a.click();
-                a.remove();
+                 $('div[id^="mount"] > div > div > div:first').addClass('x1s85apg');
+                $('div[id^="mount"] > div > div > div:first').css('z-index','');
+                createSaveFileElement(downloadLink,dwel,username,sourceType,timestamp,filetype,shortcode);
             });
         });
+    }
+
+    /**
+     * createSaveFileElement
+     * Download the specified media with link element
+     *
+     * @param  {String}  downloadLink
+     * @param  {Object}  object
+     * @param  {String}  username
+     * @param  {String}  sourceType
+     * @param  {Integer}  timestamp
+     * @param  {String}  filetype
+     * @param  {String}  shortcode
+     * @return {void}
+     */
+    function createSaveFileElement(downloadLink,object,username,sourceType,timestamp,filetype,shortcode) {
+        const a = document.createElement("a");
+        const name = username+'-'+sourceType+'-'+((USER_SETTING.RENAME_SHORTCODE && shortcode)?shortcode+'-':'')+timestamp+'.'+filetype;
+        const originally = username + '_' + downloadLink.split('/').at(-1).split('?').at(0);
+
+        a.href = URL.createObjectURL(object);
+        a.setAttribute("download", (USER_SETTING.AUTO_RENAME)?name:originally);
+        a.click();
+        a.remove();
+    }
+
+    /**
+     * triggerLinkElement
+     * Trigger the link element to start downloading the resource
+     *
+     * @param  {Object}  element
+     * @return {void}
+     */
+    async function triggerLinkElement(element) {
+        let date = new Date().getTime();
+        let timestamp = Math.floor(date / 1000);
+        let username = ($(element).attr('data-username')) ? $(element).attr('data-username') : GL_username;
+
+        if(!username && $(element).attr('data-path')){
+            console.log('catching owner name from shortcode:',$(element).attr('data-href'));
+            username = await getPostOwner($(element).attr('data-path'));
+        }
+
+
+        saveFiles($(element).attr('data-href'),username,$(element).attr('data-name'),timestamp,$(element).attr('data-type'), $(element).attr('data-path'));
     }
 
     /**
@@ -1098,11 +1169,13 @@
                 "DISABLE_VIDEO_LOOPING": "關閉影片自動循環播放",
                 "REDIRECT_RIGHT_CLICK_USER_STORY_PICTURE": "右鍵點擊使用者限時動態區域頭貼時重定向",
                 "FORCE_FETCH_ALL_RESOURCES": "強制提取貼文中所有資源",
+                "DIRECT_DOWNLOAD_WHEN_SINGLE": "直接下載貼文中的單一資源",
                 "AUTO_RENAME_INTRO": "將檔案自動重新命名為以下格式：\n使用者名稱-類型-時間戳.檔案類型\n例如：instagram-photo-1670350000.jpg\n\n若設為 false，則檔案名稱將保持原始樣貌。 \n例如：instagram_321565527_679025940443063_4318007696887450953_n.jpg",
                 "RENAME_SHORTCODE_INTRO": "將檔案自動重新命名為以下格式：\n使用者名稱-類型-Shortcode-時間戳.檔案類型\n示例：instagram-photo-CwkxyiVynpW-1670350000.jpg\n\n此功能僅在[自動重新命名檔案]設定為 TRUE 時有效。",
                 "DISABLE_VIDEO_LOOPING_INTRO": "關閉連續短片和貼文中影片自動循環播放。",
                 "REDIRECT_RIGHT_CLICK_USER_STORY_PICTURE_INTRO": "右鍵點選首頁限時動態區域中的使用者頭貼時，重新導向到使用者的個人資料頁面。",
                 "FORCE_FETCH_ALL_RESOURCES_INTRO": "透過 Instagram API 強制取得貼文中的所有資源（照片和影片），以取消每個貼文單次提取三個資源的限制。",
+                "DIRECT_DOWNLOAD_WHEN_SINGLE_INTRO": "當貼文僅有單一資源時直接下載。"
             },
             "zh-CN": {
                 "SHOW_DOM_TREE": "显示 DOM Tree",
@@ -1132,11 +1205,13 @@
                 "DISABLE_VIDEO_LOOPING": "禁用视频自动循环",
                 "REDIRECT_RIGHT_CLICK_USER_STORY_PICTURE": "右键单击用户故事区域头像时重定向",
                 "FORCE_FETCH_ALL_RESOURCES": "强制抓取帖子中所有资源",
+                "DIRECT_DOWNLOAD_WHEN_SINGLE": "直接下载帖子中的单个资源",
                 "AUTO_RENAME_INTRO": "将文件自动重新命名为以下格式类型：\n用户名-类型-时间戳.文件类型\n例如：instagram-photo-1670350000.jpg\n\n若设为false，则文件名将保持原样。 \n例如：instagram_321565527_679025940443063_4318007696887450953_n.jpg",
                 "RENAME_SHORTCODE_INTRO": "自动重命名文件为以下格式类型：\n用户名-类型-短码-时间戳.文件类型\n示例：instagram-photo-CwkxyiVynpW-1670350000.jpg\n\n它仅在[自动重命名文件]设置为 TRUE 时有效。",
                 "DISABLE_VIDEO_LOOPING_INTRO": "禁用 Reels 和帖子中的视频自动播放。",
                 "REDIRECT_RIGHT_CLICK_USER_STORY_PICTURE_INTRO": "右键单击主页故事区域中的用户头像，重定向到用户的个人资料页面。",
-                "FORCE_FETCH_ALL_RESOURCES_INTRO": "通过 Instagram API 强制获取帖子中的所有资源（照片和视频），以取消每个帖子单次抓取三个资源的限制。"
+                "FORCE_FETCH_ALL_RESOURCES_INTRO": "通过 Instagram API 强制获取帖子中的所有资源（照片和视频），以取消每个帖子单次抓取三个资源的限制。",
+                "DIRECT_DOWNLOAD_WHEN_SINGLE_INTRO": "当帖子只有单一资源时直接下载。"
             },
             "en-US": {
                 "SHOW_DOM_TREE": "Show DOM Tree",
@@ -1166,11 +1241,13 @@
                 "DISABLE_VIDEO_LOOPING": "Disable Video Auto-looping",
                 "REDIRECT_RIGHT_CLICK_USER_STORY_PICTURE": "Redirect When Right-Clicking User Story Picture",
                 "FORCE_FETCH_ALL_RESOURCES": "Forcing Fetch All Resources In the Post",
+                "DIRECT_DOWNLOAD_WHEN_SINGLE": "Download Directly Single Resource In the Post",
                 "AUTO_RENAME_INTRO": "Auto rename file to format type following:\nUSERNAME-TYPE-TIMESTAMP.FILETYPE\nExample: instagram-photo-1670350000.jpg\n\nIf set to false, the file name will remain as it is.\nExample: instagram_321565527_679025940443063_4318007696887450953_n.jpg",
                 "RENAME_SHORTCODE_INTRO": "Auto rename file to format type following:\nUSERNAME-TYPE-SHORTCODE-TIMESTAMP.FILETYPE\nExample: instagram-photo-CwkxyiVynpW-1670350000.jpg\n\nIt will ONLY work in [Automatically Rename Files] setting to TRUE.",
                 "DISABLE_VIDEO_LOOPING_INTRO": "Disable video auto-looping in reels and posts.",
                 "REDIRECT_RIGHT_CLICK_USER_STORY_PICTURE_INTRO": "Redirect to a user's profile page when right-clicking on their user avatar in the story area on the homepage.",
-                "FORCE_FETCH_ALL_RESOURCES_INTRO": "Force fetching of all resources (photos and videos) in a post via the Instagram API to remove the limit of three resources per post."
+                "FORCE_FETCH_ALL_RESOURCES_INTRO": "Force fetching of all resources (photos and videos) in a post via the Instagram API to remove the limit of three resources per post.",
+                "DIRECT_DOWNLOAD_WHEN_SINGLE_INTRO": "Download directly when the post only has a single resource."
             }
         };
     }
@@ -1221,11 +1298,10 @@
         IG_createDM();
         $('.IG_SN_DIG #post_info').text('IG Helper Settings');
 
-        $('.IG_SN_DIG .IG_SN_DIG_BODY').append(`<label class="globalSettings" title="${_i18n('AUTO_RENAME_INTRO')}"><span>${_i18n('AUTO_RENAME')}</span> <input id="AUTO_RENAME" value="box" type="checkbox" ${(USER_SETTING.AUTO_RENAME)?'checked':''}><div class="chbtn"><div class="rounds"></div></div></label>`);
-        $('.IG_SN_DIG .IG_SN_DIG_BODY').append(`<label class="globalSettings" title="${_i18n('RENAME_SHORTCODE_INTRO')}"><span>${_i18n('RENAME_SHORTCODE')}</span> <input id="RENAME_SHORTCODE" value="box" type="checkbox" ${(USER_SETTING.RENAME_SHORTCODE)?'checked':''}><div class="chbtn"><div class="rounds"></div></div></label>`);
-        $('.IG_SN_DIG .IG_SN_DIG_BODY').append(`<label class="globalSettings" title="${_i18n('DISABLE_VIDEO_LOOPING_INTRO')}"><span>${_i18n('DISABLE_VIDEO_LOOPING')}</span> <input id="DISABLE_VIDEO_LOOPING" value="box" type="checkbox" ${(USER_SETTING.DISABLE_VIDEO_LOOPING)?'checked':''}><div class="chbtn"><div class="rounds"></div></div></label>`);
-        $('.IG_SN_DIG .IG_SN_DIG_BODY').append(`<label class="globalSettings" title="${_i18n('REDIRECT_RIGHT_CLICK_USER_STORY_PICTURE_INTRO')}"><span>${_i18n('REDIRECT_RIGHT_CLICK_USER_STORY_PICTURE')}</span> <input id="REDIRECT_RIGHT_CLICK_USER_STORY_PICTURE" value="box" type="checkbox" ${(USER_SETTING.REDIRECT_RIGHT_CLICK_USER_STORY_PICTURE)?'checked':''}><div class="chbtn"><div class="rounds"></div></div></label>`);
-        $('.IG_SN_DIG .IG_SN_DIG_BODY').append(`<label class="globalSettings" title="${_i18n('FORCE_FETCH_ALL_RESOURCES_INTRO')}"><span>${_i18n('FORCE_FETCH_ALL_RESOURCES')}</span> <input id="FORCE_FETCH_ALL_RESOURCES" value="box" type="checkbox" ${(USER_SETTING.FORCE_FETCH_ALL_RESOURCES)?'checked':''}><div class="chbtn"><div class="rounds"></div></div></label>`);
+
+        for(let name in USER_SETTING){
+            $('.IG_SN_DIG .IG_SN_DIG_BODY').append(`<label class="globalSettings" title="${_i18n(name+'_INTRO')}"><span>${_i18n(name)}</span> <input id="${name}" value="box" type="checkbox" ${(USER_SETTING[name])?'checked':''}><div class="chbtn"><div class="rounds"></div></div></label>`);
+        }
     }
 
     /**
@@ -1305,15 +1381,7 @@
         });
 
         $('body').on('click','a[data-needed="direct"]',async function(){
-            let date = new Date().getTime();
-            let timestamp = Math.floor(date / 1000);
-            let username = ($(this).attr('data-username')) ? $(this).attr('data-username') : GL_username;
-
-            if(!username && $(this).attr('data-path')){
-                console.log('catching owner name from shortcode:',$(this).attr('data-href'));
-                username = await getPostOwner($(this).attr('data-path'));
-            }
-            saveFiles($(this).attr('data-href'),username,$(this).attr('data-name'),timestamp,$(this).attr('data-type'), $(this).attr('data-path'));
+            triggerLinkElement(this);
         });
 
         // Running if user left-click download icon in stories
