@@ -69,6 +69,7 @@
 			background:#fff;
 			border-radius: 5px;
 			cursor:pointer;
+			z-index: 5;
 		}
 
 		.IG_REELS_THUMBNAIL, .IG_DWSTORY_THUMBNAIL, .IG_DWHISTORY_THUMBNAIL{
@@ -80,6 +81,7 @@
 			background:#fff;
 			border-radius: 5px;
 			cursor:pointer;
+			z-index: 5;
 		}
 		.IG_DWSTORY, .IG_DWHISTORY, .IG_DWSTORY_THUMBNAIL, .IG_DWHISTORY_THUMBNAIL{
 			right:-40px;
