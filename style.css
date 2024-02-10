@@ -218,8 +218,8 @@
 			left: 50%;
 			transform: scale(2.5) translateY(-50%);
 			cursor: pointer;
-            appearance: none;
-            opacity: 0;
+           		appearance: none;
+            		opacity: 0;
 		}
 		.IG_SN_DIG_BODY > div{
 			position: relative;
@@ -241,4 +241,27 @@
 			background: rgb(var(--ig-primary-background));
 			border-radius: 3px;
 			border: 1px solid rgb(var(--ig-primary-text));
+		}
+
+		.globalSettings #tempWrapper{
+			position: absolute;
+			top: 0px;
+			left: 0px;
+			right: 0px;
+			height: 30px;
+			background: #fff;
+			background: rgb(var(--ig-secondary-background));
+		}
+		.globalSettings #tempWrapper input[type="range"]{
+		    display: inline-block;
+		    margin-top: 7px;
+		    width: 80%;
+		    vertical-align: middle;
+		}
+		.globalSettings #tempWrapper input[type="number"]{
+		    display: inline-block;
+		    margin-top: 0px;
+		    width: 50px;
+		    vertical-align: middle;
+		    border-radius: 7px
 		}
