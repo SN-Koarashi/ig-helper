@@ -5,7 +5,7 @@
 // @name:ja            IG助手
 // @name:ko            IG조수
 // @namespace          https://github.snkms.com/
-// @version            2.14.3
+// @version            2.15.1
 // @description        Downloading is possible for both photos and videos from posts, as well as for stories, reels or profile picture.
 // @description:zh-TW  一鍵下載對方 Instagram 貼文中的相片、影片甚至是他們的限時動態、連續短片及大頭貼圖片！
 // @description:zh-CN  一键下载对方 Instagram 帖子中的相片、视频甚至是他们的快拍、Reels及头像图片！
@@ -47,8 +47,10 @@
         'REDIRECT_RIGHT_CLICK_USER_STORY_PICTURE': (GM_getValue('REDIRECT_RIGHT_CLICK_USER_STORY_PICTURE'))?GM_getValue('REDIRECT_RIGHT_CLICK_USER_STORY_PICTURE'):false,
         'FORCE_FETCH_ALL_RESOURCES': (GM_getValue('FORCE_FETCH_ALL_RESOURCES'))?GM_getValue('FORCE_FETCH_ALL_RESOURCES'):false,
         'DIRECT_DOWNLOAD_WHEN_SINGLE': (GM_getValue('DIRECT_DOWNLOAD_WHEN_SINGLE'))?GM_getValue('DIRECT_DOWNLOAD_WHEN_SINGLE'):false,
-        'DIRECT_DOWNLOAD_ALL': (GM_getValue('DIRECT_DOWNLOAD_ALL'))?GM_getValue('DIRECT_DOWNLOAD_ALL'):false
+        'DIRECT_DOWNLOAD_ALL': (GM_getValue('DIRECT_DOWNLOAD_ALL'))?GM_getValue('DIRECT_DOWNLOAD_ALL'):false,
+        'MODIFY_VIDEO_VOLUME': (GM_getValue('MODIFY_VIDEO_VOLUME'))?GM_getValue('MODIFY_VIDEO_VOLUME'):false
     };
+    var VIDEO_VOLUME = (GM_getValue('G_VIDEO_VOLUME'))?GM_getValue('G_VIDEO_VOLUME'):1;
     /*******************************/
 
     const checkInterval = 250;
@@ -616,7 +618,7 @@
                                 if(USER_SETTING.DISABLE_VIDEO_LOOPING){
                                     $(this).find('video').each(function(){
                                         if(!$(this).data('loop')){
-                                            console.log('Added video event listener');
+                                            console.log('Added video event listener #loop');
                                             $(this).on('ended',function(){
                                                 $(this).attr('data-loop', true);
                                                 $(this).parent().find('.xpgaw4o').removeAttr('style');
@@ -624,6 +626,24 @@
 
                                                 this.pause();
                                             });
+                                        }
+                                    });
+                                }
+                                // Modify Video Volume
+                                if(USER_SETTING.MODIFY_VIDEO_VOLUME){
+                                    $(this).find('video').each(function(){
+                                        if(!$(this).data('modify')){
+                                            console.log('Added video event listener #modify');
+                                            this.volume = VIDEO_VOLUME;
+
+                                            $(this).on('play',function(){
+                                                this.volume = VIDEO_VOLUME;
+                                            });
+                                            $(this).on('playing',function(){
+                                                this.volume = VIDEO_VOLUME;
+                                            });
+
+                                            $(this).attr('data-modify', true);
                                         }
                                     });
                                 }
@@ -1177,13 +1197,15 @@
                 "FORCE_FETCH_ALL_RESOURCES": "強制提取貼文中所有資源",
                 "DIRECT_DOWNLOAD_WHEN_SINGLE": "直接下載貼文中的單一資源",
                 "DIRECT_DOWNLOAD_ALL": "直接下載貼文中的所有資源",
+                "MODIFY_VIDEO_VOLUME": "修改影片音量（右鍵設定）",
                 "AUTO_RENAME_INTRO": "將檔案自動重新命名為以下格式：\n使用者名稱-類型-時間戳.檔案類型\n例如：instagram-photo-1670350000.jpg\n\n若設為 false，則檔案名稱將保持原始樣貌。 \n例如：instagram_321565527_679025940443063_4318007696887450953_n.jpg",
                 "RENAME_SHORTCODE_INTRO": "將檔案自動重新命名為以下格式：\n使用者名稱-類型-Shortcode-時間戳.檔案類型\n示例：instagram-photo-CwkxyiVynpW-1670350000.jpg\n\n此功能僅在[自動重新命名檔案]設定為 TRUE 時有效。",
                 "DISABLE_VIDEO_LOOPING_INTRO": "關閉連續短片和貼文中影片自動循環播放。",
                 "REDIRECT_RIGHT_CLICK_USER_STORY_PICTURE_INTRO": "右鍵點選首頁限時動態區域中的使用者頭貼時，重新導向到使用者的個人資料頁面。",
                 "FORCE_FETCH_ALL_RESOURCES_INTRO": "透過 Instagram API 強制取得貼文中的所有資源（照片和影片），以取消每個貼文單次提取三個資源的限制。",
                 "DIRECT_DOWNLOAD_WHEN_SINGLE_INTRO": "當貼文僅有單一資源時直接下載。",
-                "DIRECT_DOWNLOAD_ALL_INTRO": "按下下載按鈕時將直接強制提取貼文中的所有資源並下載。"
+                "DIRECT_DOWNLOAD_ALL_INTRO": "按下下載按鈕時將直接強制提取貼文中的所有資源並下載。",
+                "MODIFY_VIDEO_VOLUME_INTRO": "修改影片播放音量（右鍵可開啟音量設定條）。"
             },
             "zh-CN": {
                 "SHOW_DOM_TREE": "显示 DOM Tree",
@@ -1215,13 +1237,15 @@
                 "FORCE_FETCH_ALL_RESOURCES": "强制抓取帖子中所有资源",
                 "DIRECT_DOWNLOAD_WHEN_SINGLE": "直接下载帖子中的单个资源",
                 "DIRECT_DOWNLOAD_ALL": "直接下载帖子中的所有资源",
+                "MODIFY_VIDEO_VOLUME": "修改视频音量（右击设置）",
                 "AUTO_RENAME_INTRO": "将文件自动重新命名为以下格式类型：\n用户名-类型-时间戳.文件类型\n例如：instagram-photo-1670350000.jpg\n\n若设为false，则文件名将保持原样。 \n例如：instagram_321565527_679025940443063_4318007696887450953_n.jpg",
                 "RENAME_SHORTCODE_INTRO": "自动重命名文件为以下格式类型：\n用户名-类型-短码-时间戳.文件类型\n示例：instagram-photo-CwkxyiVynpW-1670350000.jpg\n\n它仅在[自动重命名文件]设置为 TRUE 时有效。",
                 "DISABLE_VIDEO_LOOPING_INTRO": "禁用 Reels 和帖子中的视频自动播放。",
                 "REDIRECT_RIGHT_CLICK_USER_STORY_PICTURE_INTRO": "右键单击主页故事区域中的用户头像，重定向到用户的个人资料页面。",
                 "FORCE_FETCH_ALL_RESOURCES_INTRO": "通过 Instagram API 强制获取帖子中的所有资源（照片和视频），以取消每个帖子单次抓取三个资源的限制。",
                 "DIRECT_DOWNLOAD_WHEN_SINGLE_INTRO": "当帖子只有单一资源时直接下载。",
-                "DIRECT_DOWNLOAD_ALL": "当您点击下载按钮时，帖子中的所有资源将被直接强制抓取并下载。"
+                "DIRECT_DOWNLOAD_ALL_INTRO": "当您点击下载按钮时，帖子中的所有资源将被直接强制抓取并下载。",
+                "MODIFY_VIDEO_VOLUME_INTRO": "修改视频播放音量（右击可开启音量设置滑条）。"
             },
             "en-US": {
                 "SHOW_DOM_TREE": "Show DOM Tree",
@@ -1253,13 +1277,15 @@
                 "FORCE_FETCH_ALL_RESOURCES": "Forcing Fetch All Resources In the Post",
                 "DIRECT_DOWNLOAD_WHEN_SINGLE": "Directly Download Single Resource In the Post",
                 "DIRECT_DOWNLOAD_ALL": "Directly Download All Resources In the Post",
+                "MODIFY_VIDEO_VOLUME": "Modify Video Volume (Right-Click To Set)",
                 "AUTO_RENAME_INTRO": "Auto rename file to format type following:\nUSERNAME-TYPE-TIMESTAMP.FILETYPE\nExample: instagram-photo-1670350000.jpg\n\nIf set to false, the file name will remain as it is.\nExample: instagram_321565527_679025940443063_4318007696887450953_n.jpg",
                 "RENAME_SHORTCODE_INTRO": "Auto rename file to format type following:\nUSERNAME-TYPE-SHORTCODE-TIMESTAMP.FILETYPE\nExample: instagram-photo-CwkxyiVynpW-1670350000.jpg\n\nIt will ONLY work in [Automatically Rename Files] setting to TRUE.",
                 "DISABLE_VIDEO_LOOPING_INTRO": "Disable video auto-looping in reels and posts.",
                 "REDIRECT_RIGHT_CLICK_USER_STORY_PICTURE_INTRO": "Redirect to a user's profile page when right-clicking on their user avatar in the story area on the homepage.",
                 "FORCE_FETCH_ALL_RESOURCES_INTRO": "Force fetching of all resources (photos and videos) in a post via the Instagram API to remove the limit of three resources per post.",
                 "DIRECT_DOWNLOAD_WHEN_SINGLE_INTRO": "Download directly when the post only has a single resource.",
-                "DIRECT_DOWNLOAD_ALL_INTRO": "When you click the download button, all resources in the post will be directly forced to be fetched and downloaded."
+                "DIRECT_DOWNLOAD_ALL_INTRO": "When you click the download button, all resources in the post will be directly forced to be fetched and downloaded.",
+                "MODIFY_VIDEO_VOLUME_INTRO": "Modify video volume on playback (Right-click to open the volume setting slider)."
             }
         };
     }
@@ -1313,6 +1339,16 @@
 
         for(let name in USER_SETTING){
             $('.IG_SN_DIG .IG_SN_DIG_BODY').append(`<label class="globalSettings" title="${_i18n(name+'_INTRO')}"><span>${_i18n(name)}</span> <input id="${name}" value="box" type="checkbox" ${(USER_SETTING[name])?'checked':''}><div class="chbtn"><div class="rounds"></div></div></label>`);
+
+            if(name === 'MODIFY_VIDEO_VOLUME'){
+                $('.IG_SN_DIG .IG_SN_DIG_BODY input[id="'+name+'"]').parent('label').on('contextmenu', function(e){
+                    e.preventDefault();
+                    $(this).append('<div id="tempWrapper"></div>');
+                    $(this).children('#tempWrapper').append('<input value="' + VIDEO_VOLUME + '" type="range" min="0" max="1" step="0.05" />');
+                    $(this).children('#tempWrapper').append('<input value="' + VIDEO_VOLUME + '" step="0.05" type="number" />');
+                    $(this).children('#tempWrapper').append('<svg width="26" height="26" class="IG_SN_DIG_BTN" style="cursor:pointer;position:absolute;right:5px;top:0px;fill: rgb(var(--ig-primary-text));" xmlns="http://www.w3.org/2000/svg" id="bold" enable-background="new 0 0 24 24" height="512" viewBox="0 0 24 24" width="512"><path d="m14.828 12 5.303-5.303c.586-.586.586-1.536 0-2.121l-.707-.707c-.586-.586-1.536-.586-2.121 0l-5.303 5.303-5.303-5.304c-.586-.586-1.536-.586-2.121 0l-.708.707c-.586.586-.586 1.536 0 2.121l5.304 5.304-5.303 5.303c-.586.586-.586 1.536 0 2.121l.707.707c.586.586 1.536.586 2.121 0l5.303-5.303 5.303 5.303c.586.586 1.536.586 2.121 0l.707-.707c.586-.586.586-1.536 0-2.121z"/></svg>');
+                });
+            }
         }
     }
 
@@ -1362,7 +1398,14 @@
 
         // Close the download dialog if user click the close icon
         $('body').on('click','.IG_SN_DIG_BTN,.IG_SN_DIG_BG',function(){
-            $('.IG_SN_DIG').remove();
+            if($(this).parent('#tempWrapper').length > 0){
+                $(this).parent('#tempWrapper').fadeOut(250, function(){
+                    $(this).remove();
+                });
+            }
+            else{
+                $('.IG_SN_DIG').remove();
+            }
         });
 
         $(window).keydown(function(e){
@@ -1384,15 +1427,61 @@
             }
         });
 
-        $('body').on('change', '.IG_SN_DIG input',function(){
+        $('body').on('change', '.IG_SN_DIG input',function(e){
             var name = $(this).attr('id');
 
             if(name && USER_SETTING[name] !== undefined){
                 let isChecked =  $(this).prop('checked');
                 GM_setValue(name, isChecked);
                 USER_SETTING[name] = isChecked;
+
+                console.log('user settings', name, isChecked);
             }
         });
+
+        $('body').on('click', '.IG_SN_DIG .globalSettings',function(e){
+            if($(this).find('#tempWrapper').length > 0){
+                e.preventDefault();
+            }
+        });
+
+        $('body').on('change', '.IG_SN_DIG #tempWrapper input',function(){
+            let value = $(this).val();
+
+            if($(this).attr('type') == 'range'){
+                $(this).next().val(value);
+            }
+            else{
+                $(this).prev().val(value);
+            }
+
+            if(value >= 0 && value <= 1){
+                VIDEO_VOLUME = value;
+                GM_setValue('G_VIDEO_VOLUME', value);
+            }
+        });
+
+        $('body').on('input', '.IG_SN_DIG #tempWrapper input',function(e){
+            if($(this).attr('type') == 'range'){
+                let value = $(this).val();
+                $(this).next().val(value);
+            }
+            else{
+                let value = $(this).val();
+                if(value >= 0 && value <= 1){
+                    $(this).prev().val(value);
+                }
+                else{
+                    if(value < 0){
+                        $(this).val(0);
+                    }
+                    else{
+                        $(this).val(1);
+                    }
+                }
+            }
+        });
+
 
         $('body').on('click','a[data-needed="direct"]',async function(){
             triggerLinkElement(this);
