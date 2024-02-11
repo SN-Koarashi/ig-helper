@@ -5,7 +5,7 @@
 // @name:ja            IG助手
 // @name:ko            IG조수
 // @namespace          https://github.snkms.com/
-// @version            2.16.1
+// @version            2.16.2
 // @description        Downloading is possible for both photos and videos from posts, as well as for stories, reels or profile picture.
 // @description:zh-TW  一鍵下載對方 Instagram 貼文中的相片、影片甚至是他們的限時動態、連續短片及大頭貼圖片！
 // @description:zh-CN  一键下载对方 Instagram 帖子中的相片、视频甚至是他们的快拍、Reels及头像图片！
@@ -634,7 +634,7 @@
                                 if(USER_SETTING.DISABLE_VIDEO_LOOPING){
                                     $(this).find('video').each(function(){
                                         if(!$(this).data('loop')){
-                                            console.log('Added video event listener #loop');
+                                            console.log('(reel) Added video event listener #loop');
                                             $(this).on('ended',function(){
                                                 $(this).attr('data-loop', true);
                                                 $(this).parent().find('.xpgaw4o').removeAttr('style');
@@ -649,7 +649,7 @@
                                 if(USER_SETTING.MODIFY_VIDEO_VOLUME){
                                     $(this).find('video').each(function(){
                                         if(!$(this).data('modify')){
-                                            console.log('Added video event listener #modify');
+                                            console.log('(reel) Added video event listener #modify');
                                             this.volume = VIDEO_VOLUME;
 
                                             $(this).on('play',function(){
@@ -902,11 +902,30 @@
                 if(USER_SETTING.DISABLE_VIDEO_LOOPING){
                     $(this).find('video').each(function(){
                         if(!$(this).data('loop')){
-                            console.log('Added video event listener');
+                            console.log('(post) Added video event listener #loop');
                             $(this).on('ended',function(){
                                 $(this).attr('data-loop', true);
                                 this.pause();
                             });
+                        }
+                    });
+                }
+
+                // Modify Video Volume
+                if(USER_SETTING.MODIFY_VIDEO_VOLUME){
+                    $(this).find('video').each(function(){
+                        if(!$(this).data('modify')){
+                            console.log('(post) Added video event listener #modify');
+                            this.volume = VIDEO_VOLUME;
+
+                            $(this).on('play',function(){
+                                this.volume = VIDEO_VOLUME;
+                            });
+                            $(this).on('playing',function(){
+                                this.volume = VIDEO_VOLUME;
+                            });
+
+                            $(this).attr('data-modify', true);
                         }
                     });
                 }
@@ -1222,7 +1241,7 @@
                 "FORCE_FETCH_ALL_RESOURCES_INTRO": "透過 Instagram API 強制取得貼文中的所有資源（照片和影片），以取消每個貼文單次提取三個資源的限制。",
                 "DIRECT_DOWNLOAD_WHEN_SINGLE_INTRO": "當貼文僅有單一資源時直接下載。",
                 "DIRECT_DOWNLOAD_ALL_INTRO": "按下下載按鈕時將直接強制提取貼文中的所有資源並下載。",
-                "MODIFY_VIDEO_VOLUME_INTRO": "修改影片播放音量（右鍵可開啟音量設定條）。",
+                "MODIFY_VIDEO_VOLUME_INTRO": "修改連續短片和貼文的影片播放音量（右鍵可開啟音量設定條）。",
                 "SCROLL_BUTTON_INTRO": "為連續短片頁面的右下角啟用上下捲動按鈕。"
             },
             "zh-CN": {
@@ -1264,7 +1283,7 @@
                 "FORCE_FETCH_ALL_RESOURCES_INTRO": "通过 Instagram API 强制获取帖子中的所有资源（照片和视频），以取消每个帖子单次抓取三个资源的限制。",
                 "DIRECT_DOWNLOAD_WHEN_SINGLE_INTRO": "当帖子只有单一资源时直接下载。",
                 "DIRECT_DOWNLOAD_ALL_INTRO": "当您点击下载按钮时，帖子中的所有资源将被直接强制抓取并下载。",
-                "MODIFY_VIDEO_VOLUME_INTRO": "修改视频播放音量（右击可开启音量设置滑条）。",
+                "MODIFY_VIDEO_VOLUME_INTRO": "修改 Reels 和帖子中的视频播放音量（右击可开启音量设置滑条）。",
                 "SCROLL_BUTTON_INTRO": "为 Reels 页面的右下角启用上下卷动按钮。"
             },
             "en-US": {
@@ -1306,7 +1325,7 @@
                 "FORCE_FETCH_ALL_RESOURCES_INTRO": "Force fetching of all resources (photos and videos) in a post via the Instagram API to remove the limit of three resources per post.",
                 "DIRECT_DOWNLOAD_WHEN_SINGLE_INTRO": "Download directly when the post only has a single resource.",
                 "DIRECT_DOWNLOAD_ALL_INTRO": "When you click the download button, all resources in the post will be directly forced to be fetched and downloaded.",
-                "MODIFY_VIDEO_VOLUME_INTRO": "Modify video volume on playback (Right-click to open the volume setting slider).",
+                "MODIFY_VIDEO_VOLUME_INTRO": "Modify the video playback volume in Reels and Posts (right-click to open the volume setting slider).",
                 "SCROLL_BUTTON_INTRO": "Enable scroll buttons for the lower right corner of Reels page."
             }
         };
