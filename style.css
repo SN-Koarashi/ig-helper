@@ -263,7 +263,10 @@ kbd {
     margin-top: 0px;
     width: 50px;
     vertical-align: middle;
-    border-radius: 7px
+    border-radius: 7px;
+    outline: 0px;
+    background: transparent;
+    border: 1px solid;
 }
 #scrollWrapper{
     position: fixed;
