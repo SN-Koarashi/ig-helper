@@ -5,7 +5,7 @@
 // @name:ja            IG助手
 // @name:ko            IG조수
 // @namespace          https://github.snkms.com/
-// @version            2.15.1
+// @version            2.16.1
 // @description        Downloading is possible for both photos and videos from posts, as well as for stories, reels or profile picture.
 // @description:zh-TW  一鍵下載對方 Instagram 貼文中的相片、影片甚至是他們的限時動態、連續短片及大頭貼圖片！
 // @description:zh-CN  一键下载对方 Instagram 帖子中的相片、视频甚至是他们的快拍、Reels及头像图片！
@@ -48,7 +48,8 @@
         'FORCE_FETCH_ALL_RESOURCES': (GM_getValue('FORCE_FETCH_ALL_RESOURCES'))?GM_getValue('FORCE_FETCH_ALL_RESOURCES'):false,
         'DIRECT_DOWNLOAD_WHEN_SINGLE': (GM_getValue('DIRECT_DOWNLOAD_WHEN_SINGLE'))?GM_getValue('DIRECT_DOWNLOAD_WHEN_SINGLE'):false,
         'DIRECT_DOWNLOAD_ALL': (GM_getValue('DIRECT_DOWNLOAD_ALL'))?GM_getValue('DIRECT_DOWNLOAD_ALL'):false,
-        'MODIFY_VIDEO_VOLUME': (GM_getValue('MODIFY_VIDEO_VOLUME'))?GM_getValue('MODIFY_VIDEO_VOLUME'):false
+        'MODIFY_VIDEO_VOLUME': (GM_getValue('MODIFY_VIDEO_VOLUME'))?GM_getValue('MODIFY_VIDEO_VOLUME'):false,
+        'SCROLL_BUTTON': (GM_getValue('SCROLL_BUTTON'))?GM_getValue('SCROLL_BUTTON'):true
     };
     var VIDEO_VOLUME = (GM_getValue('G_VIDEO_VOLUME'))?GM_getValue('G_VIDEO_VOLUME'):1;
     /*******************************/
@@ -606,6 +607,21 @@
             var timer = setInterval(()=>{
                 if($('section > main[role="main"] > div div.x1qjc9v5 video').length > 0){
                     clearInterval(timer);
+
+                    if(USER_SETTING.SCROLL_BUTTON){
+                        $('#scrollWrapper').remove();
+                        $('section > main[role="main"]').append('<section id="scrollWrapper"></section>');
+                        $('section > main[role="main"] > #scrollWrapper').append('<div class="button-up"><div></div></div>');
+                        $('section > main[role="main"] > #scrollWrapper').append('<div class="button-down"><div></div></div>');
+
+                        $('section > main[role="main"] > #scrollWrapper > .button-up').on('click',function(){
+                            $('section > main[role="main"] > div')[0].scrollBy({top: -1, behavior: "smooth"});
+                        });
+                        $('section > main[role="main"] > #scrollWrapper > .button-down').on('click',function(){
+                            $('section > main[role="main"] > div')[0].scrollBy({top: 1, behavior: "smooth"});
+                        });
+                    }
+
                     $('section > main[role="main"] > div').children('div').each(function(){
                         if($(this).children().length > 0){
                             if(!$(this).children().find('.IG_REELS').length){
@@ -1198,6 +1214,7 @@
                 "DIRECT_DOWNLOAD_WHEN_SINGLE": "直接下載貼文中的單一資源",
                 "DIRECT_DOWNLOAD_ALL": "直接下載貼文中的所有資源",
                 "MODIFY_VIDEO_VOLUME": "修改影片音量（右鍵設定）",
+                "SCROLL_BUTTON": "為連續短片頁面啟用捲動按鈕",
                 "AUTO_RENAME_INTRO": "將檔案自動重新命名為以下格式：\n使用者名稱-類型-時間戳.檔案類型\n例如：instagram-photo-1670350000.jpg\n\n若設為 false，則檔案名稱將保持原始樣貌。 \n例如：instagram_321565527_679025940443063_4318007696887450953_n.jpg",
                 "RENAME_SHORTCODE_INTRO": "將檔案自動重新命名為以下格式：\n使用者名稱-類型-Shortcode-時間戳.檔案類型\n示例：instagram-photo-CwkxyiVynpW-1670350000.jpg\n\n此功能僅在[自動重新命名檔案]設定為 TRUE 時有效。",
                 "DISABLE_VIDEO_LOOPING_INTRO": "關閉連續短片和貼文中影片自動循環播放。",
@@ -1205,7 +1222,8 @@
                 "FORCE_FETCH_ALL_RESOURCES_INTRO": "透過 Instagram API 強制取得貼文中的所有資源（照片和影片），以取消每個貼文單次提取三個資源的限制。",
                 "DIRECT_DOWNLOAD_WHEN_SINGLE_INTRO": "當貼文僅有單一資源時直接下載。",
                 "DIRECT_DOWNLOAD_ALL_INTRO": "按下下載按鈕時將直接強制提取貼文中的所有資源並下載。",
-                "MODIFY_VIDEO_VOLUME_INTRO": "修改影片播放音量（右鍵可開啟音量設定條）。"
+                "MODIFY_VIDEO_VOLUME_INTRO": "修改影片播放音量（右鍵可開啟音量設定條）。",
+                "SCROLL_BUTTON_INTRO": "為連續短片頁面的右下角啟用上下捲動按鈕。"
             },
             "zh-CN": {
                 "SHOW_DOM_TREE": "显示 DOM Tree",
@@ -1238,6 +1256,7 @@
                 "DIRECT_DOWNLOAD_WHEN_SINGLE": "直接下载帖子中的单个资源",
                 "DIRECT_DOWNLOAD_ALL": "直接下载帖子中的所有资源",
                 "MODIFY_VIDEO_VOLUME": "修改视频音量（右击设置）",
+                "SCROLL_BUTTON": "为 Reels 页面启用卷动按钮",
                 "AUTO_RENAME_INTRO": "将文件自动重新命名为以下格式类型：\n用户名-类型-时间戳.文件类型\n例如：instagram-photo-1670350000.jpg\n\n若设为false，则文件名将保持原样。 \n例如：instagram_321565527_679025940443063_4318007696887450953_n.jpg",
                 "RENAME_SHORTCODE_INTRO": "自动重命名文件为以下格式类型：\n用户名-类型-短码-时间戳.文件类型\n示例：instagram-photo-CwkxyiVynpW-1670350000.jpg\n\n它仅在[自动重命名文件]设置为 TRUE 时有效。",
                 "DISABLE_VIDEO_LOOPING_INTRO": "禁用 Reels 和帖子中的视频自动播放。",
@@ -1245,7 +1264,8 @@
                 "FORCE_FETCH_ALL_RESOURCES_INTRO": "通过 Instagram API 强制获取帖子中的所有资源（照片和视频），以取消每个帖子单次抓取三个资源的限制。",
                 "DIRECT_DOWNLOAD_WHEN_SINGLE_INTRO": "当帖子只有单一资源时直接下载。",
                 "DIRECT_DOWNLOAD_ALL_INTRO": "当您点击下载按钮时，帖子中的所有资源将被直接强制抓取并下载。",
-                "MODIFY_VIDEO_VOLUME_INTRO": "修改视频播放音量（右击可开启音量设置滑条）。"
+                "MODIFY_VIDEO_VOLUME_INTRO": "修改视频播放音量（右击可开启音量设置滑条）。",
+                "SCROLL_BUTTON_INTRO": "为 Reels 页面的右下角启用上下卷动按钮。"
             },
             "en-US": {
                 "SHOW_DOM_TREE": "Show DOM Tree",
@@ -1278,6 +1298,7 @@
                 "DIRECT_DOWNLOAD_WHEN_SINGLE": "Directly Download Single Resource In the Post",
                 "DIRECT_DOWNLOAD_ALL": "Directly Download All Resources In the Post",
                 "MODIFY_VIDEO_VOLUME": "Modify Video Volume (Right-Click To Set)",
+                "SCROLL_BUTTON": "Enable Scroll Buttons For Reels Page",
                 "AUTO_RENAME_INTRO": "Auto rename file to format type following:\nUSERNAME-TYPE-TIMESTAMP.FILETYPE\nExample: instagram-photo-1670350000.jpg\n\nIf set to false, the file name will remain as it is.\nExample: instagram_321565527_679025940443063_4318007696887450953_n.jpg",
                 "RENAME_SHORTCODE_INTRO": "Auto rename file to format type following:\nUSERNAME-TYPE-SHORTCODE-TIMESTAMP.FILETYPE\nExample: instagram-photo-CwkxyiVynpW-1670350000.jpg\n\nIt will ONLY work in [Automatically Rename Files] setting to TRUE.",
                 "DISABLE_VIDEO_LOOPING_INTRO": "Disable video auto-looping in reels and posts.",
@@ -1285,7 +1306,8 @@
                 "FORCE_FETCH_ALL_RESOURCES_INTRO": "Force fetching of all resources (photos and videos) in a post via the Instagram API to remove the limit of three resources per post.",
                 "DIRECT_DOWNLOAD_WHEN_SINGLE_INTRO": "Download directly when the post only has a single resource.",
                 "DIRECT_DOWNLOAD_ALL_INTRO": "When you click the download button, all resources in the post will be directly forced to be fetched and downloaded.",
-                "MODIFY_VIDEO_VOLUME_INTRO": "Modify video volume on playback (Right-click to open the volume setting slider)."
+                "MODIFY_VIDEO_VOLUME_INTRO": "Modify video volume on playback (Right-click to open the volume setting slider).",
+                "SCROLL_BUTTON_INTRO": "Enable scroll buttons for the lower right corner of Reels page."
             }
         };
     }
