@@ -5,7 +5,7 @@
 // @name:ja            IG助手
 // @name:ko            IG조수
 // @namespace          https://github.snkms.com/
-// @version            2.16.6
+// @version            2.16.7
 // @description        Downloading is possible for both photos and videos from posts, as well as for stories, reels or profile picture.
 // @description:zh-TW  一鍵下載對方 Instagram 貼文中的相片、影片甚至是他們的限時動態、連續短片及大頭貼圖片！
 // @description:zh-CN  一键下载对方 Instagram 帖子中的相片、视频甚至是他们的快拍、Reels及头像图片！
@@ -78,6 +78,9 @@
         stories: {},
         highlights: {}
     };
+    var GL_observer = new MutationObserver(function (mutation, owner) {
+        onReadyMyDW();
+    });
 
     // Main Timer
     var timer = setInterval(function(){
@@ -93,9 +96,20 @@
                 GL_dataCache.stories = {};
 
                 console.log('isDialog');
+
+                // This is to prevent the detection of the "Modify Video Volume" setting from being too slow.
                 setTimeout(()=>{
                     onReadyMyDW(false);
-                },5);
+                }, 5);
+
+                // This is a delayed function call that prevents the dialog element from appearing before the function is called.
+                setTimeout(()=>{
+                    onReadyMyDW(false);
+                }, 250);
+                setTimeout(()=>{
+                    onReadyMyDW(false);
+                }, 450);
+
                 pageLoaded = true;
             }
 
@@ -114,6 +128,12 @@
                 setTimeout(()=>{
                     onReadyMyDW(false);
                 },150);
+
+                const element = $('div[id^="mount"] > div > div div > section > main div:not([class]):not([style]) > div > article').parent()[0];
+                GL_observer.observe(element, {
+                    childList: true
+                });
+
                 pageLoaded = true;
             }
             if($('div[id^="mount"] > div > div > div').first().is(':hidden') && $('canvas._aarh, div._aadm').length && location.href.match(/^(https:\/\/www\.instagram\.com\/)([0-9A-Za-z\.\-_]+)\/?(tagged|reels)?\/?$/ig) && !location.href.match(/^(https:\/\/www\.instagram\.com\/(stories|explore)\/?)/ig)){
@@ -156,11 +176,13 @@
     },checkInterval);
 
     // Call general function when user scroll the page
+    /*
     $(document).scroll(function(){
         if(currentHeight != $(this).height() && location.href.split("?")[0] == "https://www.instagram.com/"){
             onReadyMyDW();
         }
     });
+    */
 
     /**
      * onProfileAvatar
@@ -850,6 +872,7 @@
      */
     function onReadyMyDW(NoDialog){
         // Whether is Instagram dialog?
+        /*
         if(!NoDialog){
             // Running if it is dialog
             $('article, main > div > div.xdt5ytf > div').each(function(){
@@ -858,6 +881,8 @@
             });
             $('.SNKMS_IG_DW_MAIN,.SNKMS_IG_DW_MAIN_VIDEO').remove();
         }
+        */
+
         if(NoDialog == false){
             var repeat = setInterval(() => {
                 // div.xdt5ytf << (sigle post in top, not floating) >>
