@@ -5,7 +5,7 @@
 // @name:ja            IG助手
 // @name:ko            IG조수
 // @namespace          https://github.snkms.com/
-// @version            2.16.5
+// @version            2.16.6
 // @description        Downloading is possible for both photos and videos from posts, as well as for stories, reels or profile picture.
 // @description:zh-TW  一鍵下載對方 Instagram 貼文中的相片、影片甚至是他們的限時動態、連續短片及大頭貼圖片！
 // @description:zh-CN  一键下载对方 Instagram 帖子中的相片、视频甚至是他们的快拍、Reels及头像图片！
@@ -95,7 +95,7 @@
                 console.log('isDialog');
                 setTimeout(()=>{
                     onReadyMyDW(false);
-                },150);
+                },5);
                 pageLoaded = true;
             }
 
@@ -116,7 +116,7 @@
                 },150);
                 pageLoaded = true;
             }
-            if($('div[id^="mount"] > div > div > div').first().is(':hidden') && $('canvas._aarh, div._aadm').length && location.href.match(/^(https:\/\/www\.instagram\.com\/)([0-9A-Za-z\.\-_]+)\/?$/ig) && !location.href.match(/^(https:\/\/www\.instagram\.com\/(stories|explore)\/?)/ig)){
+            if($('div[id^="mount"] > div > div > div').first().is(':hidden') && $('canvas._aarh, div._aadm').length && location.href.match(/^(https:\/\/www\.instagram\.com\/)([0-9A-Za-z\.\-_]+)\/?(tagged|reels)?\/?$/ig) && !location.href.match(/^(https:\/\/www\.instagram\.com\/(stories|explore)\/?)/ig)){
                 console.log('isProfile');
                 setTimeout(()=>{
                     onProfileAvatar(false);
@@ -173,7 +173,7 @@
         if(isDownload){
             let date = new Date().getTime();
             let timestamp = Math.floor(date / 1000);
-            let username = location.href.replace(/\/$/ig,'').split('/').at(-1);
+            let username = location.pathname.replaceAll(/(reels|tagged)\/$/ig,'').split('/').filter(s => s.length > 0).at(-1);
             let userInfo = await getUserId(username);
             try{
                 let dataURL = await getUserHighSizeProfile(userInfo.user.pk);
@@ -863,7 +863,7 @@
                 // div.xdt5ytf << (sigle post in top, not floating) >>
                 if($('article[data-snig="canDownload"], section:visible > main > div > div.xdt5ytf[data-snig="canDownload"], div[id^="mount"] > div > div > div.x1n2onr6.x1vjfegm div[data-snig="canDownload"]').length > 0) clearInterval(repeat);
                 createDownloadButton();
-            },250);
+            },5);
         }
         else{
             createDownloadButton();
