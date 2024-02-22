@@ -5,7 +5,7 @@
 // @name:ja            IG助手
 // @name:ko            IG조수
 // @namespace          https://github.snkms.com/
-// @version            2.16.9
+// @version            2.16.10
 // @description        Downloading is possible for both photos and videos from posts, as well as for stories, reels or profile picture.
 // @description:zh-TW  一鍵下載對方 Instagram 貼文中的相片、影片甚至是他們的限時動態、連續短片及大頭貼圖片！
 // @description:zh-CN  一键下载对方 Instagram 帖子中的相片、视频甚至是他们的快拍、Reels及头像图片！
@@ -1211,7 +1211,7 @@
     function createSaveFileElement(downloadLink,object,username,sourceType,timestamp,filetype,shortcode) {
         const a = document.createElement("a");
         const name = username+'-'+sourceType+'-'+((USER_SETTING.RENAME_SHORTCODE && shortcode)?shortcode+'-':'')+timestamp+'.'+filetype;
-        const originally = username + '_' + downloadLink.split('/').at(-1).split('?').at(0);
+        const originally = username + '_' + new URL(downloadLink).pathname.split('/').at(-1);
 
         a.href = URL.createObjectURL(object);
         a.setAttribute("download", (USER_SETTING.AUTO_RENAME)?name:originally);
