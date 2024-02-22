@@ -5,7 +5,7 @@
 // @name:ja            IG助手
 // @name:ko            IG조수
 // @namespace          https://github.snkms.com/
-// @version            2.16.7
+// @version            2.16.8
 // @description        Downloading is possible for both photos and videos from posts, as well as for stories, reels or profile picture.
 // @description:zh-TW  一鍵下載對方 Instagram 貼文中的相片、影片甚至是他們的限時動態、連續短片及大頭貼圖片！
 // @description:zh-CN  一键下载对方 Instagram 帖子中的相片、视频甚至是他们的快拍、Reels及头像图片！
@@ -427,9 +427,12 @@
                             if($(this).hasClass('x1lix1fw')){
                                 if($(this).children().length > 0){
                                     videoURL = stories.data.reels_media[0].items[index].video_resources[0].src;
+
                                 }
                             }
                         });
+
+
                     }
 
                     GL_dataCache.stories[username] = stories;
@@ -518,7 +521,6 @@
             // Download thumbnail
             let targetURL = location.pathname.replace(/\/$/ig,'').split("/").at(-1);
             let videoThumbnailURL = "";
-
 
             if(GL_dataCache.stories[username] && !isForce){
                 console.log('Fetch from memory cache:', username);
@@ -765,8 +767,21 @@
                 method: "GET",
                 url: getURL,
                 onload: function(response) {
+                    // Fix search issue by Discord: sno_w_
                     let obj = JSON.parse(response.response);
-                    resolve(obj.users[0]);
+                    let result = null;
+                    obj.users.forEach(pos => {
+                        if(pos.user.username === username){
+                            result = pos;
+                        }
+                    });
+
+                    if(result != null){
+                        resolve(result);
+                    }
+                    else{
+                        alert("Can not find user info from getUserId()");
+                    }
                 },
                 onerror: function(err){
                     reject(err);
