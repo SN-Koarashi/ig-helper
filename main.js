@@ -5,7 +5,7 @@
 // @name:ja            IG助手
 // @name:ko            IG조수
 // @namespace          https://github.snkms.com/
-// @version            2.17.2
+// @version            2.18.1
 // @description        Downloading is possible for both photos and videos from posts, as well as for stories, reels or profile picture.
 // @description:zh-TW  一鍵下載對方 Instagram 貼文中的相片、影片甚至是他們的限時動態、連續短片及大頭貼圖片！
 // @description:zh-CN  一键下载对方 Instagram 帖子中的相片、视频甚至是他们的快拍、Reels及头像图片！
@@ -229,7 +229,7 @@
      * @param  {Boolean}  isDownload - Check if it is a download operation
      * @return {void}
      */
-    async function onHighlightsStory(isDownload){
+    async function onHighlightsStory(isDownload, isPreview){
         if(isDownload){
             let date = new Date().getTime();
             let timestamp = Math.floor(date / 1000);
@@ -261,10 +261,20 @@
 
                 if(result.status === 'ok'){
                     if(result.items[0].video_versions){
-                        saveFiles(result.items[0].video_versions[0].url, username,"highlights",timestamp,'mp4');
+                        if(isPreview){
+                            openNewTab(result.items[0].video_versions[0].url);
+                        }
+                        else{
+                            saveFiles(result.items[0].video_versions[0].url, username,"highlights",timestamp,'mp4');
+                        }
                     }
                     else{
-                        saveFiles(result.items[0].image_versions2.candidates[0].url, username,"highlights",timestamp,'jpg');
+                        if(isPreview){
+                            openNewTab(result.items[0].image_versions2.candidates[0].url);
+                        }
+                        else{
+                            saveFiles(result.items[0].image_versions2.candidates[0].url, username,"highlights",timestamp,'jpg');
+                        }
                     }
                 }
                 else{
@@ -274,10 +284,20 @@
             }
             else{
                 if(target.is_video){
-                    saveFiles(target.video_resources.at(-1).src,username,"highlights",timestamp,'mp4', highlightId);
+                    if(isPreview){
+                        openNewTab(target.video_resources.at(-1).src,username);
+                    }
+                    else{
+                        saveFiles(target.video_resources.at(-1).src,username,"highlights",timestamp,'mp4', highlightId);
+                    }
                 }
                 else{
-                    saveFiles(target.display_resources.at(-1).src,username,"highlights",timestamp,'jpg', highlightId);
+                    if(isPreview){
+                        openNewTab(target.display_resources.at(-1).src,username);
+                    }
+                    else{
+                        saveFiles(target.display_resources.at(-1).src,username,"highlights",timestamp,'jpg', highlightId);
+                    }
                 }
             }
         }
@@ -313,6 +333,7 @@
                 if($element != null){
                     //$element.css('position','relative');
                     $element.append(`<div title="${_i18n("DW")}" class="IG_DWHISTORY"><svg width="16" height="16" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" id="Capa_1" x="0px" y="0px" viewBox="0 0 512 512" style="enable-background:new 0 0 512 512;" xml:space="preserve"><g><g><path d="M382.56,233.376C379.968,227.648,374.272,224,368,224h-64V16c0-8.832-7.168-16-16-16h-64c-8.832,0-16,7.168-16,16v208h-64    c-6.272,0-11.968,3.68-14.56,9.376c-2.624,5.728-1.6,12.416,2.528,17.152l112,128c3.04,3.488,7.424,5.472,12.032,5.472    c4.608,0,8.992-2.016,12.032-5.472l112-128C384.192,245.824,385.152,239.104,382.56,233.376z"/></g></g><g><g><path d="M432,352v96H80v-96H16v128c0,17.696,14.336,32,32,32h416c17.696,0,32-14.304,32-32V352H432z"/></g></g></div>`);
+                    $element.append(`<div title="${_i18n("NEWTAB")}" class="IG_DWHINEWTAB"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" clip-rule="evenodd" d="M20 14a1 1 0 0 0-1 1v3.077c0 .459-.022.57-.082.684a.363.363 0 0 1-.157.157c-.113.06-.225.082-.684.082H5.923c-.459 0-.571-.022-.684-.082a.363.363 0 0 1-.157-.157c-.06-.113-.082-.225-.082-.684L4.999 5.5a.5.5 0 0 1 .5-.5l3.5.005a1 1 0 1 0 .002-2L5.501 3a2.5 2.5 0 0 0-2.502 2.5v12.577c0 .76.083 1.185.32 1.627.223.419.558.753.977.977.442.237.866.319 1.627.319h12.154c.76 0 1.185-.082 1.627-.319.419-.224.753-.558.977-.977.237-.442.319-.866.319-1.627V15a1 1 0 0 0-1-1zm-2-9.055v-.291l-.39.09A10 10 0 0 1 15.36 5H14a1 1 0 1 1 0-2l5.5.003a1.5 1.5 0 0 1 1.5 1.5V10a1 1 0 1 1-2 0V8.639c0-.757.086-1.511.256-2.249l.09-.39h-.295a10 10 0 0 1-1.411 1.775l-5.933 5.932a1 1 0 0 1-1.414-1.414l5.944-5.944A10 10 0 0 1 18 4.945z" fill="currentColor"/></svg></div>`);
                 }
             }
         }
@@ -414,7 +435,7 @@
      * @param  {Boolean}  isDownload - Check if it is a download operation
      * @return {void}
      */
-    async function onStory(isDownload,isForce){
+    async function onStory(isDownload,isForce,isPreview){
         if(isDownload){
             let date = new Date().getTime();
             let timestamp = Math.floor(date / 1000);
@@ -443,10 +464,20 @@
 
                 if(result.status === 'ok'){
                     if(result.items[0].video_versions){
-                        saveFiles(result.items[0].video_versions[0].url, username,"stories",timestamp,'mp4');
+                        if(isPreview){
+                            openNewTab(result.items[0].video_versions[0].url);
+                        }
+                        else{
+                            saveFiles(result.items[0].video_versions[0].url, username,"stories",timestamp,'mp4');
+                        }
                     }
                     else{
-                        saveFiles(result.items[0].image_versions2.candidates[0].url, username,"stories",timestamp,'jpg');
+                        if(isPreview){
+                            openNewTab(result.items[0].image_versions2.candidates[0].url);
+                        }
+                        else{
+                            saveFiles(result.items[0].image_versions2.candidates[0].url, username,"stories",timestamp,'jpg');
+                        }
                     }
                 }
                 else{
@@ -507,9 +538,13 @@
                     alert(_i18n("NO_VID_URL"));
                 }
                 else{
-                    saveFiles(videoURL,username,"stories",timestamp,type);
+                    if(isPreview){
+                        openNewTab(videoURL);
+                    }
+                    else{
+                        saveFiles(videoURL,username,"stories",timestamp,type);
+                    }
                 }
-
             }
             else{
                 // Download stories if it is image
@@ -525,7 +560,12 @@
                 let downloadLink = link;
                 let type = 'jpg';
 
-                saveFiles(downloadLink,username,"stories",timestamp,type);
+                if(isPreview){
+                    openNewTab(downloadLink);
+                }
+                else{
+                    saveFiles(downloadLink,username,"stories",timestamp,type);
+                }
             }
         }
         else{
@@ -563,6 +603,7 @@
                 if($element != null){
                     $element.css('position','relative');
                     $element.append(`<div title="${_i18n("DW")}" class="IG_DWSTORY"><svg width="16" height="16" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" id="Capa_1" x="0px" y="0px" viewBox="0 0 512 512" style="enable-background:new 0 0 512 512;" xml:space="preserve"><g><g><path d="M382.56,233.376C379.968,227.648,374.272,224,368,224h-64V16c0-8.832-7.168-16-16-16h-64c-8.832,0-16,7.168-16,16v208h-64    c-6.272,0-11.968,3.68-14.56,9.376c-2.624,5.728-1.6,12.416,2.528,17.152l112,128c3.04,3.488,7.424,5.472,12.032,5.472    c4.608,0,8.992-2.016,12.032-5.472l112-128C384.192,245.824,385.152,239.104,382.56,233.376z"/></g></g><g><g><path d="M432,352v96H80v-96H16v128c0,17.696,14.336,32,32,32h416c17.696,0,32-14.304,32-32V352H432z"/></g></g></div>`);
+                    $element.append(`<div title="${_i18n("NEWTAB")}" class="IG_DWNEWTAB"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" clip-rule="evenodd" d="M20 14a1 1 0 0 0-1 1v3.077c0 .459-.022.57-.082.684a.363.363 0 0 1-.157.157c-.113.06-.225.082-.684.082H5.923c-.459 0-.571-.022-.684-.082a.363.363 0 0 1-.157-.157c-.06-.113-.082-.225-.082-.684L4.999 5.5a.5.5 0 0 1 .5-.5l3.5.005a1 1 0 1 0 .002-2L5.501 3a2.5 2.5 0 0 0-2.502 2.5v12.577c0 .76.083 1.185.32 1.627.223.419.558.753.977.977.442.237.866.319 1.627.319h12.154c.76 0 1.185-.082 1.627-.319.419-.224.753-.558.977-.977.237-.442.319-.866.319-1.627V15a1 1 0 0 0-1-1zm-2-9.055v-.291l-.39.09A10 10 0 0 1 15.36 5H14a1 1 0 1 1 0-2l5.5.003a1.5 1.5 0 0 1 1.5 1.5V10a1 1 0 1 1-2 0V8.639c0-.757.086-1.511.256-2.249l.09-.39h-.295a10 10 0 0 1-1.411 1.775l-5.933 5.932a1 1 0 0 1-1.414-1.414l5.944-5.944A10 10 0 0 1 18 4.945z" fill="currentColor"/></svg></div>`);
                 }
             }
         }
@@ -709,19 +750,29 @@
      * @param  {Boolean}  isVideo - Check if reel is a video element
      * @return {void}
      */
-    async function onReels(isDownload, isVideo){
+    async function onReels(isDownload, isVideo, isPreview){
         if(isDownload){
             let reelsPath = location.href.split('?').at(0).split('instagram.com/reels/').at(-1).replaceAll('/','');
             let data = await getBlobMedia(reelsPath);
             let timestamp = new Date().getTime();
 
             if(isVideo && data.shortcode_media.is_video){
-                let type = 'mp4';
-                saveFiles(data.shortcode_media.video_url,data.shortcode_media.owner.username,"reels",timestamp,type,reelsPath);
+                if(isPreview){
+                    openNewTab(data.shortcode_media.video_url);
+                }
+                else{
+                    let type = 'mp4';
+                    saveFiles(data.shortcode_media.video_url,data.shortcode_media.owner.username,"reels",timestamp,type,reelsPath);
+                }
             }
             else{
-                let type = 'jpg';
-                saveFiles(data.shortcode_media.display_resources.at(-1).src,data.shortcode_media.owner.username,"reels",timestamp,type,reelsPath);
+                if(isPreview){
+                    openNewTab(data.shortcode_media.display_resources.at(-1).src);
+                }
+                else{
+                    let type = 'jpg';
+                    saveFiles(data.shortcode_media.display_resources.at(-1).src,data.shortcode_media.owner.username,"reels",timestamp,type,reelsPath);
+                }
             }
         }
         else{
@@ -750,6 +801,7 @@
                                 $(this).children().css('position','relative');
 
                                 $(this).children().append(`<div title="${_i18n("DW")}" class="IG_REELS"><svg width="16" height="16" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" id="Capa_1" x="0px" y="0px" viewBox="0 0 512 512" style="enable-background:new 0 0 512 512;" xml:space="preserve"><g><g><path d="M382.56,233.376C379.968,227.648,374.272,224,368,224h-64V16c0-8.832-7.168-16-16-16h-64c-8.832,0-16,7.168-16,16v208h-64    c-6.272,0-11.968,3.68-14.56,9.376c-2.624,5.728-1.6,12.416,2.528,17.152l112,128c3.04,3.488,7.424,5.472,12.032,5.472    c4.608,0,8.992-2.016,12.032-5.472l112-128C384.192,245.824,385.152,239.104,382.56,233.376z"/></g></g><g><g><path d="M432,352v96H80v-96H16v128c0,17.696,14.336,32,32,32h416c17.696,0,32-14.304,32-32V352H432z"/></g></g></div>`);
+                                $(this).children().append(`<div title="${_i18n("NEWTAB")}" class="IG_REELSNEWTAB"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" clip-rule="evenodd" d="M20 14a1 1 0 0 0-1 1v3.077c0 .459-.022.57-.082.684a.363.363 0 0 1-.157.157c-.113.06-.225.082-.684.082H5.923c-.459 0-.571-.022-.684-.082a.363.363 0 0 1-.157-.157c-.06-.113-.082-.225-.082-.684L4.999 5.5a.5.5 0 0 1 .5-.5l3.5.005a1 1 0 1 0 .002-2L5.501 3a2.5 2.5 0 0 0-2.502 2.5v12.577c0 .76.083 1.185.32 1.627.223.419.558.753.977.977.442.237.866.319 1.627.319h12.154c.76 0 1.185-.082 1.627-.319.419-.224.753-.558.977-.977.237-.442.319-.866.319-1.627V15a1 1 0 0 0-1-1zm-2-9.055v-.291l-.39.09A10 10 0 0 1 15.36 5H14a1 1 0 1 1 0-2l5.5.003a1.5 1.5 0 0 1 1.5 1.5V10a1 1 0 1 1-2 0V8.639c0-.757.086-1.511.256-2.249l.09-.39h-.295a10 10 0 0 1-1.411 1.775l-5.933 5.932a1 1 0 0 1-1.414-1.414l5.944-5.944A10 10 0 0 1 18 4.945z" fill="currentColor"/></svg></div>`);
                                 $(this).children().append(`<div title="${_i18n("THUMBNAIL_INTRO")}" class="IG_REELS_THUMBNAIL"><svg width="16" height="16" xmlns="http://www.w3.org/2000/svg" enable-background="new 0 0 24 24" height="512" viewBox="0 0 24 24" width="512"><circle cx="8.25" cy="5.25" r=".5"/><path d="m8.25 6.5c-.689 0-1.25-.561-1.25-1.25s.561-1.25 1.25-1.25 1.25.561 1.25 1.25-.561 1.25-1.25 1.25zm0-1.5c-.138 0-.25.112-.25.25 0 .275.5.275.5 0 0-.138-.112-.25-.25-.25z"/><path d="m7.25 11.25 2-2.5 2.25 1.5 2.25-3.5 3 4.5z"/><path d="m16.75 12h-9.5c-.288 0-.551-.165-.676-.425s-.09-.568.09-.793l2-2.5c.243-.304.678-.372 1.002-.156l1.616 1.077 1.837-2.859c.137-.212.372-.342.625-.344.246-.026.49.123.63.334l3 4.5c.153.23.168.526.037.77-.13.244-.385.396-.661.396zm-4.519-1.5h3.118l-1.587-2.381zm-3.42 0h1.712l-1.117-.745z"/><path d="m22.25 14h-2.756c-.778 0-1.452.501-1.676 1.247l-.859 2.862c-.16.533-.641.891-1.197.891h-7.524c-.556 0-1.037-.358-1.197-.891l-.859-2.861c-.224-.747-.897-1.248-1.676-1.248h-2.756c-.965 0-1.75.785-1.75 1.75v5.5c0 1.517 1.233 2.75 2.75 2.75h18.5c1.517 0 2.75-1.233 2.75-2.75v-5.5c0-.965-.785-1.75-1.75-1.75z"/><path d="m4 12c-.552 0-1-.448-1-1v-8c0-1.654 1.346-3 3-3h12c1.654 0 3 1.346 3 3v8c0 .552-.448 1-1 1s-1-.448-1-1v-8c0-.551-.449-1-1-1h-12c-.551 0-1 .449-1 1v8c0 .552-.448 1-1 1z"/></svg></div>`);
 
                                 // Disable video autoplay
@@ -1201,6 +1253,7 @@
                     $('.IG_SN_DIG .IG_SN_DIG_MAIN .IG_SN_DIG_BODY a').each(function(){
                         $(this).wrap('<div></div>');
                         $(this).before('<label class="inner_box_wrapper"><input class="inner_box" type="checkbox"><span></span></label>');
+                        $(this).after('<svg id="newTab" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" clip-rule="evenodd" d="M20 14a1 1 0 0 0-1 1v3.077c0 .459-.022.57-.082.684a.363.363 0 0 1-.157.157c-.113.06-.225.082-.684.082H5.923c-.459 0-.571-.022-.684-.082a.363.363 0 0 1-.157-.157c-.06-.113-.082-.225-.082-.684L4.999 5.5a.5.5 0 0 1 .5-.5l3.5.005a1 1 0 1 0 .002-2L5.501 3a2.5 2.5 0 0 0-2.502 2.5v12.577c0 .76.083 1.185.32 1.627.223.419.558.753.977.977.442.237.866.319 1.627.319h12.154c.76 0 1.185-.082 1.627-.319.419-.224.753-.558.977-.977.237-.442.319-.866.319-1.627V15a1 1 0 0 0-1-1zm-2-9.055v-.291l-.39.09A10 10 0 0 1 15.36 5H14a1 1 0 1 1 0-2l5.5.003a1.5 1.5 0 0 1 1.5 1.5V10a1 1 0 1 1-2 0V8.639c0-.757.086-1.511.256-2.249l.09-.39h-.295a10 10 0 0 1-1.411 1.775l-5.933 5.932a1 1 0 0 1-1.414-1.414l5.944-5.944A10 10 0 0 1 18 4.945z" fill="currentColor"/></svg>');
                     });
 
                     if(USER_SETTING.DIRECT_DOWNLOAD_ALL){
@@ -1282,6 +1335,7 @@
         $('.IG_SN_DIG .IG_SN_DIG_MAIN .IG_SN_DIG_BODY a').each(function(){
             $(this).wrap('<div></div>');
             $(this).before('<label class="inner_box_wrapper"><input class="inner_box" type="checkbox"><span></span></label>');
+            $(this).after('<svg id="newTab" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" clip-rule="evenodd" d="M20 14a1 1 0 0 0-1 1v3.077c0 .459-.022.57-.082.684a.363.363 0 0 1-.157.157c-.113.06-.225.082-.684.082H5.923c-.459 0-.571-.022-.684-.082a.363.363 0 0 1-.157-.157c-.06-.113-.082-.225-.082-.684L4.999 5.5a.5.5 0 0 1 .5-.5l3.5.005a1 1 0 1 0 .002-2L5.501 3a2.5 2.5 0 0 0-2.502 2.5v12.577c0 .76.083 1.185.32 1.627.223.419.558.753.977.977.442.237.866.319 1.627.319h12.154c.76 0 1.185-.082 1.627-.319.419-.224.753-.558.977-.977.237-.442.319-.866.319-1.627V15a1 1 0 0 0-1-1zm-2-9.055v-.291l-.39.09A10 10 0 0 1 15.36 5H14a1 1 0 1 1 0-2l5.5.003a1.5 1.5 0 0 1 1.5 1.5V10a1 1 0 1 1-2 0V8.639c0-.757.086-1.511.256-2.249l.09-.39h-.295a10 10 0 0 1-1.411 1.775l-5.933 5.932a1 1 0 0 1-1.414-1.414l5.944-5.944A10 10 0 0 1 18 4.945z" fill="currentColor"/></svg>');
         });
     }
 
@@ -1638,6 +1692,16 @@
         $('.IG_SN_DIG .IG_SN_DIG_BODY span').append(`<button class="IG_REPORT_DISCORD"><a href="https://discord.gg/Sh8HJ4d" target="_blank">${_i18n('REPORT_DISCORD')}</a></button>`);
     }
 
+    function openNewTab(link){
+        var a = document.createElement('a');
+        a.href = link;
+        a.target = '_blank';
+
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+    }
+
     // Running if document is ready
     $(function(){
         $('body').on('click','.IG_SN_DIG .IG_SN_DIG_BODY .IG_DISPLAY_DOM_TREE',function(){
@@ -1753,9 +1817,17 @@
             triggerLinkElement(this);
         });
 
+        $('body').on('click','a + #newTab',async function(){
+            openNewTab($(this).prev().attr('data-href'));
+        });
+
         // Running if user left-click download icon in stories
         $('body').on('click','.IG_DWSTORY',function(){
             onStory(true);
+        });
+        $('body').on('click','.IG_DWNEWTAB',function(e){
+            e.preventDefault();
+            onStory(true, true, true);
         });
 
         // Running if user left-click download icon in stories
@@ -1773,6 +1845,10 @@
         $('body').on('click','.IG_DWHISTORY',function(){
             onHighlightsStory(true);
         });
+        $('body').on('click','.IG_DWHINEWTAB',function(e){
+            e.preventDefault();
+            onHighlightsStory(true, true);
+        });
 
         // Running if user left-click download icon in highlight stories
         $('body').on('click','.IG_DWHISTORY_THUMBNAIL',function(){
@@ -1782,6 +1858,11 @@
         // Running if user left-click download icon in reels
         $('body').on('click','.IG_REELS',function(){
             onReels(true,true);
+        });
+
+        // Running if user left-click newtab icon in reels
+        $('body').on('click','.IG_REELSNEWTAB',function(){
+            onReels(true,true,true);
         });
 
         // Running if user left-click download icon in reels
