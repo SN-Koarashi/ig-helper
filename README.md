@@ -5,8 +5,8 @@ Downloading is possible for both photos and videos from posts, as well as for st
 ## Features
 - Multiple post download options
   - Force to fetch all resources in the post
-  - Fetch high-quality photos or videos through the Media API
   - Directly download the resources in the post with one click
+- Fetch high-quality photos or videos through the Media API
 - Disable video looping
 - Download user profile picture
 - Provide scroll buttons for Reels pages
