@@ -3,11 +3,14 @@
 
 Downloading is possible for both photos and videos from posts, as well as for stories, reels or profile picture.
 ## Features
-- It can only download three images most.
-- You can click another download button to download the full thumbnail of stories videos.
-- Download button in top right of photos.<br><img src="https://i.imgur.com/hx1mPxA.png" width="280" />
-- Disable video looping with script settings.
-- You can download user profile picture (full-size).
+- Multiple post download options
+  - Force to fetch all resources in the post
+  - Fetch high-quality photos or videos through the Media API
+  - Directly download the resources in the post with one click
+- Disable video looping
+- Download user profile picture
+- Provide scroll buttons for Reels pages
+- Automatically modify and control the playback volume of all video elements
 
 ## How to Change Settings
 1. Go Instagram.com
