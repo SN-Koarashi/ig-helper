@@ -5,7 +5,7 @@
 // @name:ja            IG助手
 // @name:ko            IG조수
 // @namespace          https://github.snkms.com/
-// @version            2.16.10
+// @version            2.17.1
 // @description        Downloading is possible for both photos and videos from posts, as well as for stories, reels or profile picture.
 // @description:zh-TW  一鍵下載對方 Instagram 貼文中的相片、影片甚至是他們的限時動態、連續短片及大頭貼圖片！
 // @description:zh-CN  一键下载对方 Instagram 帖子中的相片、视频甚至是他们的快拍、Reels及头像图片！
@@ -49,7 +49,8 @@
         'DIRECT_DOWNLOAD_WHEN_SINGLE': (GM_getValue('DIRECT_DOWNLOAD_WHEN_SINGLE') != null && typeof GM_getValue('DIRECT_DOWNLOAD_WHEN_SINGLE') === 'boolean')?GM_getValue('DIRECT_DOWNLOAD_WHEN_SINGLE'):false,
         'DIRECT_DOWNLOAD_ALL': (GM_getValue('DIRECT_DOWNLOAD_ALL') != null && typeof GM_getValue('DIRECT_DOWNLOAD_ALL') === 'boolean')?GM_getValue('DIRECT_DOWNLOAD_ALL'):false,
         'MODIFY_VIDEO_VOLUME': (GM_getValue('MODIFY_VIDEO_VOLUME') != null && typeof GM_getValue('MODIFY_VIDEO_VOLUME') === 'boolean')?GM_getValue('MODIFY_VIDEO_VOLUME'):false,
-        'SCROLL_BUTTON': (GM_getValue('SCROLL_BUTTON') != null && typeof GM_getValue('SCROLL_BUTTON') === 'boolean')?GM_getValue('SCROLL_BUTTON'):true
+        'SCROLL_BUTTON': (GM_getValue('SCROLL_BUTTON') != null && typeof GM_getValue('SCROLL_BUTTON') === 'boolean')?GM_getValue('SCROLL_BUTTON'):true,
+        'FORCE_RESOURCE_VIA_MEDIA': (GM_getValue('FORCE_RESOURCE_VIA_MEDIA') != null && typeof GM_getValue('FORCE_RESOURCE_VIA_MEDIA') === 'boolean')?GM_getValue('FORCE_RESOURCE_VIA_MEDIA'):false
     };
     var VIDEO_VOLUME = (GM_getValue('G_VIDEO_VOLUME'))?GM_getValue('G_VIDEO_VOLUME'):1;
     /*******************************/
@@ -255,13 +256,29 @@
                 GL_dataCache.highlights[highlightId] = highStories;
             }
 
+            if(USER_SETTING.FORCE_RESOURCE_VIA_MEDIA){
+                let result = await getMediaInfo(target.id);
 
-
-            if(target.is_video){
-                saveFiles(target.video_resources.at(-1).src,username,"highlights",timestamp,'mp4', highlightId);
+                if(result.status === 'ok'){
+                    if(result.items[0].video_versions){
+                        saveFiles(result.items[0].video_versions[0].url, username,"highlights",timestamp,'mp4');
+                    }
+                    else{
+                        saveFiles(result.items[0].image_versions2.candidates[0].url, username,"highlights",timestamp,'jpg');
+                    }
+                }
+                else{
+                    alert('fetch failed from Media API, ' + result.message);
+                    console.log(result);
+                }
             }
             else{
-                saveFiles(target.display_resources.at(-1).src,username,"highlights",timestamp,'jpg', highlightId);
+                if(target.is_video){
+                    saveFiles(target.video_resources.at(-1).src,username,"highlights",timestamp,'mp4', highlightId);
+                }
+                else{
+                    saveFiles(target.display_resources.at(-1).src,username,"highlights",timestamp,'jpg', highlightId);
+                }
             }
         }
         else{
@@ -335,7 +352,20 @@
                 GL_dataCache.highlights[highlightId] = highStories;
             }
 
-            saveFiles(target.display_resources.at(-1).src,username,"highlights",timestamp,'jpg', highlightId);
+            if(USER_SETTING.FORCE_RESOURCE_VIA_MEDIA){
+                let result = await getMediaInfo(target.id);
+
+                if(result.status === 'ok'){
+                    saveFiles(result.items[0].image_versions2.candidates[0].url, username,"highlights",timestamp,'jpg');
+                }
+                else{
+                    alert('fetch failed from Media API, ' + result.message);
+                    console.log(result);
+                }
+            }
+            else{
+                saveFiles(target.display_resources.at(-1).src,username,"highlights",timestamp,'jpg', highlightId);
+            }
         }
         else{
             if($('body > div section video.xh8yej3').length){
@@ -390,6 +420,43 @@
             let timestamp = Math.floor(date / 1000);
             let username = $("body > div section._ac0a header._ac0k ._ac0l a + div a").first().text() || location.pathname.split('/').at(2);
 
+            if(USER_SETTING.FORCE_RESOURCE_VIA_MEDIA){
+                let mediaId = null;
+
+                let userInfo = await getUserId(username);
+                let userId = userInfo.user.pk;
+                let stories = await getStories(userId);
+
+                $('body > div section:visible div.x1ned7t2.x78zum5 > div').each(function(index){
+                    if($(this).hasClass('x1lix1fw')){
+                        if($(this).children().length > 0){
+                            mediaId = stories.data.reels_media[0].items[index].id;
+                        }
+                    }
+                });
+
+                if(mediaId == null){
+                    mediaId = location.pathname.split('/').filter(s => s.length > 0).at(-1);
+                }
+
+                let result = await getMediaInfo(mediaId);
+
+                if(result.status === 'ok'){
+                    if(result.items[0].video_versions){
+                        saveFiles(result.items[0].video_versions[0].url, username,"stories",timestamp,'mp4');
+                    }
+                    else{
+                        saveFiles(result.items[0].image_versions2.candidates[0].url, username,"stories",timestamp,'jpg');
+                    }
+                }
+                else{
+                    alert('fetch failed from Media API, ' + result.message);
+                    console.log(result);
+                }
+
+                return;
+            }
+
             if($('body > div section:visible video[playsinline]').length > 0){
                 // Download stories if it is video
                 let type = "mp4";
@@ -431,8 +498,6 @@
                                 }
                             }
                         });
-
-
                     }
 
                     GL_dataCache.stories[username] = stories;
@@ -521,6 +586,39 @@
             // Download thumbnail
             let targetURL = location.pathname.replace(/\/$/ig,'').split("/").at(-1);
             let videoThumbnailURL = "";
+
+            if(USER_SETTING.FORCE_RESOURCE_VIA_MEDIA){
+                let mediaId = null;
+
+                let userInfo = await getUserId(username);
+                let userId = userInfo.user.pk;
+                let stories = await getStories(userId);
+
+                $('body > div section:visible div.x1ned7t2.x78zum5 > div').each(function(index){
+                    if($(this).hasClass('x1lix1fw')){
+                        if($(this).children().length > 0){
+                            mediaId = stories.data.reels_media[0].items[index].id;
+                        }
+                    }
+                });
+
+                if(mediaId == null){
+                    mediaId = location.pathname.split('/').filter(s => s.length > 0).at(-1);
+                }
+
+                let result = await getMediaInfo(mediaId);
+
+                if(result.status === 'ok'){
+                    saveFiles(result.items[0].image_versions2.candidates[0].url, username,"stories",timestamp,'jpg');
+
+                }
+                else{
+                    alert('fetch failed from Media API, ' + result.message);
+                    console.log(result);
+                }
+
+                return;
+            }
 
             if(GL_dataCache.stories[username] && !isForce){
                 console.log('Fetch from memory cache:', username);
@@ -911,6 +1009,55 @@
     }
 
     /**
+     * getAppID
+     * Get Instagram App ID
+     *
+     * @return {?integer}
+     */
+    function getAppID(){
+        let result = null;
+        $('script[type="application/json"]').each(function(){
+            const regexp = /"APP_ID":"([0-9]+)"/ig;
+            const matcher = $(this).text().match(regexp);
+            if(matcher != null && result == null){
+                result = [...$(this).text().matchAll(regexp)];
+            }
+        })
+
+        return (result)?result.at(0).at(-1):null;
+    }
+
+    /**
+     * getMediaInfo
+     * Get Instagram Media object
+     *
+     * @param  {String}  mediaId
+     * @return {Object}
+     */
+    function getMediaInfo(mediaId){
+        return new Promise((resolve,reject)=>{
+            let getURL = `https://i.instagram.com/api/v1/media/${mediaId}/info/`;
+
+            GM_xmlhttpRequest({
+                method: "GET",
+                url: getURL,
+                headers: {
+                    "User-Agent": window.navigator.userAgent,
+                    "Accept": "*/*",
+                    'X-IG-App-ID': getAppID()
+                },
+                onload: function(response) {
+                    let obj = JSON.parse(response.response);
+                    resolve(obj);
+                },
+                onerror: function(err){
+                    reject(err);
+                }
+            });
+        });
+    }
+
+    /**
      * createDownloadButton
      * Create a download button in the upper right corner of each post
      *
@@ -993,7 +1140,7 @@
                         var multiple = $(this).parent().parent().find('._aap0 ._acaz').length;
                         var pathname = window.location.pathname;
                         var fullpathname = "/"+pathname.split('/')[1]+"/"+pathname.split('/')[2]+"/";
-                        var blob = USER_SETTING.FORCE_FETCH_ALL_RESOURCES;
+                        var blob = USER_SETTING.FORCE_FETCH_ALL_RESOURCES || USER_SETTING.FORCE_RESOURCE_VIA_MEDIA;
 
                         // If posts have more than one images or videos.
                         if(multiple){
@@ -1098,28 +1245,29 @@
         $(`${selector} a`).remove();
         $(selector).append('<p id="_SNLOAD">'+ message +'</p>');
         let media = await getBlobMedia(postURL);
+
         let idx = 1;
         let resource = media.shortcode_media;
 
         // GraphVideo
         if(resource.__typename == "GraphVideo" && resource.video_url){
-            $(selector).append(`<a data-blob="true" data-needed="direct" data-path="${resource.shortcode}" data-name="video" data-type="mp4" data-username="${resource.owner.username}" data-globalIndex="${idx}" href="javascript:;" data-href="${resource.video_url}"><img width="100" src="${resource.display_resources[1].src}" /><br/>- ${_i18n("VID")} ${idx} -</a>`);
+            $(selector).append(`<a media-id="${resource.id}" data-blob="true" data-needed="direct" data-path="${resource.shortcode}" data-name="video" data-type="mp4" data-username="${resource.owner.username}" data-globalIndex="${idx}" href="javascript:;" data-href="${resource.video_url}"><img width="100" src="${resource.display_resources[1].src}" /><br/>- ${_i18n("VID")} ${idx} -</a>`);
             idx++;
         }
         // GraphImage
         if(resource.__typename == "GraphImage"){
-            $(selector).append(`<a data-blob="true" data-needed="direct" data-path="${resource.shortcode}" data-name="photo" data-type="jpg" data-username="${resource.owner.username}" data-globalIndex="${idx}" href="javascript:;" data-href="${resource.display_resources[resource.display_resources.length - 1].src}"><img width="100" src="${resource.display_resources[1].src}" /><br/>- ${_i18n("IMG")} ${idx} -</a>`);
+            $(selector).append(`<a media-id="${resource.id}" data-blob="true" data-needed="direct" data-path="${resource.shortcode}" data-name="photo" data-type="jpg" data-username="${resource.owner.username}" data-globalIndex="${idx}" href="javascript:;" data-href="${resource.display_resources[resource.display_resources.length - 1].src}"><img width="100" src="${resource.display_resources[1].src}" /><br/>- ${_i18n("IMG")} ${idx} -</a>`);
             idx++;
         }
         // GraphSidecar
         if(resource.__typename == "GraphSidecar" && resource.edge_sidecar_to_children){
             for(let e of resource.edge_sidecar_to_children.edges){
                 if(e.node.__typename == "GraphVideo"){
-                    $(selector).append(`<a data-blob="true" data-needed="direct" data-path="${resource.shortcode}" data-name="video" data-type="mp4" data-username="${resource.owner.username}" data-globalIndex="${idx}" href="javascript:;" data-href="${e.node.video_url}"><img width="100" src="${e.node.display_resources[1].src}" /><br/>- ${_i18n("VID")} ${idx} -</a>`);
+                    $(selector).append(`<a media-id="${e.node.id}" data-blob="true" data-needed="direct" data-path="${resource.shortcode}" data-name="video" data-type="mp4" data-username="${resource.owner.username}" data-globalIndex="${idx}" href="javascript:;" data-href="${e.node.video_url}"><img width="100" src="${e.node.display_resources[1].src}" /><br/>- ${_i18n("VID")} ${idx} -</a>`);
                 }
 
                 if(e.node.__typename == "GraphImage"){
-                    $(selector).append(`<a data-blob="true" data-needed="direct" data-path="${resource.shortcode}" data-name="photo" data-type="jpg" data-username="${resource.owner.username}" data-globalIndex="${idx}" href="javascript:;" data-href="${e.node.display_resources[e.node.display_resources.length - 1].src}"><img width="100" src="${e.node.display_resources[1].src}" /><br/>- ${_i18n("IMG")} ${idx} -</a>`);
+                    $(selector).append(`<a media-id="${e.node.id}" data-blob="true" data-needed="direct" data-path="${resource.shortcode}" data-name="photo" data-type="jpg" data-username="${resource.owner.username}" data-globalIndex="${idx}" href="javascript:;" data-href="${e.node.display_resources[e.node.display_resources.length - 1].src}"><img width="100" src="${e.node.display_resources[1].src}" /><br/>- ${_i18n("IMG")} ${idx} -</a>`);
                 }
                 idx++;
             }
@@ -1236,8 +1384,25 @@
             username = await getPostOwner($(element).attr('data-path'));
         }
 
+        if(USER_SETTING.FORCE_RESOURCE_VIA_MEDIA){
+            let result = await getMediaInfo($(element).attr('media-id'));
 
-        saveFiles($(element).attr('data-href'),username,$(element).attr('data-name'),timestamp,$(element).attr('data-type'), $(element).attr('data-path'));
+            if(result.status === 'ok'){
+                if(result.items[0].video_versions){
+                    saveFiles(result.items[0].video_versions[0].url, username, $(element).attr('data-name'),timestamp, $(element).attr('data-type'), $(element).attr('data-path'));
+                }
+                else{
+                    saveFiles(result.items[0].image_versions2.candidates[0].url, username, $(element).attr('data-name'),timestamp, $(element).attr('data-type'), $(element).attr('data-path'));
+                }
+            }
+            else{
+                alert('fetch failed from Media API, ' + result.message);
+                console.log(result);
+            }
+        }
+        else{
+            saveFiles($(element).attr('data-href'),username,$(element).attr('data-name'),timestamp,$(element).attr('data-type'), $(element).attr('data-path'));
+        }
     }
 
     /**
@@ -1281,6 +1446,7 @@
                 "DIRECT_DOWNLOAD_ALL": "直接下載貼文中的所有資源",
                 "MODIFY_VIDEO_VOLUME": "修改影片音量（右鍵設定）",
                 "SCROLL_BUTTON": "為連續短片頁面啟用捲動按鈕",
+                "FORCE_RESOURCE_VIA_MEDIA": "透過 Media API 強制提取資源",
                 "AUTO_RENAME_INTRO": "將檔案自動重新命名為以下格式：\n使用者名稱-類型-時間戳.檔案類型\n例如：instagram-photo-1670350000.jpg\n\n若設為 false，則檔案名稱將保持原始樣貌。 \n例如：instagram_321565527_679025940443063_4318007696887450953_n.jpg",
                 "RENAME_SHORTCODE_INTRO": "將檔案自動重新命名為以下格式：\n使用者名稱-類型-Shortcode-時間戳.檔案類型\n示例：instagram-photo-CwkxyiVynpW-1670350000.jpg\n\n此功能僅在[自動重新命名檔案]設定為 TRUE 時有效。",
                 "DISABLE_VIDEO_LOOPING_INTRO": "關閉連續短片和貼文中影片自動循環播放。",
@@ -1289,7 +1455,8 @@
                 "DIRECT_DOWNLOAD_WHEN_SINGLE_INTRO": "當貼文僅有單一資源時直接下載。",
                 "DIRECT_DOWNLOAD_ALL_INTRO": "按下下載按鈕時將直接強制提取貼文中的所有資源並下載。",
                 "MODIFY_VIDEO_VOLUME_INTRO": "修改連續短片和貼文的影片播放音量（右鍵可開啟音量設定條）。",
-                "SCROLL_BUTTON_INTRO": "為連續短片頁面的右下角啟用上下捲動按鈕。"
+                "SCROLL_BUTTON_INTRO": "為連續短片頁面的右下角啟用上下捲動按鈕。",
+                "FORCE_RESOURCE_VIA_MEDIA_INTRO": "Media API 將嘗試獲取盡可能最高品質的照片或影片，但加載時間會更長。"
             },
             "zh-CN": {
                 "SHOW_DOM_TREE": "显示 DOM Tree",
@@ -1323,6 +1490,7 @@
                 "DIRECT_DOWNLOAD_ALL": "直接下载帖子中的所有资源",
                 "MODIFY_VIDEO_VOLUME": "修改视频音量（右击设置）",
                 "SCROLL_BUTTON": "为 Reels 页面启用卷动按钮",
+                "FORCE_RESOURCE_VIA_MEDIA": "通过 Media API 强制获取资源",
                 "AUTO_RENAME_INTRO": "将文件自动重新命名为以下格式类型：\n用户名-类型-时间戳.文件类型\n例如：instagram-photo-1670350000.jpg\n\n若设为false，则文件名将保持原样。 \n例如：instagram_321565527_679025940443063_4318007696887450953_n.jpg",
                 "RENAME_SHORTCODE_INTRO": "自动重命名文件为以下格式类型：\n用户名-类型-短码-时间戳.文件类型\n示例：instagram-photo-CwkxyiVynpW-1670350000.jpg\n\n它仅在[自动重命名文件]设置为 TRUE 时有效。",
                 "DISABLE_VIDEO_LOOPING_INTRO": "禁用 Reels 和帖子中的视频自动播放。",
@@ -1331,7 +1499,8 @@
                 "DIRECT_DOWNLOAD_WHEN_SINGLE_INTRO": "当帖子只有单一资源时直接下载。",
                 "DIRECT_DOWNLOAD_ALL_INTRO": "当您点击下载按钮时，帖子中的所有资源将被直接强制抓取并下载。",
                 "MODIFY_VIDEO_VOLUME_INTRO": "修改 Reels 和帖子中的视频播放音量（右击可开启音量设置滑条）。",
-                "SCROLL_BUTTON_INTRO": "为 Reels 页面的右下角启用上下卷动按钮。"
+                "SCROLL_BUTTON_INTRO": "为 Reels 页面的右下角启用上下卷动按钮。",
+                "FORCE_RESOURCE_VIA_MEDIA_INTRO": "Media API 将尝试获取尽可能最高质量的照片或视频，但加载时间会更长。"
             },
             "en-US": {
                 "SHOW_DOM_TREE": "Show DOM Tree",
@@ -1365,6 +1534,7 @@
                 "DIRECT_DOWNLOAD_ALL": "Directly Download All Resources In the Post",
                 "MODIFY_VIDEO_VOLUME": "Modify Video Volume (Right-Click To Set)",
                 "SCROLL_BUTTON": "Enable Scroll Buttons For Reels Page",
+                "FORCE_RESOURCE_VIA_MEDIA": "Force Fetch Resource via Media API",
                 "AUTO_RENAME_INTRO": "Auto rename file to format type following:\nUSERNAME-TYPE-TIMESTAMP.FILETYPE\nExample: instagram-photo-1670350000.jpg\n\nIf set to false, the file name will remain as it is.\nExample: instagram_321565527_679025940443063_4318007696887450953_n.jpg",
                 "RENAME_SHORTCODE_INTRO": "Auto rename file to format type following:\nUSERNAME-TYPE-SHORTCODE-TIMESTAMP.FILETYPE\nExample: instagram-photo-CwkxyiVynpW-1670350000.jpg\n\nIt will ONLY work in [Automatically Rename Files] setting to TRUE.",
                 "DISABLE_VIDEO_LOOPING_INTRO": "Disable video auto-looping in reels and posts.",
@@ -1373,7 +1543,8 @@
                 "DIRECT_DOWNLOAD_WHEN_SINGLE_INTRO": "Download directly when the post only has a single resource.",
                 "DIRECT_DOWNLOAD_ALL_INTRO": "When you click the download button, all resources in the post will be directly forced to be fetched and downloaded.",
                 "MODIFY_VIDEO_VOLUME_INTRO": "Modify the video playback volume in Reels and Posts (right-click to open the volume setting slider).",
-                "SCROLL_BUTTON_INTRO": "Enable scroll buttons for the lower right corner of Reels page."
+                "SCROLL_BUTTON_INTRO": "Enable scroll buttons for the lower right corner of Reels page.",
+                "FORCE_RESOURCE_VIA_MEDIA_INTRO": "The Media API will try to get the highest quality photo or video possible, but it will take longer to load."
             }
         };
     }
