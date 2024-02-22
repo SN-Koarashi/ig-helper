@@ -72,7 +72,7 @@
     z-index: 5;
 }
 
-.IG_REELS_THUMBNAIL, .IG_DWSTORY_THUMBNAIL, .IG_DWHISTORY_THUMBNAIL{
+.IG_REELSNEWTAB, .IG_DWNEWTAB, .IG_DWHINEWTAB{
     position: absolute;
     right:40px;
     top:45px;
@@ -83,8 +83,21 @@
     cursor:pointer;
     z-index: 5;
 }
-.IG_DWSTORY, .IG_DWHISTORY, .IG_DWSTORY_THUMBNAIL, .IG_DWHISTORY_THUMBNAIL{
+
+.IG_REELS_THUMBNAIL, .IG_DWSTORY_THUMBNAIL, .IG_DWHISTORY_THUMBNAIL{
+    position: absolute;
+    right:40px;
+    top:75px;
+    padding:5px;
+    line-height:1;
+    background:#fff;
+    border-radius: 5px;
+    cursor:pointer;
+    z-index: 5;
+}
+.IG_DWSTORY, .IG_DWHISTORY, .IG_DWSTORY_THUMBNAIL, .IG_DWHISTORY_THUMBNAI, .IG_DWNEWTAB, .IG_DWHINEWTABL{
     right:-40px;
+    color: #000;
 }
 .IG_DWPROFILE{
     position: absolute;
@@ -311,4 +324,14 @@ kbd {
     transform: rotate(45deg);
     -webkit-transform: rotate(45deg);
     top: 6px;
+}
+
+.IG_SN_DIG_BODY #newTab{
+    position: absolute;
+    right: 0px;
+    top: 0px;
+    z-index: 3;
+    padding: 7px;
+    cursor: pointer;
+    fill: rgb(var(--ig-primary-text));
 }
