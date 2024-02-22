@@ -5,7 +5,7 @@
 // @name:ja            IG助手
 // @name:ko            IG조수
 // @namespace          https://github.snkms.com/
-// @version            2.16.8
+// @version            2.16.9
 // @description        Downloading is possible for both photos and videos from posts, as well as for stories, reels or profile picture.
 // @description:zh-TW  一鍵下載對方 Instagram 貼文中的相片、影片甚至是他們的限時動態、連續短片及大頭貼圖片！
 // @description:zh-CN  一键下载对方 Instagram 帖子中的相片、视频甚至是他们的快拍、Reels及头像图片！
@@ -41,15 +41,15 @@
     // !!! DO NOT CHANGE THIS AREA !!!
     // PLEASE CHANGE SETTING WITH MENU
     const USER_SETTING = {
-        'AUTO_RENAME': (GM_getValue('AUTO_RENAME'))?GM_getValue('AUTO_RENAME'):true,
-        'RENAME_SHORTCODE': (GM_getValue('RENAME_SHORTCODE'))?GM_getValue('RENAME_SHORTCODE'):true,
-        'DISABLE_VIDEO_LOOPING': (GM_getValue('DISABLE_VIDEO_LOOPING'))?GM_getValue('DISABLE_VIDEO_LOOPING'):false,
-        'REDIRECT_RIGHT_CLICK_USER_STORY_PICTURE': (GM_getValue('REDIRECT_RIGHT_CLICK_USER_STORY_PICTURE'))?GM_getValue('REDIRECT_RIGHT_CLICK_USER_STORY_PICTURE'):false,
-        'FORCE_FETCH_ALL_RESOURCES': (GM_getValue('FORCE_FETCH_ALL_RESOURCES'))?GM_getValue('FORCE_FETCH_ALL_RESOURCES'):false,
-        'DIRECT_DOWNLOAD_WHEN_SINGLE': (GM_getValue('DIRECT_DOWNLOAD_WHEN_SINGLE'))?GM_getValue('DIRECT_DOWNLOAD_WHEN_SINGLE'):false,
-        'DIRECT_DOWNLOAD_ALL': (GM_getValue('DIRECT_DOWNLOAD_ALL'))?GM_getValue('DIRECT_DOWNLOAD_ALL'):false,
-        'MODIFY_VIDEO_VOLUME': (GM_getValue('MODIFY_VIDEO_VOLUME'))?GM_getValue('MODIFY_VIDEO_VOLUME'):false,
-        'SCROLL_BUTTON': (GM_getValue('SCROLL_BUTTON'))?GM_getValue('SCROLL_BUTTON'):true
+        'AUTO_RENAME': (GM_getValue('AUTO_RENAME') != null && typeof GM_getValue('AUTO_RENAME') === 'boolean')?GM_getValue('AUTO_RENAME'):true,
+        'RENAME_SHORTCODE': (GM_getValue('RENAME_SHORTCODE') != null && typeof GM_getValue('RENAME_SHORTCODE') === 'boolean')?GM_getValue('RENAME_SHORTCODE'):true,
+        'DISABLE_VIDEO_LOOPING': (GM_getValue('DISABLE_VIDEO_LOOPING') != null && typeof GM_getValue('DISABLE_VIDEO_LOOPING') === 'boolean')?GM_getValue('DISABLE_VIDEO_LOOPING'):false,
+        'REDIRECT_RIGHT_CLICK_USER_STORY_PICTURE': (GM_getValue('REDIRECT_RIGHT_CLICK_USER_STORY_PICTURE') != null && typeof GM_getValue('REDIRECT_RIGHT_CLICK_USER_STORY_PICTURE') === 'boolean')?GM_getValue('REDIRECT_RIGHT_CLICK_USER_STORY_PICTURE'):false,
+        'FORCE_FETCH_ALL_RESOURCES': (GM_getValue('FORCE_FETCH_ALL_RESOURCES') != null && typeof GM_getValue('FORCE_FETCH_ALL_RESOURCES') === 'boolean')?GM_getValue('FORCE_FETCH_ALL_RESOURCES'):false,
+        'DIRECT_DOWNLOAD_WHEN_SINGLE': (GM_getValue('DIRECT_DOWNLOAD_WHEN_SINGLE') != null && typeof GM_getValue('DIRECT_DOWNLOAD_WHEN_SINGLE') === 'boolean')?GM_getValue('DIRECT_DOWNLOAD_WHEN_SINGLE'):false,
+        'DIRECT_DOWNLOAD_ALL': (GM_getValue('DIRECT_DOWNLOAD_ALL') != null && typeof GM_getValue('DIRECT_DOWNLOAD_ALL') === 'boolean')?GM_getValue('DIRECT_DOWNLOAD_ALL'):false,
+        'MODIFY_VIDEO_VOLUME': (GM_getValue('MODIFY_VIDEO_VOLUME') != null && typeof GM_getValue('MODIFY_VIDEO_VOLUME') === 'boolean')?GM_getValue('MODIFY_VIDEO_VOLUME'):false,
+        'SCROLL_BUTTON': (GM_getValue('SCROLL_BUTTON') != null && typeof GM_getValue('SCROLL_BUTTON') === 'boolean')?GM_getValue('SCROLL_BUTTON'):true
     };
     var VIDEO_VOLUME = (GM_getValue('G_VIDEO_VOLUME'))?GM_getValue('G_VIDEO_VOLUME'):1;
     /*******************************/
@@ -1426,7 +1426,7 @@
 
 
         for(let name in USER_SETTING){
-            $('.IG_SN_DIG .IG_SN_DIG_BODY').append(`<label class="globalSettings" title="${_i18n(name+'_INTRO')}"><span>${_i18n(name)}</span> <input id="${name}" value="box" type="checkbox" ${(USER_SETTING[name])?'checked':''}><div class="chbtn"><div class="rounds"></div></div></label>`);
+            $('.IG_SN_DIG .IG_SN_DIG_BODY').append(`<label class="globalSettings" title="${_i18n(name+'_INTRO')}"><span>${_i18n(name)}</span> <input id="${name}" value="box" type="checkbox" ${(USER_SETTING[name] === true)?'checked':''}><div class="chbtn"><div class="rounds"></div></div></label>`);
 
             if(name === 'MODIFY_VIDEO_VOLUME'){
                 $('.IG_SN_DIG .IG_SN_DIG_BODY input[id="'+name+'"]').parent('label').on('contextmenu', function(e){
