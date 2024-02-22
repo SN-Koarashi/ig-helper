@@ -5,7 +5,7 @@
 // @name:ja            IG助手
 // @name:ko            IG조수
 // @namespace          https://github.snkms.com/
-// @version            2.17.1
+// @version            2.17.2
 // @description        Downloading is possible for both photos and videos from posts, as well as for stories, reels or profile picture.
 // @description:zh-TW  一鍵下載對方 Instagram 貼文中的相片、影片甚至是他們的限時動態、連續短片及大頭貼圖片！
 // @description:zh-CN  一键下载对方 Instagram 帖子中的相片、视频甚至是他们的快拍、Reels及头像图片！
@@ -1140,7 +1140,7 @@
                         var multiple = $(this).parent().parent().find('._aap0 ._acaz').length;
                         var pathname = window.location.pathname;
                         var fullpathname = "/"+pathname.split('/')[1]+"/"+pathname.split('/')[2]+"/";
-                        var blob = USER_SETTING.FORCE_FETCH_ALL_RESOURCES || USER_SETTING.FORCE_RESOURCE_VIA_MEDIA;
+                        var blob = USER_SETTING.FORCE_FETCH_ALL_RESOURCES;
 
                         // If posts have more than one images or videos.
                         if(multiple){
@@ -1153,7 +1153,7 @@
                             });
 
 
-                            if(blob){
+                            if(blob || USER_SETTING.FORCE_RESOURCE_VIA_MEDIA){
                                 createMediaListDOM(GL_postPath,".IG_SN_DIG .IG_SN_DIG_MAIN .IG_SN_DIG_BODY",_i18n("LOAD_BLOB_MULTIPLE"));
                             }
                             else{
@@ -1178,17 +1178,22 @@
                             }
                         }
                         else{
-                            s++;
-                            let element_videos = $(this).parent().parent().find('video');
-                            let element_images = $(this).parent().parent().find('._aagv img');
-                            let imgLink = (element_images.attr('srcset'))?element_images.attr('srcset').split(" ")[0]:element_images.attr('src');
-
-
-                            if(element_videos && element_videos.attr('src')){
-                                createMediaListDOM(GL_postPath,".IG_SN_DIG .IG_SN_DIG_MAIN .IG_SN_DIG_BODY",_i18n("LOAD_BLOB_ONE"));
+                            if(USER_SETTING.FORCE_RESOURCE_VIA_MEDIA){
+                                createMediaListDOM(GL_postPath,".IG_SN_DIG .IG_SN_DIG_MAIN .IG_SN_DIG_BODY",_i18n("LOAD_BLOB_MULTIPLE"));
                             }
-                            if(element_images && imgLink){
-                                $('.IG_SN_DIG .IG_SN_DIG_MAIN .IG_SN_DIG_BODY').append(`<a data-needed="direct" data-path="${GL_postPath}" data-name="photo" data-type="jpg" data-globalIndex="${s}" href="javascript:;" href="" data-href="${imgLink}"><img width="100" src="${imgLink}" /><br/>- ${_i18n("IMG")} ${s} -</a>`);
+                            else{
+                                s++;
+                                let element_videos = $(this).parent().parent().find('video');
+                                let element_images = $(this).parent().parent().find('._aagv img');
+                                let imgLink = (element_images.attr('srcset'))?element_images.attr('srcset').split(" ")[0]:element_images.attr('src');
+
+
+                                if(element_videos && element_videos.attr('src')){
+                                    createMediaListDOM(GL_postPath,".IG_SN_DIG .IG_SN_DIG_MAIN .IG_SN_DIG_BODY",_i18n("LOAD_BLOB_ONE"));
+                                }
+                                if(element_images && imgLink){
+                                    $('.IG_SN_DIG .IG_SN_DIG_MAIN .IG_SN_DIG_BODY').append(`<a data-needed="direct" data-path="${GL_postPath}" data-name="photo" data-type="jpg" data-globalIndex="${s}" href="javascript:;" href="" data-href="${imgLink}"><img width="100" src="${imgLink}" /><br/>- ${_i18n("IMG")} ${s} -</a>`);
+                                }
                             }
                         }
                     }
@@ -1359,7 +1364,7 @@
     function createSaveFileElement(downloadLink,object,username,sourceType,timestamp,filetype,shortcode) {
         const a = document.createElement("a");
         const name = username+'-'+sourceType+'-'+((USER_SETTING.RENAME_SHORTCODE && shortcode)?shortcode+'-':'')+timestamp+'.'+filetype;
-        const originally = username + '_' + new URL(downloadLink).pathname.split('/').at(-1);
+        const originally = username + '_' + new URL(downloadLink).pathname.split('/').at(-1).split('.').slice(0,-1).join('.') + '.' + filetype;
 
         a.href = URL.createObjectURL(object);
         a.setAttribute("download", (USER_SETTING.AUTO_RENAME)?name:originally);
