@@ -5,13 +5,13 @@
 // @name:ja            IG助手
 // @name:ko            IG조수
 // @namespace          https://github.snkms.com/
-// @version            2.18.4
+// @version            2.18.5
 // @description        Downloading is possible for both photos and videos from posts, as well as for stories, reels or profile picture.
 // @description:zh-TW  一鍵下載對方 Instagram 貼文中的相片、影片甚至是他們的限時動態、連續短片及大頭貼圖片！
 // @description:zh-CN  一键下载对方 Instagram 帖子中的相片、视频甚至是他们的快拍、Reels及头像图片！
 // @description:ja     投稿された写真や動画だけでなく、ストーリーズやリール動画からもダウンロードが可能です。
 // @description:ko     게시물에 게시된 사진과 동영상 뿐만 아니라 스토리나 릴스에서도 다운로드가 가능합니다.
-// @description:ro-RO  Descărcarea este posibilă atât pentru fotografiile și videoclipurile din postări, cât și pentru storyuri, reels sau poze de profil.
+// @description:ro  Descărcarea este posibilă atât pentru fotografiile și videoclipurile din postări, cât și pentru storyuri, reels sau poze de profil.
 // @author             SN-Koarashi (5026)
 // @match              https://*.instagram.com/*
 // @grant              GM_addStyle
@@ -1670,7 +1670,7 @@
                 "SCROLL_BUTTON_INTRO": "Enable scroll buttons for the lower right corner of Reels page.",
                 "FORCE_RESOURCE_VIA_MEDIA_INTRO": "The Media API will try to get the highest quality photo or video possible, but it will take longer to load."
             },
-            "ro-RO": {
+            "ro": {
                 "NEW_TAB": "Deschide într-o filă nouă",
                 "SHOW_DOM_TREE": "Afișează arborele DOM",
                 "SELECT_AND_COPY": "Selectează tot și copiază din caseta de introducere",
@@ -1743,8 +1743,8 @@
             "en-US": function(){
                 return translateText()["en-US"];
             },
-            "ro-RO": function(){
-                return translateText()["ro-RO"];
+            "ro": function(){
+                return translateText()["ro"];
             }
         }
 
@@ -1778,7 +1778,7 @@
                         $(this).append('<div id="tempWrapper"></div>');
                         $(this).children('#tempWrapper').append('<input value="' + VIDEO_VOLUME + '" type="range" min="0" max="1" step="0.05" />');
                         $(this).children('#tempWrapper').append('<input value="' + VIDEO_VOLUME + '" step="0.05" type="number" />');
-                        $(this).children('#tempWrapper').append('<svg width="26" height="26" class="IG_SN_DIG_BTN" style="cursor:pointer;position:absolute;right:5px;top:0px;fill: rgb(var(--ig-primary-text));" xmlns="http://www.w3.org/2000/svg" id="bold" enable-background="new 0 0 24 24" height="512" viewBox="0 0 24 24" width="512"><path d="m14.828 12 5.303-5.303c.586-.586.586-1.536 0-2.121l-.707-.707c-.586-.586-1.536-.586-2.121 0l-5.303 5.303-5.303-5.304c-.586-.586-1.536-.586-2.121 0l-.708.707c-.586.586-.586 1.536 0 2.121l5.304 5.304-5.303 5.303c-.586.586-.586 1.536 0 2.121l.707.707c.586.586 1.536.586 2.121 0l5.303-5.303 5.303 5.303c.586.586 1.536.586 2.121 0l.707-.707c.586-.586.586-1.536 0-2.121z"/></svg>');
+                        $(this).children('#tempWrapper').append('<svg width="26" height="26" class="IG_SN_DIG_BTN" style="cursor:pointer;position:absolute;right:5px;top:0px;fill: rgb(var(--ig-primary-text));transform: translateY(-50%);top:50%;" xmlns="http://www.w3.org/2000/svg" id="bold" enable-background="new 0 0 24 24" height="512" viewBox="0 0 24 24" width="512"><path d="m14.828 12 5.303-5.303c.586-.586.586-1.536 0-2.121l-.707-.707c-.586-.586-1.536-.586-2.121 0l-5.303 5.303-5.303-5.304c-.586-.586-1.536-.586-2.121 0l-.708.707c-.586.586-.586 1.536 0 2.121l5.304 5.304-5.303 5.303c-.586.586-.586 1.536 0 2.121l.707.707c.586.586 1.536.586 2.121 0l5.303-5.303 5.303 5.303c.586.586 1.536.586 2.121 0l.707-.707c.586-.586.586-1.536 0-2.121z"/></svg>');
                     }
                 });
             }
