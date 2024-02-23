@@ -331,10 +331,20 @@ kbd {
     top: 6px;
 }
 
-.IG_SN_DIG_BODY #newTab{
+.IG_SN_DIG_BODY .newTab{
     position: absolute;
     right: 0px;
     top: 0px;
+    z-index: 3;
+    padding: 7px;
+    cursor: pointer;
+    fill: rgb(var(--ig-primary-text));
+}
+
+.IG_SN_DIG_BODY .videoThumbnail{
+    position: absolute;
+    right: 0px;
+    top: 40px;
     z-index: 3;
     padding: 7px;
     cursor: pointer;
