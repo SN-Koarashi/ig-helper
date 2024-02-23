@@ -5,7 +5,7 @@
 // @name:ja            IG助手
 // @name:ko            IG조수
 // @namespace          https://github.snkms.com/
-// @version            2.18.1
+// @version            2.18.2
 // @description        Downloading is possible for both photos and videos from posts, as well as for stories, reels or profile picture.
 // @description:zh-TW  一鍵下載對方 Instagram 貼文中的相片、影片甚至是他們的限時動態、連續短片及大頭貼圖片！
 // @description:zh-CN  一键下载对方 Instagram 帖子中的相片、视频甚至是他们的快拍、Reels及头像图片！
@@ -46,7 +46,7 @@
         'DISABLE_VIDEO_LOOPING': (GM_getValue('DISABLE_VIDEO_LOOPING') != null && typeof GM_getValue('DISABLE_VIDEO_LOOPING') === 'boolean')?GM_getValue('DISABLE_VIDEO_LOOPING'):false,
         'REDIRECT_RIGHT_CLICK_USER_STORY_PICTURE': (GM_getValue('REDIRECT_RIGHT_CLICK_USER_STORY_PICTURE') != null && typeof GM_getValue('REDIRECT_RIGHT_CLICK_USER_STORY_PICTURE') === 'boolean')?GM_getValue('REDIRECT_RIGHT_CLICK_USER_STORY_PICTURE'):false,
         'FORCE_FETCH_ALL_RESOURCES': (GM_getValue('FORCE_FETCH_ALL_RESOURCES') != null && typeof GM_getValue('FORCE_FETCH_ALL_RESOURCES') === 'boolean')?GM_getValue('FORCE_FETCH_ALL_RESOURCES'):false,
-        'DIRECT_DOWNLOAD_WHEN_SINGLE': (GM_getValue('DIRECT_DOWNLOAD_WHEN_SINGLE') != null && typeof GM_getValue('DIRECT_DOWNLOAD_WHEN_SINGLE') === 'boolean')?GM_getValue('DIRECT_DOWNLOAD_WHEN_SINGLE'):false,
+        'DIRECT_DOWNLOAD_VISABLE_RESOURCE': (GM_getValue('DIRECT_DOWNLOAD_VISABLE_RESOURCE') != null && typeof GM_getValue('DIRECT_DOWNLOAD_VISABLE_RESOURCE') === 'boolean')?GM_getValue('DIRECT_DOWNLOAD_VISABLE_RESOURCE'):false,
         'DIRECT_DOWNLOAD_ALL': (GM_getValue('DIRECT_DOWNLOAD_ALL') != null && typeof GM_getValue('DIRECT_DOWNLOAD_ALL') === 'boolean')?GM_getValue('DIRECT_DOWNLOAD_ALL'):false,
         'MODIFY_VIDEO_VOLUME': (GM_getValue('MODIFY_VIDEO_VOLUME') != null && typeof GM_getValue('MODIFY_VIDEO_VOLUME') === 'boolean')?GM_getValue('MODIFY_VIDEO_VOLUME'):false,
         'SCROLL_BUTTON': (GM_getValue('SCROLL_BUTTON') != null && typeof GM_getValue('SCROLL_BUTTON') === 'boolean')?GM_getValue('SCROLL_BUTTON'):true,
@@ -1109,6 +1109,25 @@
         });
     }
 
+    function getVisableNodeIndex($main){
+        var index = 0;
+        // homepage classList
+        var $dot = $main.find('.x1iyjqo2 > div > div:last-child > div');
+
+        // dialog classList, main top classList
+        if($dot == null || !$dot.hasClass('_acnb')){
+            $dot = $main.find('._aatk > div > div:last-child').eq(0).children('div');
+        }
+
+        $dot.filter('._acnb').each(function(sIndex){
+            if($(this).hasClass('_acnf')){
+                index = sIndex;
+            }
+        });
+
+        return index;
+    }
+
     /**
      * createDownloadButton
      * Create a download button in the upper right corner of each post
@@ -1142,6 +1161,7 @@
                 // Add the download icon
                 let $childElement = $mainElement.children("div").children("div");
                 $childElement.eq((this.tagName === "DIV")? 0 : $childElement.length - 2).append(`<div title="${_i18n("DW")}" class="SNKMS_IG_DW_MAIN" style="right:${rightPos}px;top:${topPos}px;"><svg width="16" height="16" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" id="Capa_1" x="0px" y="0px" viewBox="0 0 512 512" style="enable-background:new 0 0 512 512;" xml:space="preserve"><g><g><path d="M382.56,233.376C379.968,227.648,374.272,224,368,224h-64V16c0-8.832-7.168-16-16-16h-64c-8.832,0-16,7.168-16,16v208h-64    c-6.272,0-11.968,3.68-14.56,9.376c-2.624,5.728-1.6,12.416,2.528,17.152l112,128c3.04,3.488,7.424,5.472,12.032,5.472    c4.608,0,8.992-2.016,12.032-5.472l112-128C384.192,245.824,385.152,239.104,382.56,233.376z"/></g></g><g><g><path d="M432,352v96H80v-96H16v128c0,17.696,14.336,32,32,32h416c17.696,0,32-14.304,32-32V352H432z"/></g></g></div>`);
+                $childElement.eq((this.tagName === "DIV")? 0 : $childElement.length - 2).append(`<div title="${_i18n("NEWTAB")}" class="SNKMS_IG_NEWTAB_MAIN" style="right:${rightPos + 35}px;top:${topPos}px;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" clip-rule="evenodd" d="M20 14a1 1 0 0 0-1 1v3.077c0 .459-.022.57-.082.684a.363.363 0 0 1-.157.157c-.113.06-.225.082-.684.082H5.923c-.459 0-.571-.022-.684-.082a.363.363 0 0 1-.157-.157c-.06-.113-.082-.225-.082-.684L4.999 5.5a.5.5 0 0 1 .5-.5l3.5.005a1 1 0 1 0 .002-2L5.501 3a2.5 2.5 0 0 0-2.502 2.5v12.577c0 .76.083 1.185.32 1.627.223.419.558.753.977.977.442.237.866.319 1.627.319h12.154c.76 0 1.185-.082 1.627-.319.419-.224.753-.558.977-.977.237-.442.319-.866.319-1.627V15a1 1 0 0 0-1-1zm-2-9.055v-.291l-.39.09A10 10 0 0 1 15.36 5H14a1 1 0 1 1 0-2l5.5.003a1.5 1.5 0 0 1 1.5 1.5V10a1 1 0 1 1-2 0V8.639c0-.757.086-1.511.256-2.249l.09-.39h-.295a10 10 0 0 1-1.411 1.775l-5.933 5.932a1 1 0 0 1-1.414-1.414l5.944-5.944A10 10 0 0 1 18 4.945z" fill="currentColor"/></svg></div>`);
                 $childElement.css('position','relative');
 
                 // Disable video autoplay
@@ -1176,15 +1196,66 @@
                     });
                 }
 
+                $(this).on('click', '.SNKMS_IG_NEWTAB_MAIN', function(e){
+                    GL_username = $(this).parent().parent().parent().attr('data-username');
+                    GL_postPath = location.pathname.replace(/\/$/,'').split('/').at(-1) || $(this).parent().parent().parent().find('a[href^="/p/"]').first().attr("href").split("/").at(2) || $(this).parent().parent().children("div:last-child").children("div").children("div:last-child").find('a[href^="/p/"]').last().attr("href").split("/").at(2);
+
+                    var $main = $(this).parent().parent().parent();
+                    var index = getVisableNodeIndex($main);
+
+                    IG_createDM(true, false);
+
+                    createMediaListDOM(GL_postPath,".IG_SN_DIG .IG_SN_DIG_MAIN .IG_SN_DIG_BODY", "");
+                    let checkBlob = setInterval(()=>{
+                        if($('.IG_SN_DIG .IG_SN_DIG_MAIN .IG_SN_DIG_BODY a').length > 0){
+                            clearInterval(checkBlob);
+                            var href = $('.IG_SN_DIG .IG_SN_DIG_BODY a[data-globalindex="'+(index+1)+'"]')?.attr('data-href');
+
+                            if(href){
+                                openNewTab(href);
+                            }
+                            else{
+                                alert('Can not find open tab url.');
+                            }
+
+                            $('.IG_SN_DIG').remove();
+                        }
+                    },250);
+                });
                 // Running if user click the download icon
                 $(this).on('click','.SNKMS_IG_DW_MAIN', async function(e){
                     GL_username = $(this).parent().parent().parent().attr('data-username');
-                    GL_postPath = location.pathname.replace(/\/$/,'').split('/').at(-1) || $(this).parent().parent().children("div:last-child").children("div").children("div:last-child").find('a[href^="/p/"]').last().attr("href").split("/").at(2);
+                    GL_postPath = location.pathname.replace(/\/$/,'').split('/').at(-1) || $(this).parent().parent().parent().find('a[href^="/p/"]').first().attr("href").split("/").at(2) || $(this).parent().parent().children("div:last-child").children("div").children("div:last-child").find('a[href^="/p/"]').last().attr("href").split("/").at(2);
 
                     // Create element that download dailog
                     IG_createDM(USER_SETTING.DIRECT_DOWNLOAD_ALL, true);
 
                     $("#article-id").html(`<a href="https://www.instagram.com/p/${GL_postPath}">${GL_postPath}</a>`);
+
+                    if(USER_SETTING.DIRECT_DOWNLOAD_VISABLE_RESOURCE){
+                        IG_setDM(true);
+
+                        createMediaListDOM(GL_postPath,".IG_SN_DIG .IG_SN_DIG_MAIN .IG_SN_DIG_BODY", "");
+
+                        var index = getVisableNodeIndex($(this).parent().parent().parent());
+                        let checkBlob = setInterval(()=>{
+                            if($('.IG_SN_DIG .IG_SN_DIG_MAIN .IG_SN_DIG_BODY a').length > 0){
+                                clearInterval(checkBlob);
+                                var href = $('.IG_SN_DIG .IG_SN_DIG_BODY a[data-globalindex="'+(index+1)+'"]')?.attr('data-href');
+
+                                if(href){
+                                    $('.IG_SN_DIG .IG_SN_DIG_BODY a[data-globalindex="'+(index+1)+'"]')?.click();
+                                }
+                                else{
+                                    alert('Can not find download url.');
+                                }
+
+                                $('.IG_SN_DIG').remove();
+                            }
+                        },250);
+
+                        return;
+                    }
 
                     if(!USER_SETTING.DIRECT_DOWNLOAD_ALL){
                         // Find video/image element and add the download icon
@@ -1265,16 +1336,6 @@
                                     $(this).click();
                                 });
 
-                                $('.IG_SN_DIG').remove();
-                            }
-                        },250);
-                    }
-                    else if(s === 1 && USER_SETTING.DIRECT_DOWNLOAD_WHEN_SINGLE){
-                        IG_setDM(true);
-                        let checkBlob = setInterval(()=>{
-                            if($('.IG_SN_DIG .IG_SN_DIG_MAIN .IG_SN_DIG_BODY a').length > 0){
-                                clearInterval(checkBlob);
-                                $('.IG_SN_DIG .IG_SN_DIG_MAIN .IG_SN_DIG_BODY a').first()?.click();
                                 $('.IG_SN_DIG').remove();
                             }
                         },250);
@@ -1474,6 +1535,7 @@
     function translateText(lang){
         return {
             "zh-TW": {
+                "NEWTAB": "在新分頁中開啟",
                 "SHOW_DOM_TREE": "顯示 DOM Tree",
                 "SELECT_AND_COPY": "全選並複製輸入框的內容",
                 "DOWNLOAD_DOM_TREE": "將 DOM Tree 下載為文字文件",
@@ -1501,7 +1563,7 @@
                 "DISABLE_VIDEO_LOOPING": "關閉影片自動循環播放",
                 "REDIRECT_RIGHT_CLICK_USER_STORY_PICTURE": "右鍵點擊使用者限時動態區域頭貼時重定向",
                 "FORCE_FETCH_ALL_RESOURCES": "強制提取貼文中所有資源",
-                "DIRECT_DOWNLOAD_WHEN_SINGLE": "直接下載貼文中的單一資源",
+                "DIRECT_DOWNLOAD_VISABLE_RESOURCE": "直接下載貼文中的可見資源",
                 "DIRECT_DOWNLOAD_ALL": "直接下載貼文中的所有資源",
                 "MODIFY_VIDEO_VOLUME": "修改影片音量（右鍵設定）",
                 "SCROLL_BUTTON": "為連續短片頁面啟用捲動按鈕",
@@ -1511,13 +1573,14 @@
                 "DISABLE_VIDEO_LOOPING_INTRO": "關閉連續短片和貼文中影片自動循環播放。",
                 "REDIRECT_RIGHT_CLICK_USER_STORY_PICTURE_INTRO": "右鍵點選首頁限時動態區域中的使用者頭貼時，重新導向到使用者的個人資料頁面。",
                 "FORCE_FETCH_ALL_RESOURCES_INTRO": "透過 Instagram API 強制取得貼文中的所有資源（照片和影片），以取消每個貼文單次提取三個資源的限制。",
-                "DIRECT_DOWNLOAD_WHEN_SINGLE_INTRO": "當貼文僅有單一資源時直接下載。",
+                "DIRECT_DOWNLOAD_VISABLE_RESOURCE_INTRO": "直接下載貼文中的目前資源。",
                 "DIRECT_DOWNLOAD_ALL_INTRO": "按下下載按鈕時將直接強制提取貼文中的所有資源並下載。",
                 "MODIFY_VIDEO_VOLUME_INTRO": "修改連續短片和貼文的影片播放音量（右鍵可開啟音量設定條）。",
                 "SCROLL_BUTTON_INTRO": "為連續短片頁面的右下角啟用上下捲動按鈕。",
                 "FORCE_RESOURCE_VIA_MEDIA_INTRO": "Media API 將嘗試獲取盡可能最高品質的照片或影片，但加載時間會更長。"
             },
             "zh-CN": {
+                "NEWTAB": "在新选项卡中打开",
                 "SHOW_DOM_TREE": "显示 DOM Tree",
                 "SELECT_AND_COPY": "全选并复制输入框的内容",
                 "DOWNLOAD_DOM_TREE": "将 DOM Tree 下载为文本文件",
@@ -1545,7 +1608,7 @@
                 "DISABLE_VIDEO_LOOPING": "禁用视频自动循环",
                 "REDIRECT_RIGHT_CLICK_USER_STORY_PICTURE": "右键单击用户故事区域头像时重定向",
                 "FORCE_FETCH_ALL_RESOURCES": "强制抓取帖子中所有资源",
-                "DIRECT_DOWNLOAD_WHEN_SINGLE": "直接下载帖子中的单个资源",
+                "DIRECT_DOWNLOAD_VISABLE_RESOURCE": "直接下载帖子中的可见资源",
                 "DIRECT_DOWNLOAD_ALL": "直接下载帖子中的所有资源",
                 "MODIFY_VIDEO_VOLUME": "修改视频音量（右击设置）",
                 "SCROLL_BUTTON": "为 Reels 页面启用卷动按钮",
@@ -1555,13 +1618,14 @@
                 "DISABLE_VIDEO_LOOPING_INTRO": "禁用 Reels 和帖子中的视频自动播放。",
                 "REDIRECT_RIGHT_CLICK_USER_STORY_PICTURE_INTRO": "右键单击主页故事区域中的用户头像，重定向到用户的个人资料页面。",
                 "FORCE_FETCH_ALL_RESOURCES_INTRO": "通过 Instagram API 强制获取帖子中的所有资源（照片和视频），以取消每个帖子单次抓取三个资源的限制。",
-                "DIRECT_DOWNLOAD_WHEN_SINGLE_INTRO": "当帖子只有单一资源时直接下载。",
+                "DIRECT_DOWNLOAD_VISABLE_RESOURCE_INTRO": "直接下载帖子中的当前资源。",
                 "DIRECT_DOWNLOAD_ALL_INTRO": "当您点击下载按钮时，帖子中的所有资源将被直接强制抓取并下载。",
                 "MODIFY_VIDEO_VOLUME_INTRO": "修改 Reels 和帖子中的视频播放音量（右击可开启音量设置滑条）。",
                 "SCROLL_BUTTON_INTRO": "为 Reels 页面的右下角启用上下卷动按钮。",
                 "FORCE_RESOURCE_VIA_MEDIA_INTRO": "Media API 将尝试获取尽可能最高质量的照片或视频，但加载时间会更长。"
             },
             "en-US": {
+                "NEWTAB": "Open in new tab",
                 "SHOW_DOM_TREE": "Show DOM Tree",
                 "SELECT_AND_COPY": "Select All and Copy of the Input Box",
                 "DOWNLOAD_DOM_TREE": "Download DOM Tree as Text File",
@@ -1589,7 +1653,7 @@
                 "DISABLE_VIDEO_LOOPING": "Disable Video Auto-looping",
                 "REDIRECT_RIGHT_CLICK_USER_STORY_PICTURE": "Redirect When Right-Clicking User Story Picture",
                 "FORCE_FETCH_ALL_RESOURCES": "Forcing Fetch All Resources In the Post",
-                "DIRECT_DOWNLOAD_WHEN_SINGLE": "Directly Download Single Resource In the Post",
+                "DIRECT_DOWNLOAD_VISABLE_RESOURCE": "Directly Download the Visible Resources In the Post",
                 "DIRECT_DOWNLOAD_ALL": "Directly Download All Resources In the Post",
                 "MODIFY_VIDEO_VOLUME": "Modify Video Volume (Right-Click To Set)",
                 "SCROLL_BUTTON": "Enable Scroll Buttons For Reels Page",
@@ -1599,7 +1663,7 @@
                 "DISABLE_VIDEO_LOOPING_INTRO": "Disable video auto-looping in reels and posts.",
                 "REDIRECT_RIGHT_CLICK_USER_STORY_PICTURE_INTRO": "Redirect to a user's profile page when right-clicking on their user avatar in the story area on the homepage.",
                 "FORCE_FETCH_ALL_RESOURCES_INTRO": "Force fetching of all resources (photos and videos) in a post via the Instagram API to remove the limit of three resources per post.",
-                "DIRECT_DOWNLOAD_WHEN_SINGLE_INTRO": "Download directly when the post only has a single resource.",
+                "DIRECT_DOWNLOAD_VISABLE_RESOURCE_INTRO": "Directly download the current resources in the post.",
                 "DIRECT_DOWNLOAD_ALL_INTRO": "When you click the download button, all resources in the post will be directly forced to be fetched and downloaded.",
                 "MODIFY_VIDEO_VOLUME_INTRO": "Modify the video playback volume in Reels and Posts (right-click to open the volume setting slider).",
                 "SCROLL_BUTTON_INTRO": "Enable scroll buttons for the lower right corner of Reels page.",
