@@ -17,7 +17,7 @@ Downloading is possible for both photos and videos from posts, as well as for st
 1. Go Instagram.com
 2. Check your Tampermonkey extension
 3. See following:
-<img src="https://cdn.discordapp.com/attachments/631735793961926656/1172091063603826748/ITNR.gif" />
+<img src="https://i.imgur.com/tSSsl5K.gif" />
 
 ## Hot keys
 - `ALT+Q` - Close pop-up window
