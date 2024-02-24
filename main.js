@@ -5,7 +5,7 @@
 // @name:ja            IG助手
 // @name:ko            IG조수
 // @namespace          https://github.snkms.com/
-// @version            2.18.6
+// @version            2.19.1
 // @description        Downloading is possible for both photos and videos from posts, as well as for stories, reels or profile picture.
 // @description:zh-TW  一鍵下載對方 Instagram 貼文中的相片、影片甚至是他們的限時動態、連續短片及大頭貼圖片！
 // @description:zh-CN  一键下载对方 Instagram 帖子中的相片、视频甚至是他们的快拍、Reels及头像图片！
@@ -89,10 +89,13 @@
         currentHeight = $(document).height();
         // Call Instagram dialog function if url changed.
         if(currentURL != location.href || !firstStarted || !pageLoaded){
+            console.log('timer', 'trigger page changed');
+
             clearInterval(GL_repeat);
             pageLoaded = false;
             firstStarted = true;
             currentURL = location.href;
+            GL_observer.disconnect();
 
             if(location.href.startsWith("https://www.instagram.com/p/") || location.href.startsWith("https://www.instagram.com/reel/")){
                 GL_dataCache.stories = {};
@@ -131,10 +134,12 @@
                     onReadyMyDW(false);
                 },150);
 
-                const element = $('div[id^="mount"] > div > div div > section > main div:not([class]):not([style]) > div > article').parent()[0];
-                GL_observer.observe(element, {
-                    childList: true
-                });
+                const element = $('div[id^="mount"] > div > div div > section > main div:not([class]):not([style]) > div > article')?.parent()[0];
+                if(element){
+                    GL_observer.observe(element, {
+                        childList: true
+                    });
+                }
 
                 pageLoaded = true;
             }
@@ -1145,24 +1150,83 @@
                 var rightPos = 15;
                 var topPos = 15;
                 var $mainElement = $(this);
+                var tagName = this.tagName;
 
                 // not loop each in single top post
-                if(this.tagName === "DIV" && index != 0){
+                if(tagName === "DIV" && index != 0){
                     return;
                 }
 
                 // New post UI by Discord: ken
-                if(this.tagName === "DIV" && $(this).attr('role') === "presentation"){
+                if(tagName === "DIV" && $(this).attr('role') === "presentation"){
                     rightPos = 28;
                     topPos = 75;
                     $mainElement = $('div._aap0[role="presentation"]').parents('div._aamm').parent().parent().parent().parent().parent();
                 }
 
 
-                // Add the download icon
+                // Add icons
+                const DownloadElement = `<div title="${_i18n("DW")}" class="SNKMS_IG_DW_MAIN" style="right:${rightPos}px;top:${topPos}px;"><svg width="16" height="16" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" id="Capa_1" x="0px" y="0px" viewBox="0 0 512 512" style="enable-background:new 0 0 512 512;" xml:space="preserve"><g><g><path d="M382.56,233.376C379.968,227.648,374.272,224,368,224h-64V16c0-8.832-7.168-16-16-16h-64c-8.832,0-16,7.168-16,16v208h-64    c-6.272,0-11.968,3.68-14.56,9.376c-2.624,5.728-1.6,12.416,2.528,17.152l112,128c3.04,3.488,7.424,5.472,12.032,5.472    c4.608,0,8.992-2.016,12.032-5.472l112-128C384.192,245.824,385.152,239.104,382.56,233.376z"/></g></g><g><g><path d="M432,352v96H80v-96H16v128c0,17.696,14.336,32,32,32h416c17.696,0,32-14.304,32-32V352H432z"/></g></g></div>`;
+                const NewTabElement = `<div title="${_i18n("NEW_TAB")}" class="SNKMS_IG_NEWTAB_MAIN" style="right:${rightPos + 35}px;top:${topPos}px;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" clip-rule="evenodd" d="M20 14a1 1 0 0 0-1 1v3.077c0 .459-.022.57-.082.684a.363.363 0 0 1-.157.157c-.113.06-.225.082-.684.082H5.923c-.459 0-.571-.022-.684-.082a.363.363 0 0 1-.157-.157c-.06-.113-.082-.225-.082-.684L4.999 5.5a.5.5 0 0 1 .5-.5l3.5.005a1 1 0 1 0 .002-2L5.501 3a2.5 2.5 0 0 0-2.502 2.5v12.577c0 .76.083 1.185.32 1.627.223.419.558.753.977.977.442.237.866.319 1.627.319h12.154c.76 0 1.185-.082 1.627-.319.419-.224.753-.558.977-.977.237-.442.319-.866.319-1.627V15a1 1 0 0 0-1-1zm-2-9.055v-.291l-.39.09A10 10 0 0 1 15.36 5H14a1 1 0 1 1 0-2l5.5.003a1.5 1.5 0 0 1 1.5 1.5V10a1 1 0 1 1-2 0V8.639c0-.757.086-1.511.256-2.249l.09-.39h-.295a10 10 0 0 1-1.411 1.775l-5.933 5.932a1 1 0 0 1-1.414-1.414l5.944-5.944A10 10 0 0 1 18 4.945z" fill="currentColor"/></svg></div>`;
+                const ThumbnailElement = `<div title="${_i18n("THUMBNAIL_INTRO")}" class="SNKMS_IG_THUMBNAIL_MAIN" style="right:${rightPos + 70}px;top:${topPos}px;"><svg width="16" height="16" xmlns="http://www.w3.org/2000/svg" enable-background="new 0 0 24 24" height="512" viewBox="0 0 24 24" width="512"><circle cx="8.25" cy="5.25" r=".5"/><path d="m8.25 6.5c-.689 0-1.25-.561-1.25-1.25s.561-1.25 1.25-1.25 1.25.561 1.25 1.25-.561 1.25-1.25 1.25zm0-1.5c-.138 0-.25.112-.25.25 0 .275.5.275.5 0 0-.138-.112-.25-.25-.25z"/><path d="m7.25 11.25 2-2.5 2.25 1.5 2.25-3.5 3 4.5z"/><path d="m16.75 12h-9.5c-.288 0-.551-.165-.676-.425s-.09-.568.09-.793l2-2.5c.243-.304.678-.372 1.002-.156l1.616 1.077 1.837-2.859c.137-.212.372-.342.625-.344.246-.026.49.123.63.334l3 4.5c.153.23.168.526.037.77-.13.244-.385.396-.661.396zm-4.519-1.5h3.118l-1.587-2.381zm-3.42 0h1.712l-1.117-.745z"/><path d="m22.25 14h-2.756c-.778 0-1.452.501-1.676 1.247l-.859 2.862c-.16.533-.641.891-1.197.891h-7.524c-.556 0-1.037-.358-1.197-.891l-.859-2.861c-.224-.747-.897-1.248-1.676-1.248h-2.756c-.965 0-1.75.785-1.75 1.75v5.5c0 1.517 1.233 2.75 2.75 2.75h18.5c1.517 0 2.75-1.233 2.75-2.75v-5.5c0-.965-.785-1.75-1.75-1.75z"/><path d="m4 12c-.552 0-1-.448-1-1v-8c0-1.654 1.346-3 3-3h12c1.654 0 3 1.346 3 3v8c0 .552-.448 1-1 1s-1-.448-1-1v-8c0-.551-.449-1-1-1h-12c-.551 0-1 .449-1 1v8c0 .552-.448 1-1 1z"/></svg></div>`;
+
                 let $childElement = $mainElement.children("div").children("div");
-                $childElement.eq((this.tagName === "DIV")? 0 : $childElement.length - 2).append(`<div title="${_i18n("DW")}" class="SNKMS_IG_DW_MAIN" style="right:${rightPos}px;top:${topPos}px;"><svg width="16" height="16" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" id="Capa_1" x="0px" y="0px" viewBox="0 0 512 512" style="enable-background:new 0 0 512 512;" xml:space="preserve"><g><g><path d="M382.56,233.376C379.968,227.648,374.272,224,368,224h-64V16c0-8.832-7.168-16-16-16h-64c-8.832,0-16,7.168-16,16v208h-64    c-6.272,0-11.968,3.68-14.56,9.376c-2.624,5.728-1.6,12.416,2.528,17.152l112,128c3.04,3.488,7.424,5.472,12.032,5.472    c4.608,0,8.992-2.016,12.032-5.472l112-128C384.192,245.824,385.152,239.104,382.56,233.376z"/></g></g><g><g><path d="M432,352v96H80v-96H16v128c0,17.696,14.336,32,32,32h416c17.696,0,32-14.304,32-32V352H432z"/></g></g></div>`);
-                $childElement.eq((this.tagName === "DIV")? 0 : $childElement.length - 2).append(`<div title="${_i18n("NEW_TAB")}" class="SNKMS_IG_NEWTAB_MAIN" style="right:${rightPos + 35}px;top:${topPos}px;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" clip-rule="evenodd" d="M20 14a1 1 0 0 0-1 1v3.077c0 .459-.022.57-.082.684a.363.363 0 0 1-.157.157c-.113.06-.225.082-.684.082H5.923c-.459 0-.571-.022-.684-.082a.363.363 0 0 1-.157-.157c-.06-.113-.082-.225-.082-.684L4.999 5.5a.5.5 0 0 1 .5-.5l3.5.005a1 1 0 1 0 .002-2L5.501 3a2.5 2.5 0 0 0-2.502 2.5v12.577c0 .76.083 1.185.32 1.627.223.419.558.753.977.977.442.237.866.319 1.627.319h12.154c.76 0 1.185-.082 1.627-.319.419-.224.753-.558.977-.977.237-.442.319-.866.319-1.627V15a1 1 0 0 0-1-1zm-2-9.055v-.291l-.39.09A10 10 0 0 1 15.36 5H14a1 1 0 1 1 0-2l5.5.003a1.5 1.5 0 0 1 1.5 1.5V10a1 1 0 1 1-2 0V8.639c0-.757.086-1.511.256-2.249l.09-.39h-.295a10 10 0 0 1-1.411 1.775l-5.933 5.932a1 1 0 0 1-1.414-1.414l5.944-5.944A10 10 0 0 1 18 4.945z" fill="currentColor"/></svg></div>`);
+
+                $childElement.eq((tagName === "DIV")? 0 : $childElement.length - 2).append(DownloadElement);
+                $childElement.eq((tagName === "DIV")? 0 : $childElement.length - 2).append(NewTabElement);
+
+                // Check if visible post is video
+                if($mainElement.children("div").children("div").find('div > ul li._acaz').length === 0){
+                    if($childElement.find('video').length > 0){
+                        $childElement.eq((tagName === "DIV")? 0 : $childElement.length - 2).append(ThumbnailElement);
+                    }
+                }
+                else{
+                    const checkVideoNode = function(target){
+                        if(target){
+                            var k = $(target).children('li._acaz').length;
+                            var $targetNode = null;
+
+                            if(k == 2){
+                                var index = getVisableNodeIndex($mainElement);
+                                // First node
+                                if(index === 0){
+                                    $targetNode = $(target).children('li._acaz').first();
+                                }
+                                // Last node
+                                else{
+                                    $targetNode = $(target).children('li._acaz').last();
+                                }
+                            }
+                            // Middle node
+                            else{
+                                $targetNode = $(target).children('li._acaz').eq(1);
+                            }
+
+                            // Check if video?
+                            if($targetNode != null && $targetNode.length > 0 && $targetNode.find('video').length > 0){
+                                $childElement.eq((tagName === "DIV")? 0 : $childElement.length - 2).append(ThumbnailElement);
+                            }
+                            else{
+                                $childElement.find('.SNKMS_IG_THUMBNAIL_MAIN')?.remove();
+                            }
+                        }
+                    };
+
+                    var observer = new MutationObserver(function (mutation, owner) {
+                        var target = mutation.at(0)?.target;
+                        checkVideoNode(target);
+                    });
+
+                    const element = $mainElement.children("div").children("div").find('div > ul li._acaz')?.parent()[0];
+                    if(element){
+                        checkVideoNode(element);
+                        observer.observe(element, {
+                            childList: true
+                        });
+                    }
+                }
+
                 $childElement.css('position','relative');
 
                 // Disable video autoplay
@@ -1197,6 +1261,33 @@
                     });
                 }
 
+                $(this).on('click', '.SNKMS_IG_THUMBNAIL_MAIN', function(e){
+                    GL_username = $(this).parent().parent().parent().attr('data-username');
+                    GL_postPath = location.pathname.replace(/\/$/,'').split('/').at(-1) || $(this).parent().parent().parent().find('a[href^="/p/"]').first().attr("href").split("/").at(2) || $(this).parent().parent().children("div:last-child").children("div").children("div:last-child").find('a[href^="/p/"]').last().attr("href").split("/").at(2);
+
+                    var $main = $(this).parent().parent().parent();
+                    var index = getVisableNodeIndex($main);
+
+                    IG_createDM(true, false);
+
+                    createMediaListDOM(GL_postPath,".IG_SN_DIG .IG_SN_DIG_MAIN .IG_SN_DIG_BODY", "");
+                    let checkBlob = setInterval(()=>{
+                        if($('.IG_SN_DIG .IG_SN_DIG_MAIN .IG_SN_DIG_BODY a').length > 0){
+                            clearInterval(checkBlob);
+                            var $videoThumbnail = $('.IG_SN_DIG .IG_SN_DIG_BODY a[data-globalindex="'+(index+1)+'"]')?.parent().find('.videoThumbnail')?.first();
+
+                            if($videoThumbnail != null && $videoThumbnail.length > 0){
+                                $videoThumbnail.click();
+                            }
+                            else{
+                                alert('Can not find thumbnail url.');
+                            }
+
+                            $('.IG_SN_DIG').remove();
+                        }
+                    },250);
+                });
+
                 $(this).on('click', '.SNKMS_IG_NEWTAB_MAIN', function(e){
                     GL_username = $(this).parent().parent().parent().attr('data-username');
                     GL_postPath = location.pathname.replace(/\/$/,'').split('/').at(-1) || $(this).parent().parent().parent().find('a[href^="/p/"]').first().attr("href").split("/").at(2) || $(this).parent().parent().children("div:last-child").children("div").children("div:last-child").find('a[href^="/p/"]').last().attr("href").split("/").at(2);
@@ -1223,6 +1314,7 @@
                         }
                     },250);
                 });
+
                 // Running if user click the download icon
                 $(this).on('click','.SNKMS_IG_DW_MAIN', async function(e){
                     GL_username = $(this).parent().parent().parent().attr('data-username');
