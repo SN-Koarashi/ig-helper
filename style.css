@@ -47,7 +47,7 @@
     text-align:center;
     border-radius: 5px;
 }
-.SNKMS_IG_DW_MAIN, .SNKMS_IG_NEWTAB_MAIN{
+.SNKMS_IG_DW_MAIN, .SNKMS_IG_NEWTAB_MAIN, .SNKMS_IG_THUMBNAIL_MAIN{
     position: absolute;
     top:15px;
     padding:6px;
