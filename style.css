@@ -51,7 +51,7 @@
     position: absolute;
     top:15px;
     padding:6px;
-    line-height:1;
+    line-height:0;
     background:#fff;
     border-radius: 50%;
     cursor:pointer;
@@ -66,7 +66,7 @@
     right:40px;
     top:15px;
     padding:5px;
-    line-height:1;
+    line-height:0;
     background:#fff;
     border-radius: 5px;
     cursor:pointer;
@@ -78,7 +78,7 @@
     right:40px;
     top:45px;
     padding:5px;
-    line-height:1;
+    line-height:0;
     background:#fff;
     border-radius: 5px;
     cursor:pointer;
@@ -199,12 +199,14 @@
     background: #e7e7e7;
     background: rgb(var(--ig-secondary-button-hover));
     cursor: pointer;
+    border-radius: 7px 0px 0px 7px;
 }
 .inner_box ~ span{
     position: relative;
     height: 100%;
     width: 100%;
     display: block;
+    border-radius: 7px 0px 0px 7px;
 }
 .inner_box:checked ~ span{
     background: rgb(var(--ig-success));
@@ -242,6 +244,7 @@
     border:1px solid #000;
     border:1px solid rgb(var(--ig-primary-text));
     margin: 5px 0px;
+    border-radius: 7px;
 }
 .IG_SN_DIG_BODY > div:hover{
     background: rgba(var(--ig-hover-overlay));
@@ -338,7 +341,8 @@ kbd {
     z-index: 3;
     padding: 7px;
     cursor: pointer;
-    fill: rgb(var(--ig-primary-text));
+    line-height: 0;
+    border-radius: 5px;
 }
 
 .IG_SN_DIG_BODY .videoThumbnail{
@@ -348,5 +352,29 @@ kbd {
     z-index: 3;
     padding: 7px;
     cursor: pointer;
+    line-height: 0;
+    border-radius: 5px;
+}
+
+.IG_SN_DIG_BODY .newTab:hover, .IG_SN_DIG_BODY .videoThumbnail:hover{
+    background: rgb(var(--ig-secondary-button-hover));
+}
+
+.IG_SN_DIG_BODY .newTab svg, .IG_SN_DIG_BODY .videoThumbnail svg{
     fill: rgb(var(--ig-primary-text));
+}
+
+.IG_SN_DIG_BTN{
+    cursor:pointer;
+    position:absolute;
+    right:0px;
+    top:0px;
+    fill: rgb(var(--ig-primary-text));
+    line-height: 0;
+}
+
+#tempWrapper .IG_SN_DIG_BTN{
+    right: 5px;
+    transform: translateY(-50%);
+    top: 50%;
 }
