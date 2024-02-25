@@ -5,7 +5,7 @@
 // @name:ja            IG助手
 // @name:ko            IG조수
 // @namespace          https://github.snkms.com/
-// @version            2.19.2
+// @version            2.19.3
 // @description        Downloading is possible for both photos and videos from posts, as well as for stories, reels or profile picture.
 // @description:zh-TW  一鍵下載對方 Instagram 貼文中的相片、影片甚至是他們的限時動態、連續短片及大頭貼圖片！
 // @description:zh-CN  一键下载对方 Instagram 帖子中的相片、视频甚至是他们的快拍、Reels及头像图片！
@@ -139,14 +139,14 @@
                 console.log('isHomepage');
                 setTimeout(()=>{
                     onReadyMyDW(false);
-                },150);
 
-                const element = $('div[id^="mount"] > div > div div > section > main div:not([class]):not([style]) > div > article')?.parent()[0];
-                if(element){
-                    GL_observer.observe(element, {
-                        childList: true
-                    });
-                }
+                    const element = $('div[id^="mount"] > div > div div > section > main div:not([class]):not([style]) > div > article')?.parent()[0];
+                    if(element){
+                        GL_observer.observe(element, {
+                            childList: true
+                        });
+                    }
+                },150);
 
                 pageLoaded = true;
             }
@@ -1222,57 +1222,68 @@
                 $childElement.eq((tagName === "DIV")? 0 : $childElement.length - 2).append(DownloadElement);
                 $childElement.eq((tagName === "DIV")? 0 : $childElement.length - 2).append(NewTabElement);
 
-                // Check if visible post is video
-                if($mainElement.children("div").children("div").find('div > ul li._acaz').length === 0){
-                    if($childElement.find('video').length > 0){
-                        $childElement.eq((tagName === "DIV")? 0 : $childElement.length - 2).append(ThumbnailElement);
-                    }
-                }
-                else{
-                    const checkVideoNode = function(target){
-                        if(target){
-                            var k = $(target).children('li._acaz').length;
-                            var $targetNode = null;
-
-                            if(k == 2){
-                                var index = getVisibleNodeIndex($mainElement);
-                                // First node
-                                if(index === 0){
-                                    $targetNode = $(target).children('li._acaz').first();
-                                }
-                                // Last node
-                                else{
-                                    $targetNode = $(target).children('li._acaz').last();
-                                }
-                            }
-                            // Middle node
-                            else{
-                                $targetNode = $(target).children('li._acaz').eq(1);
-                            }
-
-                            // Check if video?
-                            if($targetNode != null && $targetNode.length > 0 && $targetNode.find('video').length > 0){
-                                $childElement.eq((tagName === "DIV")? 0 : $childElement.length - 2).append(ThumbnailElement);
-                            }
-                            else{
-                                $childElement.find('.SNKMS_IG_THUMBNAIL_MAIN')?.remove();
-                            }
+                setTimeout(()=>{
+                    // Check if visible post is video
+                    if($childElement.eq((tagName === "DIV")? 0 : $childElement.length - 2).find('div > ul li._acaz').length === 0){
+                        if($childElement.find('video').length > 0){
+                            $childElement.eq((tagName === "DIV")? 0 : $childElement.length - 2).append(ThumbnailElement);
                         }
-                    };
-
-                    var observer = new MutationObserver(function (mutation, owner) {
-                        var target = mutation.at(0)?.target;
-                        checkVideoNode(target);
-                    });
-
-                    const element = $mainElement.children("div").children("div").find('div > ul li._acaz')?.parent()[0];
-                    if(element){
-                        checkVideoNode(element);
-                        observer.observe(element, {
-                            childList: true
-                        });
                     }
-                }
+                    else{
+                        const checkVideoNode = function(target){
+                            if(target){
+                                var k = $(target).find('li._acaz').length;
+                                var $targetNode = null;
+
+                                if(k == 2){
+                                    var index = getVisibleNodeIndex($mainElement);
+                                    // First node
+                                    if(index === 0){
+                                        $targetNode = $(target).find('li._acaz').first();
+                                    }
+                                    // Last node
+                                    else{
+                                        $targetNode = $(target).find('li._acaz').last();
+                                    }
+                                }
+                                // Middle node
+                                else{
+                                    $targetNode = $(target).find('li._acaz').eq(1);
+                                }
+
+                                // Check if video?
+                                if($targetNode != null && $targetNode.length > 0 && $targetNode.find('video').length > 0){
+                                    $childElement.eq((tagName === "DIV")? 0 : $childElement.length - 2).append(ThumbnailElement);
+                                }
+                                else{
+                                    $childElement.find('.SNKMS_IG_THUMBNAIL_MAIN')?.remove();
+                                }
+                            }
+                        };
+
+                        var observer = new MutationObserver(function (mutation, owner) {
+                            var target = mutation.at(0)?.target;
+                            checkVideoNode(target);
+                        });
+
+                        const element = $childElement.eq((tagName === "DIV")? 0 : $childElement.length - 2).find('div > ul li._acaz')?.parent()[0];
+                        const elementAttr = $childElement.eq((tagName === "DIV")? 0 : $childElement.length - 2).find('div > ul li._acaz')?.parent().parent()[0];
+
+                        if(element){
+                            checkVideoNode(element);
+                            observer.observe(element, {
+                                childList: true
+                            });
+                        }
+
+                        if(elementAttr){
+                            observer.observe(elementAttr, {
+                                attributes: true
+                            });
+                        }
+                    }
+                }, 50);
+
 
                 $childElement.css('position','relative');
 
