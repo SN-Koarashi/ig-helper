@@ -5,7 +5,7 @@
 // @name:ja            IG助手
 // @name:ko            IG조수
 // @namespace          https://github.snkms.com/
-// @version            2.19.3
+// @version            2.19.4
 // @description        Downloading is possible for both photos and videos from posts, as well as for stories, reels or profile picture.
 // @description:zh-TW  一鍵下載對方 Instagram 貼文中的相片、影片甚至是他們的限時動態、連續短片及大頭貼圖片！
 // @description:zh-CN  一键下载对方 Instagram 帖子中的相片、视频甚至是他们的快拍、Reels及头像图片！
@@ -76,7 +76,6 @@
     });
 
     var currentURL = location.href;
-    var currentHeight = $(document).height();
     var firstStarted = false;
     var pageLoaded = false;
 
@@ -93,7 +92,9 @@
 
     // Main Timer
     var timer = setInterval(function(){
-        currentHeight = $(document).height();
+        // page loading
+        if(!$('div#splash-screen').is(':hidden')) return;
+
         // Call Instagram dialog function if url changed.
         if(currentURL != location.href || !firstStarted || !pageLoaded){
             console.log('timer', 'trigger page changed');
@@ -235,6 +236,7 @@
      * Trigger user's highlight download event or button display event.
      *
      * @param  {Boolean}  isDownload - Check if it is a download operation
+     * @param  {Boolean}  isPreview - Check if it is need to open new tab
      * @return {void}
      */
     async function onHighlightsStory(isDownload, isPreview){
@@ -449,6 +451,8 @@
      * Trigger user's story download event or button display event.
      *
      * @param  {Boolean}  isDownload - Check if it is a download operation
+     * @param  {Boolean}  isForce - Check if downloading directly from API instead of cache
+     * @param  {Boolean}  isPreview - Check if it is need to open new tab
      * @return {void}
      */
     async function onStory(isDownload,isForce,isPreview){
@@ -634,6 +638,7 @@
      * Trigger user's story video thumbnail download event or button display event.
      *
      * @param  {Boolean}  isDownload - Check if it is a download operation
+     * @param  {Boolean}  isForce - Check if downloading directly from API instead of cache
      * @return {void}
      */
     async function onStoryThumbnail(isDownload,isForce){
@@ -773,6 +778,7 @@
      *
      * @param  {Boolean}  isDownload - Check if it is a download operation
      * @param  {Boolean}  isVideo - Check if reel is a video element
+     * @param  {Boolean}  isPreview - Check if it is need to open new tab
      * @return {void}
      */
     async function onReels(isDownload, isVideo, isPreview){
@@ -1066,17 +1072,6 @@
      */
     function onReadyMyDW(NoDialog){
         // Whether is Instagram dialog?
-        /*
-        if(!NoDialog){
-            // Running if it is dialog
-            $('article, main > div > div.xdt5ytf > div').each(function(){
-                $(this).removeAttr('data-snig');
-                $(this).unbind('click');
-            });
-            $('.SNKMS_IG_DW_MAIN,.SNKMS_IG_DW_MAIN_VIDEO').remove();
-        }
-        */
-
         if(NoDialog == false){
             var repeat = setInterval(() => {
                 // div.xdt5ytf << (sigle post in top, not floating) >>
@@ -1112,6 +1107,7 @@
      * updateLoadingBar
      * Update loading state
      *
+     * @param  {Boolean}  isLoading - Check if loading state
      * @return {void}
      */
     function updateLoadingBar(isLoading){
@@ -1584,7 +1580,7 @@
             $('.IG_SN_DIG .IG_SN_DIG_MAIN .IG_SN_DIG_TITLE').append(`<div style="text-align: center;" id="button_group"></div>`);
             $('.IG_SN_DIG .IG_SN_DIG_MAIN .IG_SN_DIG_TITLE > div#button_group').append(`<button id="batch_download_selected">${_i18n('BATCH_DOWNLOAD_SELECTED')}</button>`);
             $('.IG_SN_DIG .IG_SN_DIG_MAIN .IG_SN_DIG_TITLE > div#button_group').append(`<button id="batch_download_direct">${_i18n('BATCH_DOWNLOAD_DIRECT')}</button>`);
-            $('.IG_SN_DIG .IG_SN_DIG_MAIN .IG_SN_DIG_TITLE').append(`<br/><label class="checkbox"><input value="yes" type="checkbox" />${_i18n('ALL_CHECK')}</label>`);
+            $('.IG_SN_DIG .IG_SN_DIG_MAIN .IG_SN_DIG_TITLE').append(`<label class="checkbox"><input value="yes" type="checkbox" />${_i18n('ALL_CHECK')}</label>`);
         }
     }
 
@@ -1715,8 +1711,6 @@
                 "BATCH_DOWNLOAD_DIRECT": "批次下載全部資源",
                 "IMG": "相片",
                 "VID": "影片",
-                "DDL": "快速下載",
-                "DDL_INTRO": "勾選後將直接下載點選當下位置的相片/影片",
                 "DW": "下載",
                 "THUMBNAIL_INTRO": "下載影片縮圖",
                 "LOAD_BLOB_ONE": "正在載入二進位大型物件...",
@@ -1760,8 +1754,6 @@
                 "BATCH_DOWNLOAD_DIRECT": "批量下载全部资源",
                 "IMG": "图像",
                 "VID": "视频",
-                "DDL": "便捷下载",
-                "DDL_INTRO": "勾选后将直接下载點擊當下位置的图像/视频",
                 "DW": "下载",
                 "THUMBNAIL_INTRO": "下载视频缩略图",
                 "LOAD_BLOB_ONE": "正在载入大型媒体对象...",
@@ -1805,8 +1797,6 @@
                 "BATCH_DOWNLOAD_DIRECT": "Download All Resources",
                 "IMG": "Image",
                 "VID": "Video",
-                "DDL": "Quick Download",
-                "DDL_INTRO": "Checking it will direct download current photo/media in the posts.",
                 "DW": "Download",
                 "THUMBNAIL_INTRO": "Download video thumbnail",
                 "LOAD_BLOB_ONE": "Loading Blob Media...",
@@ -1850,8 +1840,6 @@
                 "BATCH_DOWNLOAD_DIRECT": "Descarcă toate resursele",
                 "IMG": "Imagine",
                 "VID": "Videoclip",
-                "DDL": "Descărcare rapidă",
-                "DDL_INTRO": "Bifând această opțiune, se va descărca direct fotografia/fișierul multimedia actual(ă) din postări.",
                 "DW": "Descarcă",
                 "THUMBNAIL_INTRO": "Descarcă miniatura videoclipului",
                 "LOAD_BLOB_ONE": "Se încarcă conținutul media în format Blob...",
