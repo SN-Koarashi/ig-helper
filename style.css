@@ -96,7 +96,7 @@
     cursor:pointer;
     z-index: 5;
 }
-.IG_DWSTORY, .IG_DWHISTORY, .IG_DWSTORY_THUMBNAIL, .IG_DWHISTORY_THUMBNAI, .IG_DWNEWTAB, .IG_DWHINEWTAB{
+.IG_DWSTORY, .IG_DWHISTORY, .IG_DWSTORY_THUMBNAIL, .IG_DWHISTORY_THUMBNAIL, .IG_DWNEWTAB, .IG_DWHINEWTAB{
     right:-40px;
     color: #000;
 }
@@ -248,6 +248,9 @@
 }
 .IG_SN_DIG_BODY > div:hover{
     background: rgba(var(--ig-hover-overlay));
+}
+.IG_SN_DIG_TITLE{
+    padding-bottom: 5px;
 }
 .IG_SN_DIG_TITLE button{
     font-size: 14px;
