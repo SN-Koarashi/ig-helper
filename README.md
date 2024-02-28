@@ -6,6 +6,7 @@ Downloading is possible for both photos and videos from posts, as well as for st
 - Multiple post download options
   - Force to fetch all resources in the post
   - Directly download the resources in the post with one click
+  - Directly download the resources currently displayed in the post with one click
 - Fetch high-quality photos or videos through the Media API
 - Disable video looping
 - Download user profile picture
