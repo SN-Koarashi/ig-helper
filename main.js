@@ -5,7 +5,7 @@
 // @name:ja            IG助手
 // @name:ko            IG조수
 // @namespace          https://github.snkms.com/
-// @version            2.19.6
+// @version            2.20.1
 // @description        Downloading is possible for both photos and videos from posts, as well as for stories, reels or profile picture.
 // @description:zh-TW  一鍵下載對方 Instagram 貼文中的相片、影片甚至是他們的限時動態、連續短片及大頭貼圖片！
 // @description:zh-CN  一键下载对方 Instagram 帖子中的相片、视频甚至是他们的快拍、Reels及头像图片！
@@ -64,8 +64,9 @@
     };
 
     const checkInterval = 250;
-    const lang = navigator.language || navigator.userLanguage;
     const style = GM_getResourceText("INTERNAL_CSS");
+
+    var lang = GM_getValue('lang') || navigator.language || navigator.userLanguage;
 
     GM_addStyle(style);
     GM_registerMenuCommand(_i18n('SETTING'), () => {
@@ -1578,7 +1579,7 @@
     function IG_createDM(hasHidden, hasCheckbox){
         let isHidden = (hasHidden)?"hidden":"";
         $('body').append('<div class="IG_SN_DIG '+isHidden+'"><div class="IG_SN_DIG_BG"></div><div class="IG_SN_DIG_MAIN"><div class="IG_SN_DIG_TITLE"></div><div class="IG_SN_DIG_BODY"></div></div></div>');
-        $('.IG_SN_DIG .IG_SN_DIG_MAIN .IG_SN_DIG_TITLE').append(`<div style="position:relative;height:36px;text-align:center;margin-bottom: 7px;"><div style="position:absolute;left:0px;line-height: 18px;"><kbd>Alt</kbd>+<kbd>Q</kbd> [${_i18n("CLOSE")}]</div><div style="line-height: 18px;">IG Helper</div><div id="post_info" style="line-height: 14px;font-size:14px;">Post ID: <span id="article-id"></span></div><div class="IG_SN_DIG_BTN">${SVG.CLOSE}</div></div>`);
+        $('.IG_SN_DIG .IG_SN_DIG_MAIN .IG_SN_DIG_TITLE').append(`<div style="position:relative;min-height:36px;text-align:center;margin-bottom: 7px;"><div style="position:absolute;left:0px;line-height: 18px;"><kbd>Alt</kbd>+<kbd>Q</kbd> [${_i18n("CLOSE")}]</div><div style="line-height: 18px;">IG Helper</div><div id="post_info" style="line-height: 14px;font-size:14px;">Post ID: <span id="article-id"></span></div><div class="IG_SN_DIG_BTN">${SVG.CLOSE}</div></div>`);
 
         if(hasCheckbox){
             $('.IG_SN_DIG .IG_SN_DIG_MAIN .IG_SN_DIG_TITLE').append(`<div style="text-align: center;" id="button_group"></div>`);
@@ -1702,6 +1703,7 @@
     function translateText(lang){
         return {
             "zh-TW": {
+                "SELECT_LANG": "繁體中文 (Traditional Chinese)",
                 "NEW_TAB": "在新分頁中開啟",
                 "SHOW_DOM_TREE": "顯示 DOM Tree",
                 "SELECT_AND_COPY": "全選並複製輸入框的內容",
@@ -1745,6 +1747,7 @@
                 "FORCE_RESOURCE_VIA_MEDIA_INTRO": "Media API 將嘗試獲取盡可能最高品質的照片或影片，但加載時間會更長。"
             },
             "zh-CN": {
+                "SELECT_LANG": "简体中文 (Simplified Chinese)",
                 "NEW_TAB": "在新选项卡中打开",
                 "SHOW_DOM_TREE": "显示 DOM Tree",
                 "SELECT_AND_COPY": "全选并复制输入框的内容",
@@ -1788,6 +1791,7 @@
                 "FORCE_RESOURCE_VIA_MEDIA_INTRO": "Media API 将尝试获取尽可能最高质量的照片或视频，但加载时间会更长。"
             },
             "en-US": {
+                "SELECT_LANG": "English",
                 "NEW_TAB": "Open in new tab",
                 "SHOW_DOM_TREE": "Show DOM Tree",
                 "SELECT_AND_COPY": "Select All and Copy of the Input Box",
@@ -1831,6 +1835,7 @@
                 "FORCE_RESOURCE_VIA_MEDIA_INTRO": "The Media API will try to get the highest quality photo or video possible, but it will take longer to load."
             },
             "ro": {
+                "SELECT_LANG": "Română (Romanian)",
                 "NEW_TAB": "Deschide într-o filă nouă",
                 "SHOW_DOM_TREE": "Afișează arborele DOM",
                 "SELECT_AND_COPY": "Selectează tot și copiază din caseta de introducere",
@@ -1925,6 +1930,11 @@
         IG_createDM();
         $('.IG_SN_DIG #post_info').text('Preference Settings');
 
+        $('.IG_SN_DIG .IG_SN_DIG_TITLE > div').append('<select id="langSelect"></select><div style="font-size: 12px;">The newly selected language will be applied after refreshing the page.</div>');
+
+        for(let o in translateText()){
+            $('.IG_SN_DIG .IG_SN_DIG_TITLE > div #langSelect').append(`<option value="${o}" ${(lang == o)?'selected':''}>${translateText()[o].SELECT_LANG}</option>`);
+        }
 
         for(let name in USER_SETTING){
             $('.IG_SN_DIG .IG_SN_DIG_BODY').append(`<label class="globalSettings" title="${_i18n(name+'_INTRO')}"><span>${_i18n(name)}</span> <input id="${name}" value="box" type="checkbox" ${(USER_SETTING[name] === true)?'checked':''}><div class="chbtn"><div class="rounds"></div></div></label>`);
@@ -2189,6 +2199,13 @@
             if(index == 0){
                 alert(_i18n('NO_CHECK_RESOURCE'));
             }
+        });
+
+        $('body').on('change', '.IG_SN_DIG_TITLE #langSelect', function(){
+            GM_setValue('lang', $(this).val());
+            lang = $(this).val();
+
+            showSetting();
         });
 
         $('body').on('click', '.IG_SN_DIG_TITLE #batch_download_direct', function(){
