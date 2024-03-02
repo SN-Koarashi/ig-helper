@@ -5,7 +5,7 @@
 // @name:ja            IG助手
 // @name:ko            IG조수
 // @namespace          https://github.snkms.com/
-// @version            2.19.5
+// @version            2.19.6
 // @description        Downloading is possible for both photos and videos from posts, as well as for stories, reels or profile picture.
 // @description:zh-TW  一鍵下載對方 Instagram 貼文中的相片、影片甚至是他們的限時動態、連續短片及大頭貼圖片！
 // @description:zh-CN  一键下载对方 Instagram 帖子中的相片、视频甚至是他们的快拍、Reels及头像图片！
@@ -1954,13 +1954,13 @@
         IG_createDM();
         $('.IG_SN_DIG #post_info').text('IG Debug DOM Tree');
 
-        $('.IG_SN_DIG .IG_SN_DIG_BODY').append(`<textarea style="width:100%;box-sizing: border-box;height:300px;" readonly></textarea>`);
+        $('.IG_SN_DIG .IG_SN_DIG_BODY').append(`<textarea style="width:100%;box-sizing: border-box;height:300px;background: transparent;" readonly></textarea>`);
         $('.IG_SN_DIG .IG_SN_DIG_BODY').append(`<span style="display:block;text-align:center;">`);
-        $('.IG_SN_DIG .IG_SN_DIG_BODY span').append(`<button class="IG_DISPLAY_DOM_TREE"><a>${_i18n('SHOW_DOM_TREE')}</a></button>`);
-        $('.IG_SN_DIG .IG_SN_DIG_BODY span').append(`<button class="IG_SELECT_DOM_TREE"><a>${_i18n('SELECT_AND_COPY')}</a></button>`);
-        $('.IG_SN_DIG .IG_SN_DIG_BODY span').append(`<button class="IG_DOWNLOAD_DOM_TREE"><a>${_i18n('DOWNLOAD_DOM_TREE')}</a></button><br/>`);
-        $('.IG_SN_DIG .IG_SN_DIG_BODY span').append(`<button class="IG_REPORT_GITHUB"><a href="https://github.com/SN-Koarashi/ig-helper/issues" target="_blank">${_i18n('REPORT_GITHUB')}</a></button>`);
-        $('.IG_SN_DIG .IG_SN_DIG_BODY span').append(`<button class="IG_REPORT_DISCORD"><a href="https://discord.gg/Sh8HJ4d" target="_blank">${_i18n('REPORT_DISCORD')}</a></button>`);
+        $('.IG_SN_DIG .IG_SN_DIG_BODY span').append(`<button style="margin: 3px;" class="IG_DISPLAY_DOM_TREE"><a>${_i18n('SHOW_DOM_TREE')}</a></button>`);
+        $('.IG_SN_DIG .IG_SN_DIG_BODY span').append(`<button style="margin: 3px;" class="IG_SELECT_DOM_TREE"><a>${_i18n('SELECT_AND_COPY')}</a></button>`);
+        $('.IG_SN_DIG .IG_SN_DIG_BODY span').append(`<button style="margin: 3px;" class="IG_DOWNLOAD_DOM_TREE"><a>${_i18n('DOWNLOAD_DOM_TREE')}</a></button><br/>`);
+        $('.IG_SN_DIG .IG_SN_DIG_BODY span').append(`<button style="margin: 3px;" class="IG_REPORT_GITHUB"><a href="https://github.com/SN-Koarashi/ig-helper/issues" target="_blank">${_i18n('REPORT_GITHUB')}</a></button>`);
+        $('.IG_SN_DIG .IG_SN_DIG_BODY span').append(`<button style="margin: 3px;" class="IG_REPORT_DISCORD"><a href="https://discord.gg/Sh8HJ4d" target="_blank">${_i18n('REPORT_DISCORD')}</a></button>`);
     }
 
     /**
