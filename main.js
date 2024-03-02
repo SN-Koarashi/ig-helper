@@ -5,7 +5,7 @@
 // @name:ja            IG助手
 // @name:ko            IG조수
 // @namespace          https://github.snkms.com/
-// @version            2.20.2
+// @version            2.20.3
 // @description        Downloading is possible for both photos and videos from posts, as well as for stories, reels or profile picture.
 // @description:zh-TW  一鍵下載對方 Instagram 貼文中的相片、影片甚至是他們的限時動態、連續短片及大頭貼圖片！
 // @description:zh-CN  一键下载对方 Instagram 帖子中的相片、视频甚至是他们的快拍、Reels及头像图片！
@@ -20,6 +20,7 @@
 // @grant              GM_xmlhttpRequest
 // @grant              GM_registerMenuCommand
 // @grant              GM_getResourceText
+// @grant              GM_openInTab
 // @connect            i.instagram.com
 // @require            https://code.jquery.com/jquery-3.6.3.min.js#sha256-pvPw+upLPUjgMXY0G+8O0xUf+/Im1MZjXxxgOcBQBXU=
 // @resource           INTERNAL_CSS https://raw.githubusercontent.com/SN-Koarashi/ig-helper/master/style.css
@@ -66,15 +67,28 @@
 
     const checkInterval = 250;
     const style = GM_getResourceText("INTERNAL_CSS");
-
     var lang = GM_getValue('lang') || navigator.language || navigator.userLanguage;
 
     GM_addStyle(style);
     GM_registerMenuCommand(_i18n('SETTING'), () => {
         showSetting();
+    },{
+        accessKey: "w"
+    });
+    GM_registerMenuCommand(_i18n('DONATE'), () => {
+        GM_openInTab("https://ko-fi.com/snkoarashi", {active: true});
+    },{
+        accessKey: "d"
     });
     GM_registerMenuCommand(_i18n('DEBUG'), () => {
         showDebugDOM();
+    },{
+        accessKey: "z"
+    });
+    GM_registerMenuCommand(_i18n('FEEDBACK'), () => {
+        GM_openInTab("https://greasyfork.org/zh-TW/scripts/404535-ig-helper/feedback", {active: true});
+    },{
+        accessKey: "f"
     });
 
     var currentURL = location.href;
@@ -1705,6 +1719,8 @@
         return {
             "zh-TW": {
                 "SELECT_LANG": "繁體中文 (Traditional Chinese)",
+                "DONATE": "贊助",
+                "FEEDBACK": "回報問題",
                 "NEW_TAB": "在新分頁中開啟",
                 "SHOW_DOM_TREE": "顯示 DOM Tree",
                 "SELECT_AND_COPY": "全選並複製輸入框的內容",
@@ -1749,6 +1765,8 @@
             },
             "zh-CN": {
                 "SELECT_LANG": "简体中文 (Simplified Chinese)",
+                "DONATE": "捐助",
+                "FEEDBACK": "反馈问题",
                 "NEW_TAB": "在新选项卡中打开",
                 "SHOW_DOM_TREE": "显示 DOM Tree",
                 "SELECT_AND_COPY": "全选并复制输入框的内容",
@@ -1793,6 +1811,8 @@
             },
             "en-US": {
                 "SELECT_LANG": "English",
+                "DONATE": "Donation",
+                "FEEDBACK": "Feedback",
                 "NEW_TAB": "Open in new tab",
                 "SHOW_DOM_TREE": "Show DOM Tree",
                 "SELECT_AND_COPY": "Select All and Copy of the Input Box",
@@ -1837,6 +1857,8 @@
             },
             "ro": {
                 "SELECT_LANG": "Română (Romanian)",
+                "DONATE": "Donare",
+                "FEEDBACK": "Părere",
                 "NEW_TAB": "Deschide într-o filă nouă",
                 "SHOW_DOM_TREE": "Afișează arborele DOM",
                 "SELECT_AND_COPY": "Selectează tot și copiază din caseta de introducere",
@@ -2016,7 +2038,7 @@
         });
 
         // Close the download dialog if user click the close icon
-        $('body').on('click','.IG_SN_DIG_BTN,.IG_SN_DIG_BG',function(){
+        $('body').on('click','.IG_SN_DIG_BTN, .IG_SN_DIG_BG',function(){
             if($(this).parent('#tempWrapper').length > 0){
                 $(this).parent('#tempWrapper').fadeOut(250, function(){
                     $(this).remove();
