@@ -5,7 +5,7 @@
 // @name:ja            IG助手
 // @name:ko            IG조수
 // @namespace          https://github.snkms.com/
-// @version            2.20.3
+// @version            2.20.4
 // @description        Downloading is possible for both photos and videos from posts, as well as for stories, reels or profile picture.
 // @description:zh-TW  一鍵下載對方 Instagram 貼文中的相片、影片甚至是他們的限時動態、連續短片及大頭貼圖片！
 // @description:zh-CN  一键下载对方 Instagram 帖子中的相片、视频甚至是他们的快拍、Reels及头像图片！
@@ -1382,8 +1382,13 @@
                             clearInterval(checkBlob);
                             var href = $('.IG_SN_DIG .IG_SN_DIG_BODY a[data-globalindex="'+(index+1)+'"]')?.attr('data-href');
 
+
                             if(href){
-                                openNewTab(href);
+                                // replace https://instagram.ftpe8-2.fna.fbcdn.net/ to https://scontent.cdninstagram.com/ becase of same origin policy (some video)
+                                var urlObj = new URL(href);
+                                urlObj.host = 'scontent.cdninstagram.com';
+
+                                openNewTab(urlObj.href);
                             }
                             else{
                                 alert('Can not find open tab url.');
@@ -2130,7 +2135,11 @@
         });
 
         $('body').on('click','.IG_SN_DIG_BODY .newTab', function(){
-            openNewTab($(this).parent().children('a').attr('data-href'));
+            // replace https://instagram.ftpe8-2.fna.fbcdn.net/ to https://scontent.cdninstagram.com/ becase of same origin policy (some video)
+            var urlObj = new URL($(this).parent().children('a').attr('data-href'));
+            urlObj.host = 'scontent.cdninstagram.com';
+
+            openNewTab(urlObj.href);
         });
 
         $('body').on('click','.IG_SN_DIG_BODY .videoThumbnail', function(){
