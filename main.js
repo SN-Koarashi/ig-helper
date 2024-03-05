@@ -5,7 +5,7 @@
 // @name:ja            IG助手
 // @name:ko            IG조수
 // @namespace          https://github.snkms.com/
-// @version            2.22.1
+// @version            2.22.1.1
 // @description        Downloading is possible for both photos and videos from posts, as well as for stories, reels or profile picture.
 // @description:zh-TW  一鍵下載對方 Instagram 貼文中的相片、影片甚至是他們的限時動態、連續短片及大頭貼圖片！
 // @description:zh-CN  一键下载对方 Instagram 帖子中的相片、视频甚至是他们的快拍、Reels及头像图片！
@@ -325,9 +325,9 @@
                 else{
                     if(USER_SETTING.USE_BLOB_FETCH_WHEN_MEDIA_RATE_LITMIT){
                         delete GL_dataCache.highlights[highlightId];
+                        TEMP_FETCH_RATE_LITMIT = true;
 
                         onHighlightsStory(true, isPreview);
-                        TEMP_FETCH_RATE_LITMIT= true;
                     }
                     else{
                         alert('Fetch failed from Media API. API response message: ' + result.message);
@@ -446,9 +446,9 @@
                 else{
                     if(USER_SETTING.USE_BLOB_FETCH_WHEN_MEDIA_RATE_LITMIT){
                         delete GL_dataCache.highlights[highlightId];
+                        TEMP_FETCH_RATE_LITMIT = true;
 
                         onHighlightsStoryThumbnail(true);
-                        TEMP_FETCH_RATE_LITMIT= true;
                     }
                     else{
                         alert('Fetch failed from Media API. API response message: ' + result.message);
@@ -794,8 +794,8 @@
                 }
                 else{
                     if(USER_SETTING.USE_BLOB_FETCH_WHEN_MEDIA_RATE_LITMIT){
+                        TEMP_FETCH_RATE_LITMIT = true;
                         onStoryThumbnail(true, isForce);
-                        TEMP_FETCH_RATE_LITMIT= true;
                     }
                     else{
                         alert('Fetch failed from Media API. API response message: ' + result.message);
