@@ -5,7 +5,7 @@
 // @name:ja            IG助手
 // @name:ko            IG조수
 // @namespace          https://github.snkms.com/
-// @version            2.21.1
+// @version            2.21.2
 // @description        Downloading is possible for both photos and videos from posts, as well as for stories, reels or profile picture.
 // @description:zh-TW  一鍵下載對方 Instagram 貼文中的相片、影片甚至是他們的限時動態、連續短片及大頭貼圖片！
 // @description:zh-CN  一键下载对方 Instagram 帖子中的相片、视频甚至是他们的快拍、Reels及头像图片！
@@ -69,6 +69,20 @@
     const checkInterval = 250;
     const style = GM_getResourceText("INTERNAL_CSS");
     var lang = GM_getValue('lang') || navigator.language || navigator.userLanguage;
+    var currentURL = location.href;
+    var firstStarted = false;
+    var pageLoaded = false;
+
+    var GL_postPath;
+    var GL_username;
+    var GL_repeat;
+    var GL_dataCache = {
+        stories: {},
+        highlights: {}
+    };
+    var GL_observer = new MutationObserver(function (mutation, owner) {
+        onReadyMyDW();
+    });
 
     GM_addStyle(style);
     GM_registerMenuCommand(_i18n('SETTING'), () => {
@@ -91,20 +105,14 @@
     },{
         accessKey: "f"
     });
-
-    var currentURL = location.href;
-    var firstStarted = false;
-    var pageLoaded = false;
-
-    var GL_postPath;
-    var GL_username;
-    var GL_repeat;
-    var GL_dataCache = {
-        stories: {},
-        highlights: {}
-    };
-    var GL_observer = new MutationObserver(function (mutation, owner) {
-        onReadyMyDW();
+    GM_registerMenuCommand(_i18n('RELOAD_SCRIPT'), () => {
+        clearInterval(GL_repeat);
+        pageLoaded = false;
+        firstStarted = false;
+        currentURL = location.href;
+        GL_observer.disconnect();
+    },{
+        accessKey: "r"
     });
 
     // Main Timer
@@ -112,9 +120,8 @@
         // page loading
         if(!$('div#splash-screen').is(':hidden')) return;
 
-        // Call Instagram dialog function if url changed.
         if(currentURL != location.href || !firstStarted || !pageLoaded){
-            console.log('timer', 'trigger page changed');
+            console.log('Main Timer', 'trigging');
 
             clearInterval(GL_repeat);
             pageLoaded = false;
@@ -1291,7 +1298,7 @@
             // If it is have not download icon
             // class x1iyjqo2 mean user profile pages post list container
             if(!$(this).attr('data-snig') && !$(this).hasClass('x1iyjqo2') && !$(this).children('article')?.hasClass('x1iyjqo2')){
-                console.log("Found article", $(this));
+                console.log("Found post container", $(this));
 
                 var rightPos = 15;
                 var topPos = 15;
@@ -1313,13 +1320,16 @@
                 }
                 */
 
+                const $childElement = $mainElement.children("div").children("div");
+
+                if($childElement.length === 0) return;
+
+                console.log("Found insert point", $childElement);
 
                 // Add icons
                 const DownloadElement = `<div title="${_i18n("DW")}" class="SNKMS_IG_DW_MAIN" style="right:${rightPos}px;top:${topPos}px;">${SVG.DOWNLOAD}</div>`;
                 const NewTabElement = `<div title="${_i18n("NEW_TAB")}" class="SNKMS_IG_NEWTAB_MAIN" style="right:${rightPos + 35}px;top:${topPos}px;">${SVG.NEW_TAB}</div>`;
                 const ThumbnailElement = `<div title="${_i18n("THUMBNAIL_INTRO")}" class="SNKMS_IG_THUMBNAIL_MAIN" style="right:${rightPos + 70}px;top:${topPos}px;">${SVG.THUMBNAIL}</div>`;
-
-                let $childElement = $mainElement.children("div").children("div");
 
                 $childElement.eq((tagName === "DIV")? 0 : $childElement.length - 2).append(DownloadElement);
                 $childElement.eq((tagName === "DIV")? 0 : $childElement.length - 2).append(NewTabElement);
@@ -1817,6 +1827,7 @@
         return {
             "zh-TW": {
                 "SELECT_LANG": "繁體中文 (Traditional Chinese)",
+                "RELOAD_SCRIPT": "重新載入腳本",
                 "DONATE": "贊助",
                 "FEEDBACK": "回報問題",
                 "NEW_TAB": "在新分頁中開啟",
@@ -1865,6 +1876,7 @@
             },
             "zh-CN": {
                 "SELECT_LANG": "简体中文 (Simplified Chinese)",
+                "RELOAD_SCRIPT": "重新载入脚本",
                 "DONATE": "捐助",
                 "FEEDBACK": "反馈问题",
                 "NEW_TAB": "在新选项卡中打开",
@@ -1913,6 +1925,7 @@
             },
             "en-US": {
                 "SELECT_LANG": "English",
+                "RELOAD_SCRIPT": "Reload Script",
                 "DONATE": "Donate",
                 "FEEDBACK": "Feedback",
                 "NEW_TAB": "Open in new tab",
@@ -1961,6 +1974,7 @@
             },
             "ro": {
                 "SELECT_LANG": "Română (Romanian)",
+                "RELOAD_SCRIPT": "Reîncărcați Scriptul",
                 "DONATE": "Donează",
                 "FEEDBACK": "Feedback",
                 "NEW_TAB": "Deschide într-o filă nouă",
@@ -2093,7 +2107,7 @@
         IG_createDM();
         $('.IG_SN_DIG #post_info').text('IG Debug DOM Tree');
 
-        $('.IG_SN_DIG .IG_SN_DIG_BODY').append(`<textarea style="width:100%;box-sizing: border-box;height:300px;background: transparent;" readonly></textarea>`);
+        $('.IG_SN_DIG .IG_SN_DIG_BODY').append(`<textarea style="font-family: monospace;width:100%;box-sizing: border-box;height:300px;background: transparent;" readonly></textarea>`);
         $('.IG_SN_DIG .IG_SN_DIG_BODY').append(`<span style="display:block;text-align:center;">`);
         $('.IG_SN_DIG .IG_SN_DIG_BODY span').append(`<button style="margin: 3px;" class="IG_DISPLAY_DOM_TREE"><a>${_i18n('SHOW_DOM_TREE')}</a></button>`);
         $('.IG_SN_DIG .IG_SN_DIG_BODY span').append(`<button style="margin: 3px;" class="IG_SELECT_DOM_TREE"><a>${_i18n('SELECT_AND_COPY')}</a></button>`);
