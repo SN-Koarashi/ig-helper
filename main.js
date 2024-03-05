@@ -5,7 +5,7 @@
 // @name:ja            IG助手
 // @name:ko            IG조수
 // @namespace          https://github.snkms.com/
-// @version            2.21.4
+// @version            2.22.1
 // @description        Downloading is possible for both photos and videos from posts, as well as for stories, reels or profile picture.
 // @description:zh-TW  一鍵下載對方 Instagram 貼文中的相片、影片甚至是他們的限時動態、連續短片及大頭貼圖片！
 // @description:zh-CN  一键下载对方 Instagram 帖子中的相片、视频甚至是他们的快拍、Reels及头像图片！
@@ -53,10 +53,12 @@
         'DIRECT_DOWNLOAD_ALL': (GM_getValue('DIRECT_DOWNLOAD_ALL') != null && typeof GM_getValue('DIRECT_DOWNLOAD_ALL') === 'boolean')?GM_getValue('DIRECT_DOWNLOAD_ALL'):false,
         'MODIFY_VIDEO_VOLUME': (GM_getValue('MODIFY_VIDEO_VOLUME') != null && typeof GM_getValue('MODIFY_VIDEO_VOLUME') === 'boolean')?GM_getValue('MODIFY_VIDEO_VOLUME'):false,
         'SCROLL_BUTTON': (GM_getValue('SCROLL_BUTTON') != null && typeof GM_getValue('SCROLL_BUTTON') === 'boolean')?GM_getValue('SCROLL_BUTTON'):true,
-        'FORCE_RESOURCE_VIA_MEDIA': (GM_getValue('FORCE_RESOURCE_VIA_MEDIA') != null && typeof GM_getValue('FORCE_RESOURCE_VIA_MEDIA') === 'boolean')?GM_getValue('FORCE_RESOURCE_VIA_MEDIA'):false
+        'FORCE_RESOURCE_VIA_MEDIA': (GM_getValue('FORCE_RESOURCE_VIA_MEDIA') != null && typeof GM_getValue('FORCE_RESOURCE_VIA_MEDIA') === 'boolean')?GM_getValue('FORCE_RESOURCE_VIA_MEDIA'):false,
+        'USE_BLOB_FETCH_WHEN_MEDIA_RATE_LITMIT': (GM_getValue('USE_BLOB_FETCH_WHEN_MEDIA_RATE_LITMIT') != null && typeof GM_getValue('USE_BLOB_FETCH_WHEN_MEDIA_RATE_LITMIT') === 'boolean')?GM_getValue('USE_BLOB_FETCH_WHEN_MEDIA_RATE_LITMIT'):false
     };
-    const CHILD_NODES = ['RENAME_SHORTCODE', 'RENAME_PUBLISH_DATE'];
+    const CHILD_NODES = ['RENAME_SHORTCODE', 'RENAME_PUBLISH_DATE', 'USE_BLOB_FETCH_WHEN_MEDIA_RATE_LITMIT'];
     var VIDEO_VOLUME = (GM_getValue('G_VIDEO_VOLUME'))?GM_getValue('G_VIDEO_VOLUME'):1;
+    var TEMP_FETCH_RATE_LITMIT = false;
     /*******************************/
 
     // Icon download by https://www.flaticon.com/authors/pixel-perfect
@@ -299,7 +301,7 @@
                 timestamp = target.taken_at_timestamp;
             }
 
-            if(USER_SETTING.FORCE_RESOURCE_VIA_MEDIA){
+            if(USER_SETTING.FORCE_RESOURCE_VIA_MEDIA && !TEMP_FETCH_RATE_LITMIT){
                 let result = await getMediaInfo(target.id);
 
                 if(result.status === 'ok'){
@@ -321,7 +323,16 @@
                     }
                 }
                 else{
-                    alert('fetch failed from Media API, ' + result.message);
+                    if(USER_SETTING.USE_BLOB_FETCH_WHEN_MEDIA_RATE_LITMIT){
+                        delete GL_dataCache.highlights[highlightId];
+
+                        onHighlightsStory(true, isPreview);
+                        TEMP_FETCH_RATE_LITMIT= true;
+                    }
+                    else{
+                        alert('Fetch failed from Media API. API response message: ' + result.message);
+                    }
+
                     console.log(result);
                 }
             }
@@ -342,6 +353,8 @@
                         saveFiles(target.display_resources.at(-1).src,username,"highlights",timestamp,'jpg', highlightId);
                     }
                 }
+
+                TEMP_FETCH_RATE_LITMIT = false;
             }
 
             updateLoadingBar(false);
@@ -424,19 +437,29 @@
                 timestamp = target.taken_at_timestamp;
             }
 
-            if(USER_SETTING.FORCE_RESOURCE_VIA_MEDIA){
+            if(USER_SETTING.FORCE_RESOURCE_VIA_MEDIA && !TEMP_FETCH_RATE_LITMIT){
                 let result = await getMediaInfo(target.id);
 
                 if(result.status === 'ok'){
                     saveFiles(result.items[0].image_versions2.candidates[0].url, username,"highlights",timestamp,'jpg');
                 }
                 else{
-                    alert('fetch failed from Media API, ' + result.message);
+                    if(USER_SETTING.USE_BLOB_FETCH_WHEN_MEDIA_RATE_LITMIT){
+                        delete GL_dataCache.highlights[highlightId];
+
+                        onHighlightsStoryThumbnail(true);
+                        TEMP_FETCH_RATE_LITMIT= true;
+                    }
+                    else{
+                        alert('Fetch failed from Media API. API response message: ' + result.message);
+                    }
+
                     console.log(result);
                 }
             }
             else{
                 saveFiles(target.display_resources.at(-1).src,username,"highlights",timestamp,'jpg', highlightId);
+                TEMP_FETCH_RATE_LITMIT= false;
             }
 
             updateLoadingBar(false);
@@ -497,7 +520,7 @@
             let username = $("body > div section._ac0a header._ac0k ._ac0l a + div a").first().text() || location.pathname.split('/').at(2);
 
             updateLoadingBar(true);
-            if(USER_SETTING.FORCE_RESOURCE_VIA_MEDIA){
+            if(USER_SETTING.FORCE_RESOURCE_VIA_MEDIA && !TEMP_FETCH_RATE_LITMIT){
                 let mediaId = null;
 
                 let userInfo = await getUserId(username);
@@ -549,7 +572,13 @@
                     }
                 }
                 else{
-                    alert('fetch failed from Media API, ' + result.message);
+                    if(USER_SETTING.USE_BLOB_FETCH_WHEN_MEDIA_RATE_LITMIT){
+                        TEMP_FETCH_RATE_LITMIT = true;
+                        onStory(isDownload,isForce,isPreview);
+                    }
+                    else{
+                        alert('Fetch failed from Media API. API response message: ' + result.message);
+                    }
                     console.log(result);
                 }
 
@@ -660,6 +689,7 @@
                 }
             }
 
+            TEMP_FETCH_RATE_LITMIT = false;
             updateLoadingBar(false);
         }
         else{
@@ -725,7 +755,7 @@
 
             updateLoadingBar(true);
 
-            if(USER_SETTING.FORCE_RESOURCE_VIA_MEDIA){
+            if(USER_SETTING.FORCE_RESOURCE_VIA_MEDIA && !TEMP_FETCH_RATE_LITMIT){
                 let mediaId = null;
 
                 let userInfo = await getUserId(username);
@@ -758,16 +788,19 @@
                     timestamp = result.items[0].taken_at;
                 }
 
-                if(USER_SETTING.RENAME_PUBLISH_DATE){
-                    timestamp = result.items[0].taken_at;
-                }
-
                 if(result.status === 'ok'){
                     saveFiles(result.items[0].image_versions2.candidates[0].url, username,"stories",timestamp,'jpg');
 
                 }
                 else{
-                    alert('fetch failed from Media API, ' + result.message);
+                    if(USER_SETTING.USE_BLOB_FETCH_WHEN_MEDIA_RATE_LITMIT){
+                        onStoryThumbnail(true, isForce);
+                        TEMP_FETCH_RATE_LITMIT= true;
+                    }
+                    else{
+                        alert('Fetch failed from Media API. API response message: ' + result.message);
+                    }
+
                     console.log(result);
                 }
 
@@ -833,7 +866,7 @@
             }
 
             saveFiles(videoThumbnailURL,username,"thumbnail",timestamp,type);
-
+            TEMP_FETCH_RATE_LITMIT= false;
             updateLoadingBar(false);
         }
         else{
@@ -1243,6 +1276,21 @@
         return new Promise((resolve,reject)=>{
             let getURL = `https://i.instagram.com/api/v1/media/${mediaId}/info/`;
 
+            if(mediaId == null){
+                alert("Can not call Media API because of the media id is invalid.");
+
+                updateLoadingBar(false);
+                reject(-1);
+                return;
+            }
+            if(getAppID() == null){
+                alert("Can not call Media API because of the app id is invalid.");
+
+                updateLoadingBar(false);
+                reject(-1);
+                return;
+            }
+
             GM_xmlhttpRequest({
                 method: "GET",
                 url: getURL,
@@ -1256,7 +1304,7 @@
                     resolve(obj);
                 },
                 onerror: function(err){
-                    reject(err);
+                    resolve(err);
                 }
             });
         });
@@ -1809,7 +1857,12 @@
                 }
             }
             else{
-                alert('fetch failed from Media API, ' + result.message);
+                if(USER_SETTING.USE_BLOB_FETCH_WHEN_MEDIA_RATE_LITMIT){
+                    saveFiles($(element).attr('data-href'),username,$(element).attr('data-name'),timestamp,$(element).attr('data-type'), $(element).attr('data-path'));
+                }
+                else{
+                    alert('Fetch failed from Media API. API response message: ' + result.message);
+                }
                 console.log(result);
             }
         }
@@ -1864,6 +1917,7 @@
                 "MODIFY_VIDEO_VOLUME": "修改影片音量（右鍵設定）",
                 "SCROLL_BUTTON": "為連續短片頁面啟用捲動按鈕",
                 "FORCE_RESOURCE_VIA_MEDIA": "透過 Media API 強制提取資源",
+                "USE_BLOB_FETCH_WHEN_MEDIA_RATE_LITMIT": "當 Media API 無法存取時使用其他方式下載",
                 "AUTO_RENAME_INTRO": "將檔案自動重新命名為以下格式：\n使用者名稱-類型-時間戳.檔案類型\n例如：instagram-photo-1670350000.jpg\n\n若設為 false，則檔案名稱將保持原始樣貌。 \n例如：instagram_321565527_679025940443063_4318007696887450953_n.jpg",
                 "RENAME_SHORTCODE_INTRO": "將檔案自動重新命名為以下格式：\n使用者名稱-類型-Shortcode-時間戳.檔案類型\n例如：instagram-photo-CwkxyiVynpW-1670350000.jpg\n\n此功能僅在[自動重新命名檔案]設定為 TRUE 時有效。",
                 "RENAME_PUBLISH_DATE_INTRO": "將檔案重新命名格式中的時間戳設定為資源發佈日期 (UTC時區)\n\n此功能僅在[自動重新命名檔案]設定為 TRUE 時有效。",
@@ -1874,7 +1928,8 @@
                 "DIRECT_DOWNLOAD_ALL_INTRO": "按下下載按鈕時將直接強制提取貼文中的所有資源並下載。",
                 "MODIFY_VIDEO_VOLUME_INTRO": "修改連續短片和貼文的影片播放音量（右鍵可開啟音量設定條）。",
                 "SCROLL_BUTTON_INTRO": "為連續短片頁面的右下角啟用上下捲動按鈕。",
-                "FORCE_RESOURCE_VIA_MEDIA_INTRO": "Media API 將嘗試獲取盡可能最高品質的照片或影片，但加載時間會更長。"
+                "FORCE_RESOURCE_VIA_MEDIA_INTRO": "Media API 將嘗試獲取盡可能最高品質的照片或影片，但加載時間會更長。",
+                "USE_BLOB_FETCH_WHEN_MEDIA_RATE_LITMIT_INTRO": "當 Media API 到達速率限制或因為其他原因而無法下載時，則使用強制提取API下載資源 (資源品質略低)。"
             },
             "zh-CN": {
                 "SELECT_LANG": "简体中文 (Simplified Chinese)",
@@ -1913,6 +1968,7 @@
                 "MODIFY_VIDEO_VOLUME": "修改视频音量（右击设置）",
                 "SCROLL_BUTTON": "为 Reels 页面启用卷动按钮",
                 "FORCE_RESOURCE_VIA_MEDIA": "通过 Media API 强制获取资源",
+                "USE_BLOB_FETCH_WHEN_MEDIA_RATE_LITMIT": "当 Media API 无法存取时使用其他方式下载",
                 "AUTO_RENAME_INTRO": "将文件自动重新命名为以下格式类型：\n用户名-类型-时间戳.文件类型\n例如：instagram-photo-1670350000.jpg\n\n若设为false，则文件名将保持原样。 \n例如：instagram_321565527_679025940443063_4318007696887450953_n.jpg",
                 "RENAME_SHORTCODE_INTRO": "自动重命名文件为以下格式类型：\n用户名-类型-短码-时间戳.文件类型\n示例：instagram-photo-CwkxyiVynpW-1670350000.jpg\n\n它仅在[自动重命名文件]设置为 TRUE 时有效。",
                 "RENAME_PUBLISH_DATE_INTRO": "将文件重命名格式中的时间戳设置为资源发布日期 (UTC时区)\n\n此功能仅在[自动重命名文件]设置为 TRUE 时有效。",
@@ -1923,7 +1979,8 @@
                 "DIRECT_DOWNLOAD_ALL_INTRO": "当您点击下载按钮时，帖子中的所有资源将被直接强制抓取并下载。",
                 "MODIFY_VIDEO_VOLUME_INTRO": "修改 Reels 和帖子中的视频播放音量（右击可开启音量设置滑条）。",
                 "SCROLL_BUTTON_INTRO": "为 Reels 页面的右下角启用上下卷动按钮。",
-                "FORCE_RESOURCE_VIA_MEDIA_INTRO": "Media API 将尝试获取尽可能最高质量的照片或视频，但加载时间会更长。"
+                "FORCE_RESOURCE_VIA_MEDIA_INTRO": "Media API 将尝试获取尽可能最高质量的照片或视频，但加载时间会更长。",
+                "USE_BLOB_FETCH_WHEN_MEDIA_RATE_LITMIT_INTRO": "当 Media API 到达速率限制或因为其他原因而无法下载时，则使用强制获取API下载资源 (资源质量略低)。"
             },
             "en-US": {
                 "SELECT_LANG": "English",
@@ -1962,6 +2019,7 @@
                 "MODIFY_VIDEO_VOLUME": "Modify Video Volume (Right-Click To Set)",
                 "SCROLL_BUTTON": "Enable Scroll Buttons For Reels Page",
                 "FORCE_RESOURCE_VIA_MEDIA": "Force Fetch Resource via Media API",
+                "USE_BLOB_FETCH_WHEN_MEDIA_RATE_LITMIT": "Use Other Methods to Download When the Media API is Not Accessible",
                 "AUTO_RENAME_INTRO": "Auto rename file to format type following:\nUSERNAME-TYPE-TIMESTAMP.FILETYPE\nExample: instagram-photo-1670350000.jpg\n\nIf set to false, the file name will remain as it is.\nExample: instagram_321565527_679025940443063_4318007696887450953_n.jpg",
                 "RENAME_SHORTCODE_INTRO": "Auto rename file to format type following:\nUSERNAME-TYPE-SHORTCODE-TIMESTAMP.FILETYPE\nExample: instagram-photo-CwkxyiVynpW-1670350000.jpg\n\nIt will ONLY work in [Automatically Rename Files] setting to TRUE.",
                 "RENAME_PUBLISH_DATE_INTRO": "Sets the timestamp in the file rename format to the resource publish date (UTC time zone)\n\nThis feature only works when [Automatically Rename Files] is set to TRUE.",
@@ -1972,7 +2030,8 @@
                 "DIRECT_DOWNLOAD_ALL_INTRO": "When you click the download button, all resources in the post will be directly forced to be fetched and downloaded.",
                 "MODIFY_VIDEO_VOLUME_INTRO": "Modify the video playback volume in Reels and Posts (right-click to open the volume setting slider).",
                 "SCROLL_BUTTON_INTRO": "Enable scroll buttons for the lower right corner of Reels page.",
-                "FORCE_RESOURCE_VIA_MEDIA_INTRO": "The Media API will try to get the highest quality photo or video possible, but it will take longer to load."
+                "FORCE_RESOURCE_VIA_MEDIA_INTRO": "The Media API will try to get the highest quality photo or video possible, but it will take longer to load.",
+                "USE_BLOB_FETCH_WHEN_MEDIA_RATE_LITMIT_INTRO": "When the Media API reaches the rate limit or cannot be downloaded for other reasons, the Forced Fetch API is used to download resources (the resource quality is slightly lower)."
             },
             "ro": {
                 "SELECT_LANG": "Română (Romanian)",
@@ -2011,6 +2070,7 @@
                 "MODIFY_VIDEO_VOLUME": "Modifică volumul videoclipurilor (Click dreapta pentru a seta)",
                 "SCROLL_BUTTON": "Activează butoanele de derulare pentru pagina Reels",
                 "FORCE_RESOURCE_VIA_MEDIA": "Forțează preluarea resurselor prin intermediul Media API",
+                "USE_BLOB_FETCH_WHEN_MEDIA_RATE_LITMIT": "Utilizați alte metode pentru a descărca atunci când Media API nu este accesibil",
                 "AUTO_RENAME_INTRO": "Redenumește automat fișierele cu formatul următor:\nNUME_DE_UTILIZATOR-TIP-MARCAJ_DE_TIMP.TIPUL_FIȘIERULUI\nExemplu: instagram-photo-1670350000.jpg\n\nDacă este setat pe fals, numele fișierului va rămâne neschimbat.\nExemplu: instagram_321565527_679025940443063_4318007696887450953_n.jpg",
                 "RENAME_SHORTCODE_INTRO": "Redenumește automat fișierele cu formatul următor:\nNUME_DE_UTILIZATOR-TIP-COD_SCURT-MARCAJ_DE_TIMP.TIPUL_FIȘIERULUI\nExemplu: instagram-photo-CwkxyiVynpW-1670350000.jpg\n\nFuncționează DOAR dacă setarea [Redenumește automat fișierele] este pe ADEVĂRAT.",
                 "RENAME_PUBLISH_DATE_INTRO": "Setează marcajul de timp în formatul de redenumire a fișierului la data publicării resursei (fus orar UTC)\n\nFuncționează DOAR dacă setarea [Redenumește automat fișierele] este pe ADEVĂRAT.",
@@ -2021,7 +2081,8 @@
                 "DIRECT_DOWNLOAD_ALL_INTRO": "Atunci când apeși butonul de descărcare, toate resursele din postare vor fi direct forțate să fie preluate și descărcate.",
                 "MODIFY_VIDEO_VOLUME_INTRO": "Modifică volumul redării videoclipurilor în Reels și Postări (click dreapta pentru a deschide cursorul de setare a volumului).",
                 "SCROLL_BUTTON_INTRO": "Activează butoanele de derulare pentru colțul din dreapta jos al paginii Reels.",
-                "FORCE_RESOURCE_VIA_MEDIA_INTRO": "Media API va încerca să obțină cea mai înaltă calitate posibilă pentru fotografie sau videoclip, dar încărcarea va dura mai mult."
+                "FORCE_RESOURCE_VIA_MEDIA_INTRO": "Media API va încerca să obțină cea mai înaltă calitate posibilă pentru fotografie sau videoclip, dar încărcarea va dura mai mult.",
+                "USE_BLOB_FETCH_WHEN_MEDIA_RATE_LITMIT_INTRO": "Când Media API atinge limita de rată sau nu poate fi descărcat din alte motive, Forced Fetch API este folosit pentru a descărca resurse (calitatea resurselor este puțin mai scăzută)."
             }
         };
     }
