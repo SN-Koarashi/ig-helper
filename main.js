@@ -5,7 +5,7 @@
 // @name:ja            IG助手
 // @name:ko            IG조수
 // @namespace          https://github.snkms.com/
-// @version            2.20.4
+// @version            2.20.5
 // @description        Downloading is possible for both photos and videos from posts, as well as for stories, reels or profile picture.
 // @description:zh-TW  一鍵下載對方 Instagram 貼文中的相片、影片甚至是他們的限時動態、連續短片及大頭貼圖片！
 // @description:zh-CN  一键下载对方 Instagram 帖子中的相片、视频甚至是他们的快拍、Reels及头像图片！
@@ -32,8 +32,8 @@
 // @compatible         edge >= 90
 // @license            GPL-3.0-only
 // @run-at             document-idle
-// @downloadURL        https://update.greasyfork.org/scripts/404535/IG%20Helper.user.js
-// @updateURL          https://update.greasyfork.org/scripts/404535/IG%20Helper.meta.js
+// @downloadURL https://update.greasyfork.org/scripts/404535/IG%20Helper.user.js
+// @updateURL https://update.greasyfork.org/scripts/404535/IG%20Helper.meta.js
 // ==/UserScript==
 
 (function($) {
@@ -485,11 +485,19 @@
                 let userId = userInfo.user.pk;
                 let stories = await getStories(userId);
 
+                // appear in from profile page to story page
                 $('body > div section:visible div.x1ned7t2.x78zum5 > div').each(function(index){
                     if($(this).hasClass('x1lix1fw')){
                         if($(this).children().length > 0){
                             mediaId = stories.data.reels_media[0].items[index].id;
                         }
+                    }
+                });
+
+                // appear in from home page to story page
+                $('body > div section:visible ._ac0k > ._ac3r > div').each(function(index){
+                    if($(this).children().hasClass('_ac3q')){
+                        mediaId = stories.data.reels_media[0].items[index].id;
                     }
                 });
 
@@ -559,12 +567,19 @@
 
                     // GitHub issue #4: thinkpad4
                     if(videoURL.length == 0){
+                        // appear in from profile page to story page
                         $('body > div section:visible div.x1ned7t2.x78zum5 > div').each(function(index){
                             if($(this).hasClass('x1lix1fw')){
                                 if($(this).children().length > 0){
                                     videoURL = stories.data.reels_media[0].items[index].video_resources[0].src;
-
                                 }
+                            }
+                        });
+
+                        // appear in from home page to story page
+                        $('body > div section:visible ._ac0k > ._ac3r > div').each(function(index){
+                            if($(this).children().hasClass('_ac3q')){
+                                videoURL = stories.data.reels_media[0].items[index].video_resources[0].src;
                             }
                         });
                     }
@@ -678,11 +693,19 @@
                 let userId = userInfo.user.pk;
                 let stories = await getStories(userId);
 
+                // appear in from profile page to story page
                 $('body > div section:visible div.x1ned7t2.x78zum5 > div').each(function(index){
                     if($(this).hasClass('x1lix1fw')){
                         if($(this).children().length > 0){
                             mediaId = stories.data.reels_media[0].items[index].id;
                         }
+                    }
+                });
+
+                // appear in from home page to story page
+                $('body > div section:visible ._ac0k > ._ac3r > div').each(function(index){
+                    if($(this).children().hasClass('_ac3q')){
+                        mediaId = stories.data.reels_media[0].items[index].id;
                     }
                 });
 
@@ -732,11 +755,19 @@
 
                 // GitHub issue #4: thinkpad4
                 if(videoThumbnailURL.length == 0){
+                    // appear in from profile page to story page
                     $('body > div section:visible div.x1ned7t2.x78zum5 > div').each(function(index){
                         if($(this).hasClass('x1lix1fw')){
                             if($(this).children().length > 0){
                                 videoThumbnailURL = stories.data.reels_media[0].items[index].display_url;
                             }
+                        }
+                    });
+
+                    // appear in from home page to story page
+                    $('body > div section:visible ._ac0k > ._ac3r > div').each(function(index){
+                        if($(this).children().hasClass('_ac3q')){
+                            videoThumbnailURL = stories.data.reels_media[0].items[index].display_url;
                         }
                     });
                 }
@@ -1816,7 +1847,7 @@
             },
             "en-US": {
                 "SELECT_LANG": "English",
-                "DONATE": "Donation",
+                "DONATE": "Donate",
                 "FEEDBACK": "Feedback",
                 "NEW_TAB": "Open in new tab",
                 "SHOW_DOM_TREE": "Show DOM Tree",
@@ -1862,8 +1893,8 @@
             },
             "ro": {
                 "SELECT_LANG": "Română (Romanian)",
-                "DONATE": "Donare",
-                "FEEDBACK": "Părere",
+                "DONATE": "Donează",
+                "FEEDBACK": "Feedback",
                 "NEW_TAB": "Deschide într-o filă nouă",
                 "SHOW_DOM_TREE": "Afișează arborele DOM",
                 "SELECT_AND_COPY": "Selectează tot și copiază din caseta de introducere",
