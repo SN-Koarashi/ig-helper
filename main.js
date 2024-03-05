@@ -5,7 +5,7 @@
 // @name:ja            IG助手
 // @name:ko            IG조수
 // @namespace          https://github.snkms.com/
-// @version            2.20.5
+// @version            2.21.1
 // @description        Downloading is possible for both photos and videos from posts, as well as for stories, reels or profile picture.
 // @description:zh-TW  一鍵下載對方 Instagram 貼文中的相片、影片甚至是他們的限時動態、連續短片及大頭貼圖片！
 // @description:zh-CN  一键下载对方 Instagram 帖子中的相片、视频甚至是他们的快拍、Reels及头像图片！
@@ -46,6 +46,7 @@
     const USER_SETTING = {
         'AUTO_RENAME': (GM_getValue('AUTO_RENAME') != null && typeof GM_getValue('AUTO_RENAME') === 'boolean')?GM_getValue('AUTO_RENAME'):true,
         'RENAME_SHORTCODE': (GM_getValue('RENAME_SHORTCODE') != null && typeof GM_getValue('RENAME_SHORTCODE') === 'boolean')?GM_getValue('RENAME_SHORTCODE'):true,
+        'RENAME_PUBLISH_DATE': (GM_getValue('RENAME_PUBLISH_DATE') != null && typeof GM_getValue('RENAME_PUBLISH_DATE') === 'boolean')?GM_getValue('RENAME_PUBLISH_DATE'):true,
         'DISABLE_VIDEO_LOOPING': (GM_getValue('DISABLE_VIDEO_LOOPING') != null && typeof GM_getValue('DISABLE_VIDEO_LOOPING') === 'boolean')?GM_getValue('DISABLE_VIDEO_LOOPING'):false,
         'REDIRECT_RIGHT_CLICK_USER_STORY_PICTURE': (GM_getValue('REDIRECT_RIGHT_CLICK_USER_STORY_PICTURE') != null && typeof GM_getValue('REDIRECT_RIGHT_CLICK_USER_STORY_PICTURE') === 'boolean')?GM_getValue('REDIRECT_RIGHT_CLICK_USER_STORY_PICTURE'):false,
         'FORCE_FETCH_ALL_RESOURCES': (GM_getValue('FORCE_FETCH_ALL_RESOURCES') != null && typeof GM_getValue('FORCE_FETCH_ALL_RESOURCES') === 'boolean')?GM_getValue('FORCE_FETCH_ALL_RESOURCES'):false,
@@ -221,6 +222,7 @@
             let timestamp = Math.floor(date / 1000);
             let username = location.pathname.replaceAll(/(reels|tagged)\/$/ig,'').split('/').filter(s => s.length > 0).at(-1);
             let userInfo = await getUserId(username);
+
             try{
                 let dataURL = await getUserHighSizeProfile(userInfo.user.pk);
                 saveFiles(dataURL,username,"avatar",timestamp,'jpg');
@@ -282,6 +284,10 @@
                 target = highStories.data.reels_media[0].items[totIndex-nowIndex];
 
                 GL_dataCache.highlights[highlightId] = highStories;
+            }
+
+            if(USER_SETTING.RENAME_PUBLISH_DATE){
+                timestamp = target.taken_at_timestamp;
             }
 
             if(USER_SETTING.FORCE_RESOURCE_VIA_MEDIA){
@@ -405,6 +411,10 @@
                 GL_dataCache.highlights[highlightId] = highStories;
             }
 
+            if(USER_SETTING.RENAME_PUBLISH_DATE){
+                timestamp = target.taken_at_timestamp;
+            }
+
             if(USER_SETTING.FORCE_RESOURCE_VIA_MEDIA){
                 let result = await getMediaInfo(target.id);
 
@@ -507,6 +517,10 @@
 
                 let result = await getMediaInfo(mediaId);
 
+                if(USER_SETTING.RENAME_PUBLISH_DATE){
+                    timestamp = result.items[0].taken_at;
+                }
+
                 if(result.status === 'ok'){
                     if(result.items[0].video_versions){
                         if(isPreview){
@@ -545,6 +559,9 @@
                     GL_dataCache.stories[username].data.reels_media[0].items.forEach(item => {
                         if(item.id == targetURL){
                             videoURL = item.video_resources[0].src;
+                            if(USER_SETTING.RENAME_PUBLISH_DATE){
+                                timestamp = item.taken_at_timestamp;
+                            }
                         }
                     });
 
@@ -562,6 +579,9 @@
                     stories.data.reels_media[0].items.forEach(item => {
                         if(item.id == targetURL){
                             videoURL = item.video_resources[0].src;
+                            if(USER_SETTING.RENAME_PUBLISH_DATE){
+                                timestamp = item.taken_at_timestamp;
+                            }
                         }
                     });
 
@@ -572,6 +592,9 @@
                             if($(this).hasClass('x1lix1fw')){
                                 if($(this).children().length > 0){
                                     videoURL = stories.data.reels_media[0].items[index].video_resources[0].src;
+                                    if(USER_SETTING.RENAME_PUBLISH_DATE){
+                                        timestamp = stories.data.reels_media[0].items[index].taken_at_timestamp;
+                                    }
                                 }
                             }
                         });
@@ -580,6 +603,9 @@
                         $('body > div section:visible ._ac0k > ._ac3r > div').each(function(index){
                             if($(this).children().hasClass('_ac3q')){
                                 videoURL = stories.data.reels_media[0].items[index].video_resources[0].src;
+                                if(USER_SETTING.RENAME_PUBLISH_DATE){
+                                    timestamp = stories.data.reels_media[0].items[index].taken_at_timestamp;
+                                }
                             }
                         });
                     }
@@ -608,6 +634,10 @@
                     // _aa63 mean stories picture in stories page (not avatar)
                     let $element = $('body > div section:visible img._aa63');
                     link = ($element.attr('srcset'))?$element.attr('srcset')?.split(',')[0]?.split(' ')[0]:$element.attr('src');
+                }
+
+                if(USER_SETTING.RENAME_PUBLISH_DATE){
+                    timestamp = new Date($('body > div section:visible time[datetime][class]').first().attr('datetime')).getTime();
                 }
 
                 let downloadLink = link;
@@ -715,6 +745,14 @@
 
                 let result = await getMediaInfo(mediaId);
 
+                if(USER_SETTING.RENAME_PUBLISH_DATE){
+                    timestamp = result.items[0].taken_at;
+                }
+
+                if(USER_SETTING.RENAME_PUBLISH_DATE){
+                    timestamp = result.items[0].taken_at;
+                }
+
                 if(result.status === 'ok'){
                     saveFiles(result.items[0].image_versions2.candidates[0].url, username,"stories",timestamp,'jpg');
 
@@ -733,6 +771,9 @@
                 GL_dataCache.stories[username].data.reels_media[0].items.forEach(item => {
                     if(item.id == targetURL){
                         videoThumbnailURL = item.display_url;
+                        if(USER_SETTING.RENAME_PUBLISH_DATE){
+                            timestamp = item.taken_at_timestamp;
+                        }
                     }
                 });
 
@@ -750,6 +791,9 @@
                 stories.data.reels_media[0].items.forEach(item => {
                     if(item.id == targetURL){
                         videoThumbnailURL = item.display_url;
+                        if(USER_SETTING.RENAME_PUBLISH_DATE){
+                            timestamp = item.taken_at_timestamp;
+                        }
                     }
                 });
 
@@ -760,6 +804,9 @@
                         if($(this).hasClass('x1lix1fw')){
                             if($(this).children().length > 0){
                                 videoThumbnailURL = stories.data.reels_media[0].items[index].display_url;
+                                if(USER_SETTING.RENAME_PUBLISH_DATE){
+                                    timestamp = stories.data.reels_media[0].items[index].taken_at_timestamp;
+                                }
                             }
                         }
                     });
@@ -768,6 +815,9 @@
                     $('body > div section:visible ._ac0k > ._ac3r > div').each(function(index){
                         if($(this).children().hasClass('_ac3q')){
                             videoThumbnailURL = stories.data.reels_media[0].items[index].display_url;
+                            if(USER_SETTING.RENAME_PUBLISH_DATE){
+                                timestamp = stories.data.reels_media[0].items[index].taken_at_timestamp;
+                            }
                         }
                     });
                 }
@@ -834,7 +884,12 @@
 
             let reelsPath = location.href.split('?').at(0).split('instagram.com/reels/').at(-1).replaceAll('/','');
             let data = await getBlobMedia(reelsPath);
+
             let timestamp = new Date().getTime();
+
+            if(USER_SETTING.RENAME_PUBLISH_DATE){
+                timestamp = data.shortcode_media.taken_at_timestamp;
+            }
 
             if(isVideo && data.shortcode_media.is_video){
                 if(isPreview){
@@ -1475,6 +1530,7 @@
                         var pathname = window.location.pathname;
                         var fullpathname = "/"+pathname.split('/')[1]+"/"+pathname.split('/')[2]+"/";
                         var blob = USER_SETTING.FORCE_FETCH_ALL_RESOURCES;
+                        var publish_time = new Date($(this).parent().parent().find('a[href^="/p/"] time[datetime]').first().attr('datetime')).getTime();
 
                         // If posts have more than one images or videos.
                         if(multiple){
@@ -1501,7 +1557,7 @@
                                         blob = true;
                                     }
                                     if(element_images && imgLink){
-                                        $('.IG_SN_DIG .IG_SN_DIG_MAIN .IG_SN_DIG_BODY').append(`<a data-needed="direct" data-path="${GL_postPath}" data-name="photo" data-type="jpg" data-globalIndex="${s}" href="javascript:;" data-href="${imgLink}"><img width="100" src="${imgLink}" /><br/>- ${_i18n("IMG")} ${s} -</a>`);
+                                        $('.IG_SN_DIG .IG_SN_DIG_MAIN .IG_SN_DIG_BODY').append(`<a datetime="${publish_time}" data-needed="direct" data-path="${GL_postPath}" data-name="photo" data-type="jpg" data-globalIndex="${s}" href="javascript:;" data-href="${imgLink}"><img width="100" src="${imgLink}" /><br/>- ${_i18n("IMG")} ${s} -</a>`);
                                     }
 
                                 });
@@ -1526,7 +1582,7 @@
                                     createMediaListDOM(GL_postPath,".IG_SN_DIG .IG_SN_DIG_MAIN .IG_SN_DIG_BODY",_i18n("LOAD_BLOB_ONE"));
                                 }
                                 if(element_images && imgLink){
-                                    $('.IG_SN_DIG .IG_SN_DIG_MAIN .IG_SN_DIG_BODY').append(`<a data-needed="direct" data-path="${GL_postPath}" data-name="photo" data-type="jpg" data-globalIndex="${s}" href="javascript:;" href="" data-href="${imgLink}"><img width="100" src="${imgLink}" /><br/>- ${_i18n("IMG")} ${s} -</a>`);
+                                    $('.IG_SN_DIG .IG_SN_DIG_MAIN .IG_SN_DIG_BODY').append(`<a datetime="${publish_time}" data-needed="direct" data-path="${GL_postPath}" data-name="photo" data-type="jpg" data-globalIndex="${s}" href="javascript:;" href="" data-href="${imgLink}"><img width="100" src="${imgLink}" /><br/>- ${_i18n("IMG")} ${s} -</a>`);
                                 }
                             }
                         }
@@ -1585,23 +1641,23 @@
 
         // GraphVideo
         if(resource.__typename == "GraphVideo" && resource.video_url){
-            $(selector).append(`<a media-id="${resource.id}" data-blob="true" data-needed="direct" data-path="${resource.shortcode}" data-name="video" data-type="mp4" data-username="${resource.owner.username}" data-globalIndex="${idx}" href="javascript:;" data-href="${resource.video_url}"><img width="100" src="${resource.display_resources[1].src}" /><br/>- ${_i18n("VID")} ${idx} -</a>`);
+            $(selector).append(`<a media-id="${resource.id}" datetime="${resource.taken_at_timestamp}" data-blob="true" data-needed="direct" data-path="${resource.shortcode}" data-name="video" data-type="mp4" data-username="${resource.owner.username}" data-globalIndex="${idx}" href="javascript:;" data-href="${resource.video_url}"><img width="100" src="${resource.display_resources[1].src}" /><br/>- ${_i18n("VID")} ${idx} -</a>`);
             idx++;
         }
         // GraphImage
         if(resource.__typename == "GraphImage"){
-            $(selector).append(`<a media-id="${resource.id}" data-blob="true" data-needed="direct" data-path="${resource.shortcode}" data-name="photo" data-type="jpg" data-username="${resource.owner.username}" data-globalIndex="${idx}" href="javascript:;" data-href="${resource.display_resources[resource.display_resources.length - 1].src}"><img width="100" src="${resource.display_resources[1].src}" /><br/>- ${_i18n("IMG")} ${idx} -</a>`);
+            $(selector).append(`<a media-id="${resource.id}" datetime="${resource.taken_at_timestamp}" data-blob="true" data-needed="direct" data-path="${resource.shortcode}" data-name="photo" data-type="jpg" data-username="${resource.owner.username}" data-globalIndex="${idx}" href="javascript:;" data-href="${resource.display_resources[resource.display_resources.length - 1].src}"><img width="100" src="${resource.display_resources[1].src}" /><br/>- ${_i18n("IMG")} ${idx} -</a>`);
             idx++;
         }
         // GraphSidecar
         if(resource.__typename == "GraphSidecar" && resource.edge_sidecar_to_children){
             for(let e of resource.edge_sidecar_to_children.edges){
                 if(e.node.__typename == "GraphVideo"){
-                    $(selector).append(`<a media-id="${e.node.id}" data-blob="true" data-needed="direct" data-path="${resource.shortcode}" data-name="video" data-type="mp4" data-username="${resource.owner.username}" data-globalIndex="${idx}" href="javascript:;" data-href="${e.node.video_url}"><img width="100" src="${e.node.display_resources[1].src}" /><br/>- ${_i18n("VID")} ${idx} -</a>`);
+                    $(selector).append(`<a media-id="${e.node.id}" datetime="${resource.taken_at_timestamp}" data-blob="true" data-needed="direct" data-path="${resource.shortcode}" data-name="video" data-type="mp4" data-username="${resource.owner.username}" data-globalIndex="${idx}" href="javascript:;" data-href="${e.node.video_url}"><img width="100" src="${e.node.display_resources[1].src}" /><br/>- ${_i18n("VID")} ${idx} -</a>`);
                 }
 
                 if(e.node.__typename == "GraphImage"){
-                    $(selector).append(`<a media-id="${e.node.id}" data-blob="true" data-needed="direct" data-path="${resource.shortcode}" data-name="photo" data-type="jpg" data-username="${resource.owner.username}" data-globalIndex="${idx}" href="javascript:;" data-href="${e.node.display_resources[e.node.display_resources.length - 1].src}"><img width="100" src="${e.node.display_resources[1].src}" /><br/>- ${_i18n("IMG")} ${idx} -</a>`);
+                    $(selector).append(`<a media-id="${e.node.id}" datetime="${resource.taken_at_timestamp}" data-blob="true" data-needed="direct" data-path="${resource.shortcode}" data-name="photo" data-type="jpg" data-username="${resource.owner.username}" data-globalIndex="${idx}" href="javascript:;" data-href="${e.node.display_resources[e.node.display_resources.length - 1].src}"><img width="100" src="${e.node.display_resources[1].src}" /><br/>- ${_i18n("IMG")} ${idx} -</a>`);
                 }
                 idx++;
             }
@@ -1696,6 +1752,12 @@
      * @return {void}
      */
     function createSaveFileElement(downloadLink,object,username,sourceType,timestamp,filetype,shortcode) {
+        timestamp = parseInt(timestamp.toString().padEnd(13, '0')) / 1000;
+
+        if(USER_SETTING.RENAME_PUBLISH_DATE){
+            timestamp = new Date(timestamp * 1000).toISOString();
+        }
+
         const a = document.createElement("a");
         const name = username+'-'+sourceType+'-'+((USER_SETTING.RENAME_SHORTCODE && shortcode)?shortcode+'-':'')+timestamp+'.'+filetype;
         const originally = username + '_' + new URL(downloadLink).pathname.split('/').at(-1).split('.').slice(0,-1).join('.') + '.' + filetype;
@@ -1780,6 +1842,7 @@
                 "SETTING": "設定",
                 "AUTO_RENAME": "自動重新命名檔案",
                 "RENAME_SHORTCODE": "重新命名檔案並包含 Shortcode",
+                "RENAME_PUBLISH_DATE": "設定重新命名檔案時間戳為資源發佈日期",
                 "DISABLE_VIDEO_LOOPING": "關閉影片自動循環播放",
                 "REDIRECT_RIGHT_CLICK_USER_STORY_PICTURE": "右鍵點擊使用者限時動態區域頭貼時重定向",
                 "FORCE_FETCH_ALL_RESOURCES": "強制提取貼文中所有資源",
@@ -1789,7 +1852,8 @@
                 "SCROLL_BUTTON": "為連續短片頁面啟用捲動按鈕",
                 "FORCE_RESOURCE_VIA_MEDIA": "透過 Media API 強制提取資源",
                 "AUTO_RENAME_INTRO": "將檔案自動重新命名為以下格式：\n使用者名稱-類型-時間戳.檔案類型\n例如：instagram-photo-1670350000.jpg\n\n若設為 false，則檔案名稱將保持原始樣貌。 \n例如：instagram_321565527_679025940443063_4318007696887450953_n.jpg",
-                "RENAME_SHORTCODE_INTRO": "將檔案自動重新命名為以下格式：\n使用者名稱-類型-Shortcode-時間戳.檔案類型\n示例：instagram-photo-CwkxyiVynpW-1670350000.jpg\n\n此功能僅在[自動重新命名檔案]設定為 TRUE 時有效。",
+                "RENAME_SHORTCODE_INTRO": "將檔案自動重新命名為以下格式：\n使用者名稱-類型-Shortcode-時間戳.檔案類型\n例如：instagram-photo-CwkxyiVynpW-1670350000.jpg\n\n此功能僅在[自動重新命名檔案]設定為 TRUE 時有效。",
+                "RENAME_PUBLISH_DATE_INTRO": "將檔案重新命名格式中的時間戳設定為資源發佈日期 (UTC時區)\n\n此功能僅在[自動重新命名檔案]設定為 TRUE 時有效。",
                 "DISABLE_VIDEO_LOOPING_INTRO": "關閉連續短片和貼文中影片自動循環播放。",
                 "REDIRECT_RIGHT_CLICK_USER_STORY_PICTURE_INTRO": "右鍵點選首頁限時動態區域中的使用者頭貼時，重新導向到使用者的個人資料頁面。",
                 "FORCE_FETCH_ALL_RESOURCES_INTRO": "透過 Instagram API 強制取得貼文中的所有資源（照片和影片），以取消每個貼文單次提取三個資源的限制。",
@@ -1826,6 +1890,7 @@
                 "SETTING": "设置",
                 "AUTO_RENAME": "自动重命名文件",
                 "RENAME_SHORTCODE": "重命名文件并包含物件短码",
+                "RENAME_PUBLISH_DATE": "设置重命名文件时间戳为资源发布日期",
                 "DISABLE_VIDEO_LOOPING": "禁用视频自动循环",
                 "REDIRECT_RIGHT_CLICK_USER_STORY_PICTURE": "右键单击用户故事区域头像时重定向",
                 "FORCE_FETCH_ALL_RESOURCES": "强制抓取帖子中所有资源",
@@ -1836,6 +1901,7 @@
                 "FORCE_RESOURCE_VIA_MEDIA": "通过 Media API 强制获取资源",
                 "AUTO_RENAME_INTRO": "将文件自动重新命名为以下格式类型：\n用户名-类型-时间戳.文件类型\n例如：instagram-photo-1670350000.jpg\n\n若设为false，则文件名将保持原样。 \n例如：instagram_321565527_679025940443063_4318007696887450953_n.jpg",
                 "RENAME_SHORTCODE_INTRO": "自动重命名文件为以下格式类型：\n用户名-类型-短码-时间戳.文件类型\n示例：instagram-photo-CwkxyiVynpW-1670350000.jpg\n\n它仅在[自动重命名文件]设置为 TRUE 时有效。",
+                "RENAME_PUBLISH_DATE_INTRO": "将文件重命名格式中的时间戳设置为资源发布日期 (UTC时区)\n\n此功能仅在[自动重命名文件]设置为 TRUE 时有效。",
                 "DISABLE_VIDEO_LOOPING_INTRO": "禁用 Reels 和帖子中的视频自动播放。",
                 "REDIRECT_RIGHT_CLICK_USER_STORY_PICTURE_INTRO": "右键单击主页故事区域中的用户头像，重定向到用户的个人资料页面。",
                 "FORCE_FETCH_ALL_RESOURCES_INTRO": "通过 Instagram API 强制获取帖子中的所有资源（照片和视频），以取消每个帖子单次抓取三个资源的限制。",
@@ -1872,6 +1938,7 @@
                 "SETTING": "Settings",
                 "AUTO_RENAME": "Automatically Rename Files",
                 "RENAME_SHORTCODE": "Rename The File and Include Shortcode",
+                "RENAME_PUBLISH_DATE": "Set Rename File Timestamp to Resource Publish Date",
                 "DISABLE_VIDEO_LOOPING": "Disable Video Auto-looping",
                 "REDIRECT_RIGHT_CLICK_USER_STORY_PICTURE": "Redirect When Right-Clicking User Story Picture",
                 "FORCE_FETCH_ALL_RESOURCES": "Forcing Fetch All Resources In the Post",
@@ -1882,6 +1949,7 @@
                 "FORCE_RESOURCE_VIA_MEDIA": "Force Fetch Resource via Media API",
                 "AUTO_RENAME_INTRO": "Auto rename file to format type following:\nUSERNAME-TYPE-TIMESTAMP.FILETYPE\nExample: instagram-photo-1670350000.jpg\n\nIf set to false, the file name will remain as it is.\nExample: instagram_321565527_679025940443063_4318007696887450953_n.jpg",
                 "RENAME_SHORTCODE_INTRO": "Auto rename file to format type following:\nUSERNAME-TYPE-SHORTCODE-TIMESTAMP.FILETYPE\nExample: instagram-photo-CwkxyiVynpW-1670350000.jpg\n\nIt will ONLY work in [Automatically Rename Files] setting to TRUE.",
+                "RENAME_PUBLISH_DATE_INTRO": "Sets the timestamp in the file rename format to the resource publish date (UTC time zone)\n\nThis feature only works when [Automatically Rename Files] is set to TRUE.",
                 "DISABLE_VIDEO_LOOPING_INTRO": "Disable video auto-looping in reels and posts.",
                 "REDIRECT_RIGHT_CLICK_USER_STORY_PICTURE_INTRO": "Redirect to a user's profile page when right-clicking on their user avatar in the story area on the homepage.",
                 "FORCE_FETCH_ALL_RESOURCES_INTRO": "Force fetching of all resources (photos and videos) in a post via the Instagram API to remove the limit of three resources per post.",
@@ -1918,6 +1986,7 @@
                 "SETTING": "Setări",
                 "AUTO_RENAME": "Redenumește automat fișierele",
                 "RENAME_SHORTCODE": "Redenumește fișierul și include cod scurt",
+                "RENAME_PUBLISH_DATE": "Setați Redenumire marcaj de timp al fișierului la Data publicării resursei",
                 "DISABLE_VIDEO_LOOPING": "Dezactivează redarea automată în buclă a videoclipurilor",
                 "REDIRECT_RIGHT_CLICK_USER_STORY_PICTURE": "Redirecționează când dai click dreapta pe fotografia profilului în storyul utilizatorului",
                 "FORCE_FETCH_ALL_RESOURCES": "Forțează preluarea tuturor resurselor din postare",
@@ -1928,6 +1997,7 @@
                 "FORCE_RESOURCE_VIA_MEDIA": "Forțează preluarea resurselor prin intermediul Media API",
                 "AUTO_RENAME_INTRO": "Redenumește automat fișierele cu formatul următor:\nNUME_DE_UTILIZATOR-TIP-MARCAJ_DE_TIMP.TIPUL_FIȘIERULUI\nExemplu: instagram-photo-1670350000.jpg\n\nDacă este setat pe fals, numele fișierului va rămâne neschimbat.\nExemplu: instagram_321565527_679025940443063_4318007696887450953_n.jpg",
                 "RENAME_SHORTCODE_INTRO": "Redenumește automat fișierele cu formatul următor:\nNUME_DE_UTILIZATOR-TIP-COD_SCURT-MARCAJ_DE_TIMP.TIPUL_FIȘIERULUI\nExemplu: instagram-photo-CwkxyiVynpW-1670350000.jpg\n\nFuncționează DOAR dacă setarea [Redenumește automat fișierele] este pe ADEVĂRAT.",
+                "RENAME_PUBLISH_DATE_INTRO": "Setează marcajul de timp în formatul de redenumire a fișierului la data publicării resursei (fus orar UTC)\n\nFuncționează DOAR dacă setarea [Redenumește automat fișierele] este pe ADEVĂRAT.",
                 "DISABLE_VIDEO_LOOPING_INTRO": "Dezactivează redarea automată în buclă a videoclipurilor din Reels și Postări.",
                 "REDIRECT_RIGHT_CLICK_USER_STORY_PICTURE_INTRO": "Redirecționează către pagina de profil a unui utilizator când faci click dreapta pe avatarul acestuia în zona storyului de pe pagina principală.",
                 "FORCE_FETCH_ALL_RESOURCES_INTRO": "Forțează preluarea tuturor resurselor (fotografii și videoclipuri) dintr-o postare prin intermediul API-ului Instagram pentru a elimina limita de trei resurse per postare.",
