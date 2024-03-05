@@ -292,6 +292,11 @@ kbd {
     top: 50%;
     transform: translateY(-50%);
 }
+.globalSettings.child{
+    margin-left: 15px;
+    width: calc(100% - 15px);
+}
+
 #scrollWrapper{
     position: fixed;
     right: 15px;
