@@ -5,7 +5,7 @@
 // @name:ja            IG助手
 // @name:ko            IG조수
 // @namespace          https://github.snkms.com/
-// @version            2.22.2
+// @version            2.22.3
 // @description        Downloading is possible for both photos and videos from posts, as well as for stories, reels or profile picture.
 // @description:zh-TW  一鍵下載對方 Instagram 貼文中的相片、影片甚至是他們的限時動態、連續短片及大頭貼圖片！
 // @description:zh-CN  一键下载对方 Instagram 帖子中的相片、视频甚至是他们的快拍、Reels及头像图片！
@@ -110,11 +110,7 @@
         accessKey: "f"
     });
     GM_registerMenuCommand(_i18n('RELOAD_SCRIPT'), () => {
-        clearInterval(GL_repeat);
-        pageLoaded = false;
-        firstStarted = false;
-        currentURL = location.href;
-        GL_observer.disconnect();
+        reloadScript();
     },{
         accessKey: "r"
     });
@@ -1217,7 +1213,7 @@
     function onReadyMyDW(NoDialog){
         // Whether is Instagram dialog?
         if(NoDialog == false){
-            const maxCall = 200;
+            const maxCall = 100;
             let i = 0;
             var repeat = setInterval(() => {
                 // div.xdt5ytf << (sigle post in top, not floating) >>
@@ -1225,10 +1221,12 @@
                     clearInterval(repeat);
 
                     if(i > maxCall){
-                        alert('Trying to call button creation method reached to maximum try times. If you want to re-register method, please open script menu and press "Reload Script" button or hotkey "R" to reload main timer.');
+                        //alert('Trying to call button creation method reached to maximum try times. If you want to re-register method, please open script menu and press "Reload Script" button or hotkey "R" to reload main timer.');
+                        console.warn('onReadyMyDW() Timer', 'maximum number of repetitions reached, terminated');
                     }
                 }
 
+                console.log('onReadyMyDW() Timer', 'repeating to call detection createDownloadButton()');
                 createDownloadButton();
                 i++;
             },50);
@@ -2210,6 +2208,22 @@
         a.remove();
     }
 
+    /**
+     * reloadScript
+     * re-register main timer
+     *
+     * @return {void}
+     */
+    function reloadScript(){
+        clearInterval(GL_repeat);
+        pageLoaded = false;
+        firstStarted = false;
+        currentURL = location.href;
+        GL_observer.disconnect();
+
+        console.log('main timer re-register completed');
+    }
+
     // Running if document is ready
     $(function(){
         $('body').on('click','.IG_SN_DIG .IG_SN_DIG_BODY .IG_DISPLAY_DOM_TREE',function(){
@@ -2261,6 +2275,12 @@
             // Hot key [Alt+Z] to open the settings dialog
             if (e.keyCode == '90' && e.altKey){
                 showDebugDOM();
+                e.preventDefault();
+            }
+
+            // Hot key [Alt+R] to open the settings dialog
+            if (e.keyCode == '82' && e.altKey){
+                reloadScript();
                 e.preventDefault();
             }
         });
