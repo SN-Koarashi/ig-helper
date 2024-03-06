@@ -5,7 +5,7 @@
 // @name:ja            IG助手
 // @name:ko            IG조수
 // @namespace          https://github.snkms.com/
-// @version            2.22.1.2
+// @version            2.22.2
 // @description        Downloading is possible for both photos and videos from posts, as well as for stories, reels or profile picture.
 // @description:zh-TW  一鍵下載對方 Instagram 貼文中的相片、影片甚至是他們的限時動態、連續短片及大頭貼圖片！
 // @description:zh-CN  一键下载对方 Instagram 帖子中的相片、视频甚至是他们的快拍、Reels及头像图片！
@@ -1853,6 +1853,10 @@
         if(!username && $(element).attr('data-path')){
             console.log('catching owner name from shortcode:',$(element).attr('data-href'));
             username = await getPostOwner($(element).attr('data-path'));
+        }
+
+        if(USER_SETTING.RENAME_PUBLISH_DATE && $(element).attr('datetime')){
+            timestamp = parseInt($(element).attr('datetime'));
         }
 
         if(USER_SETTING.FORCE_RESOURCE_VIA_MEDIA){
