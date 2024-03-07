@@ -1,10 +1,10 @@
 [
   {
-    "name": "Saudi",
+    "name": "Saudi Arabia",
     "code": "ar-SA"
   },
   {
-    "name": "Czech",
+    "name": "Czech Republic",
     "code": "cs-CZ"
   },
   {
@@ -16,7 +16,7 @@
     "code": "de-DE"
   },
   {
-    "name": "Greek",
+    "name": "Greek Greece",
     "code": "el-GR"
   },
   {
@@ -24,7 +24,7 @@
     "code": "en-AU"
   },
   {
-    "name": "United",
+    "name": "United Kingdom",
     "code": "en-GB"
   },
   {
@@ -32,11 +32,11 @@
     "code": "en-IE"
   },
   {
-    "name": "United",
+    "name": "United States",
     "code": "en-US"
   },
   {
-    "name": "South",
+    "name": "South Africa",
     "code": "en-ZA"
   },
   {
@@ -84,7 +84,7 @@
     "code": "ja-JP"
   },
   {
-    "name": "Republic",
+    "name": "Republic of Korea",
     "code": "ko-KR"
   },
   {
@@ -116,7 +116,7 @@
     "code": "ro-RO"
   },
   {
-    "name": "Russian",
+    "name": "Russian Federation",
     "code": "ru-RU"
   },
   {
@@ -140,7 +140,7 @@
     "code": "zh-CN"
   },
   {
-    "name": "Hong",
+    "name": "Hong Kong",
     "code": "zh-HK"
   },
   {
