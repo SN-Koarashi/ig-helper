@@ -5,7 +5,7 @@
 // @name:ja            IG助手
 // @name:ko            IG조수
 // @namespace          https://github.snkms.com/
-// @version            2.22.3
+// @version            2.23.1
 // @description        Downloading is possible for both photos and videos from posts, as well as for stories, reels or profile picture.
 // @description:zh-TW  一鍵下載對方 Instagram 貼文中的相片、影片甚至是他們的限時動態、連續短片及大頭貼圖片！
 // @description:zh-CN  一键下载对方 Instagram 帖子中的相片、视频甚至是他们的快拍、Reels及头像图片！
@@ -24,6 +24,7 @@
 // @connect            i.instagram.com
 // @require            https://code.jquery.com/jquery-3.6.3.min.js#sha256-pvPw+upLPUjgMXY0G+8O0xUf+/Im1MZjXxxgOcBQBXU=
 // @resource           INTERNAL_CSS https://raw.githubusercontent.com/SN-Koarashi/ig-helper/master/style.css
+// @resource           LOCATE_DATE_LIST_TEXT https://raw.githubusercontent.com/SN-Koarashi/ig-helper/master/date_locate.json
 // @supportURL         https://github.com/SN-Koarashi/ig-helper/
 // @contributionURL    https://ko-fi.com/snkoarashi
 // @icon               https://www.google.com/s2/favicons?domain=www.instagram.com
@@ -46,6 +47,7 @@
         'AUTO_RENAME': (GM_getValue('AUTO_RENAME') != null && typeof GM_getValue('AUTO_RENAME') === 'boolean')?GM_getValue('AUTO_RENAME'):true,
         'RENAME_SHORTCODE': (GM_getValue('RENAME_SHORTCODE') != null && typeof GM_getValue('RENAME_SHORTCODE') === 'boolean')?GM_getValue('RENAME_SHORTCODE'):true,
         'RENAME_PUBLISH_DATE': (GM_getValue('RENAME_PUBLISH_DATE') != null && typeof GM_getValue('RENAME_PUBLISH_DATE') === 'boolean')?GM_getValue('RENAME_PUBLISH_DATE'):true,
+        'RENAME_LOCATE_DATE': (GM_getValue('RENAME_LOCATE_DATE') != null && typeof GM_getValue('RENAME_LOCATE_DATE') === 'boolean')?GM_getValue('RENAME_LOCATE_DATE'):false,
         'DISABLE_VIDEO_LOOPING': (GM_getValue('DISABLE_VIDEO_LOOPING') != null && typeof GM_getValue('DISABLE_VIDEO_LOOPING') === 'boolean')?GM_getValue('DISABLE_VIDEO_LOOPING'):false,
         'REDIRECT_RIGHT_CLICK_USER_STORY_PICTURE': (GM_getValue('REDIRECT_RIGHT_CLICK_USER_STORY_PICTURE') != null && typeof GM_getValue('REDIRECT_RIGHT_CLICK_USER_STORY_PICTURE') === 'boolean')?GM_getValue('REDIRECT_RIGHT_CLICK_USER_STORY_PICTURE'):false,
         'FORCE_FETCH_ALL_RESOURCES': (GM_getValue('FORCE_FETCH_ALL_RESOURCES') != null && typeof GM_getValue('FORCE_FETCH_ALL_RESOURCES') === 'boolean')?GM_getValue('FORCE_FETCH_ALL_RESOURCES'):false,
@@ -56,8 +58,10 @@
         'FORCE_RESOURCE_VIA_MEDIA': (GM_getValue('FORCE_RESOURCE_VIA_MEDIA') != null && typeof GM_getValue('FORCE_RESOURCE_VIA_MEDIA') === 'boolean')?GM_getValue('FORCE_RESOURCE_VIA_MEDIA'):false,
         'USE_BLOB_FETCH_WHEN_MEDIA_RATE_LITMIT': (GM_getValue('USE_BLOB_FETCH_WHEN_MEDIA_RATE_LITMIT') != null && typeof GM_getValue('USE_BLOB_FETCH_WHEN_MEDIA_RATE_LITMIT') === 'boolean')?GM_getValue('USE_BLOB_FETCH_WHEN_MEDIA_RATE_LITMIT'):false
     };
-    const CHILD_NODES = ['RENAME_SHORTCODE', 'RENAME_PUBLISH_DATE', 'USE_BLOB_FETCH_WHEN_MEDIA_RATE_LITMIT'];
+    const CHILD_NODES = ['RENAME_SHORTCODE', 'RENAME_PUBLISH_DATE', 'RENAME_LOCATE_DATE', 'USE_BLOB_FETCH_WHEN_MEDIA_RATE_LITMIT'];
+    const LOCATE_DATE_LIST = JSON.parse(GM_getResourceText('LOCATE_DATE_LIST_TEXT'));
     var VIDEO_VOLUME = (GM_getValue('G_VIDEO_VOLUME'))?GM_getValue('G_VIDEO_VOLUME'):1;
+    var LOCATE_DATE_FORMAT = (GM_getValue('G_LOCATE_DATE_FORMAT'))? GM_getValue('G_LOCATE_DATE_FORMAT') : GM_getValue('lang') || navigator.language || navigator.userLanguage;
     var TEMP_FETCH_RATE_LITMIT = false;
     /*******************************/
 
@@ -1826,6 +1830,10 @@
             timestamp = new Date(timestamp * 1000).toISOString();
         }
 
+        if(USER_SETTING.RENAME_LOCATE_DATE){
+            timestamp = (new Date(timestamp).toLocaleString(LOCATE_DATE_FORMAT, {hour12: false})).replaceAll('/', '-');
+        }
+
         const a = document.createElement("a");
         const name = username+'-'+sourceType+'-'+((USER_SETTING.RENAME_SHORTCODE && shortcode)?shortcode+'-':'')+timestamp+'.'+filetype;
         const originally = username + '_' + new URL(downloadLink).pathname.split('/').at(-1).split('.').slice(0,-1).join('.') + '.' + filetype;
@@ -1921,6 +1929,7 @@
                 "AUTO_RENAME": "自動重新命名檔案",
                 "RENAME_SHORTCODE": "重新命名檔案並包含 Shortcode",
                 "RENAME_PUBLISH_DATE": "設定重新命名檔案時間戳為資源發佈日期",
+                "RENAME_LOCATE_DATE": "修改重新命名檔案時間戳日期格式（右鍵設定）",
                 "DISABLE_VIDEO_LOOPING": "關閉影片自動循環播放",
                 "REDIRECT_RIGHT_CLICK_USER_STORY_PICTURE": "右鍵點擊使用者限時動態區域頭貼時重定向",
                 "FORCE_FETCH_ALL_RESOURCES": "強制提取貼文中所有資源",
@@ -1933,6 +1942,7 @@
                 "AUTO_RENAME_INTRO": "將檔案自動重新命名為以下格式：\n使用者名稱-類型-時間戳.檔案類型\n例如：instagram-photo-1670350000.jpg\n\n若設為 false，則檔案名稱將保持原始樣貌。 \n例如：instagram_321565527_679025940443063_4318007696887450953_n.jpg",
                 "RENAME_SHORTCODE_INTRO": "將檔案自動重新命名為以下格式：\n使用者名稱-類型-Shortcode-時間戳.檔案類型\n例如：instagram-photo-CwkxyiVynpW-1670350000.jpg\n\n此功能僅在[自動重新命名檔案]設定為 TRUE 時有效。",
                 "RENAME_PUBLISH_DATE_INTRO": "將檔案重新命名格式中的時間戳設定為資源發佈日期 (UTC時區)\n\n此功能僅在[自動重新命名檔案]設定為 TRUE 時有效。",
+                "RENAME_LOCATE_DATE_INTRO": "修改重新命名檔案時間戳日期格式為瀏覽器當地時間，並且格式化為您所選擇的地區日期格式。\n\n此功能僅在[自動重新命名檔案]設定為 TRUE 時有效。",
                 "DISABLE_VIDEO_LOOPING_INTRO": "關閉連續短片和貼文中影片自動循環播放。",
                 "REDIRECT_RIGHT_CLICK_USER_STORY_PICTURE_INTRO": "右鍵點選首頁限時動態區域中的使用者頭貼時，重新導向到使用者的個人資料頁面。",
                 "FORCE_FETCH_ALL_RESOURCES_INTRO": "透過 Instagram API 強制取得貼文中的所有資源（照片和影片），以取消每個貼文單次提取三個資源的限制。",
@@ -1972,6 +1982,7 @@
                 "AUTO_RENAME": "自动重命名文件",
                 "RENAME_SHORTCODE": "重命名文件并包含物件短码",
                 "RENAME_PUBLISH_DATE": "设置重命名文件时间戳为资源发布日期",
+                "RENAME_LOCATE_DATE": "修改重命名档案时间戳日期格式（右击设置）",
                 "DISABLE_VIDEO_LOOPING": "禁用视频自动循环",
                 "REDIRECT_RIGHT_CLICK_USER_STORY_PICTURE": "右键单击用户故事区域头像时重定向",
                 "FORCE_FETCH_ALL_RESOURCES": "强制抓取帖子中所有资源",
@@ -1984,6 +1995,7 @@
                 "AUTO_RENAME_INTRO": "将文件自动重新命名为以下格式类型：\n用户名-类型-时间戳.文件类型\n例如：instagram-photo-1670350000.jpg\n\n若设为false，则文件名将保持原样。 \n例如：instagram_321565527_679025940443063_4318007696887450953_n.jpg",
                 "RENAME_SHORTCODE_INTRO": "自动重命名文件为以下格式类型：\n用户名-类型-短码-时间戳.文件类型\n示例：instagram-photo-CwkxyiVynpW-1670350000.jpg\n\n它仅在[自动重命名文件]设置为 TRUE 时有效。",
                 "RENAME_PUBLISH_DATE_INTRO": "将文件重命名格式中的时间戳设置为资源发布日期 (UTC时区)\n\n此功能仅在[自动重命名文件]设置为 TRUE 时有效。",
+                "RENAME_LOCATE_DATE_INTRO": "修改重命名档案时间戳日期格式为浏览器当地时间，并且格式化为您所选择的地区日期格式。\n\n此功能仅在[自动重命名文件]设置为 TRUE 时有效。",
                 "DISABLE_VIDEO_LOOPING_INTRO": "禁用 Reels 和帖子中的视频自动播放。",
                 "REDIRECT_RIGHT_CLICK_USER_STORY_PICTURE_INTRO": "右键单击主页故事区域中的用户头像，重定向到用户的个人资料页面。",
                 "FORCE_FETCH_ALL_RESOURCES_INTRO": "通过 Instagram API 强制获取帖子中的所有资源（照片和视频），以取消每个帖子单次抓取三个资源的限制。",
@@ -2023,6 +2035,7 @@
                 "AUTO_RENAME": "Automatically Rename Files",
                 "RENAME_SHORTCODE": "Rename The File and Include Shortcode",
                 "RENAME_PUBLISH_DATE": "Set Rename File Timestamp to Resource Publish Date",
+                "RENAME_LOCATE_DATE": "Modify Renamed File Timestamp Date Format (Right-Click To Set)",
                 "DISABLE_VIDEO_LOOPING": "Disable Video Auto-looping",
                 "REDIRECT_RIGHT_CLICK_USER_STORY_PICTURE": "Redirect When Right-Clicking User Story Picture",
                 "FORCE_FETCH_ALL_RESOURCES": "Forcing Fetch All Resources In the Post",
@@ -2035,6 +2048,7 @@
                 "AUTO_RENAME_INTRO": "Auto rename file to format type following:\nUSERNAME-TYPE-TIMESTAMP.FILETYPE\nExample: instagram-photo-1670350000.jpg\n\nIf set to false, the file name will remain as it is.\nExample: instagram_321565527_679025940443063_4318007696887450953_n.jpg",
                 "RENAME_SHORTCODE_INTRO": "Auto rename file to format type following:\nUSERNAME-TYPE-SHORTCODE-TIMESTAMP.FILETYPE\nExample: instagram-photo-CwkxyiVynpW-1670350000.jpg\n\nIt will ONLY work in [Automatically Rename Files] setting to TRUE.",
                 "RENAME_PUBLISH_DATE_INTRO": "Sets the timestamp in the file rename format to the resource publish date (UTC time zone)\n\nThis feature only works when [Automatically Rename Files] is set to TRUE.",
+                "RENAME_LOCATE_DATE_INTRO": "Modify the rename file timestamp date format to the browser's local time, and format it to the regional date format of your choice.\n\nThis feature only works when [Automatically Rename Files] is set to TRUE.",
                 "DISABLE_VIDEO_LOOPING_INTRO": "Disable video auto-looping in reels and posts.",
                 "REDIRECT_RIGHT_CLICK_USER_STORY_PICTURE_INTRO": "Redirect to a user's profile page when right-clicking on their user avatar in the story area on the homepage.",
                 "FORCE_FETCH_ALL_RESOURCES_INTRO": "Force fetching of all resources (photos and videos) in a post via the Instagram API to remove the limit of three resources per post.",
@@ -2074,6 +2088,7 @@
                 "AUTO_RENAME": "Redenumește automat fișierele",
                 "RENAME_SHORTCODE": "Redenumește fișierul și include cod scurt",
                 "RENAME_PUBLISH_DATE": "Setați Redenumire marcaj de timp al fișierului la Data publicării resursei",
+                "RENAME_LOCATE_DATE": "Modificați formatul datei pentru marcaj temporal al fișierului redenumit (clic dreapta pentru a seta)",
                 "DISABLE_VIDEO_LOOPING": "Dezactivează redarea automată în buclă a videoclipurilor",
                 "REDIRECT_RIGHT_CLICK_USER_STORY_PICTURE": "Redirecționează când dai click dreapta pe fotografia profilului în storyul utilizatorului",
                 "FORCE_FETCH_ALL_RESOURCES": "Forțează preluarea tuturor resurselor din postare",
@@ -2086,6 +2101,7 @@
                 "AUTO_RENAME_INTRO": "Redenumește automat fișierele cu formatul următor:\nNUME_DE_UTILIZATOR-TIP-MARCAJ_DE_TIMP.TIPUL_FIȘIERULUI\nExemplu: instagram-photo-1670350000.jpg\n\nDacă este setat pe fals, numele fișierului va rămâne neschimbat.\nExemplu: instagram_321565527_679025940443063_4318007696887450953_n.jpg",
                 "RENAME_SHORTCODE_INTRO": "Redenumește automat fișierele cu formatul următor:\nNUME_DE_UTILIZATOR-TIP-COD_SCURT-MARCAJ_DE_TIMP.TIPUL_FIȘIERULUI\nExemplu: instagram-photo-CwkxyiVynpW-1670350000.jpg\n\nFuncționează DOAR dacă setarea [Redenumește automat fișierele] este pe ADEVĂRAT.",
                 "RENAME_PUBLISH_DATE_INTRO": "Setează marcajul de timp în formatul de redenumire a fișierului la data publicării resursei (fus orar UTC)\n\nFuncționează DOAR dacă setarea [Redenumește automat fișierele] este pe ADEVĂRAT.",
+                "RENAME_LOCATE_DATE_INTRO": "Modificați formatul datei pentru marca temporală a fișierului de redenumire la ora locală a browserului și formatați-l la formatul de dată regional la alegere.\n\nFuncționează DOAR dacă setarea [Redenumește automat fișierele] este pe ADEVĂRAT.",
                 "DISABLE_VIDEO_LOOPING_INTRO": "Dezactivează redarea automată în buclă a videoclipurilor din Reels și Postări.",
                 "REDIRECT_RIGHT_CLICK_USER_STORY_PICTURE_INTRO": "Redirecționează către pagina de profil a unui utilizator când faci click dreapta pe avatarul acestuia în zona storyului de pe pagina principală.",
                 "FORCE_FETCH_ALL_RESOURCES_INTRO": "Forțează preluarea tuturor resurselor (fotografii și videoclipuri) dintr-o postare prin intermediul API-ului Instagram pentru a elimina limita de trei resurse per postare.",
@@ -2165,6 +2181,26 @@
                         $(this).children('#tempWrapper').append('<input value="' + VIDEO_VOLUME + '" type="range" min="0" max="1" step="0.05" />');
                         $(this).children('#tempWrapper').append('<input value="' + VIDEO_VOLUME + '" step="0.05" type="number" />');
                         $(this).children('#tempWrapper').append(`<div class="IG_SN_DIG_BTN">${SVG.CLOSE}</div>`);
+                    }
+                });
+            }
+
+            if(name === 'RENAME_LOCATE_DATE'){
+                $('.IG_SN_DIG .IG_SN_DIG_BODY input[id="'+name+'"]').parent('label').on('contextmenu', function(e){
+                    e.preventDefault();
+                    if($(this).find('#tempWrapper').length === 0){
+                        $(this).append('<div id="tempWrapper"></div>');
+
+                        $(this).children('#tempWrapper').append('<select id="locateSelect"></select>');
+                        $(this).children('#tempWrapper').append(`<span id="locatePreview">-</span>`);
+                        $(this).children('#tempWrapper').append(`<div class="IG_SN_DIG_BTN">${SVG.CLOSE}</div>`);
+
+
+                        LOCATE_DATE_LIST.forEach( locate => {
+                            $('#tempWrapper').find('#locateSelect').first().append(`<option value="${locate.code}" ${(LOCATE_DATE_FORMAT.toLowerCase() == locate.code.toLowerCase()?'selected':'')}>${locate.name}</option>`);
+                        });
+
+                        $('#locatePreview').text(`${(new Date().toLocaleString($('#locateSelect').val(), {hour12: false})).replaceAll('/','-')}`);
                     }
                 });
             }
@@ -2450,6 +2486,12 @@
             lang = $(this).val();
 
             showSetting();
+        });
+
+        $('body').on('change', '.IG_SN_DIG_BODY #locateSelect', function(){
+            $('#locatePreview').text(`${(new Date().toLocaleString($(this).val(), {hour12: false})).replaceAll('/','-')}`);
+            LOCATE_DATE_FORMAT = $(this).val();
+            GM_setValue('G_LOCATE_DATE_FORMAT', $(this).val());
         });
 
         $('body').on('click', '.IG_SN_DIG_TITLE #batch_download_direct', function(){
