@@ -386,3 +386,23 @@ kbd {
     transform: translateY(-50%);
     top: 50%;
 }
+
+#tempWrapper #locatePreview{
+    margin-left: 5px;
+    display: inline-block;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    width: 60%;
+    white-space: nowrap;
+    vertical-align: middle;
+    position: relative;
+    transform: translateY(-50%);
+    top: 50%;
+}
+
+#tempWrapper #locateSelect{
+    transform: translateY(-50%);
+    top: 50%;
+    position: relative;
+    vertical-align: middle;
+}
