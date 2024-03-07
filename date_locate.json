@@ -1,0 +1,150 @@
+[
+  {
+    "name": "Saudi",
+    "code": "ar-SA"
+  },
+  {
+    "name": "Czech",
+    "code": "cs-CZ"
+  },
+  {
+    "name": "Denmark",
+    "code": "da-DK"
+  },
+  {
+    "name": "Germany",
+    "code": "de-DE"
+  },
+  {
+    "name": "Greek",
+    "code": "el-GR"
+  },
+  {
+    "name": "Australia",
+    "code": "en-AU"
+  },
+  {
+    "name": "United",
+    "code": "en-GB"
+  },
+  {
+    "name": "Ireland",
+    "code": "en-IE"
+  },
+  {
+    "name": "United",
+    "code": "en-US"
+  },
+  {
+    "name": "South",
+    "code": "en-ZA"
+  },
+  {
+    "name": "Spain",
+    "code": "es-ES"
+  },
+  {
+    "name": "Mexico",
+    "code": "es-MX"
+  },
+  {
+    "name": "Finland",
+    "code": "fi-FI"
+  },
+  {
+    "name": "Canada",
+    "code": "fr-CA"
+  },
+  {
+    "name": "France",
+    "code": "fr-FR"
+  },
+  {
+    "name": "Israel",
+    "code": "he-IL"
+  },
+  {
+    "name": "India",
+    "code": "hi-IN"
+  },
+  {
+    "name": "Hungary",
+    "code": "hu-HU"
+  },
+  {
+    "name": "Indonesia",
+    "code": "id-ID"
+  },
+  {
+    "name": "Italy",
+    "code": "it-IT"
+  },
+  {
+    "name": "Japan",
+    "code": "ja-JP"
+  },
+  {
+    "name": "Republic",
+    "code": "ko-KR"
+  },
+  {
+    "name": "Belgium",
+    "code": "nl-BE"
+  },
+  {
+    "name": "Netherlands",
+    "code": "nl-NL"
+  },
+  {
+    "name": "Norway",
+    "code": "no-NO"
+  },
+  {
+    "name": "Poland",
+    "code": "pl-PL"
+  },
+  {
+    "name": "Brazil",
+    "code": "pt-BR"
+  },
+  {
+    "name": "Portugal",
+    "code": "pt-PT"
+  },
+  {
+    "name": "Romania",
+    "code": "ro-RO"
+  },
+  {
+    "name": "Russian",
+    "code": "ru-RU"
+  },
+  {
+    "name": "Slovakia",
+    "code": "sk-SK"
+  },
+  {
+    "name": "Sweden",
+    "code": "sv-SE"
+  },
+  {
+    "name": "Thailand",
+    "code": "th-TH"
+  },
+  {
+    "name": "Turkey",
+    "code": "tr-TR"
+  },
+  {
+    "name": "China",
+    "code": "zh-CN"
+  },
+  {
+    "name": "Hong",
+    "code": "zh-HK"
+  },
+  {
+    "name": "Taiwan",
+    "code": "zh-TW"
+  }
+]
