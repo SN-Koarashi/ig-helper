@@ -5,7 +5,7 @@
 // @name:ja            IG助手
 // @name:ko            IG조수
 // @namespace          https://github.snkms.com/
-// @version            2.23.1
+// @version            2.23.2
 // @description        Downloading is possible for both photos and videos from posts, as well as for stories, reels or profile picture.
 // @description:zh-TW  一鍵下載對方 Instagram 貼文中的相片、影片甚至是他們的限時動態、連續短片及大頭貼圖片！
 // @description:zh-CN  一键下载对方 Instagram 帖子中的相片、视频甚至是他们的快拍、Reels及头像图片！
@@ -2057,11 +2057,11 @@
                 "MODIFY_VIDEO_VOLUME_INTRO": "Modify the video playback volume in Reels and Posts (right-click to open the volume setting slider).",
                 "SCROLL_BUTTON_INTRO": "Enable scroll buttons for the lower right corner of Reels page.",
                 "FORCE_RESOURCE_VIA_MEDIA_INTRO": "The Media API will try to get the highest quality photo or video possible, but it will take longer to load.",
-                "USE_BLOB_FETCH_WHEN_MEDIA_RATE_LITMIT_INTRO": "When the Media API reaches the rate limit or cannot be downloaded for other reasons, the Forced Fetch API is used to download resources (the resource quality is slightly lower)."
+                "USE_BLOB_FETCH_WHEN_MEDIA_RATE_LITMIT_INTRO": "When the Media API reaches the rate limit or cannot be used for other reasons, the Forced Fetch API is used to download resources (the resource quality is slightly lower)."
             },
             "ro": {
                 "SELECT_LANG": "Română (Romanian)",
-                "RELOAD_SCRIPT": "Reîncărcați Scriptul",
+                "RELOAD_SCRIPT": "Reîncarcă scriptul",
                 "DONATE": "Donează",
                 "FEEDBACK": "Feedback",
                 "NEW_TAB": "Deschide într-o filă nouă",
@@ -2087,8 +2087,8 @@
                 "SETTING": "Setări",
                 "AUTO_RENAME": "Redenumește automat fișierele",
                 "RENAME_SHORTCODE": "Redenumește fișierul și include cod scurt",
-                "RENAME_PUBLISH_DATE": "Setați Redenumire marcaj de timp al fișierului la Data publicării resursei",
-                "RENAME_LOCATE_DATE": "Modificați formatul datei pentru marcaj temporal al fișierului redenumit (clic dreapta pentru a seta)",
+                "RENAME_PUBLISH_DATE": "Setează marcajul de timp al fișierelor redenumite la data publicării resursei",
+                "RENAME_LOCATE_DATE": "Modifică formatul de dată al marcajului de timp pentru fișierele redenumite (Click dreapta pentru a seta)",
                 "DISABLE_VIDEO_LOOPING": "Dezactivează redarea automată în buclă a videoclipurilor",
                 "REDIRECT_RIGHT_CLICK_USER_STORY_PICTURE": "Redirecționează când dai click dreapta pe fotografia profilului în storyul utilizatorului",
                 "FORCE_FETCH_ALL_RESOURCES": "Forțează preluarea tuturor resurselor din postare",
@@ -2097,11 +2097,11 @@
                 "MODIFY_VIDEO_VOLUME": "Modifică volumul videoclipurilor (Click dreapta pentru a seta)",
                 "SCROLL_BUTTON": "Activează butoanele de derulare pentru pagina Reels",
                 "FORCE_RESOURCE_VIA_MEDIA": "Forțează preluarea resurselor prin intermediul Media API",
-                "USE_BLOB_FETCH_WHEN_MEDIA_RATE_LITMIT": "Utilizați alte metode pentru a descărca atunci când Media API nu este accesibil",
+                "USE_BLOB_FETCH_WHEN_MEDIA_RATE_LITMIT": "Folosește alte metode pentru a descărca atunci când Media API nu este accesibil",
                 "AUTO_RENAME_INTRO": "Redenumește automat fișierele cu formatul următor:\nNUME_DE_UTILIZATOR-TIP-MARCAJ_DE_TIMP.TIPUL_FIȘIERULUI\nExemplu: instagram-photo-1670350000.jpg\n\nDacă este setat pe fals, numele fișierului va rămâne neschimbat.\nExemplu: instagram_321565527_679025940443063_4318007696887450953_n.jpg",
                 "RENAME_SHORTCODE_INTRO": "Redenumește automat fișierele cu formatul următor:\nNUME_DE_UTILIZATOR-TIP-COD_SCURT-MARCAJ_DE_TIMP.TIPUL_FIȘIERULUI\nExemplu: instagram-photo-CwkxyiVynpW-1670350000.jpg\n\nFuncționează DOAR dacă setarea [Redenumește automat fișierele] este pe ADEVĂRAT.",
                 "RENAME_PUBLISH_DATE_INTRO": "Setează marcajul de timp în formatul de redenumire a fișierului la data publicării resursei (fus orar UTC)\n\nFuncționează DOAR dacă setarea [Redenumește automat fișierele] este pe ADEVĂRAT.",
-                "RENAME_LOCATE_DATE_INTRO": "Modificați formatul datei pentru marca temporală a fișierului de redenumire la ora locală a browserului și formatați-l la formatul de dată regional la alegere.\n\nFuncționează DOAR dacă setarea [Redenumește automat fișierele] este pe ADEVĂRAT.",
+                "RENAME_LOCATE_DATE_INTRO": "Modifică formatul de dată al marcajului de timp pentru redenumirea fișierelor la ora locală a browserului și formatează-l la formatul regional de dată dorit.\n\nFuncționează DOAR dacă setarea [Redenumește automat fișierele] este pe ADEVĂRAT.",
                 "DISABLE_VIDEO_LOOPING_INTRO": "Dezactivează redarea automată în buclă a videoclipurilor din Reels și Postări.",
                 "REDIRECT_RIGHT_CLICK_USER_STORY_PICTURE_INTRO": "Redirecționează către pagina de profil a unui utilizator când faci click dreapta pe avatarul acestuia în zona storyului de pe pagina principală.",
                 "FORCE_FETCH_ALL_RESOURCES_INTRO": "Forțează preluarea tuturor resurselor (fotografii și videoclipuri) dintr-o postare prin intermediul API-ului Instagram pentru a elimina limita de trei resurse per postare.",
@@ -2110,7 +2110,7 @@
                 "MODIFY_VIDEO_VOLUME_INTRO": "Modifică volumul redării videoclipurilor în Reels și Postări (click dreapta pentru a deschide cursorul de setare a volumului).",
                 "SCROLL_BUTTON_INTRO": "Activează butoanele de derulare pentru colțul din dreapta jos al paginii Reels.",
                 "FORCE_RESOURCE_VIA_MEDIA_INTRO": "Media API va încerca să obțină cea mai înaltă calitate posibilă pentru fotografie sau videoclip, dar încărcarea va dura mai mult.",
-                "USE_BLOB_FETCH_WHEN_MEDIA_RATE_LITMIT_INTRO": "Când Media API atinge limita de rată sau nu poate fi descărcat din alte motive, Forced Fetch API este folosit pentru a descărca resurse (calitatea resurselor este puțin mai scăzută)."
+                "USE_BLOB_FETCH_WHEN_MEDIA_RATE_LITMIT_INTRO": "Când Media API atinge limita de rată sau nu poate fi folosit din alte motive, Forced Fetch API este folosit pentru a descărca resursele (calitatea resurselor este puțin mai scăzută)."
             }
         };
     }
