@@ -5,7 +5,7 @@
 // @name:ja            IG助手
 // @name:ko            IG조수
 // @namespace          https://github.snkms.com/
-// @version            2.23.3
+// @version            2.24.1
 // @description        Downloading is possible for both photos and videos from posts, as well as for stories, reels or profile picture.
 // @description:zh-TW  一鍵下載對方 Instagram 貼文中的相片、影片甚至是他們的限時動態、連續短片及大頭貼圖片！
 // @description:zh-CN  一键下载对方 Instagram 帖子中的相片、视频甚至是他们的快拍、Reels及头像图片！
@@ -57,9 +57,10 @@
         'MODIFY_VIDEO_VOLUME': false,
         'SCROLL_BUTTON': true,
         'FORCE_RESOURCE_VIA_MEDIA': false,
-        'USE_BLOB_FETCH_WHEN_MEDIA_RATE_LITMIT': false
+        'USE_BLOB_FETCH_WHEN_MEDIA_RATE_LITMIT': false,
+        'NEW_TAB_ALWAYS_FORCE_MEDIA_IN_POST': false
     };
-    const CHILD_NODES = ['RENAME_SHORTCODE', 'RENAME_PUBLISH_DATE', 'RENAME_LOCATE_DATE', 'USE_BLOB_FETCH_WHEN_MEDIA_RATE_LITMIT'];
+    const CHILD_NODES = ['RENAME_SHORTCODE', 'RENAME_PUBLISH_DATE', 'RENAME_LOCATE_DATE', 'USE_BLOB_FETCH_WHEN_MEDIA_RATE_LITMIT', 'NEW_TAB_ALWAYS_FORCE_MEDIA_IN_POST'];
     const LOCATE_DATE_LIST = JSON.parse(GM_getResourceText('LOCATE_DATE_LIST_TEXT'));
     var VIDEO_VOLUME = (GM_getValue('G_VIDEO_VOLUME'))?GM_getValue('G_VIDEO_VOLUME'):1;
     var LOCATE_DATE_FORMAT = (GM_getValue('G_LOCATE_DATE_FORMAT'))? GM_getValue('G_LOCATE_DATE_FORMAT') : GM_getValue('lang') || navigator.language || navigator.userLanguage;
@@ -1541,18 +1542,23 @@
                     let checkBlob = setInterval(()=>{
                         if($('.IG_SN_DIG .IG_SN_DIG_MAIN .IG_SN_DIG_BODY a').length > 0){
                             clearInterval(checkBlob);
-                            var href = $('.IG_SN_DIG .IG_SN_DIG_BODY a[data-globalindex="'+(index+1)+'"]')?.attr('data-href');
+                            var $linkElement = $('.IG_SN_DIG .IG_SN_DIG_BODY a[data-globalindex="'+(index+1)+'"]');
 
-
-                            if(href){
-                                // replace https://instagram.ftpe8-2.fna.fbcdn.net/ to https://scontent.cdninstagram.com/ becase of same origin policy (some video)
-                                var urlObj = new URL(href);
-                                urlObj.host = 'scontent.cdninstagram.com';
-
-                                openNewTab(urlObj.href);
+                            if(USER_SETTING.FORCE_RESOURCE_VIA_MEDIA && USER_SETTING.NEW_TAB_ALWAYS_FORCE_MEDIA_IN_POST){
+                                triggerLinkElement( $linkElement.first()[0], true);
                             }
                             else{
-                                alert('Can not find open tab url.');
+                                let href = $linkElement?.attr('data-href');
+                                if(href){
+                                    // replace https://instagram.ftpe8-2.fna.fbcdn.net/ to https://scontent.cdninstagram.com/ becase of same origin policy (some video)
+                                    var urlObj = new URL(href);
+                                    urlObj.host = 'scontent.cdninstagram.com';
+
+                                    openNewTab(urlObj.href);
+                                }
+                                else{
+                                    alert('Can not find open tab url.');
+                                }
                             }
 
                             updateLoadingBar(false);
@@ -1854,7 +1860,7 @@
      * @param  {Object}  element
      * @return {void}
      */
-    async function triggerLinkElement(element) {
+    async function triggerLinkElement(element, isPreview) {
         let date = new Date().getTime();
         let timestamp = Math.floor(date / 1000);
         let username = ($(element).attr('data-username')) ? $(element).attr('data-username') : GL_username;
@@ -1869,19 +1875,40 @@
         }
 
         if(USER_SETTING.FORCE_RESOURCE_VIA_MEDIA){
+            updateLoadingBar(true);
             let result = await getMediaInfo($(element).attr('media-id'));
+            updateLoadingBar(false);
 
             if(result.status === 'ok'){
+                var resource_url = null;
                 if(result.items[0].video_versions){
-                    saveFiles(result.items[0].video_versions[0].url, username, $(element).attr('data-name'),timestamp, $(element).attr('data-type'), $(element).attr('data-path'));
+                    resource_url = result.items[0].video_versions[0].url;
                 }
                 else{
-                    saveFiles(result.items[0].image_versions2.candidates[0].url, username, $(element).attr('data-name'),timestamp, $(element).attr('data-type'), $(element).attr('data-path'));
+                    resource_url = result.items[0].image_versions2.candidates[0].url;
+                }
+
+                if(isPreview){
+                    let urlObj = new URL(resource_url);
+                    urlObj.host = 'scontent.cdninstagram.com';
+
+                    openNewTab(urlObj.href);
+                }
+                else{
+                    saveFiles(resource_url, username, $(element).attr('data-name'),timestamp, $(element).attr('data-type'), $(element).attr('data-path'));
                 }
             }
             else{
                 if(USER_SETTING.USE_BLOB_FETCH_WHEN_MEDIA_RATE_LITMIT){
-                    saveFiles($(element).attr('data-href'),username,$(element).attr('data-name'),timestamp,$(element).attr('data-type'), $(element).attr('data-path'));
+                    if(isPreview){
+                        let urlObj = new URL($(element).attr('data-href'));
+                        urlObj.host = 'scontent.cdninstagram.com';
+
+                        openNewTab(urlObj.href);
+                    }
+                    else{
+                        saveFiles($(element).attr('data-href'),username,$(element).attr('data-name'),timestamp,$(element).attr('data-type'), $(element).attr('data-path'));
+                    }
                 }
                 else{
                     alert('Fetch failed from Media API. API response message: ' + result.message);
@@ -1942,6 +1969,7 @@
                 "SCROLL_BUTTON": "Enable Scroll Buttons For Reels Page",
                 "FORCE_RESOURCE_VIA_MEDIA": "Force Fetch Resource via Media API",
                 "USE_BLOB_FETCH_WHEN_MEDIA_RATE_LITMIT": "Use Other Methods to Download When the Media API is Not Accessible",
+                "NEW_TAB_ALWAYS_FORCE_MEDIA_IN_POST": '"Open in new tab" in posts always uses Media API',
                 "AUTO_RENAME_INTRO": "Auto rename file to format type following:\nUSERNAME-TYPE-TIMESTAMP.FILETYPE\nExample: instagram-photo-1670350000.jpg\n\nIf set to false, the file name will remain as it is.\nExample: instagram_321565527_679025940443063_4318007696887450953_n.jpg",
                 "RENAME_SHORTCODE_INTRO": "Auto rename file to format type following:\nUSERNAME-TYPE-SHORTCODE-TIMESTAMP.FILETYPE\nExample: instagram-photo-CwkxyiVynpW-1670350000.jpg\n\nIt will ONLY work in [Automatically Rename Files] setting to TRUE.",
                 "RENAME_PUBLISH_DATE_INTRO": "Sets the timestamp in the file rename format to the resource publish date (UTC time zone)\n\nThis feature only works when [Automatically Rename Files] is set to TRUE.",
@@ -1954,7 +1982,8 @@
                 "MODIFY_VIDEO_VOLUME_INTRO": "Modify the video playback volume in Reels and Posts (right-click to open the volume setting slider).",
                 "SCROLL_BUTTON_INTRO": "Enable scroll buttons for the lower right corner of Reels page.",
                 "FORCE_RESOURCE_VIA_MEDIA_INTRO": "The Media API will try to get the highest quality photo or video possible, but it will take longer to load.",
-                "USE_BLOB_FETCH_WHEN_MEDIA_RATE_LITMIT_INTRO": "When the Media API reaches the rate limit or cannot be used for other reasons, the Forced Fetch API is used to download resources (the resource quality is slightly lower)."
+                "USE_BLOB_FETCH_WHEN_MEDIA_RATE_LITMIT_INTRO": "When the Media API reaches the rate limit or cannot be used for other reasons, the Forced Fetch API is used to download resources (the resource quality is slightly lower).",
+                "NEW_TAB_ALWAYS_FORCE_MEDIA_IN_POST_INTRO": "[Open in new tab] button in posts will always use the Media API to obtain high-resolution resources."
             }
         };
 
@@ -2232,10 +2261,16 @@
 
         $('body').on('click','.IG_SN_DIG_BODY .newTab', function(){
             // replace https://instagram.ftpe8-2.fna.fbcdn.net/ to https://scontent.cdninstagram.com/ becase of same origin policy (some video)
-            var urlObj = new URL($(this).parent().children('a').attr('data-href'));
-            urlObj.host = 'scontent.cdninstagram.com';
 
-            openNewTab(urlObj.href);
+            if(USER_SETTING.FORCE_RESOURCE_VIA_MEDIA && USER_SETTING.NEW_TAB_ALWAYS_FORCE_MEDIA_IN_POST){
+                triggerLinkElement( $(this).parent().children('a').first()[0], true);
+            }
+            else{
+                var urlObj = new URL($(this).parent().children('a').attr('data-href'));
+                urlObj.host = 'scontent.cdninstagram.com';
+
+                openNewTab(urlObj.href);
+            }
         });
 
         $('body').on('click','.IG_SN_DIG_BODY .videoThumbnail', function(){
