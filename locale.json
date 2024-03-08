@@ -52,7 +52,7 @@
         "SCROLL_BUTTON_INTRO": "為連續短片頁面的右下角啟用上下捲動按鈕。",
         "FORCE_RESOURCE_VIA_MEDIA_INTRO": "Media API 將嘗試獲取盡可能最高品質的照片或影片，但加載時間會更長。",
         "USE_BLOB_FETCH_WHEN_MEDIA_RATE_LITMIT_INTRO": "當 Media API 到達速率限制或因為其他原因而無法下載時，則使用強制提取API下載資源 (資源品質略低)。",
-		"NEW_TAB_ALWAYS_FORCE_MEDIA_IN_POST_INTRO": "在貼文中的「在新分頁中開啟」功能將一律使用 Media API 取得高解析度資源"
+        "NEW_TAB_ALWAYS_FORCE_MEDIA_IN_POST_INTRO": "在貼文中的「在新分頁中開啟」功能將一律使用 Media API 取得高解析度資源"
     },
     "zh-CN": {
         "SELECT_LANG": "简体中文 (Simplified Chinese)",
@@ -93,7 +93,7 @@
         "SCROLL_BUTTON": "为 Reels 页面启用卷动按钮",
         "FORCE_RESOURCE_VIA_MEDIA": "通过 Media API 强制获取资源",
         "USE_BLOB_FETCH_WHEN_MEDIA_RATE_LITMIT": "当 Media API 无法存取时使用其他方式下载",
-		"NEW_TAB_ALWAYS_FORCE_MEDIA_IN_POST": "在帖子中的「在新页签开启」永远使用 Media API",
+        "NEW_TAB_ALWAYS_FORCE_MEDIA_IN_POST": "在帖子中的「在新页签开启」永远使用 Media API",
         "AUTO_RENAME_INTRO": "将文件自动重新命名为以下格式类型：\n用户名-类型-时间戳.文件类型\n例如：instagram-photo-1670350000.jpg\n\n若设为false，则文件名将保持原样。 \n例如：instagram_321565527_679025940443063_4318007696887450953_n.jpg",
         "RENAME_SHORTCODE_INTRO": "自动重命名文件为以下格式类型：\n用户名-类型-短码-时间戳.文件类型\n示例：instagram-photo-CwkxyiVynpW-1670350000.jpg\n\n它仅在[自动重命名文件]设置为 TRUE 时有效。",
         "RENAME_PUBLISH_DATE_INTRO": "将文件重命名格式中的时间戳设置为资源发布日期 (UTC时区)\n\n此功能仅在[自动重命名文件]设置为 TRUE 时有效。",
@@ -107,7 +107,7 @@
         "SCROLL_BUTTON_INTRO": "为 Reels 页面的右下角启用上下卷动按钮。",
         "FORCE_RESOURCE_VIA_MEDIA_INTRO": "Media API 将尝试获取尽可能最高质量的照片或视频，但加载时间会更长。",
         "USE_BLOB_FETCH_WHEN_MEDIA_RATE_LITMIT_INTRO": "当 Media API 到达速率限制或因为其他原因而无法下载时，则使用强制获取API下载资源 (资源质量略低)。",
-		"NEW_TAB_ALWAYS_FORCE_MEDIA_IN_POST_INTRO": "在帖子中的「在新页签开启」功能将一律使用 Media API 取得高分辨率资源"
+        "NEW_TAB_ALWAYS_FORCE_MEDIA_IN_POST_INTRO": "在帖子中的「在新页签开启」功能将一律使用 Media API 取得高分辨率资源"
     },
     "ro": {
         "SELECT_LANG": "Română (Romanian)",
