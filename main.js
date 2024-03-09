@@ -5,7 +5,7 @@
 // @name:ja            IG助手
 // @name:ko            IG조수
 // @namespace          https://github.snkms.com/
-// @version            2.24.1
+// @version            2.24.2
 // @description        Downloading is possible for both photos and videos from posts, as well as for stories, reels or profile picture.
 // @description:zh-TW  一鍵下載對方 Instagram 貼文中的相片、影片甚至是他們的限時動態、連續短片及大頭貼圖片！
 // @description:zh-CN  一键下载对方 Instagram 帖子中的相片、视频甚至是他们的快拍、Reels及头像图片！
@@ -22,7 +22,7 @@
 // @grant              GM_getResourceText
 // @grant              GM_openInTab
 // @connect            i.instagram.com
-// @require            https://code.jquery.com/jquery-3.6.3.min.js#sha256-pvPw+upLPUjgMXY0G+8O0xUf+/Im1MZjXxxgOcBQBXU=
+// @require            https://code.jquery.com/jquery-3.7.1.min.js#sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=
 // @resource           INTERNAL_CSS https://raw.githubusercontent.com/SN-Koarashi/ig-helper/master/style.css
 // @resource           LOCATE_DATE_LIST_TEXT https://raw.githubusercontent.com/SN-Koarashi/ig-helper/master/date_locate.json
 // @resource           LOCALE_TEXT https://raw.githubusercontent.com/SN-Koarashi/ig-helper/master/locale.json
