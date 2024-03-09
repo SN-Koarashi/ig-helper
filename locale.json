@@ -148,6 +148,7 @@
         "SCROLL_BUTTON": "Activează butoanele de derulare pentru pagina Reels",
         "FORCE_RESOURCE_VIA_MEDIA": "Forțează preluarea resurselor prin intermediul Media API",
         "USE_BLOB_FETCH_WHEN_MEDIA_RATE_LITMIT": "Folosește alte metode pentru a descărca atunci când Media API nu este accesibil",
+        "NEW_TAB_ALWAYS_FORCE_MEDIA_IN_POST": "„Deschide într-o filă nouă” în postări folosește întotdeauna Media API",
         "AUTO_RENAME_INTRO": "Redenumește automat fișierele cu formatul următor:\nNUME_DE_UTILIZATOR-TIP-MARCAJ_DE_TIMP.TIPUL_FIȘIERULUI\nExemplu: instagram-photo-1670350000.jpg\n\nDacă este setat pe fals, numele fișierului va rămâne neschimbat.\nExemplu: instagram_321565527_679025940443063_4318007696887450953_n.jpg",
         "RENAME_SHORTCODE_INTRO": "Redenumește automat fișierele cu formatul următor:\nNUME_DE_UTILIZATOR-TIP-COD_SCURT-MARCAJ_DE_TIMP.TIPUL_FIȘIERULUI\nExemplu: instagram-photo-CwkxyiVynpW-1670350000.jpg\n\nFuncționează DOAR dacă setarea [Redenumește automat fișierele] este pe ADEVĂRAT.",
         "RENAME_PUBLISH_DATE_INTRO": "Setează marcajul de timp în formatul de redenumire a fișierului la data publicării resursei (fus orar UTC)\n\nFuncționează DOAR dacă setarea [Redenumește automat fișierele] este pe ADEVĂRAT.",
@@ -160,6 +161,7 @@
         "MODIFY_VIDEO_VOLUME_INTRO": "Modifică volumul redării videoclipurilor în Reels și Postări (click dreapta pentru a deschide cursorul de setare a volumului).",
         "SCROLL_BUTTON_INTRO": "Activează butoanele de derulare pentru colțul din dreapta jos al paginii Reels.",
         "FORCE_RESOURCE_VIA_MEDIA_INTRO": "Media API va încerca să obțină cea mai înaltă calitate posibilă pentru fotografie sau videoclip, dar încărcarea va dura mai mult.",
-        "USE_BLOB_FETCH_WHEN_MEDIA_RATE_LITMIT_INTRO": "Când Media API atinge limita de rată sau nu poate fi folosit din alte motive, Forced Fetch API este folosit pentru a descărca resursele (calitatea resurselor este puțin mai scăzută)."
+        "USE_BLOB_FETCH_WHEN_MEDIA_RATE_LITMIT_INTRO": "Când Media API atinge limita de rată sau nu poate fi folosit din alte motive, Forced Fetch API este folosit pentru a descărca resursele (calitatea resurselor este puțin mai scăzută).",
+        "NEW_TAB_ALWAYS_FORCE_MEDIA_IN_POST_INTRO": "Butonul [Deschide într-o filă nouă] în postări va folosi întotdeauna Media API pentru a obține resursele la rezoluție înaltă."
     }
 }
