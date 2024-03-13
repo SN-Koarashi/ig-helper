@@ -5,7 +5,7 @@
 // @name:ja            IG助手
 // @name:ko            IG조수
 // @namespace          https://github.snkms.com/
-// @version            2.24.3
+// @version            2.24.4
 // @description        Downloading is possible for both photos and videos from posts, as well as for stories, reels or profile picture.
 // @description:zh-TW  一鍵下載對方 Instagram 貼文中的相片、影片甚至是他們的限時動態、連續短片及大頭貼圖片！
 // @description:zh-CN  一键下载对方 Instagram 帖子中的相片、视频甚至是他们的快拍、Reels及头像图片！
@@ -1508,23 +1508,24 @@
 
                     IG_createDM(true, false);
 
-                    createMediaListDOM(GL_postPath,".IG_SN_DIG .IG_SN_DIG_MAIN .IG_SN_DIG_BODY", "");
-                    let checkBlob = setInterval(()=>{
-                        if($('.IG_SN_DIG .IG_SN_DIG_MAIN .IG_SN_DIG_BODY a').length > 0){
-                            clearInterval(checkBlob);
-                            var $videoThumbnail = $('.IG_SN_DIG .IG_SN_DIG_BODY a[data-globalindex="'+(index+1)+'"]')?.parent().find('.videoThumbnail')?.first();
+                    createMediaListDOM(GL_postPath,".IG_SN_DIG .IG_SN_DIG_MAIN .IG_SN_DIG_BODY", "").then(()=>{
+                        let checkBlob = setInterval(()=>{
+                            if($('.IG_SN_DIG .IG_SN_DIG_MAIN .IG_SN_DIG_BODY a').length > 0){
+                                clearInterval(checkBlob);
+                                var $videoThumbnail = $('.IG_SN_DIG .IG_SN_DIG_BODY a[data-globalindex="'+(index+1)+'"]')?.parent().find('.videoThumbnail')?.first();
 
-                            if($videoThumbnail != null && $videoThumbnail.length > 0){
-                                $videoThumbnail.click();
-                            }
-                            else{
-                                alert('Can not find thumbnail url.');
-                            }
+                                if($videoThumbnail != null && $videoThumbnail.length > 0){
+                                    $videoThumbnail.click();
+                                }
+                                else{
+                                    alert('Can not find thumbnail url.');
+                                }
 
-                            updateLoadingBar(false);
-                            $('.IG_SN_DIG').remove();
-                        }
-                    },250);
+                                updateLoadingBar(false);
+                                $('.IG_SN_DIG').remove();
+                            }
+                        },250);
+                    });
                 });
 
                 $(this).on('click', '.SNKMS_IG_NEWTAB_MAIN', function(e){
@@ -1538,33 +1539,34 @@
 
                     IG_createDM(true, false);
 
-                    createMediaListDOM(GL_postPath,".IG_SN_DIG .IG_SN_DIG_MAIN .IG_SN_DIG_BODY", "");
-                    let checkBlob = setInterval(()=>{
-                        if($('.IG_SN_DIG .IG_SN_DIG_MAIN .IG_SN_DIG_BODY a').length > 0){
-                            clearInterval(checkBlob);
-                            var $linkElement = $('.IG_SN_DIG .IG_SN_DIG_BODY a[data-globalindex="'+(index+1)+'"]');
+                    createMediaListDOM(GL_postPath,".IG_SN_DIG .IG_SN_DIG_MAIN .IG_SN_DIG_BODY", "").then(()=>{
+                        let checkBlob = setInterval(()=>{
+                            if($('.IG_SN_DIG .IG_SN_DIG_MAIN .IG_SN_DIG_BODY a').length > 0){
+                                clearInterval(checkBlob);
+                                var $linkElement = $('.IG_SN_DIG .IG_SN_DIG_BODY a[data-globalindex="'+(index+1)+'"]');
 
-                            if(USER_SETTING.FORCE_RESOURCE_VIA_MEDIA && USER_SETTING.NEW_TAB_ALWAYS_FORCE_MEDIA_IN_POST){
-                                triggerLinkElement( $linkElement.first()[0], true);
-                            }
-                            else{
-                                let href = $linkElement?.attr('data-href');
-                                if(href){
-                                    // replace https://instagram.ftpe8-2.fna.fbcdn.net/ to https://scontent.cdninstagram.com/ becase of same origin policy (some video)
-                                    var urlObj = new URL(href);
-                                    urlObj.host = 'scontent.cdninstagram.com';
-
-                                    openNewTab(urlObj.href);
+                                if(USER_SETTING.FORCE_RESOURCE_VIA_MEDIA && USER_SETTING.NEW_TAB_ALWAYS_FORCE_MEDIA_IN_POST){
+                                    triggerLinkElement( $linkElement.first()[0], true);
                                 }
                                 else{
-                                    alert('Can not find open tab url.');
-                                }
-                            }
+                                    let href = $linkElement?.attr('data-href');
+                                    if(href){
+                                        // replace https://instagram.ftpe8-2.fna.fbcdn.net/ to https://scontent.cdninstagram.com/ becase of same origin policy (some video)
+                                        var urlObj = new URL(href);
+                                        urlObj.host = 'scontent.cdninstagram.com';
 
-                            updateLoadingBar(false);
-                            $('.IG_SN_DIG').remove();
-                        }
-                    },250);
+                                        openNewTab(urlObj.href);
+                                    }
+                                    else{
+                                        alert('Can not find open tab url.');
+                                    }
+                                }
+
+                                updateLoadingBar(false);
+                                $('.IG_SN_DIG').remove();
+                            }
+                        },250);
+                    });
                 });
 
                 // Running if user click the download icon
@@ -1581,25 +1583,26 @@
                         updateLoadingBar(true);
                         IG_setDM(true);
 
-                        createMediaListDOM(GL_postPath,".IG_SN_DIG .IG_SN_DIG_MAIN .IG_SN_DIG_BODY", "");
-
                         var index = getVisibleNodeIndex($(this).parent().parent().parent());
-                        let checkBlob = setInterval(()=>{
-                            if($('.IG_SN_DIG .IG_SN_DIG_MAIN .IG_SN_DIG_BODY a').length > 0){
-                                clearInterval(checkBlob);
-                                var href = $('.IG_SN_DIG .IG_SN_DIG_BODY a[data-globalindex="'+(index+1)+'"]')?.attr('data-href');
 
-                                if(href){
-                                    updateLoadingBar(false);
-                                    $('.IG_SN_DIG .IG_SN_DIG_BODY a[data-globalindex="'+(index+1)+'"]')?.click();
-                                }
-                                else{
-                                    alert('Can not find download url.');
-                                }
+                        createMediaListDOM(GL_postPath,".IG_SN_DIG .IG_SN_DIG_MAIN .IG_SN_DIG_BODY", "").then(()=>{
+                            let checkBlob = setInterval(()=>{
+                                if($('.IG_SN_DIG .IG_SN_DIG_MAIN .IG_SN_DIG_BODY a').length > 0){
+                                    clearInterval(checkBlob);
+                                    var href = $('.IG_SN_DIG .IG_SN_DIG_BODY a[data-globalindex="'+(index+1)+'"]')?.attr('data-href');
 
-                                $('.IG_SN_DIG').remove();
-                            }
-                        },250);
+                                    if(href){
+                                        updateLoadingBar(false);
+                                        $('.IG_SN_DIG .IG_SN_DIG_BODY a[data-globalindex="'+(index+1)+'"]')?.click();
+                                    }
+                                    else{
+                                        alert('Can not find download url.');
+                                    }
+
+                                    $('.IG_SN_DIG').remove();
+                                }
+                            },250);
+                        });
 
                         return;
                     }
@@ -1680,17 +1683,18 @@
                     });
 
                     if(USER_SETTING.DIRECT_DOWNLOAD_ALL){
-                        createMediaListDOM(GL_postPath,".IG_SN_DIG .IG_SN_DIG_MAIN .IG_SN_DIG_BODY",_i18n("LOAD_BLOB_MULTIPLE"));
-                        let checkBlob = setInterval(()=>{
-                            if($('.IG_SN_DIG .IG_SN_DIG_MAIN .IG_SN_DIG_BODY a').length > 0){
-                                clearInterval(checkBlob);
-                                $('.IG_SN_DIG .IG_SN_DIG_MAIN .IG_SN_DIG_BODY a').each(function(){
-                                    $(this).click();
-                                });
+                        createMediaListDOM(GL_postPath,".IG_SN_DIG .IG_SN_DIG_MAIN .IG_SN_DIG_BODY",_i18n("LOAD_BLOB_MULTIPLE")).then(()=>{
+                            let checkBlob = setInterval(()=>{
+                                if($('.IG_SN_DIG .IG_SN_DIG_MAIN .IG_SN_DIG_BODY a').length > 0){
+                                    clearInterval(checkBlob);
+                                    $('.IG_SN_DIG .IG_SN_DIG_MAIN .IG_SN_DIG_BODY a').each(function(){
+                                        $(this).click();
+                                    });
 
-                                $('.IG_SN_DIG').remove();
-                            }
-                        },250);
+                                    $('.IG_SN_DIG').remove();
+                                }
+                            },250);
+                        });
                     }
                 });
 
@@ -1712,47 +1716,51 @@
      * @param  {String}  message - i18n display loading message
      * @return {void}
      */
-    async function createMediaListDOM(postURL,selector,message){
-        $(`${selector} a`).remove();
-        $(selector).append('<p id="_SNLOAD">'+ message +'</p>');
-        let media = await getBlobMedia(postURL);
+    function createMediaListDOM(postURL,selector,message){
+        return new Promise(async (resolve) => {
+            $(`${selector} a`).remove();
+            $(selector).append('<p id="_SNLOAD">'+ message +'</p>');
+            let media = await getBlobMedia(postURL);
 
-        let idx = 1;
-        let resource = media.shortcode_media;
+            let idx = 1;
+            let resource = media.shortcode_media;
 
-        // GraphVideo
-        if(resource.__typename == "GraphVideo" && resource.video_url){
-            $(selector).append(`<a media-id="${resource.id}" datetime="${resource.taken_at_timestamp}" data-blob="true" data-needed="direct" data-path="${resource.shortcode}" data-name="video" data-type="mp4" data-username="${resource.owner.username}" data-globalIndex="${idx}" href="javascript:;" data-href="${resource.video_url}"><img width="100" src="${resource.display_resources[1].src}" /><br/>- ${_i18n("VID")} ${idx} -</a>`);
-            idx++;
-        }
-        // GraphImage
-        if(resource.__typename == "GraphImage"){
-            $(selector).append(`<a media-id="${resource.id}" datetime="${resource.taken_at_timestamp}" data-blob="true" data-needed="direct" data-path="${resource.shortcode}" data-name="photo" data-type="jpg" data-username="${resource.owner.username}" data-globalIndex="${idx}" href="javascript:;" data-href="${resource.display_resources[resource.display_resources.length - 1].src}"><img width="100" src="${resource.display_resources[1].src}" /><br/>- ${_i18n("IMG")} ${idx} -</a>`);
-            idx++;
-        }
-        // GraphSidecar
-        if(resource.__typename == "GraphSidecar" && resource.edge_sidecar_to_children){
-            for(let e of resource.edge_sidecar_to_children.edges){
-                if(e.node.__typename == "GraphVideo"){
-                    $(selector).append(`<a media-id="${e.node.id}" datetime="${resource.taken_at_timestamp}" data-blob="true" data-needed="direct" data-path="${resource.shortcode}" data-name="video" data-type="mp4" data-username="${resource.owner.username}" data-globalIndex="${idx}" href="javascript:;" data-href="${e.node.video_url}"><img width="100" src="${e.node.display_resources[1].src}" /><br/>- ${_i18n("VID")} ${idx} -</a>`);
-                }
-
-                if(e.node.__typename == "GraphImage"){
-                    $(selector).append(`<a media-id="${e.node.id}" datetime="${resource.taken_at_timestamp}" data-blob="true" data-needed="direct" data-path="${resource.shortcode}" data-name="photo" data-type="jpg" data-username="${resource.owner.username}" data-globalIndex="${idx}" href="javascript:;" data-href="${e.node.display_resources[e.node.display_resources.length - 1].src}"><img width="100" src="${e.node.display_resources[1].src}" /><br/>- ${_i18n("IMG")} ${idx} -</a>`);
-                }
+            // GraphVideo
+            if(resource.__typename == "GraphVideo" && resource.video_url){
+                $(selector).append(`<a media-id="${resource.id}" datetime="${resource.taken_at_timestamp}" data-blob="true" data-needed="direct" data-path="${resource.shortcode}" data-name="video" data-type="mp4" data-username="${resource.owner.username}" data-globalIndex="${idx}" href="javascript:;" data-href="${resource.video_url}"><img width="100" src="${resource.display_resources[1].src}" /><br/>- ${_i18n("VID")} ${idx} -</a>`);
                 idx++;
             }
-        }
-
-        $("#_SNLOAD").remove();
-        $('.IG_SN_DIG .IG_SN_DIG_MAIN .IG_SN_DIG_BODY a').each(function(){
-            $(this).wrap('<div></div>');
-            $(this).before('<label class="inner_box_wrapper"><input class="inner_box" type="checkbox"><span></span></label>');
-            $(this).after(`<div title="${_i18n("NEW_TAB")}" class="newTab">${SVG.NEW_TAB}</div>`);
-
-            if($(this).attr('data-name') == 'video'){
-                $(this).after(`<div title="${_i18n("THUMBNAIL_INTRO")}" class="videoThumbnail">${SVG.THUMBNAIL}</div>`);
+            // GraphImage
+            if(resource.__typename == "GraphImage"){
+                $(selector).append(`<a media-id="${resource.id}" datetime="${resource.taken_at_timestamp}" data-blob="true" data-needed="direct" data-path="${resource.shortcode}" data-name="photo" data-type="jpg" data-username="${resource.owner.username}" data-globalIndex="${idx}" href="javascript:;" data-href="${resource.display_resources[resource.display_resources.length - 1].src}"><img width="100" src="${resource.display_resources[1].src}" /><br/>- ${_i18n("IMG")} ${idx} -</a>`);
+                idx++;
             }
+            // GraphSidecar
+            if(resource.__typename == "GraphSidecar" && resource.edge_sidecar_to_children){
+                for(let e of resource.edge_sidecar_to_children.edges){
+                    if(e.node.__typename == "GraphVideo"){
+                        $(selector).append(`<a media-id="${e.node.id}" datetime="${resource.taken_at_timestamp}" data-blob="true" data-needed="direct" data-path="${resource.shortcode}" data-name="video" data-type="mp4" data-username="${resource.owner.username}" data-globalIndex="${idx}" href="javascript:;" data-href="${e.node.video_url}"><img width="100" src="${e.node.display_resources[1].src}" /><br/>- ${_i18n("VID")} ${idx} -</a>`);
+                    }
+
+                    if(e.node.__typename == "GraphImage"){
+                        $(selector).append(`<a media-id="${e.node.id}" datetime="${resource.taken_at_timestamp}" data-blob="true" data-needed="direct" data-path="${resource.shortcode}" data-name="photo" data-type="jpg" data-username="${resource.owner.username}" data-globalIndex="${idx}" href="javascript:;" data-href="${e.node.display_resources[e.node.display_resources.length - 1].src}"><img width="100" src="${e.node.display_resources[1].src}" /><br/>- ${_i18n("IMG")} ${idx} -</a>`);
+                    }
+                    idx++;
+                }
+            }
+
+            $("#_SNLOAD").remove();
+            $('.IG_SN_DIG .IG_SN_DIG_MAIN .IG_SN_DIG_BODY a').each(function(){
+                $(this).wrap('<div></div>');
+                $(this).before('<label class="inner_box_wrapper"><input class="inner_box" type="checkbox"><span></span></label>');
+                $(this).after(`<div title="${_i18n("NEW_TAB")}" class="newTab">${SVG.NEW_TAB}</div>`);
+
+                if($(this).attr('data-name') == 'video'){
+                    $(this).after(`<div title="${_i18n("THUMBNAIL_INTRO")}" class="videoThumbnail">${SVG.THUMBNAIL}</div>`);
+                }
+            });
+
+            resolve(true);
         });
     }
 
