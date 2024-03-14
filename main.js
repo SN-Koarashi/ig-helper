@@ -5,12 +5,10 @@
 // @name:ja            IG助手
 // @name:ko            IG조수
 // @namespace          https://github.snkms.com/
-// @version            2.24.6
+// @version            2.24.7
 // @description        Downloading is possible for both photos and videos from posts, as well as for stories, reels or profile picture.
 // @description:zh-TW  一鍵下載對方 Instagram 貼文中的相片、影片甚至是他們的限時動態、連續短片及大頭貼圖片！
 // @description:zh-CN  一键下载对方 Instagram 帖子中的相片、视频甚至是他们的快拍、Reels及头像图片！
-// @description:ja     投稿された写真や動画だけでなく、ストーリーズやリール動画からもダウンロードが可能です。
-// @description:ko     게시물에 게시된 사진과 동영상 뿐만 아니라 스토리나 릴스에서도 다운로드가 가능합니다.
 // @description:ro     Descărcarea este posibilă atât pentru fotografiile și videoclipurile din postări, cât și pentru storyuri, reels sau poze de profil.
 // @author             SN-Koarashi (5026)
 // @match              https://*.instagram.com/*
@@ -1386,6 +1384,12 @@
                 }
                 */
 
+                const $childElement = $mainElement.children("div").children("div");
+
+                if($childElement.length === 0) return;
+
+                console.log("Found insert point", $childElement);
+
                 // Has counter?!
                 if($mainElement.find('._aao_ + div.x6s0dn4').length > 0){
                     $mainElement.find('._aao_ + div.x6s0dn4').css('top', '35px');
@@ -1399,12 +1403,6 @@
                         childList: true
                     });
                 }
-
-                const $childElement = $mainElement.children("div").children("div");
-
-                if($childElement.length === 0) return;
-
-                console.log("Found insert point", $childElement);
 
                 // Add icons
                 const DownloadElement = `<div title="${_i18n("DW")}" class="SNKMS_IG_DW_MAIN" style="right:${rightPos}px;top:${topPos}px;">${SVG.DOWNLOAD}</div>`;
