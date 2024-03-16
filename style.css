@@ -83,6 +83,7 @@
     border-radius: 5px;
     cursor:pointer;
     z-index: 5;
+    color:#000;
 }
 
 .IG_REELS_THUMBNAIL, .IG_DWSTORY_THUMBNAIL, .IG_DWHISTORY_THUMBNAIL{
