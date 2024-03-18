@@ -5,7 +5,7 @@
 // @name:ja            IG助手
 // @name:ko            IG조수
 // @namespace          https://github.snkms.com/
-// @version            2.24.7.1
+// @version            2.24.8
 // @description        Downloading is possible for both photos and videos from posts, as well as for stories, reels or profile picture.
 // @description:zh-TW  一鍵下載對方 Instagram 貼文中的相片、影片甚至是他們的限時動態、連續短片及大頭貼圖片！
 // @description:zh-CN  一键下载对方 Instagram 帖子中的相片、视频甚至是他们的快拍、Reels及头像图片！
@@ -978,7 +978,8 @@
                         });
                     }
 
-                    $('section > main[role="main"] > div').children('div').each(function(){
+                    // reels scroll has [tabindex] but header not.
+                    $('section > main[role="main"] > div[tabindex]').children('div').each(function(){
                         if($(this).children().length > 0){
                             if(!$(this).children().find('.IG_REELS').length){
                                 $(this).children().css('position','relative');
