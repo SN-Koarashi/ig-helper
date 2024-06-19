@@ -5,7 +5,7 @@
 // @name:ja            IG助手
 // @name:ko            IG조수
 // @namespace          https://github.snkms.com/
-// @version            2.24.13
+// @version            2.24.14
 // @description        Downloading is possible for both photos and videos from posts, as well as for stories, reels or profile picture.
 // @description:zh-TW  一鍵下載對方 Instagram 貼文中的相片、影片甚至是他們的限時動態、連續短片及大頭貼圖片！
 // @description:zh-CN  一键下载对方 Instagram 帖子中的相片、视频甚至是他们的快拍、Reels及头像图片！
@@ -714,7 +714,12 @@
 
 
                 if($element.length === 0){
-                    $element = $('body > div div.x1n2onr6.x1vjfegm section:visible > div > div[style]:not([class])');
+                    $element = $('body div[id^="mount"] > div > div > div[class]').last().find('section:visible > div > div[style]:not([class])');
+                    $element.css('position','relative');
+                }
+
+                if($element.length === 0){
+                    $element = $('body div[id^="mount"] > div > div > div[class]').last().find('section:visible > div div[style]:not([class]) > div');
                     $element.css('position','relative');
                 }
 
@@ -723,6 +728,7 @@
                 // GitHub issue #3: DiceMast3r
                 if($element.length === 0){
                     let $$element = $('body > div div:not([hidden]) section:visible > div div[style]:not([class]) > div');
+
                     let nowSize = 0;
 
                     $$element.each(function(){
