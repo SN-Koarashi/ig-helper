@@ -5,7 +5,7 @@
 // @name:ja            IG助手
 // @name:ko            IG조수
 // @namespace          https://github.snkms.com/
-// @version            2.24.14
+// @version            2.24.15
 // @description        Downloading is possible for both photos and videos from posts, as well as for stories, reels or profile picture.
 // @description:zh-TW  一鍵下載對方 Instagram 貼文中的相片、影片甚至是他們的限時動態、連續短片及大頭貼圖片！
 // @description:zh-CN  一键下载对方 Instagram 帖子中的相片、视频甚至是他们的快拍、Reels及头像图片！
@@ -206,8 +206,13 @@
                 }
                 else if(location.href.match(/^(https:\/\/www\.instagram\.com\/stories\/)/ig)){
                     console.log('isStory');
-                    onStory(false);
-                    onStoryThumbnail(false);
+
+                    if($('body div[id^="mount"] > div > div > div[class]').length > 2){
+                        $('.IG_DWSTORY').remove();
+                        $('.IG_DWNEWTAB').remove();
+
+                        onStory(false);
+                    }
 
                     if($(".IG_DWSTORY").length) setTimeout(()=>{pageLoaded = true;},150);
                 }
@@ -740,10 +745,12 @@
                 }
 
 
-                if($element != null && $element.parents('div.x9f619').last().parent('div[class=""]').length === 0){
-                    $element.css('position','relative');
-                    $element.append(`<div title="${_i18n("DW")}" class="IG_DWSTORY">${SVG.DOWNLOAD}</div>`);
-                    $element.append(`<div title="${_i18n("NEW_TAB")}" class="IG_DWNEWTAB">${SVG.NEW_TAB}</div>`);
+                if($element != null){
+                    $element.first().css('position','relative');
+                    $element.first().append(`<div title="${_i18n("DW")}" class="IG_DWSTORY">${SVG.DOWNLOAD}</div>`);
+                    $element.first().append(`<div title="${_i18n("NEW_TAB")}" class="IG_DWNEWTAB">${SVG.NEW_TAB}</div>`);
+
+                    onStoryThumbnail(false);
                 }
             }
         }
@@ -886,40 +893,51 @@
             updateLoadingBar(false);
         }
         else{
-            if($('body > div section video.xh8yej3').length){
+            if($('body > div div.IG_DWSTORY').parent().find('video[class]').length){
+                $('.IG_DWSTORY_THUMBNAIL').remove();
+
                 // Add the stories download button
-                if(!$('.IG_DWSTORY_THUMBNAIL').length){
-                    let $element = null;
-                    // Default detecter (section layout mode)
-                    if($('body > div section._ac0a').length > 0){
-                        $element = $('body > div section:visible._ac0a');
-                    }
-                    // detecter (single story layout mode)
-                    else{
-                        $element = $('body > div section:visible > div > div[style]:not([class])');
-                        $element.css('position','relative');
-                    }
-
-                    // Detecter for div layout mode
-                    // GitHub issue #3: DiceMast3r
-                    if($element.length === 0){
-                        let $$element = $('body > div div:not([hidden]) section:visible > div div[style]:not([class]) > div');
-                        let nowSize = 0;
-
-                        $$element.each(function(){
-                            if($(this).width() > nowSize){
-                                nowSize = $(this).width();
-                                $element = $(this);
-                            }
-                        });
-                    }
-
-
-                    if($element != null){
-                        $element.css('position','relative');
-                        $element.append(`<div title="${_i18n("THUMBNAIL_INTRO")}" class="IG_DWSTORY_THUMBNAIL">${SVG.THUMBNAIL}</div>`);
-                    }
+                let $element = null;
+                // Default detecter (section layout mode)
+                if($('body > div section._ac0a').length > 0){
+                    $element = $('body > div section:visible._ac0a');
                 }
+                // detecter (single story layout mode)
+                else{
+                    $element = $('body > div section:visible > div > div[style]:not([class])');
+                    $element.css('position','relative');
+                }
+
+                if($element.length === 0){
+                    $element = $('body div[id^="mount"] > div > div > div[class]').last().find('section:visible > div > div[style]:not([class])');
+                    $element.css('position','relative');
+                }
+
+                if($element.length === 0){
+                    $element = $('body div[id^="mount"] > div > div > div[class]').last().find('section:visible > div div[style]:not([class]) > div');
+                    $element.css('position','relative');
+                }
+
+                // Detecter for div layout mode
+                // GitHub issue #3: DiceMast3r
+                if($element.length === 0){
+                    let $$element = $('body > div div:not([hidden]) section:visible > div div[style]:not([class]) > div');
+                    let nowSize = 0;
+
+                    $$element.each(function(){
+                        if($(this).width() > nowSize){
+                            nowSize = $(this).width();
+                            $element = $(this);
+                        }
+                    });
+                }
+
+
+                if($element != null){
+                    $element.first().css('position','relative');
+                    $element.first().append(`<div title="${_i18n("THUMBNAIL_INTRO")}" class="IG_DWSTORY_THUMBNAIL">${SVG.THUMBNAIL}</div>`);
+                }
+
             }
             else{
                 $('.IG_DWSTORY_THUMBNAIL').remove();
