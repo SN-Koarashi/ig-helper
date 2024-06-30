@@ -5,7 +5,7 @@
 // @name:ja            IG助手
 // @name:ko            IG조수
 // @namespace          https://github.snkms.com/
-// @version            2.24.16
+// @version            2.24.17
 // @description        Downloading is possible for both photos and videos from posts, as well as for stories, reels or profile picture.
 // @description:zh-TW  一鍵下載對方 Instagram 貼文中的相片、影片甚至是他們的限時動態、連續短片及大頭貼圖片！
 // @description:zh-CN  一键下载对方 Instagram 帖子中的相片、视频甚至是他们的快拍、Reels及头像图片！
@@ -1906,7 +1906,7 @@
         }
 
         if(USER_SETTING.RENAME_LOCATE_DATE){
-            timestamp = (new Date(timestamp).toLocaleString(LOCATE_DATE_FORMAT, {hour12: false})).replaceAll('/', '-');
+            timestamp = (new Date(timestamp).toLocaleString(LOCATE_DATE_FORMAT, {hour12: false, second: "2-digit" ,minute: "2-digit", hour: "2-digit", month: "2-digit", day: "2-digit", year: "numeric"})).replaceAll('/', '-');
         }
 
         const a = document.createElement("a");
@@ -2129,7 +2129,7 @@
                             $('#tempWrapper').find('#locateSelect').first().append(`<option value="${locate.code}" ${(LOCATE_DATE_FORMAT.toLowerCase() == locate.code.toLowerCase()?'selected':'')}>${locate.name}</option>`);
                         });
 
-                        $('#locatePreview').text(`${(new Date().toLocaleString($('#locateSelect').val(), {hour12: false})).replaceAll('/','-')}`);
+                        $('#locatePreview').text(`${(new Date().toLocaleString($('#locateSelect').val(), {hour12: false, second: "2-digit" ,minute: "2-digit", hour: "2-digit", month: "2-digit", day: "2-digit", year: "numeric"})).replaceAll('/','-')}`);
                     }
                 });
             }
@@ -2438,7 +2438,7 @@
         });
 
         $('body').on('change', '.IG_SN_DIG_BODY #locateSelect', function(){
-            $('#locatePreview').text(`${(new Date().toLocaleString($(this).val(), {hour12: false})).replaceAll('/','-')}`);
+            $('#locatePreview').text(`${(new Date().toLocaleString($(this).val(), {hour12: false, second: "2-digit" ,minute: "2-digit", hour: "2-digit", month: "2-digit", day: "2-digit", year: "numeric"})).replaceAll('/','-')}`);
             LOCATE_DATE_FORMAT = $(this).val();
             GM_setValue('G_LOCATE_DATE_FORMAT', $(this).val());
         });
