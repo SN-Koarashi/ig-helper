@@ -143,8 +143,11 @@
 .globalSettings:hover > span{
     cursor: help;
 }
-.globalSettings input {
+.globalSettings input:not(#date_format) {
     display: none;
+}
+.globalSettings input#date_format {
+    width: calc(100% - 50px);
 }
 .globalSettings .chbtn {
     width: 40px;
