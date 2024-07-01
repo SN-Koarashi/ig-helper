@@ -5,7 +5,7 @@
 // @name:ja            IG助手
 // @name:ko            IG조수
 // @namespace          https://github.snkms.com/
-// @version            2.25.1
+// @version            2.25.2
 // @description        Downloading is possible for both photos and videos from posts, as well as for stories, reels or profile picture.
 // @description:zh-TW  一鍵下載對方 Instagram 貼文中的相片、影片甚至是他們的限時動態、連續短片及大頭貼圖片！
 // @description:zh-CN  一键下载对方 Instagram 帖子中的相片、视频甚至是他们的快拍、Reels及头像图片！
@@ -2058,7 +2058,7 @@
                 "FORCE_RESOURCE_VIA_MEDIA": "Force Fetch Resource via Media API",
                 "USE_BLOB_FETCH_WHEN_MEDIA_RATE_LITMIT": "Use Other Methods to Download When the Media API is Not Accessible",
                 "NEW_TAB_ALWAYS_FORCE_MEDIA_IN_POST": '"Open in new tab" in posts always uses Media API',
-                "AUTO_RENAME_INTRO": "Auto rename file to format type following:\nUSERNAME-TYPE-TIMESTAMP.FILETYPE\nExample: instagram-photo-1670350000.jpg\n\nIf set to false, the file name will remain as it is.\nExample: instagram_321565527_679025940443063_4318007696887450953_n.jpg",
+                "AUTO_RENAME_INTRO": "Auto rename file to custom format\nCustom Format List: \n%USERNAME% - Username\n%SOURCE_TYPE% - Download source\n%SHORTCODE% - Post Shortcode\n%YEAR% - Year when downloaded/published\n%MONTH% - Month when downloaded/published\n%DAY% - Day when downloaded/published\n%HOUR% - Hour when downloaded/published\n%MINUTE% - Minute when downloaded/published\n%SECOND% - Second when downloaded/published\n%ORIGINAL_NAME% - Original name of downloaded file\n\nIf set to false, the file name will remain as it is.\nExample: instagram_321565527_679025940443063_4318007696887450953_n.jpg",
                 "RENAME_SHORTCODE_INTRO": "Auto rename file to format type following:\nUSERNAME-TYPE-SHORTCODE-TIMESTAMP.FILETYPE\nExample: instagram-photo-CwkxyiVynpW-1670350000.jpg\n\nIt will ONLY work in [Automatically Rename Files] setting to TRUE.",
                 "RENAME_PUBLISH_DATE_INTRO": "Sets the timestamp in the file rename format to the resource publish date (UTC time zone)\n\nThis feature only works when [Automatically Rename Files] is set to TRUE.",
                 "RENAME_LOCATE_DATE_INTRO": "Modify the rename file timestamp date format to the browser's local time, and format it to the regional date format of your choice.\n\nThis feature only works when [Automatically Rename Files] is set to TRUE.",
