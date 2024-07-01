@@ -5,7 +5,7 @@
 // @name:ja            IG助手
 // @name:ko            IG조수
 // @namespace          https://github.snkms.com/
-// @version            2.24.17
+// @version            2.25.1
 // @description        Downloading is possible for both photos and videos from posts, as well as for stories, reels or profile picture.
 // @description:zh-TW  一鍵下載對方 Instagram 貼文中的相片、影片甚至是他們的限時動態、連續短片及大頭貼圖片！
 // @description:zh-CN  一键下载对方 Instagram 帖子中的相片、视频甚至是他们的快拍、Reels及头像图片！
@@ -46,9 +46,7 @@
     // PLEASE CHANGE SETTING WITH MENU
     const USER_SETTING = {
         'AUTO_RENAME': true,
-        'RENAME_SHORTCODE': true,
         'RENAME_PUBLISH_DATE': true,
-        'RENAME_LOCATE_DATE': false,
         'DISABLE_VIDEO_LOOPING': false,
         'REDIRECT_RIGHT_CLICK_USER_STORY_PICTURE': false,
         'FORCE_FETCH_ALL_RESOURCES': false,
@@ -60,11 +58,12 @@
         'USE_BLOB_FETCH_WHEN_MEDIA_RATE_LITMIT': false,
         'NEW_TAB_ALWAYS_FORCE_MEDIA_IN_POST': false
     };
-    const CHILD_NODES = ['RENAME_SHORTCODE', 'RENAME_PUBLISH_DATE', 'RENAME_LOCATE_DATE', 'USE_BLOB_FETCH_WHEN_MEDIA_RATE_LITMIT', 'NEW_TAB_ALWAYS_FORCE_MEDIA_IN_POST'];
+    const CHILD_NODES = ['RENAME_PUBLISH_DATE', 'USE_BLOB_FETCH_WHEN_MEDIA_RATE_LITMIT', 'NEW_TAB_ALWAYS_FORCE_MEDIA_IN_POST'];
     const LOCATE_DATE_LIST = JSON.parse(GM_getResourceText('LOCATE_DATE_LIST_TEXT'));
     var VIDEO_VOLUME = (GM_getValue('G_VIDEO_VOLUME'))?GM_getValue('G_VIDEO_VOLUME'):1;
     var LOCATE_DATE_FORMAT = (GM_getValue('G_LOCATE_DATE_FORMAT'))? GM_getValue('G_LOCATE_DATE_FORMAT') : GM_getValue('lang') || navigator.language || navigator.userLanguage;
     var TEMP_FETCH_RATE_LITMIT = false;
+    var RENAME_FORMAT = (GM_getValue('G_RENAME_FORMAT'))? GM_getValue('G_RENAME_FORMAT') : '%USERNAME%-%SOURCE_TYPE%-%SHORTCODE%-%YEAR%%MONTH%%DAY%_%HOUR%%MINUTE%%SECOND%';
     /*******************************/
 
     // Icon download by https://www.flaticon.com/authors/pixel-perfect
@@ -1899,22 +1898,45 @@
      * @return {void}
      */
     function createSaveFileElement(downloadLink,object,username,sourceType,timestamp,filetype,shortcode) {
-        timestamp = parseInt(timestamp.toString().padEnd(13, '0')) / 1000;
+        timestamp = parseInt(timestamp.toString().padEnd(13, '0'));
 
         if(USER_SETTING.RENAME_PUBLISH_DATE){
-            timestamp = new Date(timestamp * 1000).toISOString();
+            timestamp = parseInt(timestamp.toString().padEnd(13, '0'));
         }
 
-        if(USER_SETTING.RENAME_LOCATE_DATE){
-            timestamp = (new Date(timestamp).toLocaleString(LOCATE_DATE_FORMAT, {hour12: false, second: "2-digit" ,minute: "2-digit", hour: "2-digit", month: "2-digit", day: "2-digit", year: "numeric"})).replaceAll('/', '-');
-        }
+        const date = new Date(timestamp);
 
         const a = document.createElement("a");
-        const name = username+'-'+sourceType+'-'+((USER_SETTING.RENAME_SHORTCODE && shortcode)?shortcode+'-':'')+timestamp+'.'+filetype;
-        const originally = username + '_' + new URL(downloadLink).pathname.split('/').at(-1).split('.').slice(0,-1).join('.') + '.' + filetype;
+        const original_name = new URL(downloadLink).pathname.split('/').at(-1).split('.').slice(0,-1).join('.');
+        const year = date.getFullYear().toString();
+        const month = (date.getMonth()+1).toString().padStart(2,'0');
+        const day = date.getDate().toString().padStart(2,'0');
+        const hour = date.getHours().toString().padStart(2,'0');
+        const minute = date.getMinutes().toString().padStart(2,'0');
+        const second = date.getSeconds().toString().padStart(2,'0');
+
+        var filename = RENAME_FORMAT.toUpperCase();
+        var replacements = {
+            '%USERNAME%': username,
+            '%SOURCE_TYPE%': sourceType,
+            '%SHORTCODE%': (shortcode)?shortcode:'NONE',
+            '%YEAR%': year,
+            '%MONTH%': month,
+            '%DAY%': day,
+            '%HOUR%': hour,
+            '%MINUTE%': minute,
+            '%SECOND%': second,
+            '%ORIGINAL_NAME%': original_name
+        };
+
+        filename = filename.replace(/%\w+%/g, function(str) {
+            return replacements[str] || str;
+        });
+
+        const originally = username + '_' + original_name + '.' + filetype;
 
         a.href = URL.createObjectURL(object);
-        a.setAttribute("download", (USER_SETTING.AUTO_RENAME)?name:originally);
+        a.setAttribute("download", (USER_SETTING.AUTO_RENAME)?filename+'.'+filetype:originally);
         a.click();
         a.remove();
     }
@@ -2022,7 +2044,7 @@
                 "NO_CHECK_RESOURCE": "You need to check resource to download.",
                 "NO_VID_URL": "Can not find video url.",
                 "SETTING": "Settings",
-                "AUTO_RENAME": "Automatically Rename Files",
+                "AUTO_RENAME": "Automatically Rename Files (Right-Click To Set)",
                 "RENAME_SHORTCODE": "Rename The File and Include Shortcode",
                 "RENAME_PUBLISH_DATE": "Set Rename File Timestamp to Resource Publish Date",
                 "RENAME_LOCATE_DATE": "Modify Renamed File Timestamp Date Format (Right-Click To Set)",
@@ -2114,22 +2136,14 @@
                 });
             }
 
-            if(name === 'RENAME_LOCATE_DATE'){
+            if(name === 'AUTO_RENAME'){
                 $('.IG_SN_DIG .IG_SN_DIG_BODY input[id="'+name+'"]').parent('label').on('contextmenu', function(e){
                     e.preventDefault();
                     if($(this).find('#tempWrapper').length === 0){
                         $(this).append('<div id="tempWrapper"></div>');
 
-                        $(this).children('#tempWrapper').append('<select id="locateSelect"></select>');
-                        $(this).children('#tempWrapper').append(`<span id="locatePreview">-</span>`);
+                        $(this).children('#tempWrapper').append('<input id="date_format" value="' + RENAME_FORMAT + '" />');
                         $(this).children('#tempWrapper').append(`<div class="IG_SN_DIG_BTN">${SVG.CLOSE}</div>`);
-
-
-                        LOCATE_DATE_LIST.forEach( locate => {
-                            $('#tempWrapper').find('#locateSelect').first().append(`<option value="${locate.code}" ${(LOCATE_DATE_FORMAT.toLowerCase() == locate.code.toLowerCase()?'selected':'')}>${locate.name}</option>`);
-                        });
-
-                        $('#locatePreview').text(`${(new Date().toLocaleString($('#locateSelect').val(), {hour12: false, second: "2-digit" ,minute: "2-digit", hour: "2-digit", month: "2-digit", day: "2-digit", year: "numeric"})).replaceAll('/','-')}`);
                     }
                 });
             }
@@ -2282,7 +2296,7 @@
             }
         });
 
-        $('body').on('change', '.IG_SN_DIG #tempWrapper input',function(){
+        $('body').on('change', '.IG_SN_DIG #tempWrapper input:not(#date_format)',function(){
             let value = $(this).val();
 
             if($(this).attr('type') == 'range'){
@@ -2298,7 +2312,7 @@
             }
         });
 
-        $('body').on('input', '.IG_SN_DIG #tempWrapper input',function(e){
+        $('body').on('input', '.IG_SN_DIG #tempWrapper input:not(#date_format)',function(e){
             if($(this).attr('type') == 'range'){
                 let value = $(this).val();
                 $(this).next().val(value);
@@ -2319,6 +2333,10 @@
             }
         });
 
+        $('body').on('input', '.IG_SN_DIG #tempWrapper input#date_format',function(e){
+            GM_setValue('G_RENAME_FORMAT', $(this).val());
+            RENAME_FORMAT = $(this).val();
+        });
 
         $('body').on('click','a[data-needed="direct"]', function(e){
             e.preventDefault();
