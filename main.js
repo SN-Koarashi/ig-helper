@@ -217,8 +217,9 @@
                 }
                 else{
                     pageLoaded = false;
-                    // Remove the download icon
+                    // Remove icons
                     $('.IG_DWSTORY').remove();
+                    $('.IG_DWNEWTAB').remove();
                     $('.IG_DWSTORY_THUMBNAIL').remove();
                 }
             }
@@ -474,7 +475,7 @@
         }
         else{
             if($('body > div section video.xh8yej3').length){
-                // Add the stories download button
+                // Add the stories thumbnail download button
                 if(!$('.IG_DWHISTORY_THUMBNAIL').length){
                     let $element = null;
 
@@ -2370,7 +2371,7 @@
             onStory(true, true, true);
         });
 
-        // Running if user left-click download icon in stories
+        // Running if user left-click download thumbnail icon in stories
         $('body').on('click','.IG_DWSTORY_THUMBNAIL',function(){
             onStoryThumbnail(true);
         });
