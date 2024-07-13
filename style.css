@@ -73,7 +73,7 @@
     z-index: 5;
 }
 
-.IG_REELSNEWTAB, .IG_DWNEWTAB, .IG_DWHINEWTAB{
+.IG_REELS_NEWTAB, .IG_DWNEWTAB, .IG_DWHINEWTAB{
     position: absolute;
     right:40px;
     top:45px;
