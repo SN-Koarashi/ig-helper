@@ -50,7 +50,7 @@
         'DISABLE_VIDEO_LOOPING': false,
         'REDIRECT_RIGHT_CLICK_USER_STORY_PICTURE': false,
         'FORCE_FETCH_ALL_RESOURCES': false,
-        'DIRECT_DOWNLOAD_VISABLE_RESOURCE': false,
+        'DIRECT_DOWNLOAD_VISIBLE_RESOURCE': false,
         'DIRECT_DOWNLOAD_ALL': false,
         'MODIFY_VIDEO_VOLUME': false,
         'SCROLL_BUTTON': true,
@@ -1015,7 +1015,7 @@
                                 $(this).children().css('position','relative');
 
                                 $(this).children().append(`<div title="${_i18n("DW")}" class="IG_REELS">${SVG.DOWNLOAD}</div>`);
-                                $(this).children().append(`<div title="${_i18n("NEW_TAB")}" class="IG_REELSNEWTAB">${SVG.NEW_TAB}</div>`);
+                                $(this).children().append(`<div title="${_i18n("NEW_TAB")}" class="IG_REELS_NEWTAB">${SVG.NEW_TAB}</div>`);
                                 $(this).children().append(`<div title="${_i18n("THUMBNAIL_INTRO")}" class="IG_REELS_THUMBNAIL">${SVG.THUMBNAIL}</div>`);
 
                                 // Disable video autoplay
@@ -1637,7 +1637,7 @@
 
                     $("#article-id").html(`<a href="https://www.instagram.com/p/${GL_postPath}">${GL_postPath}</a>`);
 
-                    if(USER_SETTING.DIRECT_DOWNLOAD_VISABLE_RESOURCE){
+                    if(USER_SETTING.DIRECT_DOWNLOAD_VISIBLE_RESOURCE){
                         updateLoadingBar(true);
                         IG_setDM(true);
 
@@ -2052,7 +2052,7 @@
                 "DISABLE_VIDEO_LOOPING": "Disable Video Auto-looping",
                 "REDIRECT_RIGHT_CLICK_USER_STORY_PICTURE": "Redirect When Right-Clicking User Story Picture",
                 "FORCE_FETCH_ALL_RESOURCES": "Forcing Fetch All Resources In the Post",
-                "DIRECT_DOWNLOAD_VISABLE_RESOURCE": "Directly Download the Visible Resources In the Post",
+                "DIRECT_DOWNLOAD_VISIBLE_RESOURCE": "Directly Download the Visible Resources In the Post",
                 "DIRECT_DOWNLOAD_ALL": "Directly Download All Resources In the Post",
                 "MODIFY_VIDEO_VOLUME": "Modify Video Volume (Right-Click To Set)",
                 "SCROLL_BUTTON": "Enable Scroll Buttons For Reels Page",
@@ -2066,7 +2066,7 @@
                 "DISABLE_VIDEO_LOOPING_INTRO": "Disable video auto-looping in reels and posts.",
                 "REDIRECT_RIGHT_CLICK_USER_STORY_PICTURE_INTRO": "Redirect to a user's profile page when right-clicking on their user avatar in the story area on the homepage.",
                 "FORCE_FETCH_ALL_RESOURCES_INTRO": "Force fetching of all resources (photos and videos) in a post via the Instagram API to remove the limit of three resources per post.",
-                "DIRECT_DOWNLOAD_VISABLE_RESOURCE_INTRO": "Directly download the current resources in the post.",
+                "DIRECT_DOWNLOAD_VISIBLE_RESOURCE_INTRO": "Directly download the current resources in the post.",
                 "DIRECT_DOWNLOAD_ALL_INTRO": "When you click the download button, all resources in the post will be directly forced to be fetched and downloaded.",
                 "MODIFY_VIDEO_VOLUME_INTRO": "Modify the video playback volume in Reels and Posts (right-click to open the volume setting slider).",
                 "SCROLL_BUTTON_INTRO": "Enable scroll buttons for the lower right corner of Reels page.",
@@ -2366,6 +2366,8 @@
         $('body').on('click','.IG_DWSTORY',function(){
             onStory(true);
         });
+
+        // Running if user left-click 'open in new tab' icon in stories
         $('body').on('click','.IG_DWNEWTAB',function(e){
             e.preventDefault();
             onStory(true, true, true);
@@ -2386,12 +2388,14 @@
         $('body').on('click','.IG_DWHISTORY',function(){
             onHighlightsStory(true);
         });
+		
+        // Running if user left-click 'open in new tab' icon in highlight stories
         $('body').on('click','.IG_DWHINEWTAB',function(e){
             e.preventDefault();
             onHighlightsStory(true, true);
         });
 
-        // Running if user left-click download icon in highlight stories
+        // Running if user left-click thumbnail download icon in highlight stories
         $('body').on('click','.IG_DWHISTORY_THUMBNAIL',function(){
             onHighlightsStoryThumbnail(true);
         });
@@ -2402,7 +2406,7 @@
         });
 
         // Running if user left-click newtab icon in reels
-        $('body').on('click','.IG_REELSNEWTAB',function(){
+        $('body').on('click','.IG_REELS_NEWTAB',function(){
             onReels(true,true,true);
         });
 
