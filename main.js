@@ -724,7 +724,7 @@
                 }
 
                 if($element.length === 0){
-                    $element = $('body div[id^="mount"] > div > div > div[class]').last().find('section:visible > div div[style]:not([class]) > div');
+                    $element = $('body div[id^="mount"] > div > div > div[class]').last().find('section:visible > div div[style]:not([class]) > div:not([data-visualcompletion="loading-state"])');
                     $element.css('position','relative');
                 }
 
@@ -914,7 +914,7 @@
                 }
 
                 if($element.length === 0){
-                    $element = $('body div[id^="mount"] > div > div > div[class]').last().find('section:visible > div div[style]:not([class]) > div');
+                    $element = $('body div[id^="mount"] > div > div > div[class]').last().find('section:visible > div div[style]:not([class]) > div:not([data-visualcompletion="loading-state"])');
                     $element.css('position','relative');
                 }
 
