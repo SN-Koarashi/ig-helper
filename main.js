@@ -5,7 +5,7 @@
 // @name:ja            IG助手
 // @name:ko            IG조수
 // @namespace          https://github.snkms.com/
-// @version            2.25.6
+// @version            2.25.7
 // @description        Downloading is possible for both photos and videos from posts, as well as for stories, reels or profile picture.
 // @description:zh-TW  一鍵下載對方 Instagram 貼文中的相片、影片甚至是他們的限時動態、連續短片及大頭貼圖片！
 // @description:zh-CN  一键下载对方 Instagram 帖子中的相片、视频甚至是他们的快拍、Reels及头像图片！
@@ -83,6 +83,7 @@
     var firstStarted = false;
     var pageLoaded = false;
 
+    var GL_referrer;
     var GL_postPath;
     var GL_username;
     var GL_repeat;
@@ -168,9 +169,11 @@
             if(location.href.split("?")[0] == "https://www.instagram.com/"){
                 GL_dataCache.stories = {};
 
-                console.log('isHomepage');
+                let hasReferrer = GL_referrer?.match(/^\/stories\//ig) != null;
+
+                console.log('isHomepage', hasReferrer);
                 setTimeout(()=>{
-                    onReadyMyDW(false);
+                    onReadyMyDW(false, hasReferrer);
 
                     const element = $('div[id^="mount"] > div > div div > section > main div:not([class]):not([style]) > div > article')?.parent()[0];
                     if(element){
@@ -224,6 +227,7 @@
                 }
             }
 
+            GL_referrer = new URL(location.href).pathname;
         }
     },checkInterval);
 
@@ -1249,7 +1253,12 @@
      * @param  {Boolean}  NoDialog - Check if it not showing the dialog
      * @return {void}
      */
-    function onReadyMyDW(NoDialog){
+    function onReadyMyDW(NoDialog, hasReferrer){
+        if(hasReferrer === true){
+            console.log('hasReferrer', 'regenerated');
+            $('article[data-snig="canDownload"], div[data-snig="canDownload"]').removeAttr('data-snig');
+        }
+
         // Whether is Instagram dialog?
         if(NoDialog == false){
             const maxCall = 100;
@@ -2390,7 +2399,7 @@
         $('body').on('click','.IG_DWHISTORY',function(){
             onHighlightsStory(true);
         });
-		
+
         // Running if user left-click 'open in new tab' icon in highlight stories
         $('body').on('click','.IG_DWHINEWTAB',function(e){
             e.preventDefault();
