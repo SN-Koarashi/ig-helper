@@ -5,7 +5,7 @@
 // @name:ja            IG助手
 // @name:ko            IG조수
 // @namespace          https://github.snkms.com/
-// @version            2.25.7
+// @version            2.25.8
 // @description        Downloading is possible for both photos and videos from posts, as well as for stories, reels or profile picture.
 // @description:zh-TW  一鍵下載對方 Instagram 貼文中的相片、影片甚至是他們的限時動態、連續短片及大頭貼圖片！
 // @description:zh-CN  一键下载对方 Instagram 帖子中的相片、视频甚至是他们的快拍、Reels及头像图片！
@@ -142,18 +142,17 @@
 
                 console.log('isDialog');
 
-                // This is to prevent the detection of the "Modify Video Volume" setting from being too slow.
-                setTimeout(()=>{
-                    onReadyMyDW(false);
-                }, 5);
-
                 // This is a delayed function call that prevents the dialog element from appearing before the function is called.
-                setTimeout(()=>{
-                    onReadyMyDW(false);
-                }, 250);
-                setTimeout(()=>{
-                    onReadyMyDW(false);
-                }, 450);
+                var dialogTimer = setInterval(()=>{
+                    if($('body > div[class]:not([id^="mount"]) div div[role="dialog"] article').length > 0){
+                        clearInterval(dialogTimer);
+
+                        // This is to prevent the detection of the "Modify Video Volume" setting from being too slow.
+                        setTimeout(()=>{
+                            onReadyMyDW(false);
+                        }, 15);
+                    }
+                },100);
 
                 pageLoaded = true;
             }
