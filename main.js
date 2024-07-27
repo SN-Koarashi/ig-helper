@@ -5,7 +5,7 @@
 // @name:ja            IG助手
 // @name:ko            IG조수
 // @namespace          https://github.snkms.com/
-// @version            2.26.1
+// @version            2.27.1
 // @description        Downloading is possible for both photos and videos from posts, as well as for stories, reels or profile picture.
 // @description:zh-TW  一鍵下載對方 Instagram 貼文中的相片、影片甚至是他們的限時動態、連續短片及大頭貼圖片！
 // @description:zh-CN  一键下载对方 Instagram 帖子中的相片、视频甚至是他们的快拍、Reels及头像图片！
@@ -144,7 +144,7 @@
 
                 // This is a delayed function call that prevents the dialog element from appearing before the function is called.
                 var dialogTimer = setInterval(()=>{
-                    if($('body > div[class]:not([id^="mount"]) div div[role="dialog"] article').length > 0){
+                    if($('body > div[class]:not([id^="mount"]) div div[role="dialog"] article, section:visible > main > div > div.xdt5ytf').length > 0){
                         clearInterval(dialogTimer);
 
                         // This is to prevent the detection of the "Modify Video Volume" setting from being too slow.
@@ -1600,6 +1600,41 @@
                         }
                     });
                 }
+
+
+                var $buttonParent = $(this).find('video + div > div').first();
+                $buttonParent.append('<div class="volume_slider bottom" />');
+                $buttonParent.find('div.volume_slider').append(`<div><input type="range" max="1" min="0" step="0.05" value="${VIDEO_VOLUME}" /></div>`);
+                $buttonParent.find('div.volume_slider input').attr('style',`--ig-track-progress: ${(VIDEO_VOLUME * 100) + '%'}`);
+                $buttonParent.find('div.volume_slider input').on('input',function(){
+                    var percent = ($(this).val() * 100) + '%';
+
+                    VIDEO_VOLUME = $(this).val();
+                    GM_setValue('G_VIDEO_VOLUME', $(this).val());
+
+                    $(this).attr('style',`--ig-track-progress: ${percent}`);
+
+                    $mainElement.find('video').each(function(){
+                        console.log('(reel) video volume changed #slider');
+                        this.volume = VIDEO_VOLUME;
+                    });
+                });
+
+                $buttonParent.find('div.volume_slider input').on('mouseenter',function(){
+                    var percent = (VIDEO_VOLUME * 100) + '%';
+                    $(this).attr('style',`--ig-track-progress: ${percent}`);
+                    $(this).val(VIDEO_VOLUME);
+                    $mainElement.find('video').each(function(){
+                        console.log('(reel) video volume changed #slider');
+                        this.volume = VIDEO_VOLUME;
+                    });
+                });
+
+                $buttonParent.find('div.volume_slider').on('click',function(e){
+                    e.stopPropagation();
+                    e.preventDefault();
+                });
+
 
                 $(this).on('click', '.SNKMS_IG_THUMBNAIL_MAIN', function(e){
                     updateLoadingBar(true);
