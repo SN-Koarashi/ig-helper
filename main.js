@@ -5,7 +5,7 @@
 // @name:ja            IG助手
 // @name:ko            IG조수
 // @namespace          https://github.snkms.com/
-// @version            2.25.10
+// @version            2.26.1
 // @description        Downloading is possible for both photos and videos from posts, as well as for stories, reels or profile picture.
 // @description:zh-TW  一鍵下載對方 Instagram 貼文中的相片、影片甚至是他們的限時動態、連續短片及大頭貼圖片！
 // @description:zh-CN  一键下载对方 Instagram 帖子中的相片、视频甚至是他们的快拍、Reels及头像图片！
@@ -29,9 +29,9 @@
 // @supportURL         https://github.com/SN-Koarashi/ig-helper/
 // @contributionURL    https://ko-fi.com/snkoarashi
 // @icon               https://www.google.com/s2/favicons?domain=www.instagram.com
-// @compatible         firefox >= 87
-// @compatible         chrome >= 90
-// @compatible         edge >= 90
+// @compatible         firefox >= 100
+// @compatible         chrome >= 100
+// @compatible         edge >= 100
 // @license            GPL-3.0-only
 // @run-at             document-idle
 // @downloadURL https://update.greasyfork.org/scripts/404535/IG%20Helper.user.js
@@ -1016,6 +1016,8 @@
                     $('section > main[role="main"] > div[tabindex]').children('div').each(function(){
                         if($(this).children().length > 0){
                             if(!$(this).children().find('.IG_REELS').length){
+                                var $main = $(this);
+
                                 $(this).children().css('position','relative');
 
                                 $(this).children().append(`<div title="${_i18n("DW")}" class="IG_REELS">${SVG.DOWNLOAD}</div>`);
@@ -1062,6 +1064,39 @@
                                         }
                                     });
                                 }
+
+                                var $buttonParent = $(this).find('div[role="presentation"] > div[role="button"] > div').first();
+                                $buttonParent.append('<div class="volume_slider" />');
+                                $buttonParent.find('div.volume_slider').append(`<div><input type="range" max="1" min="0" step="0.05" value="${VIDEO_VOLUME}" /></div>`);
+                                $buttonParent.find('div.volume_slider input').attr('style',`--ig-track-progress: ${(VIDEO_VOLUME * 100) + '%'}`);
+                                $buttonParent.find('div.volume_slider input').on('input',function(){
+                                    var percent = ($(this).val() * 100) + '%';
+
+                                    VIDEO_VOLUME = $(this).val();
+                                    GM_setValue('G_VIDEO_VOLUME', $(this).val());
+
+                                    $(this).attr('style',`--ig-track-progress: ${percent}`);
+
+                                    $main.find('video').each(function(){
+                                        console.log('(reel) video volume changed #slider');
+                                        this.volume = VIDEO_VOLUME;
+                                    });
+                                });
+
+                                $buttonParent.find('div.volume_slider input').on('mouseenter',function(){
+                                    var percent = (VIDEO_VOLUME * 100) + '%';
+                                    $(this).attr('style',`--ig-track-progress: ${percent}`);
+                                    $(this).val(VIDEO_VOLUME);
+                                    $main.find('video').each(function(){
+                                        console.log('(reel) video volume changed #slider');
+                                        this.volume = VIDEO_VOLUME;
+                                    });
+                                });
+
+                                $buttonParent.find('div.volume_slider').on('click',function(e){
+                                    e.stopPropagation();
+                                    e.preventDefault();
+                                });
                             }
                         }
                     });
