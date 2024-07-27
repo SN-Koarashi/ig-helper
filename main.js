@@ -184,7 +184,7 @@
 
                 pageLoaded = true;
             }
-            if($('div[id^="mount"] > div > div > div').first().is(':hidden') && $('canvas._aarh, canvas[class][style][height][width], div._aadm, header a[role="link"][style][href="/'+location.pathname.split('/').filter(s => s.length > 0).at(0)+'/"]').length && location.pathname.match(/^(\/)([0-9A-Za-z\.\-_]+)\/?(tagged|reels)?\/?$/ig) && !location.pathname.match(/^(\/(stories|explore)\/?)/ig)){
+            if($('header canvas[class][style][height][width], header a[role="link"][style][href="/'+location.pathname.split('/').filter(s => s.length > 0).at(0)+'/"]').length && location.pathname.match(/^(\/)([0-9A-Za-z\.\-_]+)\/?(tagged|reels)?\/?$/ig) && !location.pathname.match(/^(\/(stories|explore)\/?)/ig)){
                 console.log('isProfile');
                 setTimeout(()=>{
                     onProfileAvatar(false);
@@ -271,8 +271,8 @@
                         return;
                     }
 
-                    $('body > div main canvas._aarh, body > div main canvas[class][style][height][width], body > div main div._aadm, header a[role="link"][style][href="/'+location.pathname.split('/').filter(s => s.length > 0).at(0)+'/"]').parent().append(`<div title="${_i18n("DW")}" class="IG_DWPROFILE">${SVG.DOWNLOAD}</div>`);
-                    $('body > div main canvas._aarh, body > div main canvas[class][style][height][width], body > div main div._aadm, header a[role="link"][style][href="/'+location.pathname.split('/').filter(s => s.length > 0).at(0)+'/"]').parent().css('position','relative');
+                    $('header canvas[class][style][height][width], header a[role="link"][style][href="/'+location.pathname.split('/').filter(s => s.length > 0).at(0)+'/"]').parent().append(`<div title="${_i18n("DW")}" class="IG_DWPROFILE">${SVG.DOWNLOAD}</div>`);
+                    $('header canvas[class][style][height][width], header a[role="link"][style][href="/'+location.pathname.split('/').filter(s => s.length > 0).at(0)+'/"]').parent().css('position','relative');
                 },150);
             }
         }
