@@ -1448,7 +1448,7 @@
      */
     function createDownloadButton(){
         // Add download icon per each posts
-        $('article, section:visible > main > div > div.xdt5ytf, *:not(._aauo) > * > div._aap0[role="presentation"]').each(function(index){
+        $('article, section:visible > main > div > div.xdt5ytf, div._aap0[role="presentation"]').each(function(index){
             // If it is have not download icon
             // class x1iyjqo2 mean user profile pages post list container
             if(!$(this).attr('data-snig') && !$(this).hasClass('x1iyjqo2') && !$(this).children('article')?.hasClass('x1iyjqo2')){
