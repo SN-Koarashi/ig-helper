@@ -415,7 +415,7 @@ kbd {
     display: none;
 }
 
-div[role="button"]:hover + .volume_slider > div, .volume_slider:hover > div{
+div[class]:hover + .volume_slider > div, .volume_slider:hover > div{
     display: block;
 }
 
@@ -424,6 +424,12 @@ div[role="button"]:hover + .volume_slider > div, .volume_slider:hover > div{
     height: 30px;
     left: 0px;
     right: 40px;
+}
+
+.volume_slider.bottom{
+    left: 50px;
+    right: 45px;
+    bottom: 15px;
 }
 
 .volume_slider > div{
