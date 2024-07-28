@@ -5,7 +5,7 @@
 // @name:ja            IG助手
 // @name:ko            IG조수
 // @namespace          https://github.snkms.com/
-// @version            2.27.4.1
+// @version            2.27.5
 // @description        Downloading is possible for both photos and videos from posts, as well as for stories, reels or profile picture.
 // @description:zh-TW  一鍵下載對方 Instagram 貼文中的相片、影片甚至是他們的限時動態、連續短片及大頭貼圖片！
 // @description:zh-CN  一键下载对方 Instagram 帖子中的相片、视频甚至是他们的快拍、Reels及头像图片！
@@ -184,7 +184,7 @@
 
                 pageLoaded = true;
             }
-            if($('header canvas[class][style][height][width], header a[role="link"][style][href="/'+location.pathname.split('/').filter(s => s.length > 0).at(0)+'/"]').length && location.pathname.match(/^(\/)([0-9A-Za-z\.\-_]+)\/?(tagged|reels)?\/?$/ig) && !location.pathname.match(/^(\/(stories|explore)\/?)/ig)){
+            if($('header img[alt][draggable]').length && location.pathname.match(/^(\/)([0-9A-Za-z\.\-_]+)\/?(tagged|reels)?\/?$/ig) && !location.pathname.match(/^(\/(stories|explore|p)\/?)/ig)) {
                 console.log('isProfile');
                 setTimeout(()=>{
                     onProfileAvatar(false);
@@ -212,6 +212,9 @@
                     if($('body div[id^="mount"] > div > div > div[class]').length > 2){
                         $('.IG_DWSTORY').remove();
                         $('.IG_DWNEWTAB').remove();
+                        if($('.IG_DWSTORY_THUMBNAIL').length){
+                            $('.IG_DWSTORY_THUMBNAIL').remove();
+                        }
 
                         onStory(false);
 
@@ -228,7 +231,9 @@
                     // Remove icons
                     $('.IG_DWSTORY').remove();
                     $('.IG_DWNEWTAB').remove();
-                    $('.IG_DWSTORY_THUMBNAIL').remove();
+                    if($('.IG_DWSTORY_THUMBNAIL').length){
+                        $('.IG_DWSTORY_THUMBNAIL').remove();
+                    }
                 }
             }
 
@@ -271,8 +276,8 @@
                         return;
                     }
 
-                    $('header canvas[class][style][height][width], header a[role="link"][style][href="/'+location.pathname.split('/').filter(s => s.length > 0).at(0)+'/"]').parent().append(`<div title="${_i18n("DW")}" class="IG_DWPROFILE">${SVG.DOWNLOAD}</div>`);
-                    $('header canvas[class][style][height][width], header a[role="link"][style][href="/'+location.pathname.split('/').filter(s => s.length > 0).at(0)+'/"]').parent().css('position','relative');
+                    $('header img[alt][draggable]').parent().parent().append(`<div title="${_i18n("DW")}" class="IG_DWPROFILE">${SVG.DOWNLOAD}</div>`);
+                    $('header img[alt][draggable]').parent().parent().css('position','relative');
                 },150);
             }
         }
@@ -1452,7 +1457,7 @@
         $('article, section:visible > main > div > div.xdt5ytf, div._aap0[role="presentation"]').each(function(index){
             // If it is have not download icon
             // class x1iyjqo2 mean user profile pages post list container
-            if(!$(this).attr('data-snig') && !$(this).hasClass('x1iyjqo2') && !$(this).children('article')?.hasClass('x1iyjqo2')){
+            if(!$(this).attr('data-snig') && !$(this).hasClass('x1iyjqo2') && !$(this).children('article')?.hasClass('x1iyjqo2') && !location.pathname.match(/^(\/explore\/?)/ig)){
                 console.log("Found post container", $(this));
 
                 var rightPos = 15;
