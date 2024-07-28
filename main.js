@@ -212,6 +212,9 @@
                     if($('body div[id^="mount"] > div > div > div[class]').length > 2){
                         $('.IG_DWSTORY').remove();
                         $('.IG_DWNEWTAB').remove();
+                        if($('.IG_DWSTORY_THUMBNAIL').length){
+                            $('.IG_DWSTORY_THUMBNAIL').remove();
+                        }
 
                         onStory(false);
 
@@ -228,7 +231,9 @@
                     // Remove icons
                     $('.IG_DWSTORY').remove();
                     $('.IG_DWNEWTAB').remove();
-                    $('.IG_DWSTORY_THUMBNAIL').remove();
+                    if($('.IG_DWSTORY_THUMBNAIL').length){
+                        $('.IG_DWSTORY_THUMBNAIL').remove();
+                    }
                 }
             }
 
@@ -1452,7 +1457,7 @@
         $('article, section:visible > main > div > div.xdt5ytf, div._aap0[role="presentation"]').each(function(index){
             // If it is have not download icon
             // class x1iyjqo2 mean user profile pages post list container
-            if(!$(this).attr('data-snig') && !$(this).hasClass('x1iyjqo2') && !$(this).children('article')?.hasClass('x1iyjqo2')){
+            if(!$(this).attr('data-snig') && !$(this).hasClass('x1iyjqo2') && !$(this).children('article')?.hasClass('x1iyjqo2') && !location.pathname.match(/^(\/explore\/?)/ig)){
                 console.log("Found post container", $(this));
 
                 var rightPos = 15;
