@@ -5,7 +5,7 @@
 // @name:ja            IG助手
 // @name:ko            IG조수
 // @namespace          https://github.snkms.com/
-// @version            2.27.1
+// @version            2.27.2
 // @description        Downloading is possible for both photos and videos from posts, as well as for stories, reels or profile picture.
 // @description:zh-TW  一鍵下載對方 Instagram 貼文中的相片、影片甚至是他們的限時動態、連續短片及大頭貼圖片！
 // @description:zh-CN  一键下载对方 Instagram 帖子中的相片、视频甚至是他们的快拍、Reels及头像图片！
@@ -184,7 +184,7 @@
 
                 pageLoaded = true;
             }
-            if($('div[id^="mount"] > div > div > div').first().is(':hidden') && $('canvas._aarh, canvas[class][style][height][width], div._aadm, header a[role="link"][style][href="/'+location.pathname.split('/').filter(s => s.length > 0).at(0)+'/"]').length && location.pathname.match(/^(\/)([0-9A-Za-z\.\-_]+)\/?(tagged|reels)?\/?$/ig) && !location.pathname.match(/^(\/(stories|explore)\/?)/ig)){
+            if($('header canvas[class][style][height][width], header a[role="link"][style][href="/'+location.pathname.split('/').filter(s => s.length > 0).at(0)+'/"]').length && location.pathname.match(/^(\/)([0-9A-Za-z\.\-_]+)\/?(tagged|reels)?\/?$/ig) && !location.pathname.match(/^(\/(stories|explore)\/?)/ig)){
                 console.log('isProfile');
                 setTimeout(()=>{
                     onProfileAvatar(false);
@@ -271,8 +271,8 @@
                         return;
                     }
 
-                    $('body > div main canvas._aarh, body > div main canvas[class][style][height][width], body > div main div._aadm, header a[role="link"][style][href="/'+location.pathname.split('/').filter(s => s.length > 0).at(0)+'/"]').parent().append(`<div title="${_i18n("DW")}" class="IG_DWPROFILE">${SVG.DOWNLOAD}</div>`);
-                    $('body > div main canvas._aarh, body > div main canvas[class][style][height][width], body > div main div._aadm, header a[role="link"][style][href="/'+location.pathname.split('/').filter(s => s.length > 0).at(0)+'/"]').parent().css('position','relative');
+                    $('header canvas[class][style][height][width], header a[role="link"][style][href="/'+location.pathname.split('/').filter(s => s.length > 0).at(0)+'/"]').parent().append(`<div title="${_i18n("DW")}" class="IG_DWPROFILE">${SVG.DOWNLOAD}</div>`);
+                    $('header canvas[class][style][height][width], header a[role="link"][style][href="/'+location.pathname.split('/').filter(s => s.length > 0).at(0)+'/"]').parent().css('position','relative');
                 },150);
             }
         }
@@ -1448,7 +1448,7 @@
      */
     function createDownloadButton(){
         // Add download icon per each posts
-        $('article, section:visible > main > div > div.xdt5ytf, *:not(._aauo) > * > div._aap0[role="presentation"]').each(function(index){
+        $('article, section:visible > main > div > div.xdt5ytf, div._aap0[role="presentation"]').each(function(index){
             // If it is have not download icon
             // class x1iyjqo2 mean user profile pages post list container
             if(!$(this).attr('data-snig') && !$(this).hasClass('x1iyjqo2') && !$(this).children('article')?.hasClass('x1iyjqo2')){
