@@ -904,8 +904,6 @@
         }
         else{
             if($('body > div div.IG_DWSTORY').parent().find('video[class]').length){
-                $('.IG_DWSTORY_THUMBNAIL').remove();
-
                 // Add the stories download button
                 let $element = null;
                 // Default detecter (section layout mode)
@@ -947,9 +945,6 @@
                     $element.first().append(`<div title="${_i18n("THUMBNAIL_INTRO")}" class="IG_DWSTORY_THUMBNAIL">${SVG.THUMBNAIL}</div>`);
                 }
 
-            }
-            else{
-                $('.IG_DWSTORY_THUMBNAIL').remove();
             }
         }
     }
