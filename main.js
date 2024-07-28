@@ -184,7 +184,7 @@
 
                 pageLoaded = true;
             }
-            if($('header canvas[class][style][height][width], header a[role="link"][style][href="/'+location.pathname.split('/').filter(s => s.length > 0).at(0)+'/"]').length && location.pathname.match(/^(\/)([0-9A-Za-z\.\-_]+)\/?(tagged|reels)?\/?$/ig) && !location.pathname.match(/^(\/(stories|explore)\/?)/ig)){
+            if($('header img[alt][draggable]').length && location.pathname.match(/^(\/)([0-9A-Za-z\.\-_]+)\/?(tagged|reels)?\/?$/ig) && !location.pathname.match(/^(\/(stories|explore|p)\/?)/ig)) {
                 console.log('isProfile');
                 setTimeout(()=>{
                     onProfileAvatar(false);
@@ -271,8 +271,8 @@
                         return;
                     }
 
-                    $('header canvas[class][style][height][width], header a[role="link"][style][href="/'+location.pathname.split('/').filter(s => s.length > 0).at(0)+'/"]').parent().append(`<div title="${_i18n("DW")}" class="IG_DWPROFILE">${SVG.DOWNLOAD}</div>`);
-                    $('header canvas[class][style][height][width], header a[role="link"][style][href="/'+location.pathname.split('/').filter(s => s.length > 0).at(0)+'/"]').parent().css('position','relative');
+                    $('header img[alt][draggable]').parent().parent().append(`<div title="${_i18n("DW")}" class="IG_DWPROFILE">${SVG.DOWNLOAD}</div>`);
+                    $('header img[alt][draggable]').parent().parent().css('position','relative');
                 },150);
             }
         }
