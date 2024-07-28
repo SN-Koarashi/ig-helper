@@ -148,6 +148,11 @@
 }
 .globalSettings input#date_format {
     width: calc(100% - 50px);
+    background: rgb(var(--ig-secondary-background));
+    border: 1px solid;
+    position: relative;
+    top: 50%;
+    transform: translateY(-50%);
 }
 .globalSettings .chbtn {
     width: 40px;
