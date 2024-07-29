@@ -184,7 +184,7 @@
 
                 pageLoaded = true;
             }
-            if($('header img[alt][draggable]').length && location.pathname.match(/^(\/)([0-9A-Za-z\.\-_]+)\/?(tagged|reels)?\/?$/ig) && !location.pathname.match(/^(\/(stories\/?$|explore\/?$|p\/))/ig)){
+            if($('header img[alt][draggable]').length && location.pathname.match(/^(\/)([0-9A-Za-z\.\-_]+)\/?(tagged|reels)?\/?$/ig) && !location.pathname.match(/^(\/(stories|explore)\/?)/ig) && !location.pathname.match(/^(\/p\/)/ig)) {
                 console.log('isProfile');
                 setTimeout(()=>{
                     onProfileAvatar(false);
