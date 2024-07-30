@@ -5,7 +5,7 @@
 // @name:ja            IG助手
 // @name:ko            IG조수
 // @namespace          https://github.snkms.com/
-// @version            2.28.3
+// @version            2.28.4
 // @description        Downloading is possible for both photos and videos from posts, as well as for stories, reels or profile picture.
 // @description:zh-TW  一鍵下載對方 Instagram 貼文中的相片、影片甚至是他們的限時動態、連續短片及大頭貼圖片！
 // @description:zh-CN  一键下载对方 Instagram 帖子中的相片、视频甚至是他们的快拍、Reels及头像图片！
@@ -1076,12 +1076,31 @@
                                 if(USER_SETTING.HTML5_VIDEO_CONTROL){
                                     $(this).find('video').each(function(){
                                         if(!$(this).data('controls')){
+                                            let $video = $(this);
+
                                             console.log('(reel) Added video html5 contorller #modify');
                                             this.volume = VIDEO_VOLUME;
 
                                             $(this).on('loadstart',function(){
                                                 this.volume = VIDEO_VOLUME;
                                             });
+
+                                            // Restore layout to show details interface
+                                            $(this).on('contextmenu',function(e){
+                                                e.preventDefault();
+                                                $video.css('z-index', '-1');
+                                                $video.removeAttr('controls');
+                                            });
+
+                                            // Hide layout to show controller
+                                            $(this).parent().find('video + div div[role="button"]').filter(function(){
+                                                return $(this).parent('div[role="presentation"]').length > 0 && $(this).css('cursor') === 'pointer' && $(this).attr('style') != null;
+                                            }).first().on('contextmenu',function(e){
+                                                e.preventDefault();
+                                                $video.css('z-index', '2');
+                                                $video.attr('controls', true);
+                                            });
+
 
                                             $(this).on('volumechange',function(){
                                                 let $element_mute_button = $(this).parent().find('video + div > div').find('button[type="button"], div[role="button"]').filter(function(idx){
@@ -2240,7 +2259,7 @@
                 "RENAME_PUBLISH_DATE_INTRO": "Sets the timestamp in the file rename format to the resource publish date (browser time zone)\n\nThis feature only works when [Automatically Rename Files] is set to TRUE.",
                 "RENAME_LOCATE_DATE_INTRO": "Modify the rename file timestamp date format to the browser's local time, and format it to the regional date format of your choice.\n\nThis feature only works when [Automatically Rename Files] is set to TRUE.",
                 "DISABLE_VIDEO_LOOPING_INTRO": "Disable video auto-looping in reels and posts.",
-                "HTML5_VIDEO_CONTROL_INTRO": "Display HTML5 video controller in posts and reels. \n\nThis will hide the custom video volume slider and replace it with the HTML5 controller.",
+                "HTML5_VIDEO_CONTROL_INTRO": "Display HTML5 video controller in posts and reels. \n\nThis will hide the custom video volume slider and replace it with the HTML5 controller.\nThe HTML5 controller can be hidden by right-clicking on the reels page to show the original details.",
                 "REDIRECT_RIGHT_CLICK_USER_STORY_PICTURE_INTRO": "Redirect to a user's profile page when right-clicking on their user avatar in the story area on the homepage.",
                 "FORCE_FETCH_ALL_RESOURCES_INTRO": "Force fetching of all resources (photos and videos) in a post via the Instagram API to remove the limit of three resources per post.",
                 "DIRECT_DOWNLOAD_VISIBLE_RESOURCE_INTRO": "Directly download the current resources in the post.",
