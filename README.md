@@ -3,16 +3,19 @@
 
 Downloading is possible for both photos and videos from posts, as well as for stories, reels or profile picture.
 ## Features
-- Multiple post download options
-  - Force to fetch all resources in the post
-  - Directly download the resources in the post with one click
-  - Directly download the resources currently displayed in the post with one click
+- Force to fetch all resources in the post
+- Directly download the resources in the post with one click
+- Directly download the resources currently displayed in the post with one click
+- Open resource in new window
+- Download video thumbnail
 - Fetch high-quality photos or videos through the Media API
 - Disable video looping
+- Enable native HTML5 video controller for posts and videos
 - Download user profile picture
 - Provide scroll buttons for Reels pages
 - Automatically modify and control the playback volume of all video elements
 - Redirect to a user's profile page when right-clicking on their user avatar in the story area on the homepage
+- Customize the naming format when downloading according to your own preferences
 
 ## How to Change Settings
 1. Go Instagram.com
