@@ -5,7 +5,7 @@
 // @name:ja            IG助手
 // @name:ko            IG조수
 // @namespace          https://github.snkms.com/
-// @version            2.27.13
+// @version            2.28.1
 // @description        Downloading is possible for both photos and videos from posts, as well as for stories, reels or profile picture.
 // @description:zh-TW  一鍵下載對方 Instagram 貼文中的相片、影片甚至是他們的限時動態、連續短片及大頭貼圖片！
 // @description:zh-CN  一键下载对方 Instagram 帖子中的相片、视频甚至是他们的快拍、Reels及头像图片！
@@ -48,6 +48,7 @@
         'AUTO_RENAME': true,
         'RENAME_PUBLISH_DATE': true,
         'DISABLE_VIDEO_LOOPING': false,
+        'HTML5_VIDEO_CONTROL': false,
         'REDIRECT_RIGHT_CLICK_USER_STORY_PICTURE': false,
         'FORCE_FETCH_ALL_RESOURCES': false,
         'DIRECT_DOWNLOAD_VISIBLE_RESOURCE': false,
@@ -1104,6 +1105,43 @@
                                     e.stopPropagation();
                                     e.preventDefault();
                                 });
+
+                                if(USER_SETTING.HTML5_VIDEO_CONTROL){
+                                    $(this).find('video').each(function(){
+                                        if(!$(this).data('controls')){
+                                            console.log('(reel) Added video html5 contorller #modify');
+                                            this.volume = VIDEO_VOLUME;
+
+                                            $(this).on('loadstart',function(){
+                                                this.volume = VIDEO_VOLUME;
+                                            });
+
+                                            $(this).on('volumechange',function(){
+                                                let $element_mute_button = $(this).parent().find('video + div > div').find('button[type="button"], div[role="button"]');
+                                                var is_elelment_muted = $element_mute_button.find('svg > path[d^="M16.636"]').length === 0;
+
+                                                if(this.muted != is_elelment_muted){
+                                                    this.volume = VIDEO_VOLUME;
+                                                    $element_mute_button?.click();
+                                                }
+
+                                                if ($(this).attr('data-completed')){
+                                                    VIDEO_VOLUME = this.volume;
+                                                    GM_setValue('G_VIDEO_VOLUME', this.volume);
+                                                }
+
+                                                if(this.volume == VIDEO_VOLUME){
+                                                    $(this).attr('data-completed', true);
+                                                }
+                                            });
+
+                                            $(this).css('position', 'absolute');
+                                            $(this).css('z-index', '2');
+                                            $(this).attr('data-controls', true);
+                                            $(this).attr('controls', true);
+                                        }
+                                    });
+                                }
                             }
                         }
                     });
@@ -1603,8 +1641,48 @@
                             $(this).on('playing',function(){
                                 this.volume = VIDEO_VOLUME;
                             });
+                            $(this).on('timeupdate',function(){
+                                this.volume = VIDEO_VOLUME;
+                            });
 
                             $(this).attr('data-modify', true);
+                        }
+                    });
+                }
+
+                if(USER_SETTING.HTML5_VIDEO_CONTROL){
+                    $(this).find('video').each(function(){
+                        if(!$(this).data('controls')){
+                            console.log('(post) Added video html5 contorller #modify');
+                            this.volume = VIDEO_VOLUME;
+
+                            $(this).on('loadstart',function(){
+                                this.volume = VIDEO_VOLUME;
+                            });
+
+                            $(this).on('volumechange',function(){
+                                let $element_mute_button = $(this).parent().find('video + div > div').find('button[type="button"], div[role="button"]');
+                                var is_elelment_muted = $element_mute_button.find('svg > path[d^="M16.636"]').length === 0;
+
+                                if(this.muted != is_elelment_muted){
+                                    this.volume = VIDEO_VOLUME;
+                                    $element_mute_button?.click();
+                                }
+
+                                if ($(this).attr('data-completed')){
+                                    VIDEO_VOLUME = this.volume;
+                                    GM_setValue('G_VIDEO_VOLUME', this.volume);
+                                }
+
+                                if(this.volume == VIDEO_VOLUME){
+                                    $(this).attr('data-completed', true);
+                                }
+                            });
+
+                            $(this).css('position', 'absolute');
+                            $(this).css('z-index', '2');
+                            $(this).attr('data-controls', true);
+                            $(this).attr('controls', true);
                         }
                     });
                 }
@@ -1623,7 +1701,7 @@
                     $(this).attr('style',`--ig-track-progress: ${percent}`);
 
                     $mainElement.find('video').each(function(){
-                        console.log('(reel) video volume changed #slider');
+                        console.log('(post) video volume changed #slider');
                         this.volume = VIDEO_VOLUME;
                     });
                 });
@@ -1633,7 +1711,7 @@
                     $(this).attr('style',`--ig-track-progress: ${percent}`);
                     $(this).val(VIDEO_VOLUME);
                     $mainElement.find('video').each(function(){
-                        console.log('(reel) video volume changed #slider');
+                        console.log('(post) video volume changed #slider');
                         this.volume = VIDEO_VOLUME;
                     });
                 });
@@ -2139,6 +2217,7 @@
                 "RENAME_PUBLISH_DATE": "Set Rename File Timestamp to Resource Publish Date",
                 "RENAME_LOCATE_DATE": "Modify Renamed File Timestamp Date Format (Right-Click To Set)",
                 "DISABLE_VIDEO_LOOPING": "Disable Video Auto-looping",
+                "HTML5_VIDEO_CONTROL": "Display HTML5 Video Controller",
                 "REDIRECT_RIGHT_CLICK_USER_STORY_PICTURE": "Redirect When Right-Clicking User Story Picture",
                 "FORCE_FETCH_ALL_RESOURCES": "Forcing Fetch All Resources In the Post",
                 "DIRECT_DOWNLOAD_VISIBLE_RESOURCE": "Directly Download the Visible Resources In the Post",
@@ -2153,6 +2232,7 @@
                 "RENAME_PUBLISH_DATE_INTRO": "Sets the timestamp in the file rename format to the resource publish date (browser time zone)\n\nThis feature only works when [Automatically Rename Files] is set to TRUE.",
                 "RENAME_LOCATE_DATE_INTRO": "Modify the rename file timestamp date format to the browser's local time, and format it to the regional date format of your choice.\n\nThis feature only works when [Automatically Rename Files] is set to TRUE.",
                 "DISABLE_VIDEO_LOOPING_INTRO": "Disable video auto-looping in reels and posts.",
+                "HTML5_VIDEO_CONTROL_INTRO": "Display HTML5 video controller in posts and reels. \n\nThis will hide the custom video volume slider and replace it with the HTML5 controller.",
                 "REDIRECT_RIGHT_CLICK_USER_STORY_PICTURE_INTRO": "Redirect to a user's profile page when right-clicking on their user avatar in the story area on the homepage.",
                 "FORCE_FETCH_ALL_RESOURCES_INTRO": "Force fetching of all resources (photos and videos) in a post via the Instagram API to remove the limit of three resources per post.",
                 "DIRECT_DOWNLOAD_VISIBLE_RESOURCE_INTRO": "Directly download the current resources in the post.",
