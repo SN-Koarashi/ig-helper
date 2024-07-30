@@ -5,7 +5,7 @@
 // @name:ja            IG助手
 // @name:ko            IG조수
 // @namespace          https://github.snkms.com/
-// @version            2.28.2
+// @version            2.28.3
 // @description        Downloading is possible for both photos and videos from posts, as well as for stories, reels or profile picture.
 // @description:zh-TW  一鍵下載對方 Instagram 貼文中的相片、影片甚至是他們的限時動態、連續短片及大頭貼圖片！
 // @description:zh-CN  一键下载对方 Instagram 帖子中的相片、视频甚至是他们的快拍、Reels及头像图片！
@@ -1084,7 +1084,11 @@
                                             });
 
                                             $(this).on('volumechange',function(){
-                                                let $element_mute_button = $(this).parent().find('video + div > div').find('button[type="button"], div[role="button"]');
+                                                let $element_mute_button = $(this).parent().find('video + div > div').find('button[type="button"], div[role="button"]').filter(function(idx){
+                                                    // This is mention others' icon
+                                                    return $(this).find('svg > path[d^="M21.334"]').length === 0;
+                                                });
+
                                                 var is_elelment_muted = $element_mute_button.find('svg > path[d^="M16.636"]').length === 0;
 
                                                 if(this.muted != is_elelment_muted){
@@ -1661,7 +1665,11 @@
                             });
 
                             $(this).on('volumechange',function(){
-                                let $element_mute_button = $(this).parent().find('video + div > div').find('button[type="button"], div[role="button"]');
+                                let $element_mute_button = $(this).parent().find('video + div > div').find('button[type="button"], div[role="button"]').filter(function(idx){
+                                    // This is mention others' icon
+                                    return $(this).find('svg > path[d^="M21.334"]').length === 0;
+                                });
+
                                 var is_elelment_muted = $element_mute_button.find('svg > path[d^="M16.636"]').length === 0;
 
                                 if(this.muted != is_elelment_muted){
