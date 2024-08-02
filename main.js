@@ -128,7 +128,6 @@
     var timer = setInterval(function(){
         // page loading or unnecessary route
         if($('div#splash-screen').length > 0 && !$('div#splash-screen').is(':hidden') ||
-           $('header svg > path[d^="M14.232 3.656a1.269"]').length > 0 ||
            location.pathname.match(/^\/(explore(\/.*)?|challenge\/?.*|direct\/?.*|qr\/?|accounts\/.*|emails\/.*|language\/?.*?|your_activity\/?.*|settings\/help(\/.*)?$)$/ig) ||
            !location.hostname.startsWith('www.')
           ){
@@ -192,7 +191,7 @@
 
                 pageLoaded = true;
             }
-            if($('header img[alt][draggable]').length && location.pathname.match(/^(\/)([0-9A-Za-z\.\-_]+)\/?(tagged|reels)?\/?$/ig) && !location.pathname.match(/^(\/explore\/?$|\/stories(\/.*)?$|\/p\/)/ig)) {
+            if($('header > section:first img[alt]').length && location.pathname.match(/^(\/)([0-9A-Za-z\.\-_]+)\/?(tagged|reels)?\/?$/ig) && !location.pathname.match(/^(\/explore\/?$|\/stories(\/.*)?$|\/p\/)/ig)) {
                 console.log('isProfile');
                 setTimeout(()=>{
                     onProfileAvatar(false);
@@ -287,8 +286,10 @@
                         return;
                     }
 
-                    $('header img[alt][draggable]').parent().parent().append(`<div title="${_i18n("DW")}" class="IG_DWPROFILE">${SVG.DOWNLOAD}</div>`);
-                    $('header img[alt][draggable]').parent().parent().css('position','relative');
+                    $('header > section:first img[alt][draggable]').parent().parent().append(`<div title="${_i18n("DW")}" class="IG_DWPROFILE">${SVG.DOWNLOAD}</div>`);
+                    $('header > section:first img[alt][draggable]').parent().parent().css('position','relative');
+                    $('header > section:first img[alt]:not([draggable])').parent().parent().parent().append(`<div title="${_i18n("DW")}" class="IG_DWPROFILE">${SVG.DOWNLOAD}</div>`);
+                    $('header > section:first img[alt]:not([draggable])').parent().parent().parent().css('position','relative');
                 },150);
             }
         }
@@ -1520,7 +1521,7 @@
      */
     function createDownloadButton(){
         // Add download icon per each posts
-        $('article, section:visible > main > div > div.xdt5ytf, div._aap0[role="presentation"]').each(function(index){
+        $('article[class], section:visible > main > div > div.xdt5ytf[style], div._aap0[role="presentation"]').each(function(index){
             // If it is have not download icon
             // class x1iyjqo2 mean user profile pages post list container
             if(!$(this).attr('data-snig') && !$(this).hasClass('x1iyjqo2') && !$(this).children('article')?.hasClass('x1iyjqo2') && $(this).parents('div#scrollview').length === 0){
