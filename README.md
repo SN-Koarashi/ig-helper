@@ -42,6 +42,7 @@ If you want to contact me, you can join my discord server: " https://discord.gg/
 ## Contributiner
 ### [@Yomisana](https://github.com/yomisana)
 - Menu design suggestions and batch-download ideas
+- Enhancement suggestions
 
 ### [@sn-o-w](https://github.com/sn-o-w)
 - Text translation (Romanian)
