@@ -216,10 +216,7 @@
                 else if(location.href.match(/^(https:\/\/www\.instagram\.com\/stories\/)/ig)){
                     console.log('isStory');
 
-                    if($('body div[id^="mount"] > div > div > div[class]').length >= 2 &&
-                       $('body div[id^="mount"] > div > div > div[class]').last().find('svg > path[d^="M16.792"], svg > path[d^="M34.6 3.1c-4.5"]').length > 0 &&
-                       $('body div[id^="mount"] > div > div > div[class]').last().find('svg > polyline + line').length > 0
-                      ){
+                    if($('div[id^="mount"] > * > * > * > * > * > * > * > section').length){
                         $('.IG_DWSTORY').remove();
                         $('.IG_DWNEWTAB').remove();
                         if($('.IG_DWSTORY_THUMBNAIL').length){
@@ -743,12 +740,12 @@
 
 
                 if($element.length === 0){
-                    $element = $('body div[id^="mount"] > div > div > div[class]').last().find('section:visible > div > div[style]:not([class])');
+                    $element = $('div[id^="mount"] > * > * > * > * > * > * > * > section').last().parent().find('section:visible > div > div[style]:not([class])');
                     $element.css('position','relative');
                 }
 
                 if($element.length === 0){
-                    $element = $('body div[id^="mount"] > div > div > div[class]').last().find('section:visible > div div[style]:not([class]) > div:not([data-visualcompletion="loading-state"])');
+                    $element = $('div[id^="mount"] > * > * > * > * > * > * > * > section').last().parent().find('section:visible > div div[style]:not([class]) > div:not([data-visualcompletion="loading-state"])');
                     $element.css('position','relative');
                 }
 
@@ -929,12 +926,12 @@
                 }
 
                 if($element.length === 0){
-                    $element = $('body div[id^="mount"] > div > div > div[class]').last().find('section:visible > div > div[style]:not([class])');
+                    $element = $('div[id^="mount"] > * > * > * > * > * > * > * > section').last().parent().find('section:visible > div > div[style]:not([class])');
                     $element.css('position','relative');
                 }
 
                 if($element.length === 0){
-                    $element = $('body div[id^="mount"] > div > div > div[class]').last().find('section:visible > div div[style]:not([class]) > div:not([data-visualcompletion="loading-state"])');
+                    $element = $('div[id^="mount"] > * > * > * > * > * > * > * > section').last().parent().find('section:visible > div div[style]:not([class]) > div:not([data-visualcompletion="loading-state"])');
                     $element.css('position','relative');
                 }
 
