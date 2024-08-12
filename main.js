@@ -5,7 +5,7 @@
 // @name:ja            IG助手
 // @name:ko            IG조수
 // @namespace          https://github.snkms.com/
-// @version            2.28.11
+// @version            2.28.12
 // @description        Downloading is possible for both photos and videos from posts, as well as for stories, reels or profile picture.
 // @description:zh-TW  一鍵下載對方 Instagram 貼文中的相片、影片甚至是他們的限時動態、連續短片及大頭貼圖片！
 // @description:zh-CN  一键下载对方 Instagram 帖子中的相片、视频甚至是他们的快拍、Reels及头像图片！
@@ -1562,14 +1562,14 @@
                 console.log("Found insert point", $childElement);
 
                 // Modify carousel post counter's position to not interfere with our buttons
-                if($mainElement.find('._aap0').length > 0){
-                    if($mainElement.find('._aap0 + .x24i39r').length > 0){
-                        $mainElement.find('._aap0 + .x24i39r').css('top', '37px');
+                if($mainElement.find('._acay').length > 0){
+                    if($mainElement.find('._acay + .x24i39r').length > 0){
+                        $mainElement.find('._acay + .x24i39r').css('top', '37px');
                     }
 
-                    const observeNode = $mainElement.find('._aap0').first().parent()[0];
+                    const observeNode = $mainElement.find('._acay').first().parent()[0];
                     var observer = new MutationObserver(function (mutation, owner) {
-                        $mainElement.find('._aap0 + .x24i39r').css('top', '37px');
+                        $mainElement.find('._acay + .x24i39r').css('top', '37px');
                     });
 
                     observer.observe(observeNode, {
@@ -1874,7 +1874,7 @@
                     if(!USER_SETTING.DIRECT_DOWNLOAD_ALL){
                         // Find video/image element and add the download icon
                         var s = 0;
-                        var multiple = $(this).parent().parent().find('._aap0 ._acaz').length;
+                        var multiple = $(this).parent().parent().find('._acay ._acaz').length;
                         var pathname = window.location.pathname;
                         var fullpathname = "/"+pathname.split('/')[1]+"/"+pathname.split('/')[2]+"/";
                         var blob = USER_SETTING.FORCE_FETCH_ALL_RESOURCES;
@@ -1882,7 +1882,7 @@
 
                         // If posts have more than one images or videos.
                         if(multiple){
-                            $(this).parent().find('._aap0 ._acaz').each(function(){
+                            $(this).parent().find('._acay ._acaz').each(function(){
                                 let element_videos = $(this).parent().parent().find('video');
                                 //if(element_videos && element_videos.attr('src') && element_videos.attr('src').match(/^blob:/ig)){
                                 if(element_videos && element_videos.attr('src')){
@@ -1895,7 +1895,7 @@
                                 createMediaListDOM(GL_postPath,".IG_SN_DIG .IG_SN_DIG_MAIN .IG_SN_DIG_BODY",_i18n("LOAD_BLOB_MULTIPLE"));
                             }
                             else{
-                                $(this).parent().find('._aap0 ._acaz').each(function(){
+                                $(this).parent().find('._acay ._acaz').each(function(){
                                     s++;
                                     let element_videos = $(this).find('video');
                                     let element_images = $(this).find('._aagv img');
