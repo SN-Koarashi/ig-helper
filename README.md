@@ -14,7 +14,7 @@ Downloading is possible for both photos and videos from posts, as well as for st
 - Download user profile picture
 - Provide scroll buttons for Reels pages
 - Automatically modify and control the playback volume of all video elements
-- Redirect to a user's profile page when right-clicking on their user avatar in the story area on the homepage
+- Redirect to a user's profile page when clicking on their user avatar in the story area on the homepage
 - Customize the naming format when downloading according to your own preferences
 
 ## How to Change Settings
