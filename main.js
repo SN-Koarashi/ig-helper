@@ -5,7 +5,7 @@
 // @name:ja            IG助手
 // @name:ko            IG조수
 // @namespace          https://github.snkms.com/
-// @version            2.29.2
+// @version            2.29.3
 // @description        Downloading is possible for both photos and videos from posts, as well as for stories, reels or profile picture.
 // @description:zh-TW  一鍵下載對方 Instagram 貼文中的相片、影片甚至是他們的限時動態、連續短片及大頭貼圖片！
 // @description:zh-CN  一键下载对方 Instagram 帖子中的相片、视频甚至是他们的快拍、Reels及头像图片！
@@ -49,7 +49,7 @@
         'RENAME_PUBLISH_DATE': true,
         'DISABLE_VIDEO_LOOPING': false,
         'HTML5_VIDEO_CONTROL': false,
-        'REDIRECT_RIGHT_CLICK_USER_STORY_PICTURE': false,
+        'REDIRECT_CLICK_USER_STORY_PICTURE': false,
         'FORCE_FETCH_ALL_RESOURCES': false,
         'DIRECT_DOWNLOAD_VISIBLE_RESOURCE': false,
         'DIRECT_DOWNLOAD_ALL': false,
@@ -2171,6 +2171,7 @@
             '%SOURCE_TYPE%': sourceType,
             '%SHORTCODE%': (shortcode)?shortcode:'',
             '%YEAR%': year,
+            '%2-YEAR%': year.substr(-2),
             '%MONTH%': month,
             '%DAY%': day,
             '%HOUR%': hour,
@@ -2300,7 +2301,7 @@
                 "RENAME_LOCATE_DATE": "Modify Renamed File Timestamp Date Format (Right-Click To Set)",
                 "DISABLE_VIDEO_LOOPING": "Disable Video Auto-looping",
                 "HTML5_VIDEO_CONTROL": "Display HTML5 Video Controller",
-                "REDIRECT_RIGHT_CLICK_USER_STORY_PICTURE": "Redirect When Right-Clicking User Story Picture",
+                "REDIRECT_CLICK_USER_STORY_PICTURE": "Redirect When Clicking User Story Picture",
                 "FORCE_FETCH_ALL_RESOURCES": "Forcing Fetch All Resources In the Post",
                 "DIRECT_DOWNLOAD_VISIBLE_RESOURCE": "Directly Download the Visible Resources In the Post",
                 "DIRECT_DOWNLOAD_ALL": "Directly Download All Resources In the Post",
@@ -2309,13 +2310,13 @@
                 "FORCE_RESOURCE_VIA_MEDIA": "Force Fetch Resource via Media API",
                 "USE_BLOB_FETCH_WHEN_MEDIA_RATE_LITMIT": "Use Other Methods to Download When the Media API is Not Accessible",
                 "NEW_TAB_ALWAYS_FORCE_MEDIA_IN_POST": '"Open in new tab" in posts always uses Media API',
-                "AUTO_RENAME_INTRO": "Auto rename file to custom format\nCustom Format List: \n%USERNAME% - Username\n%SOURCE_TYPE% - Download source\n%SHORTCODE% - Post Shortcode\n%YEAR% - Year when downloaded/published\n%MONTH% - Month when downloaded/published\n%DAY% - Day when downloaded/published\n%HOUR% - Hour when downloaded/published\n%MINUTE% - Minute when downloaded/published\n%SECOND% - Second when downloaded/published\n%ORIGINAL_NAME% - Original name of downloaded file\n\nIf set to false, the file name will remain as it is.\nExample: instagram_321565527_679025940443063_4318007696887450953_n.jpg",
+                "AUTO_RENAME_INTRO": "Auto rename file to custom format\nCustom Format List: \n%USERNAME% - Username\n%SOURCE_TYPE% - Download source\n%SHORTCODE% - Post Shortcode\n%YEAR% - Year when downloaded/published\n%2-YEAR% - Year (last two digits) when downloaded/published\n%MONTH% - Month when downloaded/published\n%DAY% - Day when downloaded/published\n%HOUR% - Hour when downloaded/published\n%MINUTE% - Minute when downloaded/published\n%SECOND% - Second when downloaded/published\n%ORIGINAL_NAME% - Original name of downloaded file\n\nIf set to false, the file name will remain as it is.\nExample: instagram_321565527_679025940443063_4318007696887450953_n.jpg",
                 "RENAME_SHORTCODE_INTRO": "Auto rename file to format type following:\nUSERNAME-TYPE-SHORTCODE-TIMESTAMP.FILETYPE\nExample: instagram-photo-CwkxyiVynpW-1670350000.jpg\n\nIt will ONLY work in [Automatically Rename Files] setting to TRUE.",
                 "RENAME_PUBLISH_DATE_INTRO": "Sets the timestamp in the file rename format to the resource publish date (browser time zone)\n\nThis feature only works when [Automatically Rename Files] is set to TRUE.",
                 "RENAME_LOCATE_DATE_INTRO": "Modify the rename file timestamp date format to the browser's local time, and format it to the regional date format of your choice.\n\nThis feature only works when [Automatically Rename Files] is set to TRUE.",
                 "DISABLE_VIDEO_LOOPING_INTRO": "Disable video auto-looping in reels and posts.",
                 "HTML5_VIDEO_CONTROL_INTRO": "Display HTML5 video controller in posts and reels. \n\nThis will hide the custom video volume slider and replace it with the HTML5 controller.\nIn Reels pages, the HTML5 controller can be hidden by right-clicking on the video to reveal the original details.",
-                "REDIRECT_RIGHT_CLICK_USER_STORY_PICTURE_INTRO": "Redirect to a user's profile page when right-clicking on their user avatar in the story area on the homepage.",
+                "REDIRECT_CLICK_USER_STORY_PICTURE_INTRO": "Redirect to a user's profile page when right-clicking on their user avatar in the story area on the homepage.\nIf you use the middle button to click, it will open in a new tab.",
                 "FORCE_FETCH_ALL_RESOURCES_INTRO": "Force fetching of all resources (photos and videos) in a post via the Instagram API to remove the limit of three resources per post.",
                 "DIRECT_DOWNLOAD_VISIBLE_RESOURCE_INTRO": "Directly download the current resources in the post.",
                 "DIRECT_DOWNLOAD_ALL_INTRO": "When you click the download button, all resources in the post will be directly forced to be fetched and downloaded.",
@@ -2670,7 +2671,7 @@
         $('body').on('mousedown','button[role="menuitem"]',function(e){
             // Right-Click || Middle-Click
             if(e.which === 3 || e.which === 2){
-                if(location.href === 'https://www.instagram.com/' && USER_SETTING.REDIRECT_RIGHT_CLICK_USER_STORY_PICTURE){
+                if(location.href === 'https://www.instagram.com/' && USER_SETTING.REDIRECT_CLICK_USER_STORY_PICTURE){
                     e.preventDefault();
                     if($(this).find('canvas._aarh').length > 0){
                         const targetUrl = 'https://www.instagram.com/'+$(this).children('div').last().text();
