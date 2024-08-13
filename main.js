@@ -434,6 +434,25 @@
                     //$element.css('position','relative');
                     $element.append(`<div title="${_i18n("DW")}" class="IG_DWHISTORY">${SVG.DOWNLOAD}</div>`);
                     $element.append(`<div title="${_i18n("NEW_TAB")}" class="IG_DWHINEWTAB">${SVG.NEW_TAB}</div>`);
+
+                    // Modify Video Volume
+                    if(USER_SETTING.MODIFY_VIDEO_VOLUME){
+                        $element.find('video').each(function(){
+                            if(!$(this).data('modify')){
+                                console.log('(highlight) Added video event listener #modify');
+                                this.volume = VIDEO_VOLUME;
+
+                                $(this).on('play',function(){
+                                    this.volume = VIDEO_VOLUME;
+                                });
+                                $(this).on('playing',function(){
+                                    this.volume = VIDEO_VOLUME;
+                                });
+
+                                $(this).attr('data-modify', true);
+                            }
+                        });
+                    }
                 }
             }
         }
@@ -779,6 +798,25 @@
                     $element.first().css('position','relative');
                     $element.first().append(`<div title="${_i18n("DW")}" class="IG_DWSTORY">${SVG.DOWNLOAD}</div>`);
                     $element.first().append(`<div title="${_i18n("NEW_TAB")}" class="IG_DWNEWTAB">${SVG.NEW_TAB}</div>`);
+
+                    // Modify Video Volume
+                    if(USER_SETTING.MODIFY_VIDEO_VOLUME){
+                        $element.find('video').each(function(){
+                            if(!$(this).data('modify')){
+                                console.log('(story) Added video event listener #modify');
+                                this.volume = VIDEO_VOLUME;
+
+                                $(this).on('play',function(){
+                                    this.volume = VIDEO_VOLUME;
+                                });
+                                $(this).on('playing',function(){
+                                    this.volume = VIDEO_VOLUME;
+                                });
+
+                                $(this).attr('data-modify', true);
+                            }
+                        });
+                    }
 
                     onStoryThumbnail(false);
                 }
@@ -1533,8 +1571,8 @@
         // Add download icon per each posts
         $('article[class], section:visible > main > div > div > div > div > div > hr').map(function(index){
             return $(this).is('section:visible > main > div > div > div > div > div > hr') ? $(this).parent().parent().parent().parent()[0] : this;
-    	})
-    	.each(function(index){
+        })
+            .each(function(index){
             // If it is have not download icon
             // class x1iyjqo2 mean user profile pages post list container
             if(!$(this).attr('data-snig') && !$(this).hasClass('x1iyjqo2') && !$(this).children('article')?.hasClass('x1iyjqo2') && $(this).parents('div#scrollview').length === 0){
@@ -2629,10 +2667,20 @@
         });
 
         // Running if user right-click profile picture in stories area
-        $('body').on('contextmenu','button[role="menuitem"]',function(){
-            if(location.href === 'https://www.instagram.com/' && USER_SETTING.REDIRECT_RIGHT_CLICK_USER_STORY_PICTURE){
-                if($(this).find('canvas._aarh').length > 0){
-                    location.href = 'https://www.instagram.com/'+$(this).children('div').last().text();
+        $('body').on('mousedown','button[role="menuitem"]',function(e){
+            // Right-Click || Middle-Click
+            if(e.which === 3 || e.which === 2){
+                if(location.href === 'https://www.instagram.com/' && USER_SETTING.REDIRECT_RIGHT_CLICK_USER_STORY_PICTURE){
+                    e.preventDefault();
+                    if($(this).find('canvas._aarh').length > 0){
+                        const targetUrl = 'https://www.instagram.com/'+$(this).children('div').last().text();
+                        if(e.which === 2){
+                            GM_openInTab(targetUrl);
+                        }
+                        else{
+                            location.href = targetUrl;
+                        }
+                    }
                 }
             }
         });
