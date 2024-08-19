@@ -5,7 +5,7 @@
 // @name:ja            IG助手
 // @name:ko            IG조수
 // @namespace          https://github.snkms.com/
-// @version            2.29.4
+// @version            2.29.5
 // @description        Downloading is possible for both photos and videos from posts, as well as for stories, reels or profile picture.
 // @description:zh-TW  一鍵下載對方 Instagram 貼文中的相片、影片甚至是他們的限時動態、連續短片及大頭貼圖片！
 // @description:zh-CN  一键下载对方 Instagram 帖子中的相片、视频甚至是他们的快拍、Reels及头像图片！
@@ -1562,6 +1562,125 @@
     }
 
     /**
+     * initPostVideoFunction
+     * Initialize settings related to the video resources in the post
+     *
+     * @param  {Object}  $mainElement
+     * @return {Void}
+     */
+    function initPostVideoFunction($mainElement){
+        // Disable video autoplay
+        if(USER_SETTING.DISABLE_VIDEO_LOOPING){
+            $mainElement.find('video').each(function(){
+                if(!$(this).data('loop')){
+                    console.log('(post) Added video event listener #loop');
+                    $(this).on('ended',function(){
+                        $(this).attr('data-loop', true);
+                        this.pause();
+                    });
+                }
+            });
+        }
+
+        // Modify Video Volume
+        if(USER_SETTING.MODIFY_VIDEO_VOLUME){
+            $mainElement.find('video').each(function(){
+                if(!$(this).data('modify')){
+                    console.log('(post) Added video event listener #modify');
+                    this.volume = VIDEO_VOLUME;
+
+                    $(this).on('play',function(){
+                        this.volume = VIDEO_VOLUME;
+                    });
+                    $(this).on('playing',function(){
+                        this.volume = VIDEO_VOLUME;
+                    });
+                    $(this).on('timeupdate',function(){
+                        this.volume = VIDEO_VOLUME;
+                    });
+
+                    $(this).attr('data-modify', true);
+                }
+            });
+        }
+
+        if(USER_SETTING.HTML5_VIDEO_CONTROL){
+            $mainElement.find('video').each(function(){
+                if(!$(this).data('controls')){
+                    console.log('(post) Added video html5 contorller #modify');
+                    this.volume = VIDEO_VOLUME;
+
+                    $(this).on('loadstart',function(){
+                        this.volume = VIDEO_VOLUME;
+                    });
+
+                    $(this).on('volumechange',function(){
+                        let $element_mute_button = $(this).parent().find('video + div > div').find('button[type="button"], div[role="button"]').filter(function(idx){
+                            // This is mention others' icon
+                            return $(this).find('svg > path[d^="M21.334"]').length === 0;
+                        });
+
+                        var is_elelment_muted = $element_mute_button.find('svg > path[d^="M16.636"]').length === 0;
+
+                        if(this.muted != is_elelment_muted){
+                            this.volume = VIDEO_VOLUME;
+                            $element_mute_button?.click();
+                        }
+
+                        if ($(this).attr('data-completed')){
+                            VIDEO_VOLUME = this.volume;
+                            GM_setValue('G_VIDEO_VOLUME', this.volume);
+                        }
+
+                        if(this.volume == VIDEO_VOLUME){
+                            $(this).attr('data-completed', true);
+                        }
+                    });
+
+                    $(this).css('position', 'absolute');
+                    $(this).css('z-index', '2');
+                    $(this).attr('data-controls', true);
+                    $(this).attr('controls', true);
+                }
+            });
+        }
+
+
+        var $buttonParent = $mainElement.find('video + div > div').first();
+        $buttonParent.append('<div class="volume_slider bottom" />');
+        $buttonParent.find('div.volume_slider').append(`<div><input type="range" max="1" min="0" step="0.05" value="${VIDEO_VOLUME}" /></div>`);
+        $buttonParent.find('div.volume_slider input').attr('style',`--ig-track-progress: ${(VIDEO_VOLUME * 100) + '%'}`);
+        $buttonParent.find('div.volume_slider input').on('input',function(){
+            var percent = ($(this).val() * 100) + '%';
+
+            VIDEO_VOLUME = $(this).val();
+            GM_setValue('G_VIDEO_VOLUME', $(this).val());
+
+            $(this).attr('style',`--ig-track-progress: ${percent}`);
+
+            $mainElement.find('video').each(function(){
+                console.log('(post) video volume changed #slider');
+                this.volume = VIDEO_VOLUME;
+            });
+        });
+
+        $buttonParent.find('div.volume_slider input').on('mouseenter',function(){
+            var percent = (VIDEO_VOLUME * 100) + '%';
+            $(this).attr('style',`--ig-track-progress: ${percent}`);
+            $(this).val(VIDEO_VOLUME);
+            $mainElement.find('video').each(function(){
+                console.log('(post) video volume changed #slider');
+                this.volume = VIDEO_VOLUME;
+            });
+        });
+
+        $buttonParent.find('div.volume_slider').on('click',function(e){
+            e.stopPropagation();
+            e.preventDefault();
+        });
+    };
+
+    /**
      * createDownloadButton
      * Create a download button in the upper right corner of each post
      *
@@ -1660,6 +1779,7 @@
                                 // Check if video?
                                 if($targetNode != null && $targetNode.length > 0 && $targetNode.find('video').length > 0){
                                     $childElement.eq((tagName === "DIV")? 0 : $childElement.length - 2).append(ThumbnailElement);
+                                    initPostVideoFunction($mainElement);
                                 }
                                 else{
                                     $childElement.find('.SNKMS_IG_THUMBNAIL_MAIN')?.remove();
@@ -1693,116 +1813,7 @@
 
                 $childElement.css('position','relative');
 
-                // Disable video autoplay
-                if(USER_SETTING.DISABLE_VIDEO_LOOPING){
-                    $(this).find('video').each(function(){
-                        if(!$(this).data('loop')){
-                            console.log('(post) Added video event listener #loop');
-                            $(this).on('ended',function(){
-                                $(this).attr('data-loop', true);
-                                this.pause();
-                            });
-                        }
-                    });
-                }
-
-                // Modify Video Volume
-                if(USER_SETTING.MODIFY_VIDEO_VOLUME){
-                    $(this).find('video').each(function(){
-                        if(!$(this).data('modify')){
-                            console.log('(post) Added video event listener #modify');
-                            this.volume = VIDEO_VOLUME;
-
-                            $(this).on('play',function(){
-                                this.volume = VIDEO_VOLUME;
-                            });
-                            $(this).on('playing',function(){
-                                this.volume = VIDEO_VOLUME;
-                            });
-                            $(this).on('timeupdate',function(){
-                                this.volume = VIDEO_VOLUME;
-                            });
-
-                            $(this).attr('data-modify', true);
-                        }
-                    });
-                }
-
-                if(USER_SETTING.HTML5_VIDEO_CONTROL){
-                    $(this).find('video').each(function(){
-                        if(!$(this).data('controls')){
-                            console.log('(post) Added video html5 contorller #modify');
-                            this.volume = VIDEO_VOLUME;
-
-                            $(this).on('loadstart',function(){
-                                this.volume = VIDEO_VOLUME;
-                            });
-
-                            $(this).on('volumechange',function(){
-                                let $element_mute_button = $(this).parent().find('video + div > div').find('button[type="button"], div[role="button"]').filter(function(idx){
-                                    // This is mention others' icon
-                                    return $(this).find('svg > path[d^="M21.334"]').length === 0;
-                                });
-
-                                var is_elelment_muted = $element_mute_button.find('svg > path[d^="M16.636"]').length === 0;
-
-                                if(this.muted != is_elelment_muted){
-                                    this.volume = VIDEO_VOLUME;
-                                    $element_mute_button?.click();
-                                }
-
-                                if ($(this).attr('data-completed')){
-                                    VIDEO_VOLUME = this.volume;
-                                    GM_setValue('G_VIDEO_VOLUME', this.volume);
-                                }
-
-                                if(this.volume == VIDEO_VOLUME){
-                                    $(this).attr('data-completed', true);
-                                }
-                            });
-
-                            $(this).css('position', 'absolute');
-                            $(this).css('z-index', '2');
-                            $(this).attr('data-controls', true);
-                            $(this).attr('controls', true);
-                        }
-                    });
-                }
-
-
-                var $buttonParent = $(this).find('video + div > div').first();
-                $buttonParent.append('<div class="volume_slider bottom" />');
-                $buttonParent.find('div.volume_slider').append(`<div><input type="range" max="1" min="0" step="0.05" value="${VIDEO_VOLUME}" /></div>`);
-                $buttonParent.find('div.volume_slider input').attr('style',`--ig-track-progress: ${(VIDEO_VOLUME * 100) + '%'}`);
-                $buttonParent.find('div.volume_slider input').on('input',function(){
-                    var percent = ($(this).val() * 100) + '%';
-
-                    VIDEO_VOLUME = $(this).val();
-                    GM_setValue('G_VIDEO_VOLUME', $(this).val());
-
-                    $(this).attr('style',`--ig-track-progress: ${percent}`);
-
-                    $mainElement.find('video').each(function(){
-                        console.log('(post) video volume changed #slider');
-                        this.volume = VIDEO_VOLUME;
-                    });
-                });
-
-                $buttonParent.find('div.volume_slider input').on('mouseenter',function(){
-                    var percent = (VIDEO_VOLUME * 100) + '%';
-                    $(this).attr('style',`--ig-track-progress: ${percent}`);
-                    $(this).val(VIDEO_VOLUME);
-                    $mainElement.find('video').each(function(){
-                        console.log('(post) video volume changed #slider');
-                        this.volume = VIDEO_VOLUME;
-                    });
-                });
-
-                $buttonParent.find('div.volume_slider').on('click',function(e){
-                    e.stopPropagation();
-                    e.preventDefault();
-                });
-
+                initPostVideoFunction($mainElement);
 
                 $(this).on('click', '.SNKMS_IG_THUMBNAIL_MAIN', function(e){
                     updateLoadingBar(true);
