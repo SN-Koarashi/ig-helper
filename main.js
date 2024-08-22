@@ -227,7 +227,7 @@
                      *  $('body div[id^="mount"] > div > div > div[class]').last().find('svg > polyline + line').length > 0
                      *
                      */
-                    if($('div[id^="mount"] > div > div > div > div > div > div > div > div > section').length > 0){
+                    if($('div[id^="mount"] section > div > a[href="/"]').length > 0){
                         $('.IG_DWSTORY').remove();
                         $('.IG_DWNEWTAB').remove();
                         if($('.IG_DWSTORY_THUMBNAIL').length){
@@ -770,12 +770,12 @@
 
 
                 if($element.length === 0){
-                    $element = $('div[id^="mount"] > div > div > div > div > div > div > div > div > section').parent().find('section:visible > div > div[style]:not([class])');
+                    $element = $('div[id^="mount"] section > div > a[href="/"]').parent().parent().parent().find('section:visible > div > div[style]:not([class])');
                     $element.css('position','relative');
                 }
 
                 if($element.length === 0){
-                    $element = $('div[id^="mount"] > div > div > div > div > div > div > div > div > section').parent().find('section:visible > div div[style]:not([class]) > div:not([data-visualcompletion="loading-state"])');
+                    $element = $('div[id^="mount"] section > div > a[href="/"]').parent().parent().parent().find('section:visible > div div[style]:not([class]) > div:not([data-visualcompletion="loading-state"])');
                     $element.css('position','relative');
                 }
 
@@ -975,12 +975,12 @@
                 }
 
                 if($element.length === 0){
-                    $element = $('div[id^="mount"] > div > div > div > div > div > div > div > div > section').parent().find('section:visible > div > div[style]:not([class])');
+                    $element = $('div[id^="mount"] section > div > a[href="/"]').parent().parent().parent().find('section:visible > div > div[style]:not([class])');
                     $element.css('position','relative');
                 }
 
                 if($element.length === 0){
-                    $element = $('div[id^="mount"] > div > div > div > div > div > div > div > div > section').parent().find('section:visible > div div[style]:not([class]) > div:not([data-visualcompletion="loading-state"])');
+                    $element = $('div[id^="mount"] section > div > a[href="/"]').parent().parent().parent().find('section:visible > div div[style]:not([class]) > div:not([data-visualcompletion="loading-state"])');
                     $element.css('position','relative');
                 }
 
