@@ -227,7 +227,10 @@
                      *  $('body div[id^="mount"] > div > div > div[class]').last().find('svg > polyline + line').length > 0
                      *
                      */
-                    if($('div[id^="mount"] > div > div > div > div > div > div > div > div > section').length > 0){
+                    var $parentElement = $('body div[id^="mount"] > div > div > div[class]:not([hidden])').filter((idx, e) => {
+                        return $(e).is(':visible') && $(e).find('svg > path[d^="M16.792"], svg > path[d^="M34.6 3.1c-4.5"]').length > 0 && $(e).find('svg > polyline + line').length > 0
+                    }).find('section').first();
+                    if($parentElement.length > 0){
                         $('.IG_DWSTORY').remove();
                         $('.IG_DWNEWTAB').remove();
                         if($('.IG_DWSTORY_THUMBNAIL').length){
@@ -757,42 +760,24 @@
             let style = "position: absolute;right:-40px;top:15px;padding:5px;line-height:1;background:#fff;border-radius: 5px;cursor:pointer;";
             if(!$('.IG_DWSTORY').length){
                 GL_dataCache.stories = {};
-                let $element = null;
-                // Default detecter (section layout mode)
-                if($('body > div section._ac0a').length > 0){
-                    $element = $('body > div section:visible._ac0a');
-                }
-                // detecter (single story layout mode)
-                else{
-                    $element = $('body > div section:visible > div > div[style]:not([class])');
+                var $element = null;
+                var $parentElement = $('body div[id^="mount"] > div > div > div[class]:not([hidden])').filter((idx, e) => {
+                    return $(e).is(':visible');
+                }).find('section').first();
+
+
+                $element = $parentElement.find('div[class][style] > div[style]:not([class])').filter((idx, e)=>{
+                    return $(e).children().length > 0 && $(e).children('a[href^="/stories"]').length === 0;
+                }).first().children('div').first();
+                $element.css('position','relative');
+
+                // Detecter (single story layout mode)
+                if($element.length === 0){
+                    $element = $parentElement.find('div > div[style]:not([class])').filter((idx, e) => {
+                        return $(e).children().length > 0;
+                    }).first();
                     $element.css('position','relative');
                 }
-
-
-                if($element.length === 0){
-                    $element = $('div[id^="mount"] > div > div > div > div > div > div > div > div > section').parent().find('section:visible > div > div[style]:not([class])');
-                    $element.css('position','relative');
-                }
-
-                if($element.length === 0){
-                    $element = $('div[id^="mount"] > div > div > div > div > div > div > div > div > section').parent().find('section:visible > div div[style]:not([class]) > div:not([data-visualcompletion="loading-state"])');
-                    $element.css('position','relative');
-                }
-
-
-                // Detecter for div layout mode
-                if($element.length === 0){
-                    let $$element = $('body > div div:not([hidden]) section:visible > div div[class][style] > div[style]:not([class])');
-                    let nowSize = 0;
-
-                    $$element.each(function(){
-                        if($(this).width() > nowSize){
-                            nowSize = $(this).width();
-                            $element = $(this).children('div').first();
-                        }
-                    });
-                }
-
 
                 if($element != null){
                     $element.first().css('position','relative');
@@ -963,40 +948,24 @@
         else{
             if($('body > div div.IG_DWSTORY').parent().find('video[class]').length){
                 // Add the stories download button
-                let $element = null;
-                // Default detecter (section layout mode)
-                if($('body > div section._ac0a').length > 0){
-                    $element = $('body > div section:visible._ac0a');
-                }
-                // detecter (single story layout mode)
-                else{
-                    $element = $('body > div section:visible > div > div[style]:not([class])');
+                var $element = null;
+                var $parentElement = $('body div[id^="mount"] > div > div > div[class]:not([hidden])').filter((idx, e) => {
+                    return $(e).is(':visible');
+                }).find('section').first();
+
+
+                $element = $parentElement.find('div[class][style] > div[style]:not([class])').filter((idx, e)=>{
+                    return $(e).children().length > 0 && $(e).children('a[href^="/stories"]').length === 0;
+                }).first().children('div').first();
+                $element.css('position','relative');
+
+                // Detecter (single story layout mode)
+                if($element.length === 0){
+                    $element = $parentElement.find('div > div[style]:not([class])').filter((idx, e) => {
+                        return $(e).children().length > 0;
+                    }).first();
                     $element.css('position','relative');
                 }
-
-                if($element.length === 0){
-                    $element = $('div[id^="mount"] > div > div > div > div > div > div > div > div > section').parent().find('section:visible > div > div[style]:not([class])');
-                    $element.css('position','relative');
-                }
-
-                if($element.length === 0){
-                    $element = $('div[id^="mount"] > div > div > div > div > div > div > div > div > section').parent().find('section:visible > div div[style]:not([class]) > div:not([data-visualcompletion="loading-state"])');
-                    $element.css('position','relative');
-                }
-
-                // Detecter for div layout mode
-                if($element.length === 0){
-                    let $$element = $('body > div div:not([hidden]) section:visible > div div[class][style] > div[style]:not([class])');
-                    let nowSize = 0;
-
-                    $$element.each(function(){
-                        if($(this).width() > nowSize){
-                            nowSize = $(this).width();
-                            $element = $(this).children('div').first();
-                        }
-                    });
-                }
-
 
                 if($element != null){
                     $element.first().css('position','relative');
