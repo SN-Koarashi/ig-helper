@@ -18,9 +18,9 @@ Downloading is possible for both photos and videos from posts, as well as for st
 - Customize the naming format when downloading according to your preferences.
 
 ## How to Change Settings
-1. Go Instagram.com
-2. Check your Tampermonkey extension
-3. See following:
+1. Go to Instagram.com.
+2. Check your Tampermonkey extension.
+3. See the following:
 <img src="https://i.imgur.com/tSSsl5K.gif" />
 
 ## Hot keys
