@@ -5,7 +5,7 @@
 // @name:ja            IG助手
 // @name:ko            IG조수
 // @namespace          https://github.snkms.com/
-// @version            2.29.7
+// @version            2.29.8
 // @description        Downloading is possible for both photos and videos from posts, as well as for stories, reels or profile picture.
 // @description:zh-TW  一鍵下載對方 Instagram 貼文中的相片、影片甚至是他們的限時動態、連續短片及大頭貼圖片！
 // @description:zh-CN  一键下载对方 Instagram 帖子中的相片、视频甚至是他们的快拍、Reels及头像图片！
@@ -1089,10 +1089,9 @@
                                             console.log('(reel) Added video event listener #loop');
                                             $(this).on('ended',function(){
                                                 $(this).attr('data-loop', true);
-                                                let $element = $(this).next().find('div[role="presentation"] > div > div:last-child');
-
-                                                if($element.length > 0){
-                                                    $element.click();
+                                                let $element_play_button = $(this).next().find('div[role="presentation"] > div svg > path[d^="M5.888"]').parents('button[role="button"], div[role="button"]');
+                                                if($element_play_button.length > 0){
+                                                    $element_play_button.click();
                                                     console.log('paused click()');
                                                 }
                                                 else{
@@ -1154,8 +1153,8 @@
 
                                             $(this).on('volumechange',function(){
                                                 let $element_mute_button = $(this).parent().find('video + div > div').find('button[type="button"], div[role="button"]').filter(function(idx){
-                                                    // This is mention others' icon
-                                                    return $(this).find('svg > path[d^="M21.334"]').length === 0;
+                                                    // This is mute/unmute's icon
+                                                    return $(this).width() <= 64 && $(this).height() <= 64 && $(this).find('svg > path[d^="M16.636 7.028a1.5"], svg > path[d^="M1.5 13.3c-.8"]').length > 0;
                                                 });
 
                                                 var is_elelment_muted = $element_mute_button.find('svg > path[d^="M16.636"]').length === 0;
@@ -1616,8 +1615,8 @@
 
                     $(this).on('volumechange',function(){
                         let $element_mute_button = $(this).parent().find('video + div > div').find('button[type="button"], div[role="button"]').filter(function(idx){
-                            // This is mention others' icon
-                            return $(this).find('svg > path[d^="M21.334"]').length === 0;
+                            // This is mute/unmute's icon
+                            return $(this).width() <= 64 && $(this).height() <= 64 && $(this).find('svg > path[d^="M16.636 7.028a1.5"], svg > path[d^="M1.5 13.3c-.8"]').length > 0;
                         });
 
                         var is_elelment_muted = $element_mute_button.find('svg > path[d^="M16.636"]').length === 0;
