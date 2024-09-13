@@ -5,7 +5,7 @@
 // @name:ja            IG助手
 // @name:ko            IG조수
 // @namespace          https://github.snkms.com/
-// @version            2.29.11
+// @version            2.29.12
 // @description        Downloading is possible for both photos and videos from posts, as well as for stories, reels or profile picture.
 // @description:zh-TW  一鍵下載對方 Instagram 貼文中的相片、影片甚至是他們的限時動態、連續短片及大頭貼圖片！
 // @description:zh-CN  一键下载对方 Instagram 帖子中的相片、视频甚至是他们的快拍、Reels及头像图片！
@@ -1830,48 +1830,49 @@
                         }
                     }
                     else{
-                        const checkVideoNode = function(target){
-                            if(target){
-                                var k = $(target).find('li._acaz').length;
-                                var $targetNode = null;
+                        const checkVideoNodeCallback = (entries, observer) => {
+                            entries.forEach((entry) => {
+                                console.log(entry);
+                                if (entry.isIntersecting) {
+                                    var $targetNode = $(entry.target);
 
-                                if(k == 2){
-                                    var index = getVisibleNodeIndex($mainElement);
-                                    // First node
-                                    if(index === 0){
-                                        $targetNode = $(target).find('li._acaz').first();
+                                    // Check if video?
+                                    if($targetNode.find('video').length > 0){
+                                        $childElement.eq((tagName === "DIV")? 0 : $childElement.length - 2).append(ThumbnailElement);
+                                        initPostVideoFunction($mainElement);
                                     }
-                                    // Last node
                                     else{
-                                        $targetNode = $(target).find('li._acaz').last();
+                                        $childElement.find('.SNKMS_IG_THUMBNAIL_MAIN')?.remove();
                                     }
                                 }
-                                // Middle node
-                                else{
-                                    $targetNode = $(target).find('li._acaz').eq(1);
-                                }
-
-                                // Check if video?
-                                if($targetNode != null && $targetNode.length > 0 && $targetNode.find('video').length > 0){
-                                    $childElement.eq((tagName === "DIV")? 0 : $childElement.length - 2).append(ThumbnailElement);
-                                    initPostVideoFunction($mainElement);
-                                }
-                                else{
-                                    $childElement.find('.SNKMS_IG_THUMBNAIL_MAIN')?.remove();
-                                }
-                            }
+                            });
                         };
 
-                        var observer = new MutationObserver(function (mutation, owner) {
-                            var target = mutation.at(0)?.target;
-                            checkVideoNode(target);
+                        const observer_i = new IntersectionObserver(checkVideoNodeCallback, {
+                            root: $mainElement.find('div > ul._acay').first().parent().parent().parent()[0],
+                            rootMargin: "0px",
+                            threshold: 0.1,
                         });
+
+                        // trigger when switching resources
+                        const observer = new MutationObserver(function (mutation, owner) {
+                            var target = mutation.at(0)?.target;
+
+                            $(target).find('li._acaz').each(function(){
+                                observer_i.observe(this);
+                            });
+                        });
+
+                        // first onload
+                        $mainElement.find('div > ul li._acaz').each(function(){
+                            observer_i.observe(this);
+                        });
+
 
                         const element = $childElement.eq((tagName === "DIV")? 0 : $childElement.length - 2).find('div > ul li._acaz')?.parent()[0];
                         const elementAttr = $childElement.eq((tagName === "DIV")? 0 : $childElement.length - 2).find('div > ul li._acaz')?.parent().parent()[0];
 
                         if(element){
-                            checkVideoNode(element);
                             observer.observe(element, {
                                 childList: true
                             });
