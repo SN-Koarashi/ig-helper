@@ -5,7 +5,7 @@
 // @name:ja            IG助手
 // @name:ko            IG조수
 // @namespace          https://github.snkms.com/
-// @version            2.29.12
+// @version            2.29.12.1
 // @description        Downloading is possible for both photos and videos from posts, as well as for stories, reels or profile picture.
 // @description:zh-TW  一鍵下載對方 Instagram 貼文中的相片、影片甚至是他們的限時動態、連續短片及大頭貼圖片！
 // @description:zh-CN  一键下载对方 Instagram 帖子中的相片、视频甚至是他们的快拍、Reels及头像图片！
@@ -114,7 +114,7 @@
         accessKey: "z"
     });
     GM_registerMenuCommand(_i18n('FEEDBACK'), () => {
-        GM_openInTab("https://greasyfork.org/zh-TW/scripts/404535-ig-helper/feedback", {active: true});
+        showFeedbackDOM();
     },{
         accessKey: "f"
     });
@@ -2368,6 +2368,7 @@
                 "DOWNLOAD_DOM_TREE": "Download DOM Tree as a Text File",
                 "REPORT_GITHUB": "Report an Issue on GitHub",
                 "REPORT_DISCORD": "Report an Issue on Discord Support Server",
+                "REPORT_FORK": "Report an Issue on Greasy Fork",
                 "DEBUG": "Debug Window",
                 "CLOSE": "Close",
                 "ALL_CHECK": "Select All",
@@ -2508,7 +2509,24 @@
         $('.IG_SN_DIG .IG_SN_DIG_BODY span').append(`<button style="margin: 3px;" class="IG_SELECT_DOM_TREE"><a>${_i18n('SELECT_AND_COPY')}</a></button>`);
         $('.IG_SN_DIG .IG_SN_DIG_BODY span').append(`<button style="margin: 3px;" class="IG_DOWNLOAD_DOM_TREE"><a>${_i18n('DOWNLOAD_DOM_TREE')}</a></button><br/>`);
         $('.IG_SN_DIG .IG_SN_DIG_BODY span').append(`<button style="margin: 3px;" class="IG_REPORT_GITHUB"><a href="https://github.com/SN-Koarashi/ig-helper/issues" target="_blank">${_i18n('REPORT_GITHUB')}</a></button>`);
-        $('.IG_SN_DIG .IG_SN_DIG_BODY span').append(`<button style="margin: 3px;" class="IG_REPORT_DISCORD"><a href="https://discord.gg/Sh8HJ4d" target="_blank">${_i18n('REPORT_DISCORD')}</a></button>`);
+        $('.IG_SN_DIG .IG_SN_DIG_BODY span').append(`<button style="margin: 3px;" class="IG_REPORT_DISCORD"><a href="https://discord.gg/q3KT4hdq8x" target="_blank">${_i18n('REPORT_DISCORD')}</a></button>`);
+    }
+
+    /**
+     * showFeedbackDOM
+     * Show feedback options
+     *
+     * @return {void}
+     */
+    function showFeedbackDOM(){
+        $('.IG_SN_DIG').remove();
+        IG_createDM();
+        $('.IG_SN_DIG #post_info').text('Feedback Options');
+
+        $('.IG_SN_DIG .IG_SN_DIG_BODY').append(`<span style="display:block;text-align:center;">`);
+        $('.IG_SN_DIG .IG_SN_DIG_BODY span').append(`<button style="margin: 3px;" class="IG_REPORT_FORK"><a href="https://greasyfork.org/en/scripts/404535-ig-helper/feedback" target="_blank">${_i18n('REPORT_FORK')}</a></button>`);
+        $('.IG_SN_DIG .IG_SN_DIG_BODY span').append(`<button style="margin: 3px;" class="IG_REPORT_GITHUB"><a href="https://github.com/SN-Koarashi/ig-helper/issues" target="_blank">${_i18n('REPORT_GITHUB')}</a></button>`);
+        $('.IG_SN_DIG .IG_SN_DIG_BODY span').append(`<button style="margin: 3px;" class="IG_REPORT_DISCORD"><a href="https://discord.gg/q3KT4hdq8x" target="_blank">${_i18n('REPORT_DISCORD')}</a></button>`);
     }
 
     /**
