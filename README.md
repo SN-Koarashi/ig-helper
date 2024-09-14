@@ -1,5 +1,6 @@
 # Instagram Download Helper (IG Helper)
-<a href='https://ko-fi.com/F1F1J6VZH' target='_blank'><img height='36' style='border:0px;height:36px;' src='https://storage.ko-fi.com/cdn/kofi3.png?v=3' border='0' alt='Buy Me a Coffee at ko-fi.com' /></a>
+[![](https://img.shields.io/badge/Kofi-F16061.svg?logo=ko-fi&logoColor=white)](https://ko-fi.com/F1F1J6VZH)
+[![](https://img.shields.io/discord/505936774531514388?color=5865F3&logo=discord&logoColor=white)](https://discord.gg/q3KT4hdq8x)
 
 Downloading is possible for both photos and videos from posts, as well as for stories, reels or profile picture.
 ## Features
