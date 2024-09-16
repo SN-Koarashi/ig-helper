@@ -37,8 +37,6 @@ Downloading is possible for both photos and videos from posts, as well as for st
 1. All code development and testing are based on the Chrome browser and the extension Tampermonkey.
 2. Due to the framework and personal differences used in Instagram development, the page layout and node names presented by each person may be different. Therefore, all development and testing are based on the pages I have seen, which may cause a few people to The script does not work, please forgive me.
 
-If you want to contact me, you can join my discord server: " https://discord.gg/Sh8HJ4d " and then calling my discord 5026.
-
 > [!IMPORTANT]
 > On GreasyFork: https://greasyfork.org/en/scripts/404535-ig-helper
 > 
