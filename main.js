@@ -124,29 +124,6 @@
         accessKey: "r"
     });
 
-    GM_registerMenuCommand("TEST", () => {
-        GM_xmlhttpRequest({
-            method: "POST",
-            url: "https://www.instagram.com/api/v1/feed/reels_tray/",
-            data: {
-                _csrftoken: Cookie('csrftoken')
-            },
-            onload: function(response) {
-                console.log("TEST",response);
-            },
-            onerror: function(err){
-                console.log("TEST",err);
-            }
-        });
-
-        console.log(Cookie('csrftoken'));
-    });
-
-    function Cookie(name) {
-        var match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
-        if (match) return match[2];
-    };
-
     // Main Timer
     var timer = setInterval(function(){
         // page loading or unnecessary route
