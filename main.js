@@ -124,6 +124,29 @@
         accessKey: "r"
     });
 
+    GM_registerMenuCommand("TEST", () => {
+        GM_xmlhttpRequest({
+            method: "POST",
+            url: "https://www.instagram.com/api/v1/feed/reels_tray/",
+            data: {
+                _csrftoken: Cookie('csrftoken')
+            },
+            onload: function(response) {
+                console.log("TEST",response);
+            },
+            onerror: function(err){
+                console.log("TEST",err);
+            }
+        });
+
+        console.log(Cookie('csrftoken'));
+    });
+
+    function Cookie(name) {
+        var match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
+        if (match) return match[2];
+    };
+
     // Main Timer
     var timer = setInterval(function(){
         // page loading or unnecessary route
@@ -587,6 +610,26 @@
                 let userId = userInfo.user.pk;
                 let stories = await getStories(userId);
                 let urlID = location.pathname.split('/').filter(s => s.length > 0 && s.match(/^([0-9]{10,})$/)).at(-1);
+
+                /*
+                let latest_reel_media = stories.data.reels_media[0].latest_reel_media;
+                let last_seen = stories.data.reels_media[0].seen;
+                console.log(stories);
+
+                if(urlID == null){
+                    mediaId = stories.data.reels_media[0].items.filter(function(item, index){
+                        return item.taken_at_timestamp === last_seen && item.taken_at_timestamp !== latest_reel_media || last_seen === latest_reel_media && index === 0;
+                    })?.at(0)?.id;
+                    console.log('nula', mediaId);
+                }
+                else{
+                    stories.data.reels_media[0].items.forEach(item => {
+                        if(item.id == urlID){
+                            mediaId = item.id;
+                        }
+                    });
+                }
+                */
 
                 stories.data.reels_media[0].items.forEach(item => {
                     if(item.id == urlID){
