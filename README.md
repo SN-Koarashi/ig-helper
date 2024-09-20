@@ -3,10 +3,12 @@
   
   [![](https://img.shields.io/badge/Kofi-F16061.svg?logo=ko-fi&logoColor=white)](https://ko-fi.com/F1F1J6VZH)
   [![](https://img.shields.io/discord/505936774531514388?color=5865F3&logo=discord&logoColor=white)](https://discord.gg/q3KT4hdq8x)
-  
+
+  Buy me a coffee, Donate to ig-helper if it makes your help. Your donation makes ig-helper better: [https://ko-fi.com/snkoarashi](https://ko-fi.com/snkoarashi)
 </div>
 
-Downloading is possible for both photos and videos from posts, as well as for stories, reels or profile picture.
+**Simple and fast download of resources from Instagram (posts, reels, stories, and more).**
+
 ## Features
 - Force the fetching of all resources in the post.
 - Download the resources in the post with one click.
