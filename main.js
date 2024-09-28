@@ -5,7 +5,7 @@
 // @name:ja            IG助手
 // @name:ko            IG조수
 // @namespace          https://github.snkms.com/
-// @version            2.29.13
+// @version            2.29.14
 // @description        Downloading is possible for both photos and videos from posts, as well as for stories, reels or profile picture.
 // @description:zh-TW  一鍵下載對方 Instagram 貼文中的相片、影片甚至是他們的限時動態、連續短片及大頭貼圖片！
 // @description:zh-CN  一键下载对方 Instagram 帖子中的相片、视频甚至是他们的快拍、Reels及头像图片！
@@ -1418,7 +1418,53 @@
                         resolve(result);
                     }
                     else{
-                        alert("Can not find user info from getUserId()");
+                        getUserIdWithAgent(username).then((result)=>{
+                            resolve(result);
+                        }).catch((err)=>{
+                            alert("Can not find user info from getUserId()");
+                        });
+                    }
+                },
+                onerror: function(err){
+                    reject(err);
+                }
+            });
+        });
+    }
+
+    /**
+     * getUserIdWithAgent
+     * Get user's id with username
+     *
+     * @param  {String}  username
+     * @return {Integer}
+     */
+    function getUserIdWithAgent(username){
+        return new Promise((resolve,reject)=>{
+            let getURL = `https://i.instagram.com/api/v1/users/web_profile_info/?username=${username}`;
+
+            GM_xmlhttpRequest({
+                method: "GET",
+                url: getURL,
+                headers: {
+                    'X-IG-App-ID': getAppID()
+                },
+                onload: function(response) {
+                    try{
+                        let obj = JSON.parse(response.response);
+                        let hasUser = obj?.data?.user;
+
+                        if(hasUser != null){
+                            let userInfo = obj?.data;
+                            userInfo.user.pk = userInfo.user.id;
+                            resolve(userInfo);
+                        }
+                        else{
+                            reject('undefined');
+                        }
+                    }
+                    catch(err){
+                        reject(err);
                     }
                 },
                 onerror: function(err){
