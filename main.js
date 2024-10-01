@@ -19,6 +19,7 @@
 // @grant              GM_getValue
 // @grant              GM_xmlhttpRequest
 // @grant              GM_registerMenuCommand
+// @grant              GM_unregisterMenuCommand
 // @grant              GM_getResourceText
 // @grant              GM_openInTab
 // @connect            i.instagram.com
@@ -76,7 +77,8 @@
     const checkInterval = 250;
     const style = GM_getResourceText("INTERNAL_CSS");
     const locale_manifest = JSON.parse(GM_getResourceText("LOCALE_MANIFEST"));
-	
+
+    var GM_menuId = [];
     var locale = {};
     var lang = GM_getValue('lang') || navigator.language || navigator.userLanguage;
     var currentURL = location.href;
@@ -97,34 +99,18 @@
 
     initSettings();
     GM_addStyle(style);
-	getTranslationText(lang).then((res)=>{
-		locale = res;
-	});
-	
-    GM_registerMenuCommand(_i18n('SETTING'), () => {
-        showSetting();
-    },{
-        accessKey: "w"
-    });
-    GM_registerMenuCommand(_i18n('DONATE'), () => {
-        GM_openInTab("https://ko-fi.com/snkoarashi", {active: true});
-    },{
-        accessKey: "d"
-    });
-    GM_registerMenuCommand(_i18n('DEBUG'), () => {
-        showDebugDOM();
-    },{
-        accessKey: "z"
-    });
-    GM_registerMenuCommand(_i18n('FEEDBACK'), () => {
-        showFeedbackDOM();
-    },{
-        accessKey: "f"
-    });
-    GM_registerMenuCommand(_i18n('RELOAD_SCRIPT'), () => {
-        reloadScript();
-    },{
-        accessKey: "r"
+    registerMenuCommand();
+
+    getTranslationText(lang).then((res)=>{
+        locale[lang] = res;
+        repaintingTranslations();
+        registerMenuCommand();
+    }).catch((err)=>{
+        registerMenuCommand();
+
+        if(lang !== 'en'){
+            console.error('getTranslationText catch error:', err);
+        }
     });
 
     // Main Timer
@@ -297,9 +283,9 @@
                         return;
                     }
 
-                    $('header > section:first img[alt][draggable]').parent().parent().append(`<div title="${_i18n("DW")}" class="IG_DWPROFILE">${SVG.DOWNLOAD}</div>`);
+                    $('header > section:first img[alt][draggable]').parent().parent().append(`<div data-ih-locale-title="DW" title="${_i18n("DW")}" class="IG_DWPROFILE">${SVG.DOWNLOAD}</div>`);
                     $('header > section:first img[alt][draggable]').parent().parent().css('position','relative');
-                    $('header > section:first img[alt]:not([draggable])').parent().parent().parent().append(`<div title="${_i18n("DW")}" class="IG_DWPROFILE">${SVG.DOWNLOAD}</div>`);
+                    $('header > section:first img[alt]:not([draggable])').parent().parent().parent().append(`<div data-ih-locale-title="DW" title="${_i18n("DW")}" class="IG_DWPROFILE">${SVG.DOWNLOAD}</div>`);
                     $('header > section:first img[alt]:not([draggable])').parent().parent().parent().css('position','relative');
                 },150);
             }
@@ -435,8 +421,8 @@
 
                 if($element != null){
                     //$element.css('position','relative');
-                    $element.append(`<div title="${_i18n("DW")}" class="IG_DWHISTORY">${SVG.DOWNLOAD}</div>`);
-                    $element.append(`<div title="${_i18n("NEW_TAB")}" class="IG_DWHINEWTAB">${SVG.NEW_TAB}</div>`);
+                    $element.append(`<div data-ih-locale-title="DW" title="${_i18n("DW")}" class="IG_DWHISTORY">${SVG.DOWNLOAD}</div>`);
+                    $element.append(`<div data-ih-locale-title="NEW_TAB" title="${_i18n("NEW_TAB")}" class="IG_DWHINEWTAB">${SVG.NEW_TAB}</div>`);
 
                     // Modify Video Volume
                     if(USER_SETTING.MODIFY_VIDEO_VOLUME){
@@ -557,7 +543,7 @@
                     }
 
                     if($element != null){
-                        $element.append(`<div title="${_i18n("THUMBNAIL_INTRO")}" class="IG_DWHISTORY_THUMBNAIL">${SVG.THUMBNAIL}</div>`);
+                        $element.append(`<div data-ih-locale-title="THUMBNAIL_INTRO" title="${_i18n("THUMBNAIL_INTRO")}" class="IG_DWHISTORY_THUMBNAIL">${SVG.THUMBNAIL}</div>`);
                     }
                 }
             }
@@ -869,8 +855,8 @@
 
                 if($element != null){
                     $element.first().css('position','relative');
-                    $element.first().append(`<div title="${_i18n("DW")}" class="IG_DWSTORY">${SVG.DOWNLOAD}</div>`);
-                    $element.first().append(`<div title="${_i18n("NEW_TAB")}" class="IG_DWNEWTAB">${SVG.NEW_TAB}</div>`);
+                    $element.first().append(`<div data-ih-locale-title="DW" title="${_i18n("DW")}" class="IG_DWSTORY">${SVG.DOWNLOAD}</div>`);
+                    $element.first().append(`<div data-ih-locale-title="NEW_TAB" title="${_i18n("NEW_TAB")}" class="IG_DWNEWTAB">${SVG.NEW_TAB}</div>`);
 
                     // Modify Video Volume
                     if(USER_SETTING.MODIFY_VIDEO_VOLUME){
@@ -1121,7 +1107,7 @@
 
                 if($element != null){
                     $element.first().css('position','relative');
-                    $element.first().append(`<div title="${_i18n("THUMBNAIL_INTRO")}" class="IG_DWSTORY_THUMBNAIL">${SVG.THUMBNAIL}</div>`);
+                    $element.first().append(`<div data-ih-locale-title="THUMBNAIL_INTRO" title="${_i18n("THUMBNAIL_INTRO")}" class="IG_DWSTORY_THUMBNAIL">${SVG.THUMBNAIL}</div>`);
                 }
 
             }
@@ -1199,9 +1185,9 @@
 
                                 $(this).children().css('position','relative');
 
-                                $(this).children().append(`<div title="${_i18n("DW")}" class="IG_REELS">${SVG.DOWNLOAD}</div>`);
-                                $(this).children().append(`<div title="${_i18n("NEW_TAB")}" class="IG_REELS_NEWTAB">${SVG.NEW_TAB}</div>`);
-                                $(this).children().append(`<div title="${_i18n("THUMBNAIL_INTRO")}" class="IG_REELS_THUMBNAIL">${SVG.THUMBNAIL}</div>`);
+                                $(this).children().append(`<div data-ih-locale-title="DW" title="${_i18n("DW")}" class="IG_REELS">${SVG.DOWNLOAD}</div>`);
+                                $(this).children().append(`<div data-ih-locale-title="NEW_TAB" title="${_i18n("NEW_TAB")}" class="IG_REELS_NEWTAB">${SVG.NEW_TAB}</div>`);
+                                $(this).children().append(`<div data-ih-locale-title="THUMBNAIL_INTRO" title="${_i18n("THUMBNAIL_INTRO")}" class="IG_REELS_THUMBNAIL">${SVG.THUMBNAIL}</div>`);
 
                                 // Disable video autoplay
                                 if(USER_SETTING.DISABLE_VIDEO_LOOPING){
@@ -1910,9 +1896,9 @@
                 }
 
                 // Add icons
-                const DownloadElement = `<div title="${_i18n("DW")}" class="SNKMS_IG_DW_MAIN" style="right:${rightPos}px;top:${topPos}px;">${SVG.DOWNLOAD}</div>`;
-                const NewTabElement = `<div title="${_i18n("NEW_TAB")}" class="SNKMS_IG_NEWTAB_MAIN" style="right:${rightPos + 35}px;top:${topPos}px;">${SVG.NEW_TAB}</div>`;
-                const ThumbnailElement = `<div title="${_i18n("THUMBNAIL_INTRO")}" class="SNKMS_IG_THUMBNAIL_MAIN" style="right:${rightPos + 70}px;top:${topPos}px;">${SVG.THUMBNAIL}</div>`;
+                const DownloadElement = `<div data-ih-locale-title="DW" title="${_i18n("DW")}" class="SNKMS_IG_DW_MAIN" style="right:${rightPos}px;top:${topPos}px;">${SVG.DOWNLOAD}</div>`;
+                const NewTabElement = `<div data-ih-locale-title="NEW_TAB" title="${_i18n("NEW_TAB")}" class="SNKMS_IG_NEWTAB_MAIN" style="right:${rightPos + 35}px;top:${topPos}px;">${SVG.NEW_TAB}</div>`;
+                const ThumbnailElement = `<div data-ih-locale-title="THUMBNAIL_INTRO" title="${_i18n("THUMBNAIL_INTRO")}" class="SNKMS_IG_THUMBNAIL_MAIN" style="right:${rightPos + 70}px;top:${topPos}px;">${SVG.THUMBNAIL}</div>`;
 
                 $childElement.eq((tagName === "DIV")? 0 : $childElement.length - 2).append(DownloadElement);
                 $childElement.eq((tagName === "DIV")? 0 : $childElement.length - 2).append(NewTabElement);
@@ -2130,7 +2116,7 @@
                                         blob = true;
                                     }
                                     if(element_images && imgLink){
-                                        $('.IG_SN_DIG .IG_SN_DIG_MAIN .IG_SN_DIG_BODY').append(`<a datetime="${publish_time}" data-needed="direct" data-path="${GL_postPath}" data-name="photo" data-type="jpg" data-globalIndex="${s}" href="javascript:;" data-href="${imgLink}"><img width="100" src="${imgLink}" /><br/>- ${_i18n("IMG")} ${s} -</a>`);
+                                        $('.IG_SN_DIG .IG_SN_DIG_MAIN .IG_SN_DIG_BODY').append(`<a datetime="${publish_time}" data-needed="direct" data-path="${GL_postPath}" data-name="photo" data-type="jpg" data-globalIndex="${s}" href="javascript:;" data-href="${imgLink}"><img width="100" src="${imgLink}" /><br/>- <span data-ih-locale="IMG">${_i18n("IMG")}</span> ${s} -</a>`);
                                     }
 
                                 });
@@ -2155,7 +2141,7 @@
                                     createMediaListDOM(GL_postPath,".IG_SN_DIG .IG_SN_DIG_MAIN .IG_SN_DIG_BODY",_i18n("LOAD_BLOB_ONE"));
                                 }
                                 if(element_images && imgLink){
-                                    $('.IG_SN_DIG .IG_SN_DIG_MAIN .IG_SN_DIG_BODY').append(`<a datetime="${publish_time}" data-needed="direct" data-path="${GL_postPath}" data-name="photo" data-type="jpg" data-globalIndex="${s}" href="javascript:;" href="" data-href="${imgLink}"><img width="100" src="${imgLink}" /><br/>- ${_i18n("IMG")} ${s} -</a>`);
+                                    $('.IG_SN_DIG .IG_SN_DIG_MAIN .IG_SN_DIG_BODY').append(`<a datetime="${publish_time}" data-needed="direct" data-path="${GL_postPath}" data-name="photo" data-type="jpg" data-globalIndex="${s}" href="javascript:;" href="" data-href="${imgLink}"><img width="100" src="${imgLink}" /><br/>- <span data-ih-locale="IMG">${_i18n("IMG")}</span> ${s} -</a>`);
                                 }
                             }
                         }
@@ -2164,10 +2150,10 @@
                     $('.IG_SN_DIG .IG_SN_DIG_MAIN .IG_SN_DIG_BODY a').each(function(){
                         $(this).wrap('<div></div>');
                         $(this).before('<label class="inner_box_wrapper"><input class="inner_box" type="checkbox"><span></span></label>');
-                        $(this).after(`<div title="${_i18n("NEW_TAB")}" class="newTab">${SVG.NEW_TAB}</div>`);
+                        $(this).after(`<div data-ih-locale-title="NEW_TAB" title="${_i18n("NEW_TAB")}" class="newTab">${SVG.NEW_TAB}</div>`);
 
                         if($(this).attr('data-name') == 'video'){
-                            $(this).after(`<div title="${_i18n("THUMBNAIL_INTRO")}" class="videoThumbnail">${SVG.THUMBNAIL}</div>`);
+                            $(this).after(`<div data-ih-locale-title="THUMBNAIL_INTRO" title="${_i18n("THUMBNAIL_INTRO")}" class="videoThumbnail">${SVG.THUMBNAIL}</div>`);
                         }
                     });
 
@@ -2216,23 +2202,23 @@
 
             // GraphVideo
             if(resource.__typename == "GraphVideo" && resource.video_url){
-                $(selector).append(`<a media-id="${resource.id}" datetime="${resource.taken_at_timestamp}" data-blob="true" data-needed="direct" data-path="${resource.shortcode}" data-name="video" data-type="mp4" data-username="${resource.owner.username}" data-globalIndex="${idx}" href="javascript:;" data-href="${resource.video_url}"><img width="100" src="${resource.display_resources[1].src}" /><br/>- ${_i18n("VID")} ${idx} -</a>`);
+                $(selector).append(`<a media-id="${resource.id}" datetime="${resource.taken_at_timestamp}" data-blob="true" data-needed="direct" data-path="${resource.shortcode}" data-name="video" data-type="mp4" data-username="${resource.owner.username}" data-globalIndex="${idx}" href="javascript:;" data-href="${resource.video_url}"><img width="100" src="${resource.display_resources[1].src}" /><br/>- <span data-ih-locale="VID">${_i18n("VID")}</span> ${idx} -</a>`);
                 idx++;
             }
             // GraphImage
             if(resource.__typename == "GraphImage"){
-                $(selector).append(`<a media-id="${resource.id}" datetime="${resource.taken_at_timestamp}" data-blob="true" data-needed="direct" data-path="${resource.shortcode}" data-name="photo" data-type="jpg" data-username="${resource.owner.username}" data-globalIndex="${idx}" href="javascript:;" data-href="${resource.display_resources[resource.display_resources.length - 1].src}"><img width="100" src="${resource.display_resources[1].src}" /><br/>- ${_i18n("IMG")} ${idx} -</a>`);
+                $(selector).append(`<a media-id="${resource.id}" datetime="${resource.taken_at_timestamp}" data-blob="true" data-needed="direct" data-path="${resource.shortcode}" data-name="photo" data-type="jpg" data-username="${resource.owner.username}" data-globalIndex="${idx}" href="javascript:;" data-href="${resource.display_resources[resource.display_resources.length - 1].src}"><img width="100" src="${resource.display_resources[1].src}" /><br/>- <span data-ih-locale="IMG">${_i18n("IMG")}</span> ${idx} -</a>`);
                 idx++;
             }
             // GraphSidecar
             if(resource.__typename == "GraphSidecar" && resource.edge_sidecar_to_children){
                 for(let e of resource.edge_sidecar_to_children.edges){
                     if(e.node.__typename == "GraphVideo"){
-                        $(selector).append(`<a media-id="${e.node.id}" datetime="${resource.taken_at_timestamp}" data-blob="true" data-needed="direct" data-path="${resource.shortcode}" data-name="video" data-type="mp4" data-username="${resource.owner.username}" data-globalIndex="${idx}" href="javascript:;" data-href="${e.node.video_url}"><img width="100" src="${e.node.display_resources[1].src}" /><br/>- ${_i18n("VID")} ${idx} -</a>`);
+                        $(selector).append(`<a media-id="${e.node.id}" datetime="${resource.taken_at_timestamp}" data-blob="true" data-needed="direct" data-path="${resource.shortcode}" data-name="video" data-type="mp4" data-username="${resource.owner.username}" data-globalIndex="${idx}" href="javascript:;" data-href="${e.node.video_url}"><img width="100" src="${e.node.display_resources[1].src}" /><br/>- <span data-ih-locale-title="VID">${_i18n("VID")}</span> ${idx} -</a>`);
                     }
 
                     if(e.node.__typename == "GraphImage"){
-                        $(selector).append(`<a media-id="${e.node.id}" datetime="${resource.taken_at_timestamp}" data-blob="true" data-needed="direct" data-path="${resource.shortcode}" data-name="photo" data-type="jpg" data-username="${resource.owner.username}" data-globalIndex="${idx}" href="javascript:;" data-href="${e.node.display_resources[e.node.display_resources.length - 1].src}"><img width="100" src="${e.node.display_resources[1].src}" /><br/>- ${_i18n("IMG")} ${idx} -</a>`);
+                        $(selector).append(`<a media-id="${e.node.id}" datetime="${resource.taken_at_timestamp}" data-blob="true" data-needed="direct" data-path="${resource.shortcode}" data-name="photo" data-type="jpg" data-username="${resource.owner.username}" data-globalIndex="${idx}" href="javascript:;" data-href="${e.node.display_resources[e.node.display_resources.length - 1].src}"><img width="100" src="${e.node.display_resources[1].src}" /><br/>- <span data-ih-locale="IMG">${_i18n("IMG")}</span> ${idx} -</a>`);
                     }
                     idx++;
                 }
@@ -2242,10 +2228,10 @@
             $('.IG_SN_DIG .IG_SN_DIG_MAIN .IG_SN_DIG_BODY a').each(function(){
                 $(this).wrap('<div></div>');
                 $(this).before('<label class="inner_box_wrapper"><input class="inner_box" type="checkbox"><span></span></label>');
-                $(this).after(`<div title="${_i18n("NEW_TAB")}" class="newTab">${SVG.NEW_TAB}</div>`);
+                $(this).after(`<div data-ih-locale-title="NEW_TAB" title="${_i18n("NEW_TAB")}" class="newTab">${SVG.NEW_TAB}</div>`);
 
                 if($(this).attr('data-name') == 'video'){
-                    $(this).after(`<div title="${_i18n("THUMBNAIL_INTRO")}" class="videoThumbnail">${SVG.THUMBNAIL}</div>`);
+                    $(this).after(`<div data-ih-locale-title="THUMBNAIL_INTRO" title="${_i18n("THUMBNAIL_INTRO")}" class="videoThumbnail">${SVG.THUMBNAIL}</div>`);
                 }
             });
 
@@ -2264,13 +2250,13 @@
     function IG_createDM(hasHidden, hasCheckbox){
         let isHidden = (hasHidden)?"hidden":"";
         $('body').append('<div class="IG_SN_DIG '+isHidden+'"><div class="IG_SN_DIG_BG"></div><div class="IG_SN_DIG_MAIN"><div class="IG_SN_DIG_TITLE"></div><div class="IG_SN_DIG_BODY"></div></div></div>');
-        $('.IG_SN_DIG .IG_SN_DIG_MAIN .IG_SN_DIG_TITLE').append(`<div style="position:relative;min-height:36px;text-align:center;margin-bottom: 7px;"><div style="position:absolute;left:0px;line-height: 18px;"><kbd>Alt</kbd>+<kbd>Q</kbd> [${_i18n("CLOSE")}]</div><div style="line-height: 18px;">IG Helper</div><div id="post_info" style="line-height: 14px;font-size:14px;">Post ID: <span id="article-id"></span></div><div class="IG_SN_DIG_BTN">${SVG.CLOSE}</div></div>`);
+        $('.IG_SN_DIG .IG_SN_DIG_MAIN .IG_SN_DIG_TITLE').append(`<div style="position:relative;min-height:36px;text-align:center;margin-bottom: 7px;"><div style="position:absolute;left:0px;line-height: 18px;"><kbd>Alt</kbd>+<kbd>Q</kbd> [<span data-ih-locale="CLOSE">${_i18n("CLOSE")}</span>]</div><div style="line-height: 18px;">IG Helper</div><div id="post_info" style="line-height: 14px;font-size:14px;">Post ID: <span id="article-id"></span></div><div class="IG_SN_DIG_BTN">${SVG.CLOSE}</div></div>`);
 
         if(hasCheckbox){
             $('.IG_SN_DIG .IG_SN_DIG_MAIN .IG_SN_DIG_TITLE').append(`<div style="text-align: center;" id="button_group"></div>`);
-            $('.IG_SN_DIG .IG_SN_DIG_MAIN .IG_SN_DIG_TITLE > div#button_group').append(`<button id="batch_download_selected">${_i18n('BATCH_DOWNLOAD_SELECTED')}</button>`);
-            $('.IG_SN_DIG .IG_SN_DIG_MAIN .IG_SN_DIG_TITLE > div#button_group').append(`<button id="batch_download_direct">${_i18n('BATCH_DOWNLOAD_DIRECT')}</button>`);
-            $('.IG_SN_DIG .IG_SN_DIG_MAIN .IG_SN_DIG_TITLE').append(`<label class="checkbox"><input value="yes" type="checkbox" />${_i18n('ALL_CHECK')}</label>`);
+            $('.IG_SN_DIG .IG_SN_DIG_MAIN .IG_SN_DIG_TITLE > div#button_group').append(`<button id="batch_download_selected" data-ih-locale="BATCH_DOWNLOAD_SELECTED">${_i18n('BATCH_DOWNLOAD_SELECTED')}</button>`);
+            $('.IG_SN_DIG .IG_SN_DIG_MAIN .IG_SN_DIG_TITLE > div#button_group').append(`<button id="batch_download_direct" data-ih-locale="BATCH_DOWNLOAD_DIRECT">${_i18n('BATCH_DOWNLOAD_DIRECT')}</button>`);
+            $('.IG_SN_DIG .IG_SN_DIG_MAIN .IG_SN_DIG_TITLE').append(`<label class="checkbox"><input value="yes" type="checkbox" /><span data-ih-locale="ALL_CHECK">${_i18n('ALL_CHECK')}</span></label>`);
         }
     }
 
@@ -2522,7 +2508,7 @@
 
         return resultSorted;
     }
-	
+
     /**
      * getTranslationText
      * i18n translation text
@@ -2531,21 +2517,23 @@
      * @return {Object}
      */
     async function getTranslationText(lang){
-        GM_xmlhttpRequest({
-            method: "GET",
-            url: `https://raw.githubusercontent.com/SN-Koarashi/ig-helper/dev/locale/translations/${lang}.json`,
-            onload: function(response) {
-                try{
-                    let obj = JSON.parse(response.response);
-                    resolve(obj);
-				}
-				catch(err){
-					reject(err);
-				}
-            },
-            onerror: function(err){
-                reject(err);
-            }
+        return new Promise((resolve, reject)=>{
+            GM_xmlhttpRequest({
+                method: "GET",
+                url: `https://raw.githubusercontent.com/SN-Koarashi/ig-helper/dev/locale/translations/${lang}.json`,
+                onload: function(response) {
+                    try{
+                        let obj = JSON.parse(response.response);
+                        resolve(obj);
+                    }
+                    catch(err){
+                        reject(err);
+                    }
+                },
+                onerror: function(err){
+                    reject(err);
+                }
+            });
         });
     }
 
@@ -2568,6 +2556,64 @@
     }
 
     /**
+     * repaintingTranslations
+     * Perform i18n translation
+     *
+     * @return {void}
+     */
+    function repaintingTranslations(){
+        $('[data-ih-locale]').each(function(){
+            $(this).text(_i18n($(this).attr('data-ih-locale')));
+        });
+        $('[data-ih-locale-title]').each(function(){
+            $(this).attr('title', _i18n($(this).attr('data-ih-locale-title')));
+        });
+    }
+
+    /**
+     * registerMenuCommand
+     * register script menu command
+     *
+     * @return {void}
+     */
+    function registerMenuCommand(){
+        for(let id of GM_menuId){
+            console.log('GM_unregisterMenuCommand', id);
+            GM_unregisterMenuCommand(id);
+        }
+
+        GM_menuId.push(GM_registerMenuCommand(_i18n('SETTING'), () => {
+            showSetting();
+        },{
+            accessKey: "w"
+        }));
+
+        GM_menuId.push(GM_registerMenuCommand(_i18n('DONATE'), () => {
+            GM_openInTab("https://ko-fi.com/snkoarashi", {active: true});
+        },{
+            accessKey: "d"
+        }));
+
+        GM_menuId.push(GM_registerMenuCommand(_i18n('DEBUG'), () => {
+            showDebugDOM();
+        },{
+            accessKey: "z"
+        }));
+
+        GM_menuId.push(GM_registerMenuCommand(_i18n('FEEDBACK'), () => {
+            showFeedbackDOM();
+        },{
+            accessKey: "f"
+        }));
+
+        GM_menuId.push(GM_registerMenuCommand(_i18n('RELOAD_SCRIPT'), () => {
+            reloadScript();
+        },{
+            accessKey: "r"
+        }));
+    }
+
+    /**
      * showSetting
      * Show script settings window
      *
@@ -2580,12 +2626,12 @@
 
         $('.IG_SN_DIG .IG_SN_DIG_TITLE > div').append('<select id="langSelect"></select><div style="font-size: 12px;">The newly selected language will be applied after refreshing the page.</div>');
 
-        for(let o in translateText()){
-            $('.IG_SN_DIG .IG_SN_DIG_TITLE > div #langSelect').append(`<option value="${o}" ${(lang == o)?'selected':''}>${translateText()[o].SELECT_LANG}</option>`);
+        for(let o in locale_manifest){
+            $('.IG_SN_DIG .IG_SN_DIG_TITLE > div #langSelect').append(`<option value="${o}" ${(lang == o)?'selected':''}>${locale_manifest[o]}</option>`);
         }
 
         for(let name in USER_SETTING){
-            $('.IG_SN_DIG .IG_SN_DIG_BODY').append(`<label class="globalSettings${(CHILD_NODES.includes(name))?' child':''}" title="${_i18n(name+'_INTRO')}"><span>${_i18n(name)}</span> <input id="${name}" value="box" type="checkbox" ${(USER_SETTING[name] === true)?'checked':''}><div class="chbtn"><div class="rounds"></div></div></label>`);
+            $('.IG_SN_DIG .IG_SN_DIG_BODY').append(`<label class="globalSettings${(CHILD_NODES.includes(name))?' child':''}" title="${_i18n(name+'_INTRO')}" data-ih-locale-title="${name + '_INTRO'}"><span data-ih-locale="${name}">${_i18n(name)}</span> <input id="${name}" value="box" type="checkbox" ${(USER_SETTING[name] === true)?'checked':''}><div class="chbtn"><div class="rounds"></div></div></label>`);
 
             if(name === 'MODIFY_VIDEO_VOLUME'){
                 $('.IG_SN_DIG .IG_SN_DIG_BODY input[id="'+name+'"]').parent('label').on('contextmenu', function(e){
@@ -2946,7 +2992,19 @@
             GM_setValue('lang', $(this).val());
             lang = $(this).val();
 
-            showSetting();
+            if(lang === 'en' || locale[lang] != null){
+                repaintingTranslations();
+                registerMenuCommand();
+            }
+            else{
+                getTranslationText(lang).then((res)=>{
+                    locale[lang] = res;
+                    repaintingTranslations();
+                    registerMenuCommand();
+                }).catch((err)=>{
+                    console.error('getTranslationText catch error:', err);
+                });
+            }
         });
 
         $('body').on('change', '.IG_SN_DIG_BODY #locateSelect', function(){
