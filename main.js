@@ -22,10 +22,10 @@
 // @grant              GM_getResourceText
 // @grant              GM_openInTab
 // @connect            i.instagram.com
+// @connect            raw.githubusercontent.com
 // @require            https://code.jquery.com/jquery-3.7.1.min.js#sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=
 // @resource           INTERNAL_CSS https://raw.githubusercontent.com/SN-Koarashi/ig-helper/master/style.css
-// @resource           LOCATE_DATE_LIST_TEXT https://raw.githubusercontent.com/SN-Koarashi/ig-helper/master/date_locate.json
-// @resource           LOCALE_TEXT https://raw.githubusercontent.com/SN-Koarashi/ig-helper/master/locale.json
+// @resource           LOCALE_MANIFEST https://raw.githubusercontent.com/SN-Koarashi/ig-helper/dev/locale/manifest.json
 // @supportURL         https://github.com/SN-Koarashi/ig-helper/
 // @contributionURL    https://ko-fi.com/snkoarashi
 // @icon               https://www.google.com/s2/favicons?domain=www.instagram.com
@@ -60,9 +60,7 @@
         'NEW_TAB_ALWAYS_FORCE_MEDIA_IN_POST': false
     };
     const CHILD_NODES = ['RENAME_PUBLISH_DATE', 'USE_BLOB_FETCH_WHEN_MEDIA_RATE_LITMIT', 'NEW_TAB_ALWAYS_FORCE_MEDIA_IN_POST'];
-    const LOCATE_DATE_LIST = JSON.parse(GM_getResourceText('LOCATE_DATE_LIST_TEXT'));
     var VIDEO_VOLUME = (GM_getValue('G_VIDEO_VOLUME'))?GM_getValue('G_VIDEO_VOLUME'):1;
-    var LOCATE_DATE_FORMAT = (GM_getValue('G_LOCATE_DATE_FORMAT'))? GM_getValue('G_LOCATE_DATE_FORMAT') : GM_getValue('lang') || navigator.language || navigator.userLanguage;
     var TEMP_FETCH_RATE_LITMIT = false;
     var RENAME_FORMAT = (GM_getValue('G_RENAME_FORMAT'))? GM_getValue('G_RENAME_FORMAT') : '%USERNAME%-%SOURCE_TYPE%-%SHORTCODE%-%YEAR%%MONTH%%DAY%_%HOUR%%MINUTE%%SECOND%_%ORIGINAL_NAME_FIRST%';
     /*******************************/
@@ -77,8 +75,9 @@
 
     const checkInterval = 250;
     const style = GM_getResourceText("INTERNAL_CSS");
-    const locale = JSON.parse(GM_getResourceText("LOCALE_TEXT"));
-
+    const locale_manifest = JSON.parse(GM_getResourceText("LOCALE_MANIFEST"));
+	
+    var locale = {};
     var lang = GM_getValue('lang') || navigator.language || navigator.userLanguage;
     var currentURL = location.href;
     var firstStarted = false;
@@ -98,6 +97,10 @@
 
     initSettings();
     GM_addStyle(style);
+	getTranslationText(lang).then((res)=>{
+		locale = res;
+	});
+	
     GM_registerMenuCommand(_i18n('SETTING'), () => {
         showSetting();
     },{
@@ -2518,6 +2521,32 @@
         );
 
         return resultSorted;
+    }
+	
+    /**
+     * getTranslationText
+     * i18n translation text
+     *
+     * @param  {String}  lang
+     * @return {Object}
+     */
+    async function getTranslationText(lang){
+        GM_xmlhttpRequest({
+            method: "GET",
+            url: `https://raw.githubusercontent.com/SN-Koarashi/ig-helper/dev/locale/translations/${lang}.json`,
+            onload: function(response) {
+                try{
+                    let obj = JSON.parse(response.response);
+                    resolve(obj);
+				}
+				catch(err){
+					reject(err);
+				}
+            },
+            onerror: function(err){
+                reject(err);
+            }
+        });
     }
 
     /**
