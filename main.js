@@ -5,7 +5,7 @@
 // @name:ja            IG助手
 // @name:ko            IG조수
 // @namespace          https://github.snkms.com/
-// @version            2.30.2
+// @version            2.30.3
 // @description        Downloading is possible for both photos and videos from posts, as well as for stories, reels or profile picture.
 // @description:zh-TW  一鍵下載對方 Instagram 貼文中的相片、影片甚至是他們的限時動態、連續短片及大頭貼圖片！
 // @description:zh-CN  一键下载对方 Instagram 帖子中的相片、视频甚至是他们的快拍、Reels及头像图片！
@@ -142,9 +142,14 @@
                 var dialogTimer = setInterval(()=>{
                     // body > div[id^="mount"] section nav + div > article << (mobile page in single post) >>
                     // section:visible > main > div > div > div > div > div > hr << (single foreground post in page, non-floating // <hr> element here is literally the line beneath poster's username) >>
+                    // section:visible > main > div > div > article > div > div > div > div > div > header (is the same as above, except that this is on the route of the /{username}/p/{shortcode} structure)
                     // section:visible > main > div > div.xdt5ytf << (former CSS selector for single foreground post in page, non-floating) >>
                     // <hr> is much more unique element than "div.xdt5ytf"
-                    if($('body > div[class]:not([id^="mount"]) div div[role="dialog"] article, section:visible > main > div > div > div > div > div > hr, body > div[id^="mount"] section nav + div > article').length > 0){
+                    if($(`body > div[class]:not([id^="mount"]) div div[role="dialog"] article,
+                          section:visible > main > div > div > div > div > div > hr,
+                          body > div[id^="mount"] section nav + div > article,
+                          section:visible > main > div > div > article > div > div > div > div > div > header
+                         `).length > 0){
                         clearInterval(dialogTimer);
 
                         // This is to prevent the detection of the "Modify Video Volume" setting from being too slow.
