@@ -108,7 +108,7 @@
     }).catch((err)=>{
         registerMenuCommand();
 
-        if(lang !== 'en'){
+        if(!lang.startsWith('en')){
             console.error('getTranslationText catch error:', err);
         }
     });
@@ -3001,7 +3001,7 @@
             GM_setValue('lang', $(this).val());
             lang = $(this).val();
 
-            if(lang === 'en' || locale[lang] != null){
+            if(lang?.startsWith('en') || locale[lang] != null){
                 repaintingTranslations();
                 registerMenuCommand();
             }
