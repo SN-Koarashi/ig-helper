@@ -2444,7 +2444,6 @@
     function translateText(lang){
         var eLocale = {
             "en-US": {
-                "SELECT_LANG": "English",
                 "RELOAD_SCRIPT": "Reload Script",
                 "DONATE": "Donate",
                 "FEEDBACK": "Feedback",
