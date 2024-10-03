@@ -5,7 +5,7 @@
 // @name:ja            IG助手
 // @name:ko            IG조수
 // @namespace          https://github.snkms.com/
-// @version            2.32.1
+// @version            2.32.2
 // @description        Downloading is possible for both photos and videos from posts, as well as for stories, reels or profile picture.
 // @description:zh-TW  一鍵下載對方 Instagram 貼文中的相片、影片甚至是他們的限時動態、連續短片及大頭貼圖片！
 // @description:zh-CN  一键下载对方 Instagram 帖子中的相片、视频甚至是他们的快拍、Reels及头像图片！
@@ -1544,8 +1544,16 @@
             GM_xmlhttpRequest({
                 method: "GET",
                 url: getURL,
+                headers: {
+                    "User-Agent": "Mozilla/5.0 (Linux; Android 10; Pixel 7 XL)Build/RP1A.20845.002; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/5.0 Chrome/117.0.5938.60 Mobile Safari/537.36 Instagram 307.0.0.34.111"
+                },
                 onload: function(response) {
                     let obj = JSON.parse(response.response);
+
+                    if(obj.status === 'fail'){
+                        alert(`Request failed with API response:\n${obj.message}: ${obj.feedback_message}`);
+                    }
+
                     console.log(obj);
                     resolve(obj.data);
                 },
@@ -2812,7 +2820,7 @@
                 e.preventDefault();
             }
 
-            // Hot key [Alt+S] to download story resource
+            // Hot key [Alt+S] to open the settings dialog
             if (e.keyCode == '83' && e.altKey){
                 if(location.href.match(/^(https:\/\/www\.instagram\.com\/stories\/)/ig) && $('.IG_DWSTORY').length > 0){
                     $('.IG_DWSTORY')?.click();
