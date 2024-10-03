@@ -34,6 +34,7 @@
 - `ALT+Q` - Close pop-up window
 - `ALT+W` - Open the settings menu
 - `ALT+Z` - Open the debug menu
+- `ALT+S` - Download resource in story page
 
 ## Developer Statement
 1. All code development and testing are based on the Chrome browser and the extension Tampermonkey.
