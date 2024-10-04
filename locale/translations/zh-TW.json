@@ -1,4 +1,7 @@
 {
+    "NOTICE_UPDATE_TITLE": "呜嚕嚕！新版本已發布。",
+    "NOTICE_UPDATE_CONTENT": "IG小精靈已發布版本更新，點擊這裡以更新。",
+    "CHECK_UPDATE": "腳本執行時檢查更新",
     "RELOAD_SCRIPT": "重新載入腳本",
     "DONATE": "贊助",
     "FEEDBACK": "回報問題",

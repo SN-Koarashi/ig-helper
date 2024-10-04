@@ -1,4 +1,7 @@
 {
+    "NOTICE_UPDATE_TITLE": "Wololo! Nuova versione rilasciata.",
+    "NOTICE_UPDATE_CONTENT": "IG-Helper ha rilasciato una nuova versione, clicca qui per aggiornare.",
+    "CHECK_UPDATE": "Controlla gli aggiornamenti durante l'esecuzione dello script",
     "RELOAD_SCRIPT": "Ricarica script",
     "DONATE": "Dona",
     "FEEDBACK": "Feedback",

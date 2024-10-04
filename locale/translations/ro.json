@@ -1,4 +1,7 @@
 {
+    "NOTICE_UPDATE_TITLE": "Wololo! O nouă versiune a fost lansată.",
+    "NOTICE_UPDATE_CONTENT": "IG-Helper a lansat o nouă versiune, apasă aici pentru a actualiza.",
+    "CHECK_UPDATE": "Verifică actualizările când rulezi scriptul",
     "RELOAD_SCRIPT": "Reîncarcă scriptul",
     "DONATE": "Donează",
     "FEEDBACK": "Feedback",
