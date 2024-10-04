@@ -5,7 +5,7 @@
 // @name:ja            IG助手
 // @name:ko            IG조수
 // @namespace          https://github.snkms.com/
-// @version            2.34.1
+// @version            2.34.2
 // @description        Downloading is possible for both photos and videos from posts, as well as for stories, reels or profile picture.
 // @description:zh-TW  一鍵下載對方 Instagram 貼文中的相片、影片甚至是他們的限時動態、連續短片及大頭貼圖片！
 // @description:zh-CN  一键下载对方 Instagram 帖子中的相片、视频甚至是他们的快拍、Reels及头像图片！
@@ -2556,7 +2556,8 @@
             "en-US": {
                 "NOTICE_UPDATE_TITLE": "Wololo! New version released.",
                 "NOTICE_UPDATE_CONTENT": "IG-Helper has released a new version, click here to update.",
-                "CHECK_UPDATE": "Check for Updates When Running the Script",
+                "CHECK_UPDATE": "Checking for Script Updates",
+				"CHECK_UPDATE_INTRO": "Check for updates when the script is triggered (check every 300 seconds).\nUpdate notifications will be sent as desktop notifications through the browser.",
                 "RELOAD_SCRIPT": "Reload Script",
                 "DONATE": "Donate",
                 "FEEDBACK": "Feedback",
