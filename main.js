@@ -5,7 +5,7 @@
 // @name:ja            IG助手
 // @name:ko            IG조수
 // @namespace          https://github.snkms.com/
-// @version            2.34.4
+// @version            2.35.1
 // @description        Downloading is possible for both photos and videos from posts, as well as for stories, reels or profile picture.
 // @description:zh-TW  一鍵下載對方 Instagram 貼文中的相片、影片甚至是他們的限時動態、連續短片及大頭貼圖片！
 // @description:zh-CN  一键下载对方 Instagram 帖子中的相片、视频甚至是他们的快拍、Reels及头像图片！
@@ -254,7 +254,7 @@
                 }
             }
 
-			checkingScriptUpdate(300);
+            checkingScriptUpdate(300);
             GL_referrer = new URL(location.href).pathname;
         }
     },checkInterval);
@@ -2558,7 +2558,7 @@
                 "NOTICE_UPDATE_TITLE": "Wololo! New version released.",
                 "NOTICE_UPDATE_CONTENT": "IG-Helper has released a new version, click here to update.",
                 "CHECK_UPDATE": "Checking for Script Updates",
-				"CHECK_UPDATE_INTRO": "Check for updates when the script is triggered (check every 300 seconds).\nUpdate notifications will be sent as desktop notifications through the browser.",
+                "CHECK_UPDATE_INTRO": "Check for updates when the script is triggered (check every 300 seconds).\nUpdate notifications will be sent as desktop notifications through the browser.",
                 "RELOAD_SCRIPT": "Reload Script",
                 "DONATE": "Donate",
                 "FEEDBACK": "Feedback",
@@ -2746,8 +2746,8 @@
         const now_time = new Date().getTime();
 
         if(now_time > (parseInt(check_timestamp) + (interval * 1000))){
-			GM_setValue('G_CHECK_TIMESTAMP', new Date().getTime());
-			
+            GM_setValue('G_CHECK_TIMESTAMP', new Date().getTime());
+
             const currentVersion = GM_info.script.version;
             const remoteScriptURL = 'https://raw.githubusercontent.com/SN-Koarashi/ig-helper/refs/heads/master/main.js';
 
@@ -2988,10 +2988,13 @@
                 e.preventDefault();
             }
 
-            // Hot key [Alt+S] to download story resource
+            // Hot key [Alt+S] to download story/highlights resource
             if (e.keyCode == '83' && e.altKey){
                 if(location.href.match(/^(https:\/\/www\.instagram\.com\/stories\/)/ig) && $('.IG_DWSTORY').length > 0){
                     $('.IG_DWSTORY')?.click();
+                }
+                if(location.href.match(/^(https:\/\/www\.instagram\.com\/stories\/highlights\/)/ig) && $('.IG_DWHISTORY').length > 0){
+                    $('.IG_DWHISTORY')?.click();
                 }
                 e.preventDefault();
             }
