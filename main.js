@@ -5,7 +5,7 @@
 // @name:ja            IG助手
 // @name:ko            IG조수
 // @namespace          https://github.snkms.com/
-// @version            2.32.2
+// @version            2.33.1
 // @description        Downloading is possible for both photos and videos from posts, as well as for stories, reels or profile picture.
 // @description:zh-TW  一鍵下載對方 Instagram 貼文中的相片、影片甚至是他們的限時動態、連續短片及大頭貼圖片！
 // @description:zh-CN  一键下载对方 Instagram 帖子中的相片、视频甚至是他们的快拍、Reels及头像图片！
@@ -1133,30 +1133,58 @@
             updateLoadingBar(true);
 
             let reelsPath = location.href.split('?').at(0).split('instagram.com/reels/').at(-1).replaceAll('/','');
-            let data = await getBlobMedia(reelsPath);
+            let result = await getBlobMedia(reelsPath);
+            let media = result.data;
 
             let timestamp = new Date().getTime();
 
             if(USER_SETTING.RENAME_PUBLISH_DATE){
-                timestamp = data.shortcode_media.taken_at_timestamp;
-            }
-
-            if(isVideo && data.shortcode_media.is_video){
-                if(isPreview){
-                    openNewTab(data.shortcode_media.video_url);
+                if(result.type === 'query_hash'){
+                    timestamp = media.shortcode_media.taken_at_timestamp;
                 }
                 else{
-                    let type = 'mp4';
-                    saveFiles(data.shortcode_media.video_url,data.shortcode_media.owner.username,"reels",timestamp,type,reelsPath);
+                    timestamp = media.taken_at;
+                }
+            }
+
+            if(result.type === 'query_hash'){
+                if(isVideo && media.shortcode_media.is_video){
+                    if(isPreview){
+                        openNewTab(media.shortcode_media.video_url);
+                    }
+                    else{
+                        let type = 'mp4';
+                        saveFiles(media.shortcode_media.video_url,media.shortcode_media.owner.username,"reels",timestamp,type,reelsPath);
+                    }
+                }
+                else{
+                    if(isPreview){
+                        openNewTab(media.shortcode_media.display_resources.at(-1).src);
+                    }
+                    else{
+                        let type = 'jpg';
+                        saveFiles(media.shortcode_media.display_resources.at(-1).src,media.shortcode_media.owner.username,"reels",timestamp,type,reelsPath);
+                    }
                 }
             }
             else{
-                if(isPreview){
-                    openNewTab(data.shortcode_media.display_resources.at(-1).src);
+                if(isVideo && media.video_versions != null){
+                    if(isPreview){
+                        openNewTab(media.video_versions[0].url);
+                    }
+                    else{
+                        let type = 'mp4';
+                        saveFiles(media.video_versions[0].url,media.owner.username,"reels",timestamp,type,reelsPath);
+                    }
                 }
                 else{
-                    let type = 'jpg';
-                    saveFiles(data.shortcode_media.display_resources.at(-1).src,data.shortcode_media.owner.username,"reels",timestamp,type,reelsPath);
+                    if(isPreview){
+                        openNewTab(media.image_versions2.candidates[0].url);
+                    }
+                    else{
+                        let type = 'jpg';
+                        saveFiles(media.image_versions2.candidates[0].url,media.owner.username,"reels",timestamp,type,reelsPath);
+                    }
                 }
             }
 
@@ -1549,10 +1577,47 @@
                 },
                 onload: function(response) {
                     let obj = JSON.parse(response.response);
+                    console.log(obj);
 
                     if(obj.status === 'fail'){
-                        alert(`Request failed with API response:\n${obj.message}: ${obj.feedback_message}`);
+                        // alert(`Request failed with API response:\n${obj.message}: ${obj.feedback_message}`);
+                        console.log('Request with:','getBlobMediaWithQuery()',postShortCode);
+                        getBlobMediaWithQueryID(postShortCode).then((res) => {
+                            console.log(res);
+                            resolve({type:'query_id', data: res.xdt_api__v1__media__shortcode__web_info.items[0]});
+                        }).catch((err) => {
+                            reject(err);
+                        })
                     }
+                    else{
+                        resolve({type:'query_hash', data: obj.data});
+                    }
+                },
+                onerror: function(err){
+                    reject(err);
+                }
+            });
+        });
+    }
+
+    /**
+     * getBlobMediaWithQueryID
+     * Get list of all media files in post with post shortcode
+     *
+     * @param  {String}  postPath
+     * @return {Object}
+     */
+    function getBlobMediaWithQueryID(postPath){
+        return new Promise((resolve,reject)=>{
+            if(!postPath) reject("NOPATH");
+            let postShortCode = postPath;
+            let getURL = `https://www.instagram.com/graphql/query/?query_id=9496392173716084&variables={%22shortcode%22:%22${postShortCode}%22,%22__relay_internal__pv__PolarisFeedShareMenurelayprovider%22:true,%22__relay_internal__pv__PolarisIsLoggedInrelayprovider%22:true}`;
+
+            GM_xmlhttpRequest({
+                method: "GET",
+                url: getURL,
+                onload: function(response) {
+                    let obj = JSON.parse(response.response);
 
                     console.log(obj);
                     resolve(obj.data);
@@ -2208,32 +2273,64 @@
         return new Promise(async (resolve) => {
             $(`${selector} a`).remove();
             $(selector).append('<p id="_SNLOAD">'+ message +'</p>');
-            let media = await getBlobMedia(postURL);
+            let result = await getBlobMedia(postURL);
 
-            let idx = 1;
-            let resource = media.shortcode_media;
+            if(result.type === 'query_hash'){
+                let idx = 1;
+                let media = result.data;
+                let resource = media.shortcode_media;
 
-            // GraphVideo
-            if(resource.__typename == "GraphVideo" && resource.video_url){
-                $(selector).append(`<a media-id="${resource.id}" datetime="${resource.taken_at_timestamp}" data-blob="true" data-needed="direct" data-path="${resource.shortcode}" data-name="video" data-type="mp4" data-username="${resource.owner.username}" data-globalIndex="${idx}" href="javascript:;" data-href="${resource.video_url}"><img width="100" src="${resource.display_resources[1].src}" /><br/>- <span data-ih-locale="VID">${_i18n("VID")}</span> ${idx} -</a>`);
-                idx++;
-            }
-            // GraphImage
-            if(resource.__typename == "GraphImage"){
-                $(selector).append(`<a media-id="${resource.id}" datetime="${resource.taken_at_timestamp}" data-blob="true" data-needed="direct" data-path="${resource.shortcode}" data-name="photo" data-type="jpg" data-username="${resource.owner.username}" data-globalIndex="${idx}" href="javascript:;" data-href="${resource.display_resources[resource.display_resources.length - 1].src}"><img width="100" src="${resource.display_resources[1].src}" /><br/>- <span data-ih-locale="IMG">${_i18n("IMG")}</span> ${idx} -</a>`);
-                idx++;
-            }
-            // GraphSidecar
-            if(resource.__typename == "GraphSidecar" && resource.edge_sidecar_to_children){
-                for(let e of resource.edge_sidecar_to_children.edges){
-                    if(e.node.__typename == "GraphVideo"){
-                        $(selector).append(`<a media-id="${e.node.id}" datetime="${resource.taken_at_timestamp}" data-blob="true" data-needed="direct" data-path="${resource.shortcode}" data-name="video" data-type="mp4" data-username="${resource.owner.username}" data-globalIndex="${idx}" href="javascript:;" data-href="${e.node.video_url}"><img width="100" src="${e.node.display_resources[1].src}" /><br/>- <span data-ih-locale-title="VID">${_i18n("VID")}</span> ${idx} -</a>`);
-                    }
-
-                    if(e.node.__typename == "GraphImage"){
-                        $(selector).append(`<a media-id="${e.node.id}" datetime="${resource.taken_at_timestamp}" data-blob="true" data-needed="direct" data-path="${resource.shortcode}" data-name="photo" data-type="jpg" data-username="${resource.owner.username}" data-globalIndex="${idx}" href="javascript:;" data-href="${e.node.display_resources[e.node.display_resources.length - 1].src}"><img width="100" src="${e.node.display_resources[1].src}" /><br/>- <span data-ih-locale="IMG">${_i18n("IMG")}</span> ${idx} -</a>`);
-                    }
+                // GraphVideo
+                if(resource.__typename == "GraphVideo" && resource.video_url){
+                    $(selector).append(`<a media-id="${resource.id}" datetime="${resource.taken_at_timestamp}" data-blob="true" data-needed="direct" data-path="${resource.shortcode}" data-name="video" data-type="mp4" data-username="${resource.owner.username}" data-globalIndex="${idx}" href="javascript:;" data-href="${resource.video_url}"><img width="100" src="${resource.display_resources[1].src}" /><br/>- <span data-ih-locale="VID">${_i18n("VID")}</span> ${idx} -</a>`);
                     idx++;
+                }
+                // GraphImage
+                if(resource.__typename == "GraphImage"){
+                    $(selector).append(`<a media-id="${resource.id}" datetime="${resource.taken_at_timestamp}" data-blob="true" data-needed="direct" data-path="${resource.shortcode}" data-name="photo" data-type="jpg" data-username="${resource.owner.username}" data-globalIndex="${idx}" href="javascript:;" data-href="${resource.display_resources[resource.display_resources.length - 1].src}"><img width="100" src="${resource.display_resources[1].src}" /><br/>- <span data-ih-locale="IMG">${_i18n("IMG")}</span> ${idx} -</a>`);
+                    idx++;
+                }
+                // GraphSidecar
+                if(resource.__typename == "GraphSidecar" && resource.edge_sidecar_to_children){
+                    for(let e of resource.edge_sidecar_to_children.edges){
+                        if(e.node.__typename == "GraphVideo"){
+                            $(selector).append(`<a media-id="${e.node.id}" datetime="${resource.taken_at_timestamp}" data-blob="true" data-needed="direct" data-path="${resource.shortcode}" data-name="video" data-type="mp4" data-username="${resource.owner.username}" data-globalIndex="${idx}" href="javascript:;" data-href="${e.node.video_url}"><img width="100" src="${e.node.display_resources[1].src}" /><br/>- <span data-ih-locale-title="VID">${_i18n("VID")}</span> ${idx} -</a>`);
+                        }
+
+                        if(e.node.__typename == "GraphImage"){
+                            $(selector).append(`<a media-id="${e.node.id}" datetime="${resource.taken_at_timestamp}" data-blob="true" data-needed="direct" data-path="${resource.shortcode}" data-name="photo" data-type="jpg" data-username="${resource.owner.username}" data-globalIndex="${idx}" href="javascript:;" data-href="${e.node.display_resources[e.node.display_resources.length - 1].src}"><img width="100" src="${e.node.display_resources[1].src}" /><br/>- <span data-ih-locale="IMG">${_i18n("IMG")}</span> ${idx} -</a>`);
+                        }
+                        idx++;
+                    }
+                }
+            }
+            else{
+                let resource = result.data;
+
+                if(resource.carousel_media){
+                    console.log('carousel_media');
+                    resource.carousel_media.forEach((mda, ind)=>{
+                        let idx = ind+1;
+                        // Image
+                        if(mda.video_versions == null){
+                            $(selector).append(`<a media-id="${mda.pk}" datetime="${mda.taken_at}" data-blob="true" data-needed="direct" data-path="${resource.code}" data-name="photo" data-type="jpg" data-username="${resource.owner.username}" data-globalIndex="${idx}" href="javascript:;" data-href="${mda.image_versions2.candidates[0].url}"><img width="100" src="${mda.image_versions2.candidates[0].url}" /><br/>- <span data-ih-locale="IMG">${_i18n("IMG")}</span> ${idx} -</a>`);
+                        }
+                        // Video
+                        else{
+                            $(selector).append(`<a media-id="${mda.pk}" datetime="${mda.taken_at}" data-blob="true" data-needed="direct" data-path="${resource.code}" data-name="video" data-type="mp4" data-username="${resource.owner.username}" data-globalIndex="${idx}" href="javascript:;" data-href="${mda.video_versions[0].url}"><img width="100" src="${mda.image_versions2.candidates[0].url}" /><br/>- <span data-ih-locale="VID">${_i18n("VID")}</span> ${idx} -</a>`);
+                        }
+                    });
+                }
+                else{
+                    let idx = 1;
+                    // Image
+                    if(resource.video_versions == null){
+                        $(selector).append(`<a media-id="${resource.pk}" datetime="${resource.taken_at}" data-blob="true" data-needed="direct" data-path="${resource.code}" data-name="photo" data-type="jpg" data-username="${resource.owner.username}" data-globalIndex="${idx}" href="javascript:;" data-href="${resource.image_versions2.candidates[0].url}"><img width="100" src="${resource.image_versions2.candidates[0].url}" /><br/>- <span data-ih-locale="IMG">${_i18n("IMG")}</span> ${idx} -</a>`);
+                    }
+                    // Video
+                    else{
+                        $(selector).append(`<a media-id="${resource.pk}" datetime="${resource.taken_at}" data-blob="true" data-needed="direct" data-path="${resource.code}" data-name="video" data-type="mp4" data-username="${resource.owner.username}" data-globalIndex="${idx}" href="javascript:;" data-href="${resource.video_versions[0].url}"><img width="100" src="${resource.image_versions2.candidates[0].url}" /><br/>- <span data-ih-locale="VID">${_i18n("VID")}</span> ${idx} -</a>`);
+                    }
                 }
             }
 
@@ -2820,7 +2917,7 @@
                 e.preventDefault();
             }
 
-            // Hot key [Alt+S] to open the settings dialog
+            // Hot key [Alt+S] to download story resource
             if (e.keyCode == '83' && e.altKey){
                 if(location.href.match(/^(https:\/\/www\.instagram\.com\/stories\/)/ig) && $('.IG_DWSTORY').length > 0){
                     $('.IG_DWSTORY')?.click();
