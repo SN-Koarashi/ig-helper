@@ -5,7 +5,7 @@
 // @name:ja            IG助手
 // @name:ko            IG조수
 // @namespace          https://github.snkms.com/
-// @version            2.34.3
+// @version            2.34.4
 // @description        Downloading is possible for both photos and videos from posts, as well as for stories, reels or profile picture.
 // @description:zh-TW  一鍵下載對方 Instagram 貼文中的相片、影片甚至是他們的限時動態、連續短片及大頭貼圖片！
 // @description:zh-CN  一键下载对方 Instagram 帖子中的相片、视频甚至是他们的快拍、Reels及头像图片！
@@ -31,7 +31,7 @@
 // @resource           LOCALE_MANIFEST https://raw.githubusercontent.com/SN-Koarashi/ig-helper/master/locale/manifest.json
 // @supportURL         https://github.com/SN-Koarashi/ig-helper/
 // @contributionURL    https://ko-fi.com/snkoarashi
-// @icon               https://www.google.com/s2/favicons?domain=www.instagram.com
+// @icon               https://www.google.com/s2/favicons?domain=www.instagram.com&sz=32
 // @compatible         firefox >= 100
 // @compatible         chrome >= 100
 // @compatible         edge >= 100
@@ -2770,9 +2770,11 @@
                                 highlight: true,
                                 timeout: 5000,
                                 url: GM_info.script.downloadURL,
-                                image: "https://www.google.com/s2/favicons?domain=www.instagram.com&sz=256",
+                                zombieTimeout: 5000,
+                                zombieUrl: GM_info.script.downloadURL,
+                                image: "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a5/Instagram_icon.png/64px-Instagram_icon.png",
                                 onclick: (event) => {
-                                    event.preventDefault();
+                                    event?.preventDefault();
                                     const a = document.createElement("a");
                                     a.href = GM_info.script.downloadURL;
                                     a.setAttribute("download", 'main.js');
