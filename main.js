@@ -5,7 +5,7 @@
 // @name:ja            IG助手
 // @name:ko            IG조수
 // @namespace          https://github.snkms.com/
-// @version            2.33.1
+// @version            2.34.1
 // @description        Downloading is possible for both photos and videos from posts, as well as for stories, reels or profile picture.
 // @description:zh-TW  一鍵下載對方 Instagram 貼文中的相片、影片甚至是他們的限時動態、連續短片及大頭貼圖片！
 // @description:zh-CN  一键下载对方 Instagram 帖子中的相片、视频甚至是他们的快拍、Reels及头像图片！
@@ -14,6 +14,7 @@
 // @description:ro     Descărcarea este posibilă atât pentru fotografiile și videoclipurile din postări, cât și pentru storyuri, reels sau poze de profil.
 // @author             SN-Koarashi (5026)
 // @match              https://*.instagram.com/*
+// @grant              GM_info
 // @grant              GM_addStyle
 // @grant              GM_setValue
 // @grant              GM_getValue
@@ -21,6 +22,7 @@
 // @grant              GM_registerMenuCommand
 // @grant              GM_unregisterMenuCommand
 // @grant              GM_getResourceText
+// @grant              GM_notification
 // @grant              GM_openInTab
 // @connect            i.instagram.com
 // @connect            raw.githubusercontent.com
@@ -46,6 +48,7 @@
     // !!! DO NOT CHANGE THIS AREA !!!
     // PLEASE CHANGE SETTING WITH MENU
     const USER_SETTING = {
+        'CHECK_UPDATE': true,
         'AUTO_RENAME': true,
         'RENAME_PUBLISH_DATE': true,
         'DISABLE_VIDEO_LOOPING': false,
@@ -105,8 +108,10 @@
         locale[lang] = res;
         repaintingTranslations();
         registerMenuCommand();
+        checkingScriptUpdate(300);
     }).catch((err)=>{
         registerMenuCommand();
+        checkingScriptUpdate(300);
 
         if(!lang.startsWith('en')){
             console.error('getTranslationText catch error:', err);
@@ -2549,6 +2554,9 @@
     function translateText(lang){
         var eLocale = {
             "en-US": {
+                "NOTICE_UPDATE_TITLE": "Wololo! New version released.",
+                "NOTICE_UPDATE_CONTENT": "IG-Helper has released a new version, click here to update.",
+                "CHECK_UPDATE": "Check for Updates When Running the Script",
                 "RELOAD_SCRIPT": "Reload Script",
                 "DONATE": "Donate",
                 "FEEDBACK": "Feedback",
@@ -2720,6 +2728,65 @@
         },{
             accessKey: "r"
         }));
+    }
+
+    /**
+     * checkingScriptUpdate
+     * Check if there is a new version of the script and push notification
+     *
+     * @param  {Integer}  interval
+     * @return {void}
+     */
+    function checkingScriptUpdate(interval){
+        if(!USER_SETTING.CHECK_UPDATE) return;
+
+        const check_timestamp = GM_getValue('G_CHECK_TIMESTAMP') ?? new Date().getTime();
+        const now_time = new Date().getTime();
+
+        if(now_time > (parseInt(check_timestamp) + (interval * 1000))){
+            const currentVersion = GM_info.script.version;
+            const remoteScriptURL = 'https://raw.githubusercontent.com/SN-Koarashi/ig-helper/refs/heads/master/main.js';
+
+            GM_xmlhttpRequest({
+                method: "GET",
+                url: remoteScriptURL,
+                onload: function(response) {
+                    const remoteScript = response.responseText;
+                    const match = remoteScript.match(/\/\/\s+@version\s+([0-9.\-a-zA-Z]+)/i);
+
+                    if (match && match[1]) {
+                        const remoteVersion = match[1];
+                        console.log('Current version: ', currentVersion);
+                        console.log('Remote version: ', remoteVersion);
+
+                        if (remoteVersion !== currentVersion) {
+                            GM_notification({
+                                text: _i18n("NOTICE_UPDATE_CONTENT"),
+                                title: _i18n("NOTICE_UPDATE_TITLE"),
+                                highlight: true,
+                                timeout: 5000,
+                                url: GM_info.script.downloadURL,
+                                image: "https://www.google.com/s2/favicons?domain=www.instagram.com&sz=256",
+                                onclick: (event) => {
+                                    event.preventDefault();
+                                    const a = document.createElement("a");
+                                    a.href = GM_info.script.downloadURL;
+                                    a.setAttribute("download", 'main.js');
+                                    a.click();
+                                    a.remove();
+                                }
+                            });
+                        } else {
+                            console.log('there is no new update');
+                        }
+                    } else {
+                        console.error('Could not find version in the remote script.');
+                    }
+                }
+            });
+        }
+
+        GM_setValue('G_CHECK_TIMESTAMP', new Date().getTime());
     }
 
     /**
