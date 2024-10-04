@@ -1,7 +1,8 @@
 {
     "NOTICE_UPDATE_TITLE": "Wololo ! Nouvelle version publiée.",
     "NOTICE_UPDATE_CONTENT": "IG-Helper a publié une nouvelle version, cliquez ici pour mettre à jour.",
-    "CHECK_UPDATE": "Vérifier les mises à jour lors de l'exécution du script",
+    "CHECK_UPDATE": "Vérification des mises à jour du script",
+    "CHECK_UPDATE_INTRO": "Vérifiez les mises à jour lorsque le script est déclenché (vérifiez toutes les 300 secondes).\nLes notifications de mise à jour seront envoyées sous forme de notifications de bureau via le navigateur.",
     "RELOAD_SCRIPT": "Recharger le script",
     "DONATE": "Faire un don",
     "FEEDBACK": "Retours",
