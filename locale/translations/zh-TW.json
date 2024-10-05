@@ -2,6 +2,7 @@
     "NOTICE_UPDATE_TITLE": "嗚嚕嚕！新版本已發布。",
     "NOTICE_UPDATE_CONTENT": "IG小精靈已發布版本更新，點擊這裡以更新。",
     "CHECK_UPDATE": "檢查腳本更新",
+    "CHECK_UPDATE_MENU": "檢查更新",
     "CHECK_UPDATE_INTRO": "腳本觸發時檢查更新 (每300秒執行一次檢查)。\n更新通知將透過瀏覽器傳送桌面通知。",
     "RELOAD_SCRIPT": "重新載入腳本",
     "DONATE": "贊助",

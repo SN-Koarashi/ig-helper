@@ -2,6 +2,7 @@
     "NOTICE_UPDATE_TITLE": "呜噜噜！新版本已发布。",
     "NOTICE_UPDATE_CONTENT": "IG小助手已发布版本更新，点击这里以更新。",
     "CHECK_UPDATE": "检查脚本更新",
+    "CHECK_UPDATE_MENU": "检查更新",
     "CHECK_UPDATE_INTRO": "脚本触发时检查更新 (每300秒执行一次检查)。\n更新通知将透过浏览器传送桌面通知。",
     "RELOAD_SCRIPT": "重新载入脚本",
     "DONATE": "捐助",

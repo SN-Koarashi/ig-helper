@@ -2,6 +2,7 @@
     "NOTICE_UPDATE_TITLE": "Wololo! O nouă versiune a fost lansată.",
     "NOTICE_UPDATE_CONTENT": "IG-Helper a lansat o nouă versiune, dă click aici pentru a actualiza.",
     "CHECK_UPDATE": "Caută actualizări pentru script",
+    "CHECK_UPDATE_MENU": "Caută actualizări",
     "CHECK_UPDATE_INTRO": "Caută actualizări atunci când scriptul este activat (verifică la fiecare 300 de secunde).\nNotificările pentru actualizare vor fi trimise ca notificări desktop prin intermediul browserului.",
     "RELOAD_SCRIPT": "Reîncarcă scriptul",
     "DONATE": "Donează",

@@ -2,6 +2,7 @@
     "NOTICE_UPDATE_TITLE": "Wololo! Nuova versione rilasciata.",
     "NOTICE_UPDATE_CONTENT": "IG-Helper ha rilasciato una nuova versione, clicca qui per aggiornare.",
     "CHECK_UPDATE": "Controllo aggiornamenti dello script",
+    "CHECK_UPDATE_MENU": "Controllo aggiornamenti",
     "CHECK_UPDATE_INTRO": "Controlla gli aggiornamenti quando lo script viene attivato (controlla ogni 300 secondi).\nLe notifiche sugli aggiornamenti verranno inviate come notifiche desktop tramite il browser.",
     "RELOAD_SCRIPT": "Ricarica script",
     "DONATE": "Dona",

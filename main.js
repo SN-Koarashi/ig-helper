@@ -5,7 +5,7 @@
 // @name:ja            IG助手
 // @name:ko            IG조수
 // @namespace          https://github.snkms.com/
-// @version            2.36.1
+// @version            2.36.2
 // @description        Downloading is possible for both photos and videos from posts, as well as for stories, reels or profile picture.
 // @description:zh-TW  一鍵下載對方 Instagram 貼文中的相片、影片甚至是他們的限時動態、連續短片及大頭貼圖片！
 // @description:zh-CN  一键下载对方 Instagram 帖子中的相片、视频甚至是他们的快拍、Reels及头像图片！
@@ -2581,6 +2581,7 @@
                 "NOTICE_UPDATE_TITLE": "Wololo! New version released.",
                 "NOTICE_UPDATE_CONTENT": "IG-Helper has released a new version, click here to update.",
                 "CHECK_UPDATE": "Checking for Script Updates",
+                "CHECK_UPDATE_MENU": "Checking for Updates",
                 "CHECK_UPDATE_INTRO": "Check for updates when the script is triggered (check every 300 seconds).\nUpdate notifications will be sent as desktop notifications through the browser.",
                 "RELOAD_SCRIPT": "Reload Script",
                 "DONATE": "Donate",
@@ -2750,6 +2751,12 @@
             accessKey: "f"
         }));
 
+        GM_menuId.push(GM_registerMenuCommand(_i18n('CHECK_UPDATE_MENU'), () => {
+            callNotification();
+        },{
+            accessKey: "c"
+        }));
+
         GM_menuId.push(GM_registerMenuCommand(_i18n('RELOAD_SCRIPT'), () => {
             reloadScript();
         },{
@@ -2772,51 +2779,59 @@
 
         if(now_time > (parseInt(check_timestamp) + (interval * 1000))){
             GM_setValue('G_CHECK_TIMESTAMP', new Date().getTime());
-
-            const currentVersion = GM_info.script.version;
-            const remoteScriptURL = 'https://raw.githubusercontent.com/SN-Koarashi/ig-helper/refs/heads/master/main.js';
-
-            GM_xmlhttpRequest({
-                method: "GET",
-                url: remoteScriptURL,
-                onload: function(response) {
-                    const remoteScript = response.responseText;
-                    const match = remoteScript.match(/\/\/\s+@version\s+([0-9.\-a-zA-Z]+)/i);
-
-                    if (match && match[1]) {
-                        const remoteVersion = match[1];
-                        console.log('Current version: ', currentVersion);
-                        console.log('Remote version: ', remoteVersion);
-
-                        if (remoteVersion !== currentVersion) {
-                            GM_notification({
-                                text: _i18n("NOTICE_UPDATE_CONTENT"),
-                                title: _i18n("NOTICE_UPDATE_TITLE"),
-                                tag: 'ig_helper_notice',
-                                highlight: true,
-                                timeout: 5000,
-                                url: GM_info.script.downloadURL,
-                                zombieTimeout: 5000,
-                                zombieUrl: GM_info.script.downloadURL,
-                                image: "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a5/Instagram_icon.png/64px-Instagram_icon.png",
-                                onclick: (event) => {
-                                    event?.preventDefault();
-                                    const a = document.createElement("a");
-                                    a.href = GM_info.script.downloadURL;
-                                    a.setAttribute("download", 'main.js');
-                                    a.click();
-                                    a.remove();
-                                }
-                            });
-                        } else {
-                            console.log('there is no new update');
-                        }
-                    } else {
-                        console.error('Could not find version in the remote script.');
-                    }
-                }
-            });
+            callNotification();
         }
+    }
+
+    /**
+     * callNotification
+     * call desktop notification by browser
+     *
+     * @return {void}
+     */
+    function callNotification(){
+        const currentVersion = GM_info.script.version;
+        const remoteScriptURL = 'https://raw.githubusercontent.com/SN-Koarashi/ig-helper/refs/heads/master/main.js';
+
+        GM_xmlhttpRequest({
+            method: "GET",
+            url: remoteScriptURL,
+            onload: function(response) {
+                const remoteScript = response.responseText;
+                const match = remoteScript.match(/\/\/\s+@version\s+([0-9.\-a-zA-Z]+)/i);
+
+                if (match && match[1]) {
+                    const remoteVersion = match[1];
+                    console.log('Current version: ', currentVersion);
+                    console.log('Remote version: ', remoteVersion);
+
+                    if (remoteVersion !== currentVersion) {
+                        GM_notification({
+                            text: _i18n("NOTICE_UPDATE_CONTENT"),
+                            title: _i18n("NOTICE_UPDATE_TITLE"),
+                            tag: 'ig_helper_notice',
+                            highlight: true,
+                            timeout: 5000,
+                            url: GM_info.script.downloadURL,
+                            zombieTimeout: 5000,
+                            zombieUrl: GM_info.script.downloadURL,
+                            image: "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a5/Instagram_icon.png/64px-Instagram_icon.png",
+                            onclick: (event) => {
+                                event?.preventDefault();
+                                var w = GM_openInTab(GM_info.script.downloadURL);
+                                setTimeout(()=>{
+                                    w.close();
+                                }, 150);
+                            }
+                        });
+                    } else {
+                        console.log('there is no new update');
+                    }
+                } else {
+                    console.error('Could not find version in the remote script.');
+                }
+            }
+        });
     }
 
     /**
