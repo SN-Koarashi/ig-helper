@@ -57,5 +57,7 @@
     "SCROLL_BUTTON_INTRO": "Habilitar botones de desplazamiento para la esquina inferior derecha de la página de Reels.",
     "FORCE_RESOURCE_VIA_MEDIA_INTRO": "La API de medios intentará obtener la mejor calidad posible de foto o video, pero puede tardar más en cargar.",
     "USE_BLOB_FETCH_WHEN_MEDIA_RATE_LITMIT_INTRO": "Cuando la API de medios alcanza su límite de tasa o no se puede usar por otras razones, se utilizará la API de recuperación forzada para descargar recursos (la calidad del recurso puede ser ligeramente menor).",
-    "NEW_TAB_ALWAYS_FORCE_MEDIA_IN_POST_INTRO": "El botón [Abrir en una nueva pestaña] en publicaciones siempre utilizará la API de medios para obtener recursos de alta resolución."
+    "NEW_TAB_ALWAYS_FORCE_MEDIA_IN_POST_INTRO": "El botón [Abrir en una nueva pestaña] en publicaciones siempre utilizará la API de medios para obtener recursos de alta resolución.",
+    "SKIP_VIEW_STORY_CONFIRM": "Saltar la página de confirmación para ver una historia/destacado",
+    "SKIP_VIEW_STORY_CONFIRM_INTRO": "Saltar automáticamente cuando se muestra la página de confirmación en la historia o en el destacado."
 }

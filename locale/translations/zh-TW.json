@@ -57,5 +57,7 @@
     "SCROLL_BUTTON_INTRO": "為連續短片頁面的右下角啟用上下捲動按鈕。",
     "FORCE_RESOURCE_VIA_MEDIA_INTRO": "Media API 將嘗試獲取盡可能最高品質的照片或影片，但加載時間會更長。",
     "USE_BLOB_FETCH_WHEN_MEDIA_RATE_LITMIT_INTRO": "當 Media API 到達速率限制或因為其他原因而無法下載時，則使用強制提取API下載資源 (資源品質略低)。",
-    "NEW_TAB_ALWAYS_FORCE_MEDIA_IN_POST_INTRO": "在貼文中的「在新分頁中開啟」功能將一律使用 Media API 取得高解析度資源"
+    "NEW_TAB_ALWAYS_FORCE_MEDIA_IN_POST_INTRO": "在貼文中的「在新分頁中開啟」功能將一律使用 Media API 取得高解析度資源",
+    "SKIP_VIEW_STORY_CONFIRM": "自動跳過在限時動態/精選動態中顯示的確認頁面",
+    "SKIP_VIEW_STORY_CONFIRM_INTRO": "在檢視限時動態/精選動態時，若有確認頁面時將自動跳過"
 }

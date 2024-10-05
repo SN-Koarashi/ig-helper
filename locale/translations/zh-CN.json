@@ -57,5 +57,7 @@
     "SCROLL_BUTTON_INTRO": "为 Reels 页面的右下角启用上下卷动按钮。",
     "FORCE_RESOURCE_VIA_MEDIA_INTRO": "Media API 将尝试获取尽可能最高质量的照片或视频，但加载时间会更长。",
     "USE_BLOB_FETCH_WHEN_MEDIA_RATE_LITMIT_INTRO": "当 Media API 到达速率限制或因为其他原因而无法下载时，则使用强制获取API下载资源 (资源质量略低)。",
-    "NEW_TAB_ALWAYS_FORCE_MEDIA_IN_POST_INTRO": "在帖子中的「在新选项卡中打开」功能将一律使用 Media API 取得高分辨率资源"
+    "NEW_TAB_ALWAYS_FORCE_MEDIA_IN_POST_INTRO": "在帖子中的「在新选项卡中打开」功能将一律使用 Media API 取得高分辨率资源",
+    "SKIP_VIEW_STORY_CONFIRM": "自动跳过在快拍/快拍精选中显示的确认页面",
+    "SKIP_VIEW_STORY_CONFIRM_INTRO": "在查看快拍/快拍精选时，如果有确认页面时会自动跳过"
 }

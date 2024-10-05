@@ -57,5 +57,7 @@
     "SCROLL_BUTTON_INTRO": "Abilita i pulsanti di scorrimento per l'angolo inferiore destro della pagina dei Reels.",
     "FORCE_RESOURCE_VIA_MEDIA_INTRO": "L'API di Media cercherà di ottenere la migliore qualità possibile per foto o video, ma potrebbe richiedere più tempo per il caricamento.",
     "USE_BLOB_FETCH_WHEN_MEDIA_RATE_LITMIT_INTRO": "Quando l'API di Media raggiunge il suo limite di velocità o non può essere utilizzata per altri motivi, verrà utilizzata l'API di recupero forzato per scaricare le risorse (la qualità della risorsa potrebbe essere leggermente inferiore).",
-    "NEW_TAB_ALWAYS_FORCE_MEDIA_IN_POST_INTRO": "Il pulsante [Apri in una nuova scheda] nei post utilizzerà sempre l'API di Media per ottenere risorse ad alta risoluzione."
+    "NEW_TAB_ALWAYS_FORCE_MEDIA_IN_POST_INTRO": "Il pulsante [Apri in una nuova scheda] nei post utilizzerà sempre l'API di Media per ottenere risorse ad alta risoluzione.",
+    "SKIP_VIEW_STORY_CONFIRM": "Salta la pagina di conferma per visualizzare una storia/risalto",
+    "SKIP_VIEW_STORY_CONFIRM_INTRO": "Salta automaticamente quando la pagina di conferma viene mostrata nella storia o nel risalto."
 }

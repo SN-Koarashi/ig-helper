@@ -5,7 +5,7 @@
 // @name:ja            IG助手
 // @name:ko            IG조수
 // @namespace          https://github.snkms.com/
-// @version            2.35.2
+// @version            2.36.1
 // @description        Downloading is possible for both photos and videos from posts, as well as for stories, reels or profile picture.
 // @description:zh-TW  一鍵下載對方 Instagram 貼文中的相片、影片甚至是他們的限時動態、連續短片及大頭貼圖片！
 // @description:zh-CN  一键下载对方 Instagram 帖子中的相片、视频甚至是他们的快拍、Reels及头像图片！
@@ -61,7 +61,8 @@
         'SCROLL_BUTTON': true,
         'FORCE_RESOURCE_VIA_MEDIA': false,
         'USE_BLOB_FETCH_WHEN_MEDIA_RATE_LITMIT': false,
-        'NEW_TAB_ALWAYS_FORCE_MEDIA_IN_POST': false
+        'NEW_TAB_ALWAYS_FORCE_MEDIA_IN_POST': false,
+        'SKIP_VIEW_STORY_CONFIRM': false
     };
     const CHILD_NODES = ['RENAME_PUBLISH_DATE', 'USE_BLOB_FETCH_WHEN_MEDIA_RATE_LITMIT', 'NEW_TAB_ALWAYS_FORCE_MEDIA_IN_POST'];
     var VIDEO_VOLUME = (GM_getValue('G_VIDEO_VOLUME'))?GM_getValue('G_VIDEO_VOLUME'):1;
@@ -214,7 +215,18 @@
                         onHighlightsStoryThumbnail(false);
                     },checkInterval);
 
-                    if($(".IG_DWHISTORY").length) setTimeout(()=>{pageLoaded = true;},150);
+                    if($(".IG_DWHISTORY").length){
+                        setTimeout(()=>{
+                            if(USER_SETTING.SKIP_VIEW_STORY_CONFIRM){
+                                var $viewStoryButton = $('div[id^="mount"] section > div > div div[role="button"]').filter(function(){
+                                    return $(this).children().length === 0
+                                });
+                                $viewStoryButton?.click();
+                            }
+
+                            pageLoaded = true;
+                        },150)
+                    };
                 }
                 else if(location.href.match(/^(https:\/\/www\.instagram\.com\/stories\/)/ig)){
                     console.log('isStory');
@@ -241,7 +253,18 @@
                         }, 150);
                     }
 
-                    if($(".IG_DWSTORY").length) setTimeout(()=>{pageLoaded = true;},150);
+                    if($(".IG_DWSTORY").length){
+                        setTimeout(()=>{
+                            if(USER_SETTING.SKIP_VIEW_STORY_CONFIRM){
+                                var $viewStoryButton = $('div[id^="mount"] section > div > div div[role="button"]').filter(function(){
+                                    return $(this).children().length === 0
+                                });
+                                $viewStoryButton?.click();
+                            }
+
+                            pageLoaded = true;
+                        },150);
+                    }
                 }
                 else{
                     pageLoaded = false;
@@ -2613,7 +2636,9 @@
                 "SCROLL_BUTTON_INTRO": "Enable scroll buttons for the lower right corner of the Reels page.",
                 "FORCE_RESOURCE_VIA_MEDIA_INTRO": "The Media API will try to get the highest quality photo or video possible, but it may take longer to load.",
                 "USE_BLOB_FETCH_WHEN_MEDIA_RATE_LITMIT_INTRO": "When the Media API reaches its rate limit or cannot be used for other reasons, the Forced Fetch API will be used to download resources (the resource quality may be slightly lower).",
-                "NEW_TAB_ALWAYS_FORCE_MEDIA_IN_POST_INTRO": "The [Open in New Tab] button in posts will always use the Media API to obtain high-resolution resources."
+                "NEW_TAB_ALWAYS_FORCE_MEDIA_IN_POST_INTRO": "The [Open in New Tab] button in posts will always use the Media API to obtain high-resolution resources.",
+                "SKIP_VIEW_STORY_CONFIRM": "Skip the Confirmation Page for Viewing a Story/Highlight",
+                "SKIP_VIEW_STORY_CONFIRM_INTRO": "Automatically skip when confirmation page is shown in story or highlight."
             }
         };
 
@@ -2767,7 +2792,7 @@
                             GM_notification({
                                 text: _i18n("NOTICE_UPDATE_CONTENT"),
                                 title: _i18n("NOTICE_UPDATE_TITLE"),
-								tag: 'ig_helper_notice',
+                                tag: 'ig_helper_notice',
                                 highlight: true,
                                 timeout: 5000,
                                 url: GM_info.script.downloadURL,

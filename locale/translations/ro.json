@@ -57,5 +57,7 @@
     "SCROLL_BUTTON_INTRO": "Activează butoanele de derulare pentru colțul din dreapta jos al paginii Reels.",
     "FORCE_RESOURCE_VIA_MEDIA_INTRO": "Media API va încerca să obțină cea mai înaltă calitate posibilă pentru fotografii sau videoclipuri, dar încărcarea va dura mai mult.",
     "USE_BLOB_FETCH_WHEN_MEDIA_RATE_LITMIT_INTRO": "Când Media API atinge limita de rată sau nu poate fi folosit din alte motive, Forced Fetch API este folosit pentru a descărca resursele (calitatea resurselor este puțin mai scăzută).",
-    "NEW_TAB_ALWAYS_FORCE_MEDIA_IN_POST_INTRO": "Butonul [Deschide într-o filă nouă] în postări va folosi întotdeauna Media API pentru a obține resursele la rezoluție înaltă."
+    "NEW_TAB_ALWAYS_FORCE_MEDIA_IN_POST_INTRO": "Butonul [Deschide într-o filă nouă] în postări va folosi întotdeauna Media API pentru a obține resursele la rezoluție înaltă.",
+    "SKIP_VIEW_STORY_CONFIRM": "Omiti pagina de confirmare pentru vizualizarea unei povești/sublinieri",
+    "SKIP_VIEW_STORY_CONFIRM_INTRO": "Omiți automat atunci când pagina de confirmare este afișată în poveste sau subliniere."
 }
