@@ -5,7 +5,7 @@
 // @name:ja            IG助手
 // @name:ko            IG조수
 // @namespace          https://github.snkms.com/
-// @version            2.36.5
+// @version            2.36.6
 // @description        Downloading is possible for both photos and videos from posts, as well as for stories, reels or profile picture.
 // @description:zh-TW  一鍵下載對方 Instagram 貼文中的相片、影片甚至是他們的限時動態、連續短片及大頭貼圖片！
 // @description:zh-CN  一键下载对方 Instagram 帖子中的相片、视频甚至是他们的快拍、Reels及头像图片！
@@ -1407,10 +1407,17 @@
                 method: "GET",
                 url: getURL,
                 onload: function(response) {
-                    let obj = JSON.parse(response.response);
-                    resolve(obj);
+                    try{
+                        let obj = JSON.parse(response.response);
+                        resolve(obj);
+                    }
+                    catch(err){
+                        logger('getHighlightStories()','reject',err.message);
+                        reject(err);
+                    }
                 },
                 onerror: function(err){
+                    logger('getHighlightStories()','reject',err);
                     reject(err);
                 }
             });
@@ -1432,10 +1439,18 @@
                 method: "GET",
                 url: getURL,
                 onload: function(response) {
-                    let obj = JSON.parse(response.response);
-                    resolve(obj);
+                    try{
+                        let obj = JSON.parse(response.response);
+                        logger('getStories()', obj);
+                        resolve(obj);
+                    }
+                    catch(err){
+                        logger('getStories()', 'reject', err.message);
+                        reject(err);
+                    }
                 },
                 onerror: function(err){
+                    logger('getStories()', 'reject', err);
                     reject(err);
                 }
             });
@@ -1467,6 +1482,7 @@
                     });
 
                     if(result != null){
+                        logger('getUserId()', result);
                         resolve(result);
                     }
                     else{
@@ -1478,6 +1494,7 @@
                     }
                 },
                 onerror: function(err){
+                    logger('getUserId()', 'reject', err);
                     reject(err);
                 }
             });
@@ -1509,17 +1526,21 @@
                         if(hasUser != null){
                             let userInfo = obj?.data;
                             userInfo.user.pk = userInfo.user.id;
+                            logger('getUserIdWithAgent()', obj);
                             resolve(userInfo);
                         }
                         else{
+                            logger('getUserIdWithAgent()','reject','undefined');
                             reject('undefined');
                         }
                     }
                     catch(err){
+                        logger('getUserIdWithAgent()','reject',err.message);
                         reject(err);
                     }
                 },
                 onerror: function(err){
+                    logger('getUserIdWithAgent()','reject',err);
                     reject(err);
                 }
             });
@@ -1544,15 +1565,24 @@
                     'User-Agent': 'Mozilla/5.0 (Linux; Android 10; Pixel 7 XL)Build/RP1A.20845.002; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/5.0 Chrome/117.0.5938.60 Mobile Safari/537.36 Instagram 307.0.0.34.111'
                 },
                 onload: function(response) {
-                    let obj = JSON.parse(response.response);
-                    if(obj.status !== 'ok'){
-                        reject('faild');
+                    try{
+                        let obj = JSON.parse(response.response);
+                        if(obj.status !== 'ok'){
+                            logger('getUserHighSizeProfile()','reject',obj);
+                            reject('faild');
+                        }
+                        else{
+                            logger('getUserHighSizeProfile()',obj);
+                            resolve(obj.user.hd_profile_pic_url_info?.url);
+                        }
                     }
-                    else{
-                        resolve(obj.user.hd_profile_pic_url_info?.url);
+                    catch(err){
+                        logger('getUserHighSizeProfile()','reject',err);
+                        reject(err);
                     }
                 },
                 onerror: function(err){
+                    logger('getUserHighSizeProfile()','reject',err);
                     reject(err);
                 }
             });
@@ -1576,10 +1606,18 @@
                 method: "GET",
                 url: getURL,
                 onload: function(response) {
-                    let obj = JSON.parse(response.response);
-                    resolve(obj.data.shortcode_media.owner.username);
+                    try{
+                        let obj = JSON.parse(response.response);
+                        logger('getPostOwner()',obj);
+                        resolve(obj.data.shortcode_media.owner.username);
+                    }
+                    catch(err){
+                        logger('getPostOwner()','reject',err.message);
+                        reject(err);
+                    }
                 },
                 onerror: function(err){
+                    logger('getPostOwner()','reject',err);
                     reject(err);
                 }
             });
@@ -1606,24 +1644,30 @@
                     "User-Agent": "Mozilla/5.0 (Linux; Android 10; Pixel 7 XL)Build/RP1A.20845.002; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/5.0 Chrome/117.0.5938.60 Mobile Safari/537.36 Instagram 307.0.0.34.111"
                 },
                 onload: function(response) {
-                    let obj = JSON.parse(response.response);
-                    logger(obj);
+                    try{
+                        let obj = JSON.parse(response.response);
+                        logger(obj);
 
-                    if(obj.status === 'fail'){
-                        // alert(`Request failed with API response:\n${obj.message}: ${obj.feedback_message}`);
-                        logger('Request with:','getBlobMediaWithQuery()',postShortCode);
-                        getBlobMediaWithQueryID(postShortCode).then((res) => {
-                            logger(res);
-                            resolve({type:'query_id', data: res.xdt_api__v1__media__shortcode__web_info.items[0]});
-                        }).catch((err) => {
-                            reject(err);
-                        })
+                        if(obj.status === 'fail'){
+                            // alert(`Request failed with API response:\n${obj.message}: ${obj.feedback_message}`);
+                            logger('Request with:','getBlobMediaWithQuery()',postShortCode);
+                            getBlobMediaWithQueryID(postShortCode).then((res) => {
+                                resolve({type:'query_id', data: res.xdt_api__v1__media__shortcode__web_info.items[0]});
+                            }).catch((err) => {
+                                reject(err);
+                            })
+                        }
+                        else{
+                            resolve({type:'query_hash', data: obj.data});
+                        }
                     }
-                    else{
-                        resolve({type:'query_hash', data: obj.data});
+                    catch(err){
+                        logger('getBlobMedia()','reject',err.message);
+                        reject(err);
                     }
                 },
                 onerror: function(err){
+                    logger('getBlobMedia()','reject',err);
                     reject(err);
                 }
             });
@@ -1651,19 +1695,27 @@
                     'X-IG-App-ID': getAppID()
                 },
                 onload: function(response) {
-                    let obj = JSON.parse(response.response);
-                    logger(obj);
+                    try{
+                        let obj = JSON.parse(response.response);
+                        logger(obj);
 
-                    if(obj.status === 'fail'){
-                        alert(`getBlobMediaWithQueryID(): Request failed with API response:\n${obj.message}: ${obj.feedback_message}`);
-                        logger(`Request failed with API response ${obj.message}: ${obj.feedback_message}`);
-                        reject(response);
+                        if(obj.status === 'fail'){
+                            alert(`getBlobMediaWithQueryID(): Request failed with API response:\n${obj.message}: ${obj.feedback_message}`);
+                            logger(`Request failed with API response ${obj.message}: ${obj.feedback_message}`);
+                            reject(response);
+                        }
+                        else{
+                            logger('getBlobMediaWithQueryID()',obj.data);
+                            resolve(obj.data);
+                        }
                     }
-                    else{
-                        resolve(obj.data);
+                    catch(err){
+                        logger('getBlobMediaWithQueryID()','reject',err.message);
+                        reject(err);
                     }
                 },
                 onerror: function(err){
+                    logger('getBlobMediaWithQueryID()','reject',err);
                     reject(err);
                 }
             });
@@ -1763,6 +1815,7 @@
 
             if(mediaId == null){
                 alert("Can not call Media API because of the media id is invalid.");
+                logger('getMediaInfo()','reject','Can not call Media API because of the media id is invalid.');
 
                 updateLoadingBar(false);
                 reject(-1);
@@ -1770,7 +1823,7 @@
             }
             if(getAppID() == null){
                 alert("Can not call Media API because of the app id is invalid.");
-
+                logger('getMediaInfo()','reject','Can not call Media API because of the app id is invalid.');
                 updateLoadingBar(false);
                 reject(-1);
                 return;
@@ -1787,14 +1840,17 @@
                 onload: function(response) {
                     if(response.finalUrl == getURL){
                         let obj = JSON.parse(response.response);
+                        logger('getMediaInfo()', obj);
                         resolve(obj);
                     }
                     else{
                         let finalURL = new URL(response.finalUrl);
                         if(finalURL.pathname.startsWith('/accounts/login')){
+                            logger('getMediaInfo()', 'reject', 'The account must be logged in to access Media API.');
                             alert("The account must be logged in to access Media API.");
                         }
                         else{
+                            logger('getMediaInfo()', 'reject', 'Unable to retrieve content because the API was redirected to "'+response.finalUrl+'"');
                             alert('Unable to retrieve content because the API was redirected to "'+response.finalUrl+'"');
                         }
                         updateLoadingBar(false);
@@ -1802,6 +1858,7 @@
                     }
                 },
                 onerror: function(err){
+                    logger('getMediaInfo()', 'reject', err);
                     resolve(err);
                 }
             });
@@ -2688,6 +2745,7 @@
                     }
                 },
                 onerror: function(err){
+                    logger('getTranslationText()', 'reject', err);
                     reject(err);
                 }
             });
