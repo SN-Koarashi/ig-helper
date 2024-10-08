@@ -5,7 +5,7 @@
 // @name:ja            IG助手
 // @name:ko            IG조수
 // @namespace          https://github.snkms.com/
-// @version            2.36.4
+// @version            2.36.5
 // @description        Downloading is possible for both photos and videos from posts, as well as for stories, reels or profile picture.
 // @description:zh-TW  一鍵下載對方 Instagram 貼文中的相片、影片甚至是他們的限時動態、連續短片及大頭貼圖片！
 // @description:zh-CN  一键下载对方 Instagram 帖子中的相片、视频甚至是他们的快拍、Reels及头像图片！
@@ -89,6 +89,7 @@
     var firstStarted = false;
     var pageLoaded = false;
 
+    var GL_logger = [];
     var GL_referrer;
     var GL_postPath;
     var GL_username;
@@ -131,7 +132,7 @@
         }
 
         if(currentURL != location.href || !firstStarted || !pageLoaded){
-            console.log('Main Timer', 'trigging');
+            logger('Main Timer', 'trigging');
 
             clearInterval(GL_repeat);
             pageLoaded = false;
@@ -142,7 +143,7 @@
             if(location.href.startsWith("https://www.instagram.com/p/") || location.pathname.match(/^\/(.*?)\/p\//ig) || location.href.startsWith("https://www.instagram.com/reel/")){
                 GL_dataCache.stories = {};
 
-                console.log('isDialog');
+                logger('isDialog');
 
                 // This is a delayed function call that prevents the dialog element from appearing before the function is called.
                 var dialogTimer = setInterval(()=>{
@@ -169,7 +170,7 @@
             }
 
             if(location.href.startsWith("https://www.instagram.com/reels/")){
-                console.log('isReels');
+                logger('isReels');
                 setTimeout(()=>{
                     onReels(false);
                 },150);
@@ -181,7 +182,7 @@
 
                 let hasReferrer = GL_referrer?.match(/^\/stories\//ig) != null;
 
-                console.log('isHomepage', hasReferrer);
+                logger('isHomepage', hasReferrer);
                 setTimeout(()=>{
                     onReadyMyDW(false, hasReferrer);
 
@@ -196,7 +197,7 @@
                 pageLoaded = true;
             }
             if($('header > section:first img[alt]').length && location.pathname.match(/^(\/)([0-9A-Za-z\.\-_]+)\/?(tagged|reels|saved)?\/?$/ig) && !location.pathname.match(/^(\/explore\/?$|\/stories(\/.*)?$|\/p\/)/ig)) {
-                console.log('isProfile');
+                logger('isProfile');
                 setTimeout(()=>{
                     onProfileAvatar(false);
                 },150);
@@ -208,7 +209,7 @@
                 if(location.href.match(/^(https:\/\/www\.instagram\.com\/stories\/highlights\/)/ig)){
                     GL_dataCache.highlights = {};
 
-                    console.log('isHighlightsStory');
+                    logger('isHighlightsStory');
 
                     onHighlightsStory(false);
                     GL_repeat = setInterval(()=>{
@@ -229,7 +230,7 @@
                     };
                 }
                 else if(location.href.match(/^(https:\/\/www\.instagram\.com\/stories\/)/ig)){
-                    console.log('isStory');
+                    logger('isStory');
 
                     /*
                      *
@@ -348,7 +349,7 @@
             updateLoadingBar(true);
 
             if(GL_dataCache.highlights[highlightId]){
-                console.log('Fetch from memory cache:', highlightId);
+                logger('Fetch from memory cache:', highlightId);
 
                 let totIndex = GL_dataCache.highlights[highlightId].data.reels_media[0].items.length;
                 username = GL_dataCache.highlights[highlightId].data.reels_media[0].owner.username;
@@ -399,7 +400,7 @@
                         alert('Fetch failed from Media API. API response message: ' + result.message);
                     }
 
-                    console.log(result);
+                    logger(result);
                 }
             }
             else{
@@ -462,7 +463,7 @@
                     if(USER_SETTING.MODIFY_VIDEO_VOLUME){
                         $element.find('video').each(function(){
                             if(!$(this).data('modify')){
-                                console.log('(highlight) Added video event listener #modify');
+                                logger('(highlight) Added video event listener #modify');
                                 this.volume = VIDEO_VOLUME;
 
                                 $(this).on('play',function(){
@@ -502,7 +503,7 @@
             updateLoadingBar(true);
 
             if(GL_dataCache.highlights[highlightId]){
-                console.log('Fetch from memory cache:', highlightId);
+                logger('Fetch from memory cache:', highlightId);
 
                 let totIndex = GL_dataCache.highlights[highlightId].data.reels_media[0].items.length;
                 username = GL_dataCache.highlights[highlightId].data.reels_media[0].owner.username;
@@ -538,7 +539,7 @@
                         alert('Fetch failed from Media API. API response message: ' + result.message);
                     }
 
-                    console.log(result);
+                    logger(result);
                 }
             }
             else{
@@ -614,13 +615,13 @@
                 /*
                 let latest_reel_media = stories.data.reels_media[0].latest_reel_media;
                 let last_seen = stories.data.reels_media[0].seen;
-                console.log(stories);
+                logger(stories);
 
                 if(urlID == null){
                     mediaId = stories.data.reels_media[0].items.filter(function(item, index){
                         return item.taken_at_timestamp === last_seen && item.taken_at_timestamp !== latest_reel_media || last_seen === latest_reel_media && index === 0;
                     })?.at(0)?.id;
-                    console.log('nula', mediaId);
+                    logger('nula', mediaId);
                 }
                 else{
                     stories.data.reels_media[0].items.forEach(item => {
@@ -709,7 +710,7 @@
                     else{
                         alert('Fetch failed from Media API. API response message: ' + result.message);
                     }
-                    console.log(result);
+                    logger(result);
                 }
 
                 updateLoadingBar(false);
@@ -723,7 +724,7 @@
                 let targetURL = location.pathname.replace(/\/$/ig,'').split("/").at(-1);
 
                 if(GL_dataCache.stories[username] && !isForce){
-                    console.log('Fetch from memory cache:', username);
+                    logger('Fetch from memory cache:', username);
                     GL_dataCache.stories[username].data.reels_media[0].items.forEach(item => {
                         if(item.id == targetURL){
                             videoURL = item.video_resources[0].src;
@@ -734,7 +735,7 @@
                     });
 
                     if(videoURL.length == 0){
-                        console.log('Memory cache not found, try fetch from API:', username);
+                        logger('Memory cache not found, try fetch from API:', username);
                         onStory(true,true);
                         return;
                     }
@@ -896,7 +897,7 @@
                     if(USER_SETTING.MODIFY_VIDEO_VOLUME){
                         $element.find('video').each(function(){
                             if(!$(this).data('modify')){
-                                console.log('(story) Added video event listener #modify');
+                                logger('(story) Added video event listener #modify');
                                 this.volume = VIDEO_VOLUME;
 
                                 $(this).on('play',function(){
@@ -1012,7 +1013,7 @@
                         alert('Fetch failed from Media API. API response message: ' + result.message);
                     }
 
-                    console.log(result);
+                    logger(result);
                 }
 
                 updateLoadingBar(false);
@@ -1020,7 +1021,7 @@
             }
 
             if(GL_dataCache.stories[username] && !isForce){
-                console.log('Fetch from memory cache:', username);
+                logger('Fetch from memory cache:', username);
                 GL_dataCache.stories[username].data.reels_media[0].items.forEach(item => {
                     if(item.id == targetURL){
                         videoThumbnailURL = item.display_url;
@@ -1031,7 +1032,7 @@
                 });
 
                 if(videoThumbnailURL.length == 0){
-                    console.log('Memory cache not found, try fetch from API:', username);
+                    logger('Memory cache not found, try fetch from API:', username);
                     onStoryThumbnail(true,true);
                     return;
                 }
@@ -1255,18 +1256,18 @@
                                 if(USER_SETTING.DISABLE_VIDEO_LOOPING){
                                     $(this).find('video').each(function(){
                                         if(!$(this).data('loop')){
-                                            console.log('(reel) Added video event listener #loop');
+                                            logger('(reel) Added video event listener #loop');
                                             $(this).on('ended',function(){
                                                 $(this).attr('data-loop', true);
                                                 let $element_play_button = $(this).next().find('div[role="presentation"] > div svg > path[d^="M5.888"]').parents('button[role="button"], div[role="button"]');
                                                 if($element_play_button.length > 0){
                                                     $element_play_button.click();
-                                                    console.log('paused click()');
+                                                    logger('paused click()');
                                                 }
                                                 else{
                                                     $(this).parent().find('.xpgaw4o').removeAttr('style');
                                                     this.pause();
-                                                    console.log('paused pause()');
+                                                    logger('paused pause()');
                                                 }
                                             });
                                         }
@@ -1276,7 +1277,7 @@
                                 if(USER_SETTING.MODIFY_VIDEO_VOLUME){
                                     $(this).find('video').each(function(){
                                         if(!$(this).data('modify')){
-                                            console.log('(reel) Added video event listener #modify');
+                                            logger('(reel) Added video event listener #modify');
                                             this.volume = VIDEO_VOLUME;
 
                                             $(this).on('play',function(){
@@ -1296,7 +1297,7 @@
                                         if(!$(this).data('controls')){
                                             let $video = $(this);
 
-                                            console.log('(reel) Added video html5 contorller #modify');
+                                            logger('(reel) Added video html5 contorller #modify');
                                             this.volume = VIDEO_VOLUME;
 
                                             $(this).on('loadstart',function(){
@@ -1364,7 +1365,7 @@
                                     $(this).attr('style',`--ig-track-progress: ${percent}`);
 
                                     $main.find('video').each(function(){
-                                        console.log('(reel) video volume changed #slider');
+                                        logger('(reel) video volume changed #slider');
                                         this.volume = VIDEO_VOLUME;
                                     });
                                 });
@@ -1374,7 +1375,7 @@
                                     $(this).attr('style',`--ig-track-progress: ${percent}`);
                                     $(this).val(VIDEO_VOLUME);
                                     $main.find('video').each(function(){
-                                        console.log('(reel) video volume changed #slider');
+                                        logger('(reel) video volume changed #slider');
                                         this.volume = VIDEO_VOLUME;
                                     });
                                 });
@@ -1606,13 +1607,13 @@
                 },
                 onload: function(response) {
                     let obj = JSON.parse(response.response);
-                    console.log(obj);
+                    logger(obj);
 
                     if(obj.status === 'fail'){
                         // alert(`Request failed with API response:\n${obj.message}: ${obj.feedback_message}`);
-                        console.log('Request with:','getBlobMediaWithQuery()',postShortCode);
+                        logger('Request with:','getBlobMediaWithQuery()',postShortCode);
                         getBlobMediaWithQueryID(postShortCode).then((res) => {
-                            console.log(res);
+                            logger(res);
                             resolve({type:'query_id', data: res.xdt_api__v1__media__shortcode__web_info.items[0]});
                         }).catch((err) => {
                             reject(err);
@@ -1651,11 +1652,11 @@
                 },
                 onload: function(response) {
                     let obj = JSON.parse(response.response);
-                    console.log(obj);
+                    logger(obj);
 
                     if(obj.status === 'fail'){
                         alert(`getBlobMediaWithQueryID(): Request failed with API response:\n${obj.message}: ${obj.feedback_message}`);
-                        console.log(`Request failed with API response:\n${obj.message}: ${obj.feedback_message}`);
+                        logger(`Request failed with API response ${obj.message}: ${obj.feedback_message}`);
                         reject(response);
                     }
                     else{
@@ -1679,7 +1680,7 @@
      */
     function onReadyMyDW(NoDialog, hasReferrer){
         if(hasReferrer === true){
-            console.log('hasReferrer', 'regenerated');
+            logger('hasReferrer', 'regenerated');
             $('article[data-snig="canDownload"], div[data-snig="canDownload"]').filter(function(){
                 return $(this).find('.SNKMS_IG_DW_MAIN').length === 0
             }).removeAttr('data-snig');
@@ -1702,7 +1703,7 @@
                     }
                 }
 
-                console.log('onReadyMyDW() Timer', 'repeating to call detection createDownloadButton()');
+                logger('onReadyMyDW() Timer', 'repeating to call detection createDownloadButton()');
                 createDownloadButton();
                 i++;
             },50);
@@ -1845,7 +1846,7 @@
         if(USER_SETTING.DISABLE_VIDEO_LOOPING){
             $mainElement.find('video').each(function(){
                 if(!$(this).data('loop')){
-                    console.log('(post) Added video event listener #loop');
+                    logger('(post) Added video event listener #loop');
                     $(this).on('ended',function(){
                         $(this).attr('data-loop', true);
                         this.pause();
@@ -1858,7 +1859,7 @@
         if(USER_SETTING.MODIFY_VIDEO_VOLUME){
             $mainElement.find('video').each(function(){
                 if(!$(this).data('modify')){
-                    console.log('(post) Added video event listener #modify');
+                    logger('(post) Added video event listener #modify');
                     this.volume = VIDEO_VOLUME;
 
                     $(this).on('play',function(){
@@ -1879,7 +1880,7 @@
         if(USER_SETTING.HTML5_VIDEO_CONTROL){
             $mainElement.find('video').each(function(){
                 if(!$(this).data('controls')){
-                    console.log('(post) Added video html5 contorller #modify');
+                    logger('(post) Added video html5 contorller #modify');
                     this.volume = VIDEO_VOLUME;
 
                     $(this).on('loadstart',function(){
@@ -1931,7 +1932,7 @@
             $(this).attr('style',`--ig-track-progress: ${percent}`);
 
             $mainElement.find('video').each(function(){
-                console.log('(post) video volume changed #slider');
+                logger('(post) video volume changed #slider');
                 this.volume = VIDEO_VOLUME;
             });
         });
@@ -1941,7 +1942,7 @@
             $(this).attr('style',`--ig-track-progress: ${percent}`);
             $(this).val(VIDEO_VOLUME);
             $mainElement.find('video').each(function(){
-                console.log('(post) video volume changed #slider');
+                logger('(post) video volume changed #slider');
                 this.volume = VIDEO_VOLUME;
             });
         });
@@ -1969,7 +1970,7 @@
             // If it is have not download icon
             // class x1iyjqo2 mean user profile pages post list container
             if(!$(this).attr('data-snig') && !$(this).hasClass('x1iyjqo2') && !$(this).children('article')?.hasClass('x1iyjqo2') && $(this).parents('div#scrollview').length === 0){
-                console.log("Found post container", $(this));
+                logger("Found post container", $(this));
 
                 var rightPos = 15;
                 var topPos = 15;
@@ -1995,7 +1996,7 @@
 
                 if($childElement.length === 0) return;
 
-                console.log("Found insert point", $childElement);
+                logger("Found insert point", $childElement);
 
                 // Modify carousel post counter's position to not interfere with our buttons
                 if($mainElement.find('._acay').length > 0){
@@ -2031,7 +2032,7 @@
                     else{
                         const checkVideoNodeCallback = (entries, observer) => {
                             entries.forEach((entry) => {
-                                console.log(entry);
+                                //logger(entry);
                                 if (entry.isIntersecting) {
                                     var $targetNode = $(entry.target);
 
@@ -2348,7 +2349,7 @@
                 let resource = result.data;
 
                 if(resource.carousel_media){
-                    console.log('carousel_media');
+                    logger('carousel_media');
                     resource.carousel_media.forEach((mda, ind)=>{
                         let idx = ind+1;
                         // Image
@@ -2524,7 +2525,7 @@
         let username = ($(element).attr('data-username')) ? $(element).attr('data-username') : GL_username;
 
         if(!username && $(element).attr('data-path')){
-            console.log('catching owner name from shortcode:',$(element).attr('data-href'));
+            logger('catching owner name from shortcode:',$(element).attr('data-href'));
             username = await getPostOwner($(element).attr('data-path'));
         }
 
@@ -2571,7 +2572,7 @@
                 else{
                     alert('Fetch failed from Media API. API response message: ' + result.message);
                 }
-                console.log(result);
+                logger(result);
             }
         }
         else{
@@ -2734,7 +2735,7 @@
      */
     function registerMenuCommand(){
         for(let id of GM_menuId){
-            console.log('GM_unregisterMenuCommand', id);
+            logger('GM_unregisterMenuCommand', id);
             GM_unregisterMenuCommand(id);
         }
 
@@ -2813,8 +2814,7 @@
 
                 if (match && match[1]) {
                     const remoteVersion = match[1];
-                    console.log('Current version: ', currentVersion);
-                    console.log('Remote version: ', remoteVersion);
+                    logger('Current version: ', currentVersion,'|','Remote version: ', remoteVersion);
 
                     if (remoteVersion !== currentVersion) {
                         GM_notification({
@@ -2834,7 +2834,7 @@
                             }
                         });
                     } else {
-                        console.log('there is no new update');
+                        logger('there is no new update');
                     }
                 } else {
                     console.error('Could not find version in the remote script.');
@@ -2961,7 +2961,22 @@
         currentURL = location.href;
         GL_observer.disconnect();
 
-        console.log('main timer re-register completed');
+        logger('main timer re-register completed');
+    }
+
+    /**
+     * logger
+     * event record
+     *
+     * @return {void}
+     */
+    function logger(...messages){
+        var dd = new Date();
+        GL_logger.push({
+            time: dd.getTime(),
+            content: [...messages]
+        });
+        console.log(`[${dd.toISOString()}]`,...messages);
     }
 
     /**
@@ -2980,9 +2995,41 @@
 
     // Running if document is ready
     $(function(){
-        $('body').on('click','.IG_SN_DIG .IG_SN_DIG_BODY .IG_DISPLAY_DOM_TREE',function(){
+        function ConvertDOM (domEl) {
+            var obj = [];
+            for(var ele of domEl){
+                obj.push({
+                    tagName: ele.tagName,
+                    id: ele.id,
+                    className: ele.className
+                });
+            }
+
+            return obj;
+        }
+
+        function setDOMTreeContent(){
             let text = $('div[id^="mount"]')[0];
-            $('.IG_SN_DIG .IG_SN_DIG_BODY textarea').text("Location: " + location.pathname + "\nDOM Tree:\n" + text.innerHTML);
+            var logger = "";
+            GL_logger.forEach(log => {
+                var jsonData = JSON.stringify(log.content, function (key, value) {
+                    if (Array.isArray(this)) {
+                        if (typeof value === "object" && value instanceof jQuery) {
+                            return ConvertDOM(value);
+                        }
+                        return value;
+                    }
+                    else{
+                        return value;
+                    }
+                }, "\t");
+                logger += `${log.time}: ${jsonData}\n`
+            });
+            $('.IG_SN_DIG .IG_SN_DIG_BODY textarea').text("Logger:\n"+logger+"\n-----\n\nLocation: " + location.pathname + "\nDOM Tree with div#mount:\n" + text.innerHTML);
+        }
+
+        $('body').on('click','.IG_SN_DIG .IG_SN_DIG_BODY .IG_DISPLAY_DOM_TREE',function(){
+            setDOMTreeContent();
         });
 
         $('body').on('click','.IG_SN_DIG .IG_SN_DIG_BODY .IG_SELECT_DOM_TREE',function(){
@@ -2991,11 +3038,15 @@
         });
 
         $('body').on('click','.IG_SN_DIG .IG_SN_DIG_BODY .IG_DOWNLOAD_DOM_TREE',function(){
-            var text = ($('.IG_SN_DIG .IG_SN_DIG_BODY textarea').text().length > 0)?$('.IG_SN_DIG .IG_SN_DIG_BODY textarea').text():"Location: " + location.pathname + "\nDOM Tree:\n" +$('div[id^="mount"]')[0].innerHTML;
+            if($('.IG_SN_DIG .IG_SN_DIG_BODY textarea').text().length === 0){
+                setDOMTreeContent();
+            }
+
+            var text = $('.IG_SN_DIG .IG_SN_DIG_BODY textarea').text();
             var a = document.createElement("a");
             var file = new Blob([text], {type: "text/plain"});
             a.href = URL.createObjectURL(file);
-            a.download = "DOMTree.txt";
+            a.download = "DOMTree-"+new Date().getTime()+".txt";
 
             document.body.appendChild(a);
             a.click();
