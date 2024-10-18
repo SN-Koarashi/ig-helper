@@ -5,7 +5,7 @@
 // @name:ja            IG助手
 // @name:ko            IG조수
 // @namespace          https://github.snkms.com/
-// @version            2.36.8
+// @version            2.36.9
 // @description        Downloading is possible for both photos and videos from posts, as well as for stories, reels or profile picture.
 // @description:zh-TW  一鍵下載對方 Instagram 貼文中的相片、影片甚至是他們的限時動態、連續短片及大頭貼圖片！
 // @description:zh-CN  一键下载对方 Instagram 帖子中的相片、视频甚至是他们的快拍、Reels及头像图片！
@@ -478,12 +478,24 @@
                         });
                     }
 
+                    // Make sure to first remove thumbnail button if still exists and highlight is a picture
+                    $element.find('img[referrerpolicy]').each(function(){
+                        if(!$(this).data('remove-thumbnail')){
+                            if ($('.IG_DWHISTORY_THUMBNAIL').length){
+                                logger('(highlight) Removed thumbnail button');
+                                $('.IG_DWHISTORY_THUMBNAIL').remove();
+                            }
+
+                            $(this).attr('data-remove-thumbnail', true);
+                        }
+                    });
+
+                    // Try to use event listener 'timeupdate' in order to detect if highlight is a video
                     $element.find('video').each(function(){
                         if(!$(this).data('modify-thumbnail')){
-                            logger('(highlight) Added video event listener #modify-thumbnail');
-
                             $(this).on('timeupdate',function(){
                                 if($element.find('.IG_DWHISTORY_THUMBNAIL').length === 0){
+                                    logger('(highlight) Inserted thumbnail button');
                                     onHighlightsStoryThumbnail(false);
                                 }
                             });
@@ -926,12 +938,24 @@
                         });
                     }
 
+                    // Make sure to first remove thumbnail button if still exists and story is a picture
+                    $element.find('img[referrerpolicy]').each(function(){
+                        if(!$(this).data('remove-thumbnail')){
+                            if ($('.IG_DWSTORY_THUMBNAIL').length){
+                                logger('(story) Removed thumbnail button');
+                                $('.IG_DWSTORY_THUMBNAIL').remove();
+                            }
+
+                            $(this).attr('data-remove-thumbnail', true);
+                        }
+                    });
+
+                    // Try to use event listener 'timeupdate' in order to detect if story is a video
                     $element.find('video').each(function(){
                         if(!$(this).data('modify-thumbnail')){
-                            logger('(story) Added video event listener #modify-thumbnail');
-
                             $(this).on('timeupdate',function(){
                                 if($element.find('.IG_DWSTORY_THUMBNAIL').length === 0){
+                                    logger('(story) Inserted thumbnail button');
                                     onStoryThumbnail(false);
                                 }
                             });
@@ -939,8 +963,6 @@
                             $(this).attr('data-modify-thumbnail', true);
                         }
                     });
-
-                    onStoryThumbnail(false);
                 }
             }
         }
