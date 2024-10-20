@@ -459,22 +459,16 @@
                     $element.append(`<div data-ih-locale-title="DW" title="${_i18n("DW")}" class="IG_DWHISTORY">${SVG.DOWNLOAD}</div>`);
                     $element.append(`<div data-ih-locale-title="NEW_TAB" title="${_i18n("NEW_TAB")}" class="IG_DWHINEWTAB">${SVG.NEW_TAB}</div>`);
 
-                    // Modify Video Volume
+                    // Modify video volume
                     if(USER_SETTING.MODIFY_VIDEO_VOLUME){
                         $element.find('video').each(function(){
-                            if(!$(this).data('modify')){
-                                logger('(highlight) Added video event listener #modify');
-                                this.volume = VIDEO_VOLUME;
-
-                                $(this).on('play',function(){
+                            $(this).on('play playing', function(){
+                                if(!$(this).data('modify')){
+                                    $(this).attr('data-modify', true);
                                     this.volume = VIDEO_VOLUME;
-                                });
-                                $(this).on('playing',function(){
-                                    this.volume = VIDEO_VOLUME;
-                                });
-
-                                $(this).attr('data-modify', true);
-                            }
+                                    logger('(highlight) Added video event listener #modify');
+                                }
+                            });
                         });
                     }
 
@@ -907,22 +901,16 @@
                     $element.first().append(`<div data-ih-locale-title="DW" title="${_i18n("DW")}" class="IG_DWSTORY">${SVG.DOWNLOAD}</div>`);
                     $element.first().append(`<div data-ih-locale-title="NEW_TAB" title="${_i18n("NEW_TAB")}" class="IG_DWNEWTAB">${SVG.NEW_TAB}</div>`);
 
-                    // Modify Video Volume
+                    // Modify video volume
                     if(USER_SETTING.MODIFY_VIDEO_VOLUME){
                         $element.find('video').each(function(){
-                            if(!$(this).data('modify')){
-                                logger('(story) Added video event listener #modify');
-                                this.volume = VIDEO_VOLUME;
-
-                                $(this).on('play',function(){
+                            $(this).on('play playing', function(){
+                                if(!$(this).data('modify')){
+                                    $(this).attr('data-modify', true);
                                     this.volume = VIDEO_VOLUME;
-                                });
-                                $(this).on('playing',function(){
-                                    this.volume = VIDEO_VOLUME;
-                                });
-
-                                $(this).attr('data-modify', true);
-                            }
+                                    logger('(story) Added video event listener #modify');
+                                }
+                            });
                         });
                     }
 
@@ -1283,40 +1271,35 @@
                                 // Disable video autoplay
                                 if(USER_SETTING.DISABLE_VIDEO_LOOPING){
                                     $(this).find('video').each(function(){
-                                        if(!$(this).data('loop')){
-                                            logger('(reel) Added video event listener #loop');
-                                            $(this).on('ended',function(){
-                                                $(this).attr('data-loop', true);
+                                        $(this).on('ended', function(){
+                                            if(!$(this).data('loop')){
                                                 let $element_play_button = $(this).next().find('div[role="presentation"] > div svg > path[d^="M5.888"]').parents('button[role="button"], div[role="button"]');
                                                 if($element_play_button.length > 0){
+                                                    $(this).attr('data-loop', true);
                                                     $element_play_button.click();
-                                                    logger('paused click()');
+                                                    logger('Adding video event listener #loop, then paused click()');
                                                 }
                                                 else{
+                                                    $(this).attr('data-loop', true);
                                                     $(this).parent().find('.xpgaw4o').removeAttr('style');
                                                     this.pause();
-                                                    logger('paused pause()');
+                                                    logger('Adding video event listener #loop, then paused pause()');
                                                 }
-                                            });
-                                        }
+                                            }
+                                        });
                                     });
                                 }
-                                // Modify Video Volume
+
+                                // Modify video volume
                                 if(USER_SETTING.MODIFY_VIDEO_VOLUME){
                                     $(this).find('video').each(function(){
-                                        if(!$(this).data('modify')){
-                                            logger('(reel) Added video event listener #modify');
-                                            this.volume = VIDEO_VOLUME;
-
-                                            $(this).on('play',function(){
+                                        $(this).on('play playing', function(){
+                                            if(!$(this).data('modify')){
+                                                $(this).attr('data-modify', true);
                                                 this.volume = VIDEO_VOLUME;
-                                            });
-                                            $(this).on('playing',function(){
-                                                this.volume = VIDEO_VOLUME;
-                                            });
-
-                                            $(this).attr('data-modify', true);
-                                        }
+                                                logger('(reel) Added video event listener #modify');
+                                            }
+                                        });
                                     });
                                 }
 
@@ -1930,35 +1913,26 @@
         // Disable video autoplay
         if(USER_SETTING.DISABLE_VIDEO_LOOPING){
             $mainElement.find('video').each(function(){
-                if(!$(this).data('loop')){
-                    logger('(post) Added video event listener #loop');
-                    $(this).on('ended',function(){
+                $(this).on('ended', function(){
+                    if(!$(this).data('loop')){
                         $(this).attr('data-loop', true);
                         this.pause();
-                    });
-                }
+                        logger('(post) Added video event listener #loop');
+                    }
+                });
             });
         }
 
-        // Modify Video Volume
+        // Modify video volume
         if(USER_SETTING.MODIFY_VIDEO_VOLUME){
             $mainElement.find('video').each(function(){
-                if(!$(this).data('modify')){
-                    logger('(post) Added video event listener #modify');
-                    this.volume = VIDEO_VOLUME;
-
-                    $(this).on('play',function(){
+                $(this).on('play playing', function(){
+                    if(!$(this).data('modify')){
+                        $(this).attr('data-modify', true);
                         this.volume = VIDEO_VOLUME;
-                    });
-                    $(this).on('playing',function(){
-                        this.volume = VIDEO_VOLUME;
-                    });
-                    $(this).on('timeupdate',function(){
-                        this.volume = VIDEO_VOLUME;
-                    });
-
-                    $(this).attr('data-modify', true);
-                }
+                        logger('(post) Added video event listener #modify');
+                    }
+                });
             });
         }
 
