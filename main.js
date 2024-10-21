@@ -5,7 +5,7 @@
 // @name:ja            IG助手
 // @name:ko            IG조수
 // @namespace          https://github.snkms.com/
-// @version            2.36.8
+// @version            2.36.9
 // @description        Downloading is possible for both photos and videos from posts, as well as for stories, reels or profile picture.
 // @description:zh-TW  一鍵下載對方 Instagram 貼文中的相片、影片甚至是他們的限時動態、連續短片及大頭貼圖片！
 // @description:zh-CN  一键下载对方 Instagram 帖子中的相片、视频甚至是他们的快拍、Reels及头像图片！
@@ -478,18 +478,38 @@
                         });
                     }
 
-                    $element.find('video').each(function(){
-                        if(!$(this).data('modify-thumbnail')){
-                            logger('(highlight) Added video event listener #modify-thumbnail');
-
-                            $(this).on('timeupdate',function(){
+                    // Make sure to first remove thumbnail button if still exists and highlight is a picture
+                    $element.find('img[referrerpolicy]').each(function(){
+                        $(this).on('load',function(){
+                            if(!$(this).data('remove-thumbnail')){
                                 if($element.find('.IG_DWHISTORY_THUMBNAIL').length === 0){
-                                    onHighlightsStoryThumbnail(false);
+                                    $(this).attr('data-remove-thumbnail', true);
+                                    $('.IG_DWHISTORY_THUMBNAIL').remove();
+                                    logger('(highlight) Manually removing thumbnail button');
                                 }
-                            });
+                                else{
+                                    $(this).attr('data-remove-thumbnail', true);
+                                    logger('(highlight) Thumbnail button is not present for this picture');
+                                }
+                            }
+                        });
+                    });
 
-                            $(this).attr('data-modify-thumbnail', true);
-                        }
+                    // Try to use event listener 'timeupdate' in order to detect if highlight is a video
+                    $element.find('video').each(function(){
+                        $(this).on('timeupdate',function(){
+                            if(!$(this).data('modify-thumbnail')){
+                                if($element.find('.IG_DWHISTORY_THUMBNAIL').length === 0){
+                                    $(this).attr('data-modify-thumbnail', true);
+                                    onHighlightsStoryThumbnail(false);
+                                    logger('(highlight) Manually inserting thumbnail button');
+                                }
+                                else{
+                                    $(this).attr('data-modify-thumbnail', true);
+                                    logger('(highlight) Thumbnail button already inserted');
+                                }
+                            }
+                        });
                     });
                 }
             }
@@ -926,21 +946,39 @@
                         });
                     }
 
-                    $element.find('video').each(function(){
-                        if(!$(this).data('modify-thumbnail')){
-                            logger('(story) Added video event listener #modify-thumbnail');
-
-                            $(this).on('timeupdate',function(){
+                    // Make sure to first remove thumbnail button if still exists and story is a picture
+                    $element.find('img[referrerpolicy]').each(function(){
+                        $(this).on('load',function(){
+                            if(!$(this).data('remove-thumbnail')){
                                 if($element.find('.IG_DWSTORY_THUMBNAIL').length === 0){
-                                    onStoryThumbnail(false);
+                                    $(this).attr('data-remove-thumbnail', true);
+                                    $('.IG_DWSTORY_THUMBNAIL').remove();
+                                    logger('(story) Manually removing thumbnail button');
                                 }
-                            });
-
-                            $(this).attr('data-modify-thumbnail', true);
-                        }
+                                else{
+                                    $(this).attr('data-remove-thumbnail', true);
+                                    logger('(story) Thumbnail button is not present for this picture');
+                                }
+                            }
+                        });
                     });
 
-                    onStoryThumbnail(false);
+                    // Try to use event listener 'timeupdate' in order to detect if story is a video
+                    $element.find('video').each(function(){
+                        $(this).on('timeupdate',function(){
+                            if(!$(this).data('modify-thumbnail')){
+                                if($element.find('.IG_DWSTORY_THUMBNAIL').length === 0){
+                                    $(this).attr('data-modify-thumbnail', true);
+                                    onStoryThumbnail(false);
+                                    logger('(story) Manually inserting thumbnail button');
+                                }
+                                else{
+                                    $(this).attr('data-modify-thumbnail', true);
+                                    logger('(story) Thumbnail button already inserted');
+                                }
+                            }
+                        });
+                    });
                 }
             }
         }
