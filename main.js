@@ -142,6 +142,7 @@
 
             if(location.href.startsWith("https://www.instagram.com/p/") || location.pathname.match(/^\/(.*?)\/(p|reel)\//ig) || location.href.startsWith("https://www.instagram.com/reel/")){
                 GL_dataCache.stories = {};
+                GL_dataCache.highlights = {};
 
                 logger('isDialog');
 
@@ -179,8 +180,9 @@
 
             if(location.href.split("?")[0] == "https://www.instagram.com/"){
                 GL_dataCache.stories = {};
+                GL_dataCache.highlights = {};
 
-                let hasReferrer = GL_referrer?.match(/^\/stories\//ig) != null;
+                let hasReferrer = GL_referrer?.match(/^\/(stories|highlights)\//ig) != null;
 
                 logger('isHomepage', hasReferrer);
                 setTimeout(()=>{
@@ -211,10 +213,20 @@
 
                     logger('isHighlightsStory');
 
-                    onHighlightsStory(false);
-                    GL_repeat = setInterval(()=>{
-                        onHighlightsStoryThumbnail(false);
-                    },checkInterval);
+                    if($('div[id^="mount"] section > div > a[href="/"]').length > 0){
+                        $('.IG_DWHISTORY').remove();
+                        $('.IG_DWHINEWTAB').remove();
+                        if($('.IG_DWHISTORY_THUMBNAIL').length){
+                            $('.IG_DWHISTORY_THUMBNAIL').remove();
+                        }
+
+                        onHighlightsStory(false);
+
+                        // Prevent buttons from being eaten by black holes sometimes
+                        setTimeout(()=>{
+                            onHighlightsStory(false);
+                        }, 150);
+                    }
 
                     if($(".IG_DWHISTORY").length){
                         setTimeout(()=>{
@@ -270,10 +282,24 @@
                 else{
                     pageLoaded = false;
                     // Remove icons
-                    $('.IG_DWSTORY').remove();
-                    $('.IG_DWNEWTAB').remove();
+                    if($('.IG_DWSTORY').length){
+                        $('.IG_DWSTORY').remove();
+                    }
+                    if($('.IG_DWNEWTAB').length){
+                        $('.IG_DWNEWTAB').remove();
+                    }
                     if($('.IG_DWSTORY_THUMBNAIL').length){
                         $('.IG_DWSTORY_THUMBNAIL').remove();
+                    }
+
+                    if($('.IG_DWHISTORY').length){
+                        $('.IG_DWHISTORY').remove();
+                    }
+                    if($('.IG_DWHINEWTAB').length){
+                        $('.IG_DWHINEWTAB').remove();
+                    }
+                    if($('.IG_DWHISTORY_THUMBNAIL').length){
+                        $('.IG_DWHISTORY_THUMBNAIL').remove();
                     }
                 }
             }
@@ -429,6 +455,7 @@
         else{
             // Add the stories download button
             if(!$('.IG_DWHISTORY').length){
+                GL_dataCache.highlights = {};
                 let $element = null;
 
                 // Default detecter (section layout mode)
@@ -609,9 +636,6 @@
                         $element.append(`<div data-ih-locale-title="THUMBNAIL_INTRO" title="${_i18n("THUMBNAIL_INTRO")}" class="IG_DWHISTORY_THUMBNAIL">${SVG.THUMBNAIL}</div>`);
                     }
                 }
-            }
-            else{
-                $('.IG_DWHISTORY_THUMBNAIL').remove();
             }
         }
     }
