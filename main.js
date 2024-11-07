@@ -5,7 +5,7 @@
 // @name:ja            IG助手
 // @name:ko            IG조수
 // @namespace          https://github.snkms.com/
-// @version            2.36.10
+// @version            2.36.11
 // @description        Downloading is possible for both photos and videos from posts, as well as for stories, reels or profile picture.
 // @description:zh-TW  一鍵下載對方 Instagram 貼文中的相片、影片甚至是他們的限時動態、連續短片及大頭貼圖片！
 // @description:zh-CN  一键下载对方 Instagram 帖子中的相片、视频甚至是他们的快拍、Reels及头像图片！
@@ -142,7 +142,7 @@
 
             if(location.href.startsWith("https://www.instagram.com/p/") || location.pathname.match(/^\/(.*?)\/(p|reel)\//ig) || location.href.startsWith("https://www.instagram.com/reel/")){
                 GL_dataCache.stories = {};
-                GL_dataCache.highlights = {};
+				GL_dataCache.highlights = {};
 
                 logger('isDialog');
 
@@ -180,7 +180,7 @@
 
             if(location.href.split("?")[0] == "https://www.instagram.com/"){
                 GL_dataCache.stories = {};
-                GL_dataCache.highlights = {};
+				GL_dataCache.highlights = {};
 
                 let hasReferrer = GL_referrer?.match(/^\/(stories|highlights)\//ig) != null;
 
@@ -213,20 +213,10 @@
 
                     logger('isHighlightsStory');
 
-                    if($('div[id^="mount"] section > div > a[href="/"]').length > 0){
-                        $('.IG_DWHISTORY').remove();
-                        $('.IG_DWHINEWTAB').remove();
-                        if($('.IG_DWHISTORY_THUMBNAIL').length){
-                            $('.IG_DWHISTORY_THUMBNAIL').remove();
-                        }
-
-                        onHighlightsStory(false);
-
-                        // Prevent buttons from being eaten by black holes sometimes
-                        setTimeout(()=>{
-                            onHighlightsStory(false);
-                        }, 150);
-                    }
+                    onHighlightsStory(false);
+                    GL_repeat = setInterval(()=>{
+                        onHighlightsStoryThumbnail(false);
+                    },checkInterval);
 
                     if($(".IG_DWHISTORY").length){
                         setTimeout(()=>{
@@ -281,6 +271,7 @@
                 }
                 else{
                     pageLoaded = false;
+                    // Remove icons
                     // Remove icons
                     if($('.IG_DWSTORY').length){
                         $('.IG_DWSTORY').remove();
@@ -455,7 +446,6 @@
         else{
             // Add the stories download button
             if(!$('.IG_DWHISTORY').length){
-                GL_dataCache.highlights = {};
                 let $element = null;
 
                 // Default detecter (section layout mode)
@@ -486,18 +476,18 @@
                     $element.append(`<div data-ih-locale-title="DW" title="${_i18n("DW")}" class="IG_DWHISTORY">${SVG.DOWNLOAD}</div>`);
                     $element.append(`<div data-ih-locale-title="NEW_TAB" title="${_i18n("NEW_TAB")}" class="IG_DWHINEWTAB">${SVG.NEW_TAB}</div>`);
 
-                    // Modify video volume
-                    if(USER_SETTING.MODIFY_VIDEO_VOLUME){
-                        $element.find('video').each(function(){
-                            $(this).on('play playing', function(){
-                                if(!$(this).data('modify')){
-                                    $(this).attr('data-modify', true);
-                                    this.volume = VIDEO_VOLUME;
-                                    logger('(highlight) Added video event listener #modify');
-                                }
-                            });
-                        });
-                    }
+                    //// Modify video volume
+                    //if(USER_SETTING.MODIFY_VIDEO_VOLUME){
+                    //    $element.find('video').each(function(){
+                    //        $(this).on('play playing', function(){
+                    //            if(!$(this).data('modify')){
+                    //                $(this).attr('data-modify', true);
+                    //                this.volume = VIDEO_VOLUME;
+                    //                logger('(highlight) Added video event listener #modify');
+                    //            }
+                    //        });
+                    //    });
+                    //}
 
                     // Make sure to first remove thumbnail button if still exists and highlight is a picture
                     $element.find('img[referrerpolicy]').each(function(){
@@ -517,21 +507,21 @@
                     });
 
                     // Try to use event listener 'timeupdate' in order to detect if highlight is a video
-                    $element.find('video').each(function(){
-                        $(this).on('timeupdate',function(){
-                            if(!$(this).data('modify-thumbnail')){
-                                if($element.find('.IG_DWHISTORY_THUMBNAIL').length === 0){
-                                    $(this).attr('data-modify-thumbnail', true);
-                                    onHighlightsStoryThumbnail(false);
-                                    logger('(highlight) Manually inserting thumbnail button');
-                                }
-                                else{
-                                    $(this).attr('data-modify-thumbnail', true);
-                                    logger('(highlight) Thumbnail button already inserted');
-                                }
-                            }
-                        });
-                    });
+                    //$element.find('video').each(function(){
+                    //    $(this).on('timeupdate',function(){
+                    //        if(!$(this).data('modify-thumbnail')){
+                    //            if($element.find('.IG_DWHISTORY_THUMBNAIL').length === 0){
+                    //                $(this).attr('data-modify-thumbnail', true);
+                    //                onHighlightsStoryThumbnail(false);
+                    //                logger('(highlight) Manually inserting thumbnail button');
+                    //            }
+                    //            else{
+                    //                $(this).attr('data-modify-thumbnail', true);
+                    //                logger('(highlight) Thumbnail button already inserted');
+                    //            }
+                    //        }
+                    //    });
+                    //});
                 }
             }
         }
@@ -636,6 +626,9 @@
                         $element.append(`<div data-ih-locale-title="THUMBNAIL_INTRO" title="${_i18n("THUMBNAIL_INTRO")}" class="IG_DWHISTORY_THUMBNAIL">${SVG.THUMBNAIL}</div>`);
                     }
                 }
+            }
+            else{
+                $('.IG_DWHISTORY_THUMBNAIL').remove();
             }
         }
     }
@@ -946,17 +939,17 @@
                     $element.first().append(`<div data-ih-locale-title="NEW_TAB" title="${_i18n("NEW_TAB")}" class="IG_DWNEWTAB">${SVG.NEW_TAB}</div>`);
 
                     // Modify video volume
-                    if(USER_SETTING.MODIFY_VIDEO_VOLUME){
-                        $element.find('video').each(function(){
-                            $(this).on('play playing', function(){
-                                if(!$(this).data('modify')){
-                                    $(this).attr('data-modify', true);
-                                    this.volume = VIDEO_VOLUME;
-                                    logger('(story) Added video event listener #modify');
-                                }
-                            });
-                        });
-                    }
+                    //if(USER_SETTING.MODIFY_VIDEO_VOLUME){
+                    //    $element.find('video').each(function(){
+                    //        $(this).on('play playing', function(){
+                    //            if(!$(this).data('modify')){
+                    //                $(this).attr('data-modify', true);
+                    //                this.volume = VIDEO_VOLUME;
+                    //                logger('(story) Added video event listener #modify');
+                    //            }
+                    //        });
+                    //    });
+                    //}
 
                     // Make sure to first remove thumbnail button if still exists and story is a picture
                     $element.find('img[referrerpolicy]').each(function(){
@@ -976,21 +969,21 @@
                     });
 
                     // Try to use event listener 'timeupdate' in order to detect if story is a video
-                    $element.find('video').each(function(){
-                        $(this).on('timeupdate',function(){
-                            if(!$(this).data('modify-thumbnail')){
-                                if($element.find('.IG_DWSTORY_THUMBNAIL').length === 0){
-                                    $(this).attr('data-modify-thumbnail', true);
-                                    onStoryThumbnail(false);
-                                    logger('(story) Manually inserting thumbnail button');
-                                }
-                                else{
-                                    $(this).attr('data-modify-thumbnail', true);
-                                    logger('(story) Thumbnail button already inserted');
-                                }
-                            }
-                        });
-                    });
+                    //$element.find('video').each(function(){
+                    //    $(this).on('timeupdate',function(){
+                    //        if(!$(this).data('modify-thumbnail')){
+                    //            if($element.find('.IG_DWSTORY_THUMBNAIL').length === 0){
+                    //                $(this).attr('data-modify-thumbnail', true);
+                    //                onStoryThumbnail(false);
+                    //                logger('(story) Manually inserting thumbnail button');
+                    //            }
+                    //            else{
+                    //                $(this).attr('data-modify-thumbnail', true);
+                    //                logger('(story) Thumbnail button already inserted');
+                    //            }
+                    //        }
+                    //    });
+                    //});
                 }
             }
         }
@@ -1353,17 +1346,17 @@
                                 }
 
                                 // Modify video volume
-                                if(USER_SETTING.MODIFY_VIDEO_VOLUME){
-                                    $(this).find('video').each(function(){
-                                        $(this).on('play playing', function(){
-                                            if(!$(this).data('modify')){
-                                                $(this).attr('data-modify', true);
-                                                this.volume = VIDEO_VOLUME;
-                                                logger('(reel) Added video event listener #modify');
-                                            }
-                                        });
-                                    });
-                                }
+                                //if(USER_SETTING.MODIFY_VIDEO_VOLUME){
+                                //    $(this).find('video').each(function(){
+                                //        $(this).on('play playing', function(){
+                                //            if(!$(this).data('modify')){
+                                //                $(this).attr('data-modify', true);
+                                //                this.volume = VIDEO_VOLUME;
+                                //                logger('(reel) Added video event listener #modify');
+                                //            }
+                                //        });
+                                //    });
+                                //}
 
                                 if(USER_SETTING.HTML5_VIDEO_CONTROL){
                                     $(this).find('video').each(function(){
@@ -3444,6 +3437,77 @@
             $('.IG_SN_DIG_BODY a[data-needed="direct"]').each(function(){
                 $(this).click();
             });
+        });
+
+
+        const audio_observer = new MutationObserver((mutationsList) => {
+            for (const mutation of mutationsList) {
+                if (mutation.type === 'childList') {
+                    mutation.addedNodes.forEach((node) => {
+                            const $videos = $(node).find('video');
+                            if($videos.length > 0){
+								// Modify video volume
+								if(USER_SETTING.MODIFY_VIDEO_VOLUME){
+									$videos.each(function(){
+										$(this).on('play playing', function(){
+											if(!$(this).data('modify')){
+												$(this).attr('data-modify', true);
+												this.volume = VIDEO_VOLUME;
+												logger('(audio_observer) Added video event listener #modify');
+											}
+										});
+									});
+								}
+
+								if(location.href.match(/^(https:\/\/www\.instagram\.com\/stories\/highlights\/)/ig)){
+									$videos.each(function(){
+										$(this).on('timeupdate',function(){
+											if(!$(this).data('modify-thumbnail')){
+												let $video = $(this);
+												if($video.parents('div[style][class]').filter(function(){
+													return $(this).width() == $video.width();
+												}).find('.IG_DWHISTORY_THUMBNAIL').length === 0){
+													$(this).attr('data-modify-thumbnail', true);
+													onHighlightsStoryThumbnail(false);
+													logger('(highlight) Manually inserting thumbnail button');
+												}
+												else{
+													$(this).attr('data-modify-thumbnail', true);
+													logger('(highlight) Thumbnail button already inserted');
+												}
+											}
+										});
+									});
+								}
+								else if(location.href.match(/^(https:\/\/www\.instagram\.com\/stories\/)/ig)){
+									$videos.each(function(){
+										$(this).on('timeupdate',function(){
+											if(!$(this).data('modify-thumbnail')){
+												let $video = $(this);
+												if($video.parents('div[style][class]').filter(function(){
+													return $(this).width() == $video.width();
+												}).find('.IG_DWSTORY_THUMBNAIL').length === 0){
+													$(this).attr('data-modify-thumbnail', true);
+													onStoryThumbnail(false);
+													logger('(story) Manually inserting thumbnail button');
+												}
+												else{
+													$(this).attr('data-modify-thumbnail', true);
+													logger('(story) Thumbnail button already inserted');
+												}
+											}
+										});
+									});
+								}
+                            }
+                    });
+                }
+            }
+        });
+
+        audio_observer.observe($('div[id^="mount"]')[0], {
+            childList: true,
+            subtree: true,
         });
     });
 })(jQuery);
