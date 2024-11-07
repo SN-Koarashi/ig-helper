@@ -5,7 +5,7 @@
 // @name:ja            IG助手
 // @name:ko            IG조수
 // @namespace          https://github.snkms.com/
-// @version            2.36.10
+// @version            2.36.11
 // @description        Downloading is possible for both photos and videos from posts, as well as for stories, reels or profile picture.
 // @description:zh-TW  一鍵下載對方 Instagram 貼文中的相片、影片甚至是他們的限時動態、連續短片及大頭貼圖片！
 // @description:zh-CN  一键下载对方 Instagram 帖子中的相片、视频甚至是他们的快拍、Reels及头像图片！
@@ -459,18 +459,18 @@
                     $element.append(`<div data-ih-locale-title="DW" title="${_i18n("DW")}" class="IG_DWHISTORY">${SVG.DOWNLOAD}</div>`);
                     $element.append(`<div data-ih-locale-title="NEW_TAB" title="${_i18n("NEW_TAB")}" class="IG_DWHINEWTAB">${SVG.NEW_TAB}</div>`);
 
-                    // Modify video volume
-                    if(USER_SETTING.MODIFY_VIDEO_VOLUME){
-                        $element.find('video').each(function(){
-                            $(this).on('play playing', function(){
-                                if(!$(this).data('modify')){
-                                    $(this).attr('data-modify', true);
-                                    this.volume = VIDEO_VOLUME;
-                                    logger('(highlight) Added video event listener #modify');
-                                }
-                            });
-                        });
-                    }
+                    //// Modify video volume
+                    //if(USER_SETTING.MODIFY_VIDEO_VOLUME){
+                    //    $element.find('video').each(function(){
+                    //        $(this).on('play playing', function(){
+                    //            if(!$(this).data('modify')){
+                    //                $(this).attr('data-modify', true);
+                    //                this.volume = VIDEO_VOLUME;
+                    //                logger('(highlight) Added video event listener #modify');
+                    //            }
+                    //        });
+                    //    });
+                    //}
 
                     // Make sure to first remove thumbnail button if still exists and highlight is a picture
                     $element.find('img[referrerpolicy]').each(function(){
@@ -922,17 +922,17 @@
                     $element.first().append(`<div data-ih-locale-title="NEW_TAB" title="${_i18n("NEW_TAB")}" class="IG_DWNEWTAB">${SVG.NEW_TAB}</div>`);
 
                     // Modify video volume
-                    if(USER_SETTING.MODIFY_VIDEO_VOLUME){
-                        $element.find('video').each(function(){
-                            $(this).on('play playing', function(){
-                                if(!$(this).data('modify')){
-                                    $(this).attr('data-modify', true);
-                                    this.volume = VIDEO_VOLUME;
-                                    logger('(story) Added video event listener #modify');
-                                }
-                            });
-                        });
-                    }
+                    //if(USER_SETTING.MODIFY_VIDEO_VOLUME){
+                    //    $element.find('video').each(function(){
+                    //        $(this).on('play playing', function(){
+                    //            if(!$(this).data('modify')){
+                    //                $(this).attr('data-modify', true);
+                    //                this.volume = VIDEO_VOLUME;
+                    //                logger('(story) Added video event listener #modify');
+                    //            }
+                    //        });
+                    //    });
+                    //}
 
                     // Make sure to first remove thumbnail button if still exists and story is a picture
                     $element.find('img[referrerpolicy]').each(function(){
@@ -1329,17 +1329,17 @@
                                 }
 
                                 // Modify video volume
-                                if(USER_SETTING.MODIFY_VIDEO_VOLUME){
-                                    $(this).find('video').each(function(){
-                                        $(this).on('play playing', function(){
-                                            if(!$(this).data('modify')){
-                                                $(this).attr('data-modify', true);
-                                                this.volume = VIDEO_VOLUME;
-                                                logger('(reel) Added video event listener #modify');
-                                            }
-                                        });
-                                    });
-                                }
+                                //if(USER_SETTING.MODIFY_VIDEO_VOLUME){
+                                //    $(this).find('video').each(function(){
+                                //        $(this).on('play playing', function(){
+                                //            if(!$(this).data('modify')){
+                                //                $(this).attr('data-modify', true);
+                                //                this.volume = VIDEO_VOLUME;
+                                //                logger('(reel) Added video event listener #modify');
+                                //            }
+                                //        });
+                                //    });
+                                //}
 
                                 if(USER_SETTING.HTML5_VIDEO_CONTROL){
                                     $(this).find('video').each(function(){
@@ -3420,6 +3420,36 @@
             $('.IG_SN_DIG_BODY a[data-needed="direct"]').each(function(){
                 $(this).click();
             });
+        });
+
+
+        const audio_observer = new MutationObserver((mutationsList) => {
+            for (const mutation of mutationsList) {
+                if (mutation.type === 'childList') {
+                    mutation.addedNodes.forEach((node) => {
+                        // Modify video volume
+                        if(USER_SETTING.MODIFY_VIDEO_VOLUME){
+                            const $videos = $(node).find('video');
+                            if($videos.length > 0){
+                                $videos.each(function(){
+                                    $(this).on('play playing', function(){
+                                        if(!$(this).data('modify')){
+                                            $(this).attr('data-modify', true);
+                                            this.volume = VIDEO_VOLUME;
+                                            logger('(audio_observer) Added video event listener #modify');
+                                        }
+                                    });
+                                });
+                            }
+                        }
+                    });
+                }
+            }
+        });
+
+        audio_observer.observe($('div[id^="mount"]')[0], {
+            childList: true,
+            subtree: true,
         });
     });
 })(jQuery);
