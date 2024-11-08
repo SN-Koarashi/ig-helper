@@ -142,6 +142,7 @@
 
             if(location.href.startsWith("https://www.instagram.com/p/") || location.pathname.match(/^\/(.*?)\/(p|reel)\//ig) || location.href.startsWith("https://www.instagram.com/reel/")){
                 GL_dataCache.stories = {};
+                GL_dataCache.highlights = {};
 
                 logger('isDialog');
 
@@ -179,8 +180,9 @@
 
             if(location.href.split("?")[0] == "https://www.instagram.com/"){
                 GL_dataCache.stories = {};
+                GL_dataCache.highlights = {};
 
-                let hasReferrer = GL_referrer?.match(/^\/stories\//ig) != null;
+                let hasReferrer = GL_referrer?.match(/^\/(stories|highlights)\//ig) != null;
 
                 logger('isHomepage', hasReferrer);
                 setTimeout(()=>{
@@ -270,10 +272,25 @@
                 else{
                     pageLoaded = false;
                     // Remove icons
-                    $('.IG_DWSTORY').remove();
-                    $('.IG_DWNEWTAB').remove();
+                    // Remove icons
+                    if($('.IG_DWSTORY').length){
+                        $('.IG_DWSTORY').remove();
+                    }
+                    if($('.IG_DWNEWTAB').length){
+                        $('.IG_DWNEWTAB').remove();
+                    }
                     if($('.IG_DWSTORY_THUMBNAIL').length){
                         $('.IG_DWSTORY_THUMBNAIL').remove();
+                    }
+
+                    if($('.IG_DWHISTORY').length){
+                        $('.IG_DWHISTORY').remove();
+                    }
+                    if($('.IG_DWHINEWTAB').length){
+                        $('.IG_DWHINEWTAB').remove();
+                    }
+                    if($('.IG_DWHISTORY_THUMBNAIL').length){
+                        $('.IG_DWHISTORY_THUMBNAIL').remove();
                     }
                 }
             }
@@ -490,21 +507,21 @@
                     });
 
                     // Try to use event listener 'timeupdate' in order to detect if highlight is a video
-                    $element.find('video').each(function(){
-                        $(this).on('timeupdate',function(){
-                            if(!$(this).data('modify-thumbnail')){
-                                if($element.find('.IG_DWHISTORY_THUMBNAIL').length === 0){
-                                    $(this).attr('data-modify-thumbnail', true);
-                                    onHighlightsStoryThumbnail(false);
-                                    logger('(highlight) Manually inserting thumbnail button');
-                                }
-                                else{
-                                    $(this).attr('data-modify-thumbnail', true);
-                                    logger('(highlight) Thumbnail button already inserted');
-                                }
-                            }
-                        });
-                    });
+                    //$element.find('video').each(function(){
+                    //    $(this).on('timeupdate',function(){
+                    //        if(!$(this).data('modify-thumbnail')){
+                    //            if($element.find('.IG_DWHISTORY_THUMBNAIL').length === 0){
+                    //                $(this).attr('data-modify-thumbnail', true);
+                    //                onHighlightsStoryThumbnail(false);
+                    //                logger('(highlight) Manually inserting thumbnail button');
+                    //            }
+                    //            else{
+                    //                $(this).attr('data-modify-thumbnail', true);
+                    //                logger('(highlight) Thumbnail button already inserted');
+                    //            }
+                    //        }
+                    //    });
+                    //});
                 }
             }
         }
@@ -952,21 +969,21 @@
                     });
 
                     // Try to use event listener 'timeupdate' in order to detect if story is a video
-                    $element.find('video').each(function(){
-                        $(this).on('timeupdate',function(){
-                            if(!$(this).data('modify-thumbnail')){
-                                if($element.find('.IG_DWSTORY_THUMBNAIL').length === 0){
-                                    $(this).attr('data-modify-thumbnail', true);
-                                    onStoryThumbnail(false);
-                                    logger('(story) Manually inserting thumbnail button');
-                                }
-                                else{
-                                    $(this).attr('data-modify-thumbnail', true);
-                                    logger('(story) Thumbnail button already inserted');
-                                }
-                            }
-                        });
-                    });
+                    //$element.find('video').each(function(){
+                    //    $(this).on('timeupdate',function(){
+                    //        if(!$(this).data('modify-thumbnail')){
+                    //            if($element.find('.IG_DWSTORY_THUMBNAIL').length === 0){
+                    //                $(this).attr('data-modify-thumbnail', true);
+                    //                onStoryThumbnail(false);
+                    //                logger('(story) Manually inserting thumbnail button');
+                    //            }
+                    //            else{
+                    //                $(this).attr('data-modify-thumbnail', true);
+                    //                logger('(story) Thumbnail button already inserted');
+                    //            }
+                    //        }
+                    //    });
+                    //});
                 }
             }
         }
@@ -3427,16 +3444,57 @@
             for (const mutation of mutationsList) {
                 if (mutation.type === 'childList') {
                     mutation.addedNodes.forEach((node) => {
-                        // Modify video volume
-                        if(USER_SETTING.MODIFY_VIDEO_VOLUME){
-                            const $videos = $(node).find('video');
-                            if($videos.length > 0){
+                        const $videos = $(node).find('video');
+                        if($videos.length > 0){
+                            // Modify video volume
+                            if(USER_SETTING.MODIFY_VIDEO_VOLUME){
                                 $videos.each(function(){
                                     $(this).on('play playing', function(){
                                         if(!$(this).data('modify')){
                                             $(this).attr('data-modify', true);
                                             this.volume = VIDEO_VOLUME;
                                             logger('(audio_observer) Added video event listener #modify');
+                                        }
+                                    });
+                                });
+                            }
+
+                            if(location.href.match(/^(https:\/\/www\.instagram\.com\/stories\/highlights\/)/ig)){
+                                $videos.each(function(){
+                                    $(this).on('timeupdate',function(){
+                                        if(!$(this).data('modify-thumbnail')){
+                                            let $video = $(this);
+                                            if($video.parents('div[style][class]').filter(function(){
+                                                return $(this).width() == $video.width();
+                                            }).find('.IG_DWHISTORY_THUMBNAIL').length === 0){
+                                                $(this).attr('data-modify-thumbnail', true);
+                                                onHighlightsStoryThumbnail(false);
+                                                logger('(highlight) Manually inserting thumbnail button');
+                                            }
+                                            else{
+                                                $(this).attr('data-modify-thumbnail', true);
+                                                logger('(highlight) Thumbnail button already inserted');
+                                            }
+                                        }
+                                    });
+                                });
+                            }
+                            else if(location.href.match(/^(https:\/\/www\.instagram\.com\/stories\/)/ig)){
+                                $videos.each(function(){
+                                    $(this).on('timeupdate',function(){
+                                        if(!$(this).data('modify-thumbnail')){
+                                            let $video = $(this);
+                                            if($video.parents('div[style][class]').filter(function(){
+                                                return $(this).width() == $video.width();
+                                            }).find('.IG_DWSTORY_THUMBNAIL').length === 0){
+                                                $(this).attr('data-modify-thumbnail', true);
+                                                onStoryThumbnail(false);
+                                                logger('(story) Manually inserting thumbnail button');
+                                            }
+                                            else{
+                                                $(this).attr('data-modify-thumbnail', true);
+                                                logger('(story) Thumbnail button already inserted');
+                                            }
                                         }
                                     });
                                 });
