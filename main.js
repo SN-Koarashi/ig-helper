@@ -5,7 +5,7 @@
 // @name:ja            IG助手
 // @name:ko            IG조수
 // @namespace          https://github.snkms.com/
-// @version            2.36.14
+// @version            2.36.15
 // @description        Downloading is possible for both photos and videos from posts, as well as for stories, reels or profile picture.
 // @description:zh-TW  一鍵下載對方 Instagram 貼文中的相片、影片甚至是他們的限時動態、連續短片及大頭貼圖片！
 // @description:zh-CN  一键下载对方 Instagram 帖子中的相片、视频甚至是他们的快拍、Reels及头像图片！
@@ -399,10 +399,10 @@
                     }
                     else{
                         if(isPreview){
-                            openNewTab(getHighestImageVersion(result.items[0].image_versions2.candidates));
+                            openNewTab(result.items[0].image_versions2.candidates[0].url);
                         }
                         else{
-                            saveFiles(getHighestImageVersion(result.items[0].image_versions2.candidates), username,"highlights",timestamp,'jpg');
+                            saveFiles(result.items[0].image_versions2.candidates[0].url, username,"highlights",timestamp,'jpg');
                         }
                     }
                 }
@@ -571,7 +571,7 @@
                 let result = await getMediaInfo(target.id);
 
                 if(result.status === 'ok'){
-                    saveFiles(getHighestImageVersion(result.items[0].image_versions2.candidates), username,"highlights",timestamp,'jpg');
+                    saveFiles(result.items[0].image_versions2.candidates[0].url, username,"highlights",timestamp,'jpg');
                 }
                 else{
                     if(USER_SETTING.USE_BLOB_FETCH_WHEN_MEDIA_RATE_LITMIT){
@@ -740,10 +740,10 @@
                     }
                     else{
                         if(isPreview){
-                            openNewTab(getHighestImageVersion(result.items[0].image_versions2.candidates));
+                            openNewTab(result.items[0].image_versions2.candidates[0].url);
                         }
                         else{
-                            saveFiles(getHighestImageVersion(result.items[0].image_versions2.candidates), username,"stories",timestamp,'jpg');
+                            saveFiles(result.items[0].image_versions2.candidates[0].url, username,"stories",timestamp,'jpg');
                         }
                     }
                 }
@@ -1072,7 +1072,7 @@
                 }
 
                 if(result.status === 'ok'){
-                    saveFiles(getHighestImageVersion(result.items[0].image_versions2.candidates), username,"stories",timestamp,'jpg');
+                    saveFiles(result.items[0].image_versions2.candidates[0].url, username,"stories",timestamp,'jpg');
 
                 }
                 else{
@@ -1280,11 +1280,11 @@
                 }
                 else{
                     if(isPreview){
-                        openNewTab(getHighestImageVersion(media.image_versions2.candidates[0].url));
+                        openNewTab(media.image_versions2.candidates[0].url);
                     }
                     else{
                         let type = 'jpg';
-                        saveFiles(getHighestImageVersion(media.image_versions2.candidates[0].url),media.owner.username,"reels",timestamp,type,reelsPath);
+                        saveFiles(media.image_versions2.candidates[0].url,media.owner.username,"reels",timestamp,type,reelsPath);
                     }
                 }
             }
@@ -1671,22 +1671,14 @@
             GM_xmlhttpRequest({
                 method: "GET",
                 url: getURL,
-                headers: {
-                    'User-Agent': 'Mozilla/5.0 (Linux; Android 10; Pixel 7 XL)Build/RP1A.20845.002; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/5.0 Chrome/117.0.5938.60 Mobile Safari/537.36 Instagram 307.0.0.34.111',
-                    'X-IG-App-ID': getAppID()
-                },
                 onload: function(response) {
                     try{
                         let obj = JSON.parse(response.response);
                         logger('getPostOwner()',obj);
-                        if(obj.feedback_message){
-                            alert(`getPostOwner()\n${obj.message}\n${obj.feedback_message}`);
-                        }
-
-                        resolve(obj?.data?.shortcode_media.owner.username);
+                        resolve(obj.data.shortcode_media.owner.username);
                     }
                     catch(err){
-                        logger('getPostOwner()','reject',err.message, response.response);
+                        logger('getPostOwner()','reject',err.message);
                         reject(err);
                     }
                 },
@@ -2476,7 +2468,7 @@
                         let idx = ind+1;
                         // Image
                         if(mda.video_versions == null){
-                            $(selector).append(`<a media-id="${mda.pk}" datetime="${mda.taken_at}" data-blob="true" data-needed="direct" data-path="${resource.code}" data-name="photo" data-type="jpg" data-username="${resource.owner.username}" data-globalIndex="${idx}" href="javascript:;" data-href="${getHighestImageVersion(mda.image_versions2.candidates[0].url)}"><img width="100" src="${mda.image_versions2.candidates[0].url}" /><br/>- <span data-ih-locale="IMG">${_i18n("IMG")}</span> ${idx} -</a>`);
+                            $(selector).append(`<a media-id="${mda.pk}" datetime="${mda.taken_at}" data-blob="true" data-needed="direct" data-path="${resource.code}" data-name="photo" data-type="jpg" data-username="${resource.owner.username}" data-globalIndex="${idx}" href="javascript:;" data-href="${mda.image_versions2.candidates[0].url}"><img width="100" src="${mda.image_versions2.candidates[0].url}" /><br/>- <span data-ih-locale="IMG">${_i18n("IMG")}</span> ${idx} -</a>`);
                         }
                         // Video
                         else{
@@ -2488,7 +2480,7 @@
                     let idx = 1;
                     // Image
                     if(resource.video_versions == null){
-                        $(selector).append(`<a media-id="${resource.pk}" datetime="${resource.taken_at}" data-blob="true" data-needed="direct" data-path="${resource.code}" data-name="photo" data-type="jpg" data-username="${resource.owner.username}" data-globalIndex="${idx}" href="javascript:;" data-href="${getHighestImageVersion(resource.image_versions2.candidates[0].url)}"><img width="100" src="${resource.image_versions2.candidates[0].url}" /><br/>- <span data-ih-locale="IMG">${_i18n("IMG")}</span> ${idx} -</a>`);
+                        $(selector).append(`<a media-id="${resource.pk}" datetime="${resource.taken_at}" data-blob="true" data-needed="direct" data-path="${resource.code}" data-name="photo" data-type="jpg" data-username="${resource.owner.username}" data-globalIndex="${idx}" href="javascript:;" data-href="${resource.image_versions2.candidates[0].url}"><img width="100" src="${resource.image_versions2.candidates[0].url}" /><br/>- <span data-ih-locale="IMG">${_i18n("IMG")}</span> ${idx} -</a>`);
                     }
                     // Video
                     else{
@@ -2666,7 +2658,7 @@
                     resource_url = result.items[0].video_versions[0].url;
                 }
                 else{
-                    resource_url = getHighestImageVersion(result.items[0].image_versions2.candidates[0].url);
+                    resource_url = result.items[0].image_versions2.candidates[0].url;
                 }
 
                 if(isPreview){
@@ -3010,27 +3002,6 @@
                 });
             }
         }
-    }
-
-    /**
-     * getHighestImageVersion
-     *
-     * @return {string}
-     */
-    function getHighestImageVersion(obj){
-        let finalURL = {
-            resolution: 0,
-            url: ""
-        };
-        obj.forEach(image => {
-            let resolution = image.width * image.height;
-            if(resolution > finalURL.resolution){
-                finalURL.resolution = resolution;
-                finalURL.url = image.url;
-            }
-        });
-
-        return finalURL.url;
     }
 
     /**
