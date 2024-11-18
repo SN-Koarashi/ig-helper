@@ -5,7 +5,7 @@
 // @name:ja            IG助手
 // @name:ko            IG조수
 // @namespace          https://github.snkms.com/
-// @version            2.36.15
+// @version            2.36.16
 // @description        Downloading is possible for both photos and videos from posts, as well as for stories, reels or profile picture.
 // @description:zh-TW  一鍵下載對方 Instagram 貼文中的相片、影片甚至是他們的限時動態、連續短片及大頭貼圖片！
 // @description:zh-CN  一键下载对方 Instagram 帖子中的相片、视频甚至是他们的快拍、Reels及头像图片！
@@ -3304,7 +3304,13 @@
         });
 
         $('body').on('click','.IG_SN_DIG_BODY .videoThumbnail', function(){
-            saveFiles($(this).parent().children('a').find('img').first().attr('src'), $(this).parent().children('a').attr('data-username'), 'thumbnail', new Date().getTime(), 'jpg', $('#article-id').text());
+            let timestamp = new Date().getTime();
+
+            if(USER_SETTING.RENAME_PUBLISH_DATE && $(this).parent().children('a').attr('datetime')){
+                timestamp = $(this).parent().children('a').attr('datetime');
+            }
+
+            saveFiles($(this).parent().children('a').find('img').first().attr('src'), $(this).parent().children('a').attr('data-username'), 'thumbnail', timestamp, 'jpg', $('#article-id').text());
         });
 
         // Running if user left-click download icon in stories
