@@ -5,7 +5,7 @@
 // @name:ja            IG助手
 // @name:ko            IG조수
 // @namespace          https://github.snkms.com/
-// @version            2.36.16
+// @version            2.36.17
 // @description        Downloading is possible for both photos and videos from posts, as well as for stories, reels or profile picture.
 // @description:zh-TW  一鍵下載對方 Instagram 貼文中的相片、影片甚至是他們的限時動態、連續短片及大頭貼圖片！
 // @description:zh-CN  一键下载对方 Instagram 帖子中的相片、视频甚至是他们的快拍、Reels及头像图片！
@@ -394,7 +394,7 @@
                             openNewTab(result.items[0].video_versions[0].url);
                         }
                         else{
-                            saveFiles(result.items[0].video_versions[0].url, username,"highlights",timestamp,'mp4');
+                            saveFiles(result.items[0].video_versions[0].url, username,"highlights",timestamp,'mp4', highlightId);
                         }
                     }
                     else{
@@ -402,7 +402,7 @@
                             openNewTab(result.items[0].image_versions2.candidates[0].url);
                         }
                         else{
-                            saveFiles(result.items[0].image_versions2.candidates[0].url, username,"highlights",timestamp,'jpg');
+                            saveFiles(result.items[0].image_versions2.candidates[0].url, username,"highlights",timestamp,'jpg', highlightId);
                         }
                     }
                 }
@@ -571,7 +571,7 @@
                 let result = await getMediaInfo(target.id);
 
                 if(result.status === 'ok'){
-                    saveFiles(result.items[0].image_versions2.candidates[0].url, username,"highlights",timestamp,'jpg');
+                    saveFiles(result.items[0].image_versions2.candidates[0].url, username,"highlights",timestamp,'jpg',highlightId);
                 }
                 else{
                     if(USER_SETTING.USE_BLOB_FETCH_WHEN_MEDIA_RATE_LITMIT){
@@ -735,7 +735,7 @@
                             openNewTab(result.items[0].video_versions[0].url);
                         }
                         else{
-                            saveFiles(result.items[0].video_versions[0].url, username,"stories",timestamp,'mp4');
+                            saveFiles(result.items[0].video_versions[0].url, username,"stories",timestamp,'mp4',mediaId);
                         }
                     }
                     else{
@@ -743,7 +743,7 @@
                             openNewTab(result.items[0].image_versions2.candidates[0].url);
                         }
                         else{
-                            saveFiles(result.items[0].image_versions2.candidates[0].url, username,"stories",timestamp,'jpg');
+                            saveFiles(result.items[0].image_versions2.candidates[0].url, username,"stories",timestamp,'jpg',mediaId);
                         }
                     }
                 }
@@ -767,6 +767,7 @@
                 let type = "mp4";
                 let videoURL = "";
                 let targetURL = location.pathname.replace(/\/$/ig,'').split("/").at(-1);
+                let mediaId = null;
 
                 if(GL_dataCache.stories[username] && !isForce){
                     logger('Fetch from memory cache:', username);
@@ -775,6 +776,7 @@
                             videoURL = item.video_resources[0].src;
                             if(USER_SETTING.RENAME_PUBLISH_DATE){
                                 timestamp = item.taken_at_timestamp;
+                                mediaId = item.id;
                             }
                         }
                     });
@@ -795,6 +797,7 @@
                             videoURL = item.video_resources[0].src;
                             if(USER_SETTING.RENAME_PUBLISH_DATE){
                                 timestamp = item.taken_at_timestamp;
+                                mediaId = item.id;
                             }
                         }
                     });
@@ -817,6 +820,7 @@
                                 videoURL = stories.data.reels_media[0].items[index].video_resources[0].src;
                                 if(USER_SETTING.RENAME_PUBLISH_DATE){
                                     timestamp = stories.data.reels_media[0].items[index].taken_at_timestamp;
+                                    mediaId = stories.data.reels_media[0].items[index].id;
                                 }
                             }
                         });
@@ -830,6 +834,7 @@
                                         videoURL = stories.data.reels_media[0].items[index].video_resources[0].src;
                                         if(USER_SETTING.RENAME_PUBLISH_DATE){
                                             timestamp = stories.data.reels_media[0].items[index].taken_at_timestamp;
+                                            mediaId = stories.data.reels_media[0].items[index].id;
                                         }
                                     }
                                 }
@@ -841,6 +846,7 @@
                                     videoURL = stories.data.reels_media[0].items[index].video_resources[0].src;
                                     if(USER_SETTING.RENAME_PUBLISH_DATE){
                                         timestamp = stories.data.reels_media[0].items[index].taken_at_timestamp;
+                                        mediaId = stories.data.reels_media[0].items[index].id;
                                     }
                                 }
                             });
@@ -858,7 +864,7 @@
                         openNewTab(videoURL);
                     }
                     else{
-                        saveFiles(videoURL,username,"stories",timestamp,type);
+                        saveFiles(videoURL,username,"stories",timestamp,type, mediaId);
                     }
                 }
             }
@@ -884,7 +890,7 @@
                     openNewTab(downloadLink);
                 }
                 else{
-                    saveFiles(downloadLink,username,"stories",timestamp,type);
+                    saveFiles(downloadLink,username,"stories",timestamp,type, getStoryId(downloadLink) ?? "");
                 }
             }
 
@@ -1008,12 +1014,11 @@
             // Download thumbnail
             let targetURL = location.pathname.replace(/\/$/ig,'').split("/").at(-1);
             let videoThumbnailURL = "";
+            let mediaId = null;
 
             updateLoadingBar(true);
 
             if(USER_SETTING.FORCE_RESOURCE_VIA_MEDIA && !TEMP_FETCH_RATE_LITMIT){
-                let mediaId = null;
-
                 let userInfo = await getUserId(username);
                 let userId = userInfo.user.pk;
                 let stories = await getStories(userId);
@@ -1072,7 +1077,7 @@
                 }
 
                 if(result.status === 'ok'){
-                    saveFiles(result.items[0].image_versions2.candidates[0].url, username,"stories",timestamp,'jpg');
+                    saveFiles(result.items[0].image_versions2.candidates[0].url, username,"stories",timestamp,'jpg',mediaId);
 
                 }
                 else{
@@ -1098,6 +1103,7 @@
                         videoThumbnailURL = item.display_url;
                         if(USER_SETTING.RENAME_PUBLISH_DATE){
                             timestamp = item.taken_at_timestamp;
+                            mediaId = item.id;
                         }
                     }
                 });
@@ -1118,6 +1124,7 @@
                         videoThumbnailURL = item.display_url;
                         if(USER_SETTING.RENAME_PUBLISH_DATE){
                             timestamp = item.taken_at_timestamp;
+                            mediaId = item.id;
                         }
                     }
                 });
@@ -1139,6 +1146,7 @@
                             videoThumbnailURL = stories.data.reels_media[0].items[index].display_url;
                             if(USER_SETTING.RENAME_PUBLISH_DATE){
                                 timestamp = stories.data.reels_media[0].items[index].taken_at_timestamp;
+                                mediaId = stories.data.reels_media[0].items[index].id;
                             }
                         }
                     });
@@ -1151,6 +1159,7 @@
                                     videoThumbnailURL = stories.data.reels_media[0].items[index].display_url;
                                     if(USER_SETTING.RENAME_PUBLISH_DATE){
                                         timestamp = stories.data.reels_media[0].items[index].taken_at_timestamp;
+                                        mediaId = stories.data.reels_media[0].items[index].id;
                                     }
                                 }
                             }
@@ -1162,6 +1171,7 @@
                                 videoThumbnailURL = stories.data.reels_media[0].items[index].display_url;
                                 if(USER_SETTING.RENAME_PUBLISH_DATE){
                                     timestamp = stories.data.reels_media[0].items[index].taken_at_timestamp;
+                                    mediaId = stories.data.reels_media[0].items[index].id;
                                 }
                             }
                         });
@@ -1169,7 +1179,7 @@
                 }
             }
 
-            saveFiles(videoThumbnailURL,username,"thumbnail",timestamp,type);
+            saveFiles(videoThumbnailURL,username,"thumbnail",timestamp,type,mediaId);
             TEMP_FETCH_RATE_LITMIT= false;
             updateLoadingBar(false);
         }
@@ -1455,6 +1465,24 @@
                     });
                 }
             },250);
+        }
+    }
+
+    /**
+     * getStoryId
+     * Obtain the media id through the resource URL.
+     *
+     * @param  {string}  url
+     * @return {string}
+     */
+    function getStoryId(url){
+        let obj = new URL(url);
+        let base64 = obj?.searchParams?.get('ig_cache_key')?.split('.').at(0);
+        if(base64){
+            return atob(base64);
+        }
+        else{
+            return null;
         }
     }
 
