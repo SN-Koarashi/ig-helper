@@ -5,7 +5,7 @@
 // @name:ja            IG助手
 // @name:ko            IG조수
 // @namespace          https://github.snkms.com/
-// @version            2.37.1
+// @version            2.37.2
 // @description        Downloading is possible for both photos and videos from posts, as well as for stories, reels or profile picture.
 // @description:zh-TW  一鍵下載對方 Instagram 貼文中的相片、影片甚至是他們的限時動態、連續短片及大頭貼圖片！
 // @description:zh-CN  一键下载对方 Instagram 帖子中的相片、视频甚至是他们的快拍、Reels及头像图片！
@@ -2518,6 +2518,12 @@
                         let idx = ind+1;
                         // Image
                         if(mda.video_versions == null){
+                            mda.image_versions2.candidates.sort(function(a, b) {
+                                if (a.width < b.width) return 1;
+                                if (a.width > b.width) return -1;
+                                return 0;
+                            });
+
                             $(selector).append(`<a media-id="${mda.pk}" datetime="${mda.taken_at}" data-blob="true" data-needed="direct" data-path="${resource.code}" data-name="photo" data-type="jpg" data-username="${resource.owner.username}" data-globalIndex="${idx}" href="javascript:;" data-href="${mda.image_versions2.candidates[0].url}"><img width="100" src="${mda.image_versions2.candidates[0].url}" /><br/>- <span data-ih-locale="IMG">${_i18n("IMG")}</span> ${idx} -</a>`);
                         }
                         // Video
@@ -2530,6 +2536,12 @@
                     let idx = 1;
                     // Image
                     if(resource.video_versions == null){
+                        resource.image_versions2.candidates.sort(function(a, b) {
+                            if (a.width < b.width) return 1;
+                            if (a.width > b.width) return -1;
+                            return 0;
+                        });
+
                         $(selector).append(`<a media-id="${resource.pk}" datetime="${resource.taken_at}" data-blob="true" data-needed="direct" data-path="${resource.code}" data-name="photo" data-type="jpg" data-username="${resource.owner.username}" data-globalIndex="${idx}" href="javascript:;" data-href="${resource.image_versions2.candidates[0].url}"><img width="100" src="${resource.image_versions2.candidates[0].url}" /><br/>- <span data-ih-locale="IMG">${_i18n("IMG")}</span> ${idx} -</a>`);
                     }
                     // Video
@@ -2714,6 +2726,12 @@
                     resource_url = result.items[0].video_versions[0].url;
                 }
                 else{
+                    result.items[0].image_versions2.candidates.sort(function(a, b) {
+                        if (a.width < b.width) return 1;
+                        if (a.width > b.width) return -1;
+                        return 0;
+                    });
+
                     resource_url = result.items[0].image_versions2.candidates[0].url;
                 }
 
