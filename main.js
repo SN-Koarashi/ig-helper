@@ -5,7 +5,7 @@
 // @name:ja            IG助手
 // @name:ko            IG조수
 // @namespace          https://github.snkms.com/
-// @version            2.36.19
+// @version            2.37.1
 // @description        Downloading is possible for both photos and videos from posts, as well as for stories, reels or profile picture.
 // @description:zh-TW  一鍵下載對方 Instagram 貼文中的相片、影片甚至是他們的限時動態、連續短片及大頭貼圖片！
 // @description:zh-CN  一键下载对方 Instagram 帖子中的相片、视频甚至是他们的快拍、Reels及头像图片！
@@ -2026,11 +2026,27 @@
         if(USER_SETTING.HTML5_VIDEO_CONTROL){
             $mainElement.find('video').each(function(){
                 if(!$(this).data('controls')){
+                    let $video = $(this);
+
                     logger('(post) Added video html5 contorller #modify');
                     this.volume = VIDEO_VOLUME;
 
                     $(this).on('loadstart',function(){
                         this.volume = VIDEO_VOLUME;
+                    });
+
+                    // Restore layout to show details interface
+                    $(this).on('contextmenu',function(e){
+                        e.preventDefault();
+                        $video.css('z-index', '-1');
+                        $video.removeAttr('controls');
+                    });
+
+                    // Hide layout to show controller
+                    $(this).parent().find('video + div > div').first().on('contextmenu',function(e){
+                        e.preventDefault();
+                        $video.css('z-index', '2');
+                        $video.attr('controls', true);
                     });
 
                     $(this).on('volumechange',function(){
@@ -3523,6 +3539,40 @@
                                             }
                                         }
                                     });
+
+                                    var $video = $(this);
+                                    var $buttonParent = $video.parents('div[style][class]').filter(function(){
+                                        return $(this).width() == $video.width();
+                                    }).first();
+
+                                    $buttonParent.append('<div class="volume_slider" style="top: 80px; right:25px; transform: rotate(-90deg);transform-origin: right center;" />');
+                                    $buttonParent.find('div.volume_slider').append(`<div><input type="range" max="1" min="0" step="0.05" value="${VIDEO_VOLUME}" /></div>`);
+                                    $buttonParent.find('div.volume_slider input').attr('style',`--ig-track-progress: ${(VIDEO_VOLUME * 100) + '%'}`);
+                                    $buttonParent.find('div.volume_slider input').on('input',function(){
+                                        var percent = ($(this).val() * 100) + '%';
+
+                                        VIDEO_VOLUME = $(this).val();
+                                        GM_setValue('G_VIDEO_VOLUME', $(this).val());
+
+                                        $(this).attr('style',`--ig-track-progress: ${percent}`);
+
+                                        logger('(highlight) video volume changed #slider');
+                                        $video[0].volume = VIDEO_VOLUME;
+                                    });
+
+                                    $buttonParent.find('div.volume_slider input').on('mouseenter',function(){
+                                        var percent = (VIDEO_VOLUME * 100) + '%';
+                                        $(this).attr('style',`--ig-track-progress: ${percent}`);
+                                        $(this).val(VIDEO_VOLUME);
+
+                                        logger('(highlight) video volume changed #slider');
+                                        $video[0].volume = VIDEO_VOLUME;
+                                    });
+
+                                    $buttonParent.find('div.volume_slider').on('click',function(e){
+                                        e.stopPropagation();
+                                        e.preventDefault();
+                                    });
                                 });
                             }
                             else if(location.href.match(/^(https:\/\/www\.instagram\.com\/stories\/)/ig)){
@@ -3542,6 +3592,40 @@
                                                 logger('(story) Thumbnail button already inserted');
                                             }
                                         }
+                                    });
+
+                                    var $video = $(this);
+                                    var $buttonParent = $video.parents('div[style][class]').filter(function(){
+                                        return $(this).width() == $video.width();
+                                    }).first();
+
+                                    $buttonParent.append('<div class="volume_slider" style="top: 80px; right:25px; transform: rotate(-90deg);transform-origin: right center;" />');
+                                    $buttonParent.find('div.volume_slider').append(`<div><input type="range" max="1" min="0" step="0.05" value="${VIDEO_VOLUME}" /></div>`);
+                                    $buttonParent.find('div.volume_slider input').attr('style',`--ig-track-progress: ${(VIDEO_VOLUME * 100) + '%'}`);
+                                    $buttonParent.find('div.volume_slider input').on('input',function(){
+                                        var percent = ($(this).val() * 100) + '%';
+
+                                        VIDEO_VOLUME = $(this).val();
+                                        GM_setValue('G_VIDEO_VOLUME', $(this).val());
+
+                                        $(this).attr('style',`--ig-track-progress: ${percent}`);
+
+                                        logger('(story) video volume changed #slider');
+                                        $video[0].volume = VIDEO_VOLUME;
+                                    });
+
+                                    $buttonParent.find('div.volume_slider input').on('mouseenter',function(){
+                                        var percent = (VIDEO_VOLUME * 100) + '%';
+                                        $(this).attr('style',`--ig-track-progress: ${percent}`);
+                                        $(this).val(VIDEO_VOLUME);
+
+                                        logger('(story) video volume changed #slider');
+                                        $video[0].volume = VIDEO_VOLUME;
+                                    });
+
+                                    $buttonParent.find('div.volume_slider').on('click',function(e){
+                                        e.stopPropagation();
+                                        e.preventDefault();
                                     });
                                 });
                             }
