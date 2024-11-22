@@ -39,6 +39,7 @@
 ## Developer Statement
 1. All code development and testing are based on the Chrome browser and the extension Tampermonkey.
 2. Due to the framework and personal differences used in Instagram development, the page layout and node names presented by each person may be different. Therefore, all development and testing are based on the pages I have seen, which may cause a few people to The script does not work, please forgive me.
+3. Extensive use of this script, especially when enabling the "Media API" or "Force Fetch API," may trigger Instagram's automation bot checks, potentially leading to account warnings, being logged out, or even being banned. Please use it with caution.
 
 > [!IMPORTANT]
 > On GreasyFork: https://greasyfork.org/en/scripts/404535-ig-helper
