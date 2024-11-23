@@ -5,7 +5,7 @@
 // @name:ja            IG助手
 // @name:ko            IG조수
 // @namespace          https://github.snkms.com/
-// @version            2.37.2
+// @version            2.38.1
 // @description        Downloading is possible for both photos and videos from posts, as well as for stories, reels or profile picture.
 // @description:zh-TW  一鍵下載對方 Instagram 貼文中的相片、影片甚至是他們的限時動態、連續短片及大頭貼圖片！
 // @description:zh-CN  一键下载对方 Instagram 帖子中的相片、视频甚至是他们的快拍、Reels及头像图片！
@@ -3539,112 +3539,143 @@
                                 });
                             }
 
-                            if(location.href.match(/^(https:\/\/www\.instagram\.com\/stories\/highlights\/)/ig)){
+                            if(location.pathname.match(/^(\/stories\/)/ig)){
+                                const isHighlight = location.pathname.match(/^(\/stories\/highlights\/)/ig) != null;
+                                const storyType = isHighlight ? 'highlight' : 'story';
+
                                 $videos.each(function(){
                                     $(this).on('timeupdate',function(){
                                         if(!$(this).data('modify-thumbnail')){
                                             let $video = $(this);
                                             if($video.parents('div[style][class]').filter(function(){
                                                 return $(this).width() == $video.width();
-                                            }).find('.IG_DWHISTORY_THUMBNAIL').length === 0){
+                                            }).find('.IG_DWSTORY_THUMBNAIL, .IG_DWHISTORY_THUMBNAIL').length === 0){
                                                 $(this).attr('data-modify-thumbnail', true);
-                                                onHighlightsStoryThumbnail(false);
-                                                logger('(highlight) Manually inserting thumbnail button');
+
+                                                if(isHighlight){
+                                                    onHighlightsStoryThumbnail(false);
+                                                }
+                                                else{
+                                                    onStoryThumbnail(false);
+                                                }
+
+                                                logger(`(${storyType})`,'Manually inserting thumbnail button');
                                             }
                                             else{
                                                 $(this).attr('data-modify-thumbnail', true);
-                                                logger('(highlight) Thumbnail button already inserted');
+                                                logger(`(${storyType})`,'Thumbnail button already inserted');
                                             }
                                         }
                                     });
 
                                     var $video = $(this);
-                                    var $buttonParent = $video.parents('div[style][class]').filter(function(){
-                                        return $(this).width() == $video.width();
-                                    }).first();
 
-                                    $buttonParent.append('<div class="volume_slider" style="top: 80px; right:25px; transform: rotate(-90deg);transform-origin: right center;" />');
-                                    $buttonParent.find('div.volume_slider').append(`<div><input type="range" max="1" min="0" step="0.05" value="${VIDEO_VOLUME}" /></div>`);
-                                    $buttonParent.find('div.volume_slider input').attr('style',`--ig-track-progress: ${(VIDEO_VOLUME * 100) + '%'}`);
-                                    $buttonParent.find('div.volume_slider input').on('input',function(){
-                                        var percent = ($(this).val() * 100) + '%';
+                                    if(USER_SETTING.HTML5_VIDEO_CONTROL){
+                                        if(!$video.data('controls')){
+                                            logger(`(${storyType})`,'Added video html5 contorller #modify');
+                                            this.volume = VIDEO_VOLUME;
 
-                                        VIDEO_VOLUME = $(this).val();
-                                        GM_setValue('G_VIDEO_VOLUME', $(this).val());
+                                            $video.on('loadstart',function(){
+                                                this.volume = VIDEO_VOLUME;
+                                            });
 
-                                        $(this).attr('style',`--ig-track-progress: ${percent}`);
+                                            let $videoParent = $video.parents('div').filter(function(){
+                                                return $(this).attr('class') == null && $(this).attr('style') == null;
+                                            }).first();
 
-                                        logger('(highlight) video volume changed #slider');
-                                        $video[0].volume = VIDEO_VOLUME;
-                                    });
+                                            // story bottom bar
+                                            let $bottomBar = $videoParent.next();
+                                            $bottomBar.hide();
 
-                                    $buttonParent.find('div.volume_slider input').on('mouseenter',function(){
-                                        var percent = (VIDEO_VOLUME * 100) + '%';
-                                        $(this).attr('style',`--ig-track-progress: ${percent}`);
-                                        $(this).val(VIDEO_VOLUME);
+                                            // read more button in center
+                                            let $readMoreButton = $videoParent.find('div[class][role="button"]');
+                                            $readMoreButton.hide();
 
-                                        logger('(highlight) video volume changed #slider');
-                                        $video[0].volume = VIDEO_VOLUME;
-                                    });
+                                            const hideContextmenu = function(e){
+                                                e.preventDefault();
+                                                $video.css('z-index', '2');
+                                                $video.attr('controls', true);
 
-                                    $buttonParent.find('div.volume_slider').on('click',function(e){
-                                        e.stopPropagation();
-                                        e.preventDefault();
-                                    });
-                                });
-                            }
-                            else if(location.href.match(/^(https:\/\/www\.instagram\.com\/stories\/)/ig)){
-                                $videos.each(function(){
-                                    $(this).on('timeupdate',function(){
-                                        if(!$(this).data('modify-thumbnail')){
-                                            let $video = $(this);
-                                            if($video.parents('div[style][class]').filter(function(){
-                                                return $(this).width() == $video.width();
-                                            }).find('.IG_DWSTORY_THUMBNAIL').length === 0){
-                                                $(this).attr('data-modify-thumbnail', true);
-                                                onStoryThumbnail(false);
-                                                logger('(story) Manually inserting thumbnail button');
-                                            }
-                                            else{
-                                                $(this).attr('data-modify-thumbnail', true);
-                                                logger('(story) Thumbnail button already inserted');
-                                            }
+                                                $readMoreButton.hide();
+                                                $bottomBar.hide();
+                                            };
+
+                                            // Hide layout to show controller
+                                            $video.parent().find('video + div').on('contextmenu', hideContextmenu);
+                                            $readMoreButton.on('contextmenu', hideContextmenu);
+                                            $bottomBar.on('contextmenu', hideContextmenu);
+
+                                            // Restore layout to show details interface
+                                            $video.on('contextmenu',function(e){
+                                                e.preventDefault();
+                                                $video.css('z-index', '-1');
+                                                $video.removeAttr('controls');
+
+                                                $bottomBar.show();
+                                                $readMoreButton.show();
+                                            });
+
+                                            $video.on('volumechange',function(){
+                                                // This is mute/unmute's icon
+                                                let $element_mute_button = $videoParent.parent().find('svg > path[d^="M1.5 13.3c-.8 0-1.5.7-1.5 1.5v18.4c0"], svg > path[d^="M16.636 7.028a1.5 1.5"]').parents('[role="button"]').first();
+
+                                                var is_elelment_muted = $element_mute_button.find('svg > path[d^="M16.636"]').length === 0;
+
+                                                if(this.muted != is_elelment_muted){
+                                                    this.volume = VIDEO_VOLUME;
+                                                    $element_mute_button?.click();
+                                                }
+
+                                                if ($(this).attr('data-completed')){
+                                                    VIDEO_VOLUME = this.volume;
+                                                    GM_setValue('G_VIDEO_VOLUME', this.volume);
+                                                }
+
+                                                if(this.volume == VIDEO_VOLUME){
+                                                    $(this).attr('data-completed', true);
+                                                }
+                                            });
+
+                                            $video.css('position', 'absolute');
+                                            $video.css('z-index', '2');
+                                            $video.attr('data-controls', true);
+                                            $video.attr('controls', true);
                                         }
-                                    });
+                                    }
+                                    else{
+                                        var $buttonParent = $video.parents('div[style][class]').filter(function(){
+                                            return $(this).width() == $video.width();
+                                        }).first();
 
-                                    var $video = $(this);
-                                    var $buttonParent = $video.parents('div[style][class]').filter(function(){
-                                        return $(this).width() == $video.width();
-                                    }).first();
+                                        $buttonParent.append('<div class="volume_slider" style="top: 80px; right:25px; transform: rotate(-90deg);transform-origin: right center;" />');
+                                        $buttonParent.find('div.volume_slider').append(`<div><input type="range" max="1" min="0" step="0.05" value="${VIDEO_VOLUME}" /></div>`);
+                                        $buttonParent.find('div.volume_slider input').attr('style',`--ig-track-progress: ${(VIDEO_VOLUME * 100) + '%'}`);
+                                        $buttonParent.find('div.volume_slider input').on('input',function(){
+                                            var percent = ($(this).val() * 100) + '%';
 
-                                    $buttonParent.append('<div class="volume_slider" style="top: 80px; right:25px; transform: rotate(-90deg);transform-origin: right center;" />');
-                                    $buttonParent.find('div.volume_slider').append(`<div><input type="range" max="1" min="0" step="0.05" value="${VIDEO_VOLUME}" /></div>`);
-                                    $buttonParent.find('div.volume_slider input').attr('style',`--ig-track-progress: ${(VIDEO_VOLUME * 100) + '%'}`);
-                                    $buttonParent.find('div.volume_slider input').on('input',function(){
-                                        var percent = ($(this).val() * 100) + '%';
+                                            VIDEO_VOLUME = $(this).val();
+                                            GM_setValue('G_VIDEO_VOLUME', $(this).val());
 
-                                        VIDEO_VOLUME = $(this).val();
-                                        GM_setValue('G_VIDEO_VOLUME', $(this).val());
+                                            $(this).attr('style',`--ig-track-progress: ${percent}`);
 
-                                        $(this).attr('style',`--ig-track-progress: ${percent}`);
+                                            logger(`(${storyType})`,'video volume changed #slider');
+                                            $video[0].volume = VIDEO_VOLUME;
+                                        });
 
-                                        logger('(story) video volume changed #slider');
-                                        $video[0].volume = VIDEO_VOLUME;
-                                    });
+                                        $buttonParent.find('div.volume_slider input').on('mouseenter',function(){
+                                            var percent = (VIDEO_VOLUME * 100) + '%';
+                                            $(this).attr('style',`--ig-track-progress: ${percent}`);
+                                            $(this).val(VIDEO_VOLUME);
 
-                                    $buttonParent.find('div.volume_slider input').on('mouseenter',function(){
-                                        var percent = (VIDEO_VOLUME * 100) + '%';
-                                        $(this).attr('style',`--ig-track-progress: ${percent}`);
-                                        $(this).val(VIDEO_VOLUME);
+                                            logger(`(${storyType})`,'video volume changed #slider');
+                                            $video[0].volume = VIDEO_VOLUME;
+                                        });
 
-                                        logger('(story) video volume changed #slider');
-                                        $video[0].volume = VIDEO_VOLUME;
-                                    });
-
-                                    $buttonParent.find('div.volume_slider').on('click',function(e){
-                                        e.stopPropagation();
-                                        e.preventDefault();
-                                    });
+                                        $buttonParent.find('div.volume_slider').on('click',function(e){
+                                            e.stopPropagation();
+                                            e.preventDefault();
+                                        });
+                                    }
                                 });
                             }
                         }
