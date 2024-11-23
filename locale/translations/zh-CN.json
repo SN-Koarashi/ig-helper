@@ -49,7 +49,7 @@
     "RENAME_PUBLISH_DATE_INTRO": "将文件重命名格式中的时间戳设置为资源发布日期 (浏览器时区)\n\n此功能仅在[自动重命名文件]设置为 TRUE 时有效。",
     "RENAME_LOCATE_DATE_INTRO": "修改重命名档案时间戳日期格式为浏览器当地时间，并且格式化为您所选择的地区日期格式。\n\n此功能仅在[自动重命名文件]设置为 TRUE 时有效。",
     "DISABLE_VIDEO_LOOPING_INTRO": "禁用 Reels 和帖子中的视频自动播放。",
-    "HTML5_VIDEO_CONTROL_INTRO": "在帖子和 Reels 中显示 HTML5 视频控制器。\n\n这将隐藏自定义视频音量滑块并将其替换为 HTML5 控制器。\n在 Reels 页面中，可以通过右键单击视频来隐藏 HTML5 控制器以显示原始详细信息。",
+    "HTML5_VIDEO_CONTROL_INTRO": "在视频资源中显示 HTML5 视频控制器。\n\n这将隐藏自定义视频音量滑块并将其替换为 HTML5 控制器。\n可以通过右键单击视频来隐藏 HTML5 控制器以显示原始详细信息。",
     "REDIRECT_CLICK_USER_STORY_PICTURE_INTRO": "右键单击主页故事区域中的用户头像，重定向到用户的个人资料页面；若使用中键单击，则以新选项卡开启。",
     "FORCE_FETCH_ALL_RESOURCES_INTRO": "通过 Instagram API 强制获取帖子中的所有资源（照片和视频），以取消每个帖子单次抓取三个资源的限制。",
     "DIRECT_DOWNLOAD_VISIBLE_RESOURCE_INTRO": "直接下载帖子中的当前资源。",

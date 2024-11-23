@@ -49,7 +49,7 @@
     "RENAME_PUBLISH_DATE_INTRO": "將檔案重新命名格式中的時間戳設定為資源發佈日期 (瀏覽器時區)\n\n此功能僅在[自動重新命名檔案]設定為 TRUE 時有效。",
     "RENAME_LOCATE_DATE_INTRO": "修改重新命名檔案時間戳日期格式為瀏覽器當地時間，並且格式化為您所選擇的地區日期格式。\n\n此功能僅在[自動重新命名檔案]設定為 TRUE 時有效。",
     "DISABLE_VIDEO_LOOPING_INTRO": "關閉連續短片和貼文中影片自動循環播放。",
-    "HTML5_VIDEO_CONTROL_INTRO": "在貼文以及連續短片中顯示 HTML5 影片控制器。\n\n這將會隱藏自訂影片音量滑條，並由 HTML5 控制器取代。\n在連續短片頁面中，HTML5 控制器可以透過右鍵點擊影片來隱藏，以顯示原始詳細資訊。",
+    "HTML5_VIDEO_CONTROL_INTRO": "在影片資源中顯示 HTML5 影片控制器。\n\n這將會隱藏自訂影片音量滑條，並由 HTML5 控制器取代。\nHTML5 控制器可以透過右鍵點擊影片來隱藏，以顯示原始詳細資訊。",
     "REDIRECT_CLICK_USER_STORY_PICTURE_INTRO": "右鍵點選首頁限時動態區域中的使用者頭貼時，重新導向到使用者的個人資料頁面；若使用中鍵點擊，則以新分頁開啟。",
     "FORCE_FETCH_ALL_RESOURCES_INTRO": "透過 Instagram API 強制取得貼文中的所有資源（照片和影片），以取消每個貼文單次提取三個資源的限制。",
     "DIRECT_DOWNLOAD_VISIBLE_RESOURCE_INTRO": "直接下載貼文中的目前資源。",
