@@ -17,7 +17,7 @@
 - Download the video thumbnail.
 - Fetch high-quality photos or videos through the Media API.
 - Disable video looping.
-- Enable the native HTML5 video controller for posts and videos.
+- Enable the native HTML5 video controller for video resources.
 - Download the user's profile picture.
 - Provide scroll buttons for Reels pages.
 - Automatically modify and control the playback volume of all video elements.
