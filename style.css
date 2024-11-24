@@ -437,6 +437,13 @@ div[class]:hover + .volume_slider > div, .volume_slider:hover > div{
     bottom: 15px;
 }
 
+.volume_slider.vertical{
+    top: 80px;
+    right:25px;
+    transform: rotate(-90deg);
+    transform-origin: right center;
+}
+
 .volume_slider > div{
     width: calc(100% - 20px);
     position: absolute;
