@@ -5,7 +5,7 @@
 // @name:ja            IG助手
 // @name:ko            IG조수
 // @namespace          https://github.snkms.com/
-// @version            2.38.2
+// @version            2.39.1
 // @description        Downloading is possible for both photos and videos from posts, as well as for stories, reels or profile picture.
 // @description:zh-TW  一鍵下載對方 Instagram 貼文中的相片、影片甚至是他們的限時動態、連續短片及大頭貼圖片！
 // @description:zh-CN  一键下载对方 Instagram 帖子中的相片、视频甚至是他们的快拍、Reels及头像图片！
@@ -1432,38 +1432,9 @@
                                     });
                                 }
 
+                                var $videos = $main.find('video');
                                 var $buttonParent = $(this).find('div[role="presentation"] > div[role="button"] > div').first();
-                                $buttonParent.append('<div class="volume_slider" />');
-                                $buttonParent.find('div.volume_slider').append(`<div><input type="range" max="1" min="0" step="0.05" value="${VIDEO_VOLUME}" /></div>`);
-                                $buttonParent.find('div.volume_slider input').attr('style',`--ig-track-progress: ${(VIDEO_VOLUME * 100) + '%'}`);
-                                $buttonParent.find('div.volume_slider input').on('input',function(){
-                                    var percent = ($(this).val() * 100) + '%';
-
-                                    VIDEO_VOLUME = $(this).val();
-                                    GM_setValue('G_VIDEO_VOLUME', $(this).val());
-
-                                    $(this).attr('style',`--ig-track-progress: ${percent}`);
-
-                                    $main.find('video').each(function(){
-                                        logger('(reel) video volume changed #slider');
-                                        this.volume = VIDEO_VOLUME;
-                                    });
-                                });
-
-                                $buttonParent.find('div.volume_slider input').on('mouseenter',function(){
-                                    var percent = (VIDEO_VOLUME * 100) + '%';
-                                    $(this).attr('style',`--ig-track-progress: ${percent}`);
-                                    $(this).val(VIDEO_VOLUME);
-                                    $main.find('video').each(function(){
-                                        logger('(reel) video volume changed #slider');
-                                        this.volume = VIDEO_VOLUME;
-                                    });
-                                });
-
-                                $buttonParent.find('div.volume_slider').on('click',function(e){
-                                    e.stopPropagation();
-                                    e.preventDefault();
-                                });
+                                toggleVolumeSilder($videos, $buttonParent, 'reel');
                             }
                         }
                     });
@@ -2080,39 +2051,9 @@
             });
         }
 
-
+        var $videos = $mainElement.find('video');
         var $buttonParent = $mainElement.find('video + div > div').first();
-        $buttonParent.append('<div class="volume_slider bottom" />');
-        $buttonParent.find('div.volume_slider').append(`<div><input type="range" max="1" min="0" step="0.05" value="${VIDEO_VOLUME}" /></div>`);
-        $buttonParent.find('div.volume_slider input').attr('style',`--ig-track-progress: ${(VIDEO_VOLUME * 100) + '%'}`);
-        $buttonParent.find('div.volume_slider input').on('input',function(){
-            var percent = ($(this).val() * 100) + '%';
-
-            VIDEO_VOLUME = $(this).val();
-            GM_setValue('G_VIDEO_VOLUME', $(this).val());
-
-            $(this).attr('style',`--ig-track-progress: ${percent}`);
-
-            $mainElement.find('video').each(function(){
-                logger('(post) video volume changed #slider');
-                this.volume = VIDEO_VOLUME;
-            });
-        });
-
-        $buttonParent.find('div.volume_slider input').on('mouseenter',function(){
-            var percent = (VIDEO_VOLUME * 100) + '%';
-            $(this).attr('style',`--ig-track-progress: ${percent}`);
-            $(this).val(VIDEO_VOLUME);
-            $mainElement.find('video').each(function(){
-                logger('(post) video volume changed #slider');
-                this.volume = VIDEO_VOLUME;
-            });
-        });
-
-        $buttonParent.find('div.volume_slider').on('click',function(e){
-            e.stopPropagation();
-            e.preventDefault();
-        });
+        toggleVolumeSilder($videos, $buttonParent, 'post', 'bottom');
     };
 
     /**
@@ -3190,6 +3131,57 @@
         }
     }
 
+    /**
+     * toggleVolumeSilder
+     * Toggle display of custom volume slider.
+     *
+     * @param  {object}  $videos
+     * @param  {object}  $buttonParent
+     * @param  {string}  loggerType
+     * @param  {string}  customClass
+     * @return {void}
+     */
+    function toggleVolumeSilder($videos, $buttonParent, loggerType, customClass = ""){
+        if($buttonParent.find('div.volume_slider').length === 0){
+            $buttonParent.append(`<div class="volume_slider ${customClass}" />`);
+            $buttonParent.find('div.volume_slider').append(`<div><input type="range" max="1" min="0" step="0.05" value="${VIDEO_VOLUME}" /></div>`);
+            $buttonParent.find('div.volume_slider input').attr('style',`--ig-track-progress: ${(VIDEO_VOLUME * 100) + '%'}`);
+            $buttonParent.find('div.volume_slider input').on('input',function(){
+                var percent = ($(this).val() * 100) + '%';
+
+                VIDEO_VOLUME = $(this).val();
+                GM_setValue('G_VIDEO_VOLUME', $(this).val());
+
+                $(this).attr('style',`--ig-track-progress: ${percent}`);
+
+                $videos.each(function(){
+                    logger(`(${loggerType})`,'video volume changed #slider');
+                    this.volume = VIDEO_VOLUME;
+                });
+            });
+
+            $buttonParent.find('div.volume_slider input').on('mouseenter',function(){
+                var percent = (VIDEO_VOLUME * 100) + '%';
+                $(this).attr('style',`--ig-track-progress: ${percent}`);
+                $(this).val(VIDEO_VOLUME);
+
+
+                $videos.each(function(){
+                    logger(`(${loggerType})`,'video volume changed #slider');
+                    this.volume = VIDEO_VOLUME;
+                });
+            });
+
+            $buttonParent.find('div.volume_slider').on('click',function(e){
+                e.stopPropagation();
+                e.preventDefault();
+            });
+        }
+        else{
+            $buttonParent.find('div.volume_slider').remove();
+        }
+    }
+
     // Running if document is ready
     $(function(){
         function ConvertDOM (domEl) {
@@ -3598,6 +3590,10 @@
 
                                                 $readMoreButton.hide();
                                                 $bottomBar.hide();
+
+                                                toggleVolumeSilder($video, $video.parents('div[style][class]').filter(function(){
+                                                    return $(this).width() == $video.width();
+                                                }).first(), storyType, 'vertical');
                                             };
 
                                             // Hide layout to show controller
@@ -3613,6 +3609,10 @@
 
                                                 $bottomBar.show();
                                                 $readMoreButton.show();
+
+                                                toggleVolumeSilder($video, $video.parents('div[style][class]').filter(function(){
+                                                    return $(this).width() == $video.width();
+                                                }).first(), storyType, 'vertical');
                                             });
 
                                             $video.on('volumechange',function(){
@@ -3643,38 +3643,9 @@
                                         }
                                     }
                                     else{
-                                        var $buttonParent = $video.parents('div[style][class]').filter(function(){
+                                        toggleVolumeSilder($video, $video.parents('div[style][class]').filter(function(){
                                             return $(this).width() == $video.width();
-                                        }).first();
-
-                                        $buttonParent.append('<div class="volume_slider" style="top: 80px; right:25px; transform: rotate(-90deg);transform-origin: right center;" />');
-                                        $buttonParent.find('div.volume_slider').append(`<div><input type="range" max="1" min="0" step="0.05" value="${VIDEO_VOLUME}" /></div>`);
-                                        $buttonParent.find('div.volume_slider input').attr('style',`--ig-track-progress: ${(VIDEO_VOLUME * 100) + '%'}`);
-                                        $buttonParent.find('div.volume_slider input').on('input',function(){
-                                            var percent = ($(this).val() * 100) + '%';
-
-                                            VIDEO_VOLUME = $(this).val();
-                                            GM_setValue('G_VIDEO_VOLUME', $(this).val());
-
-                                            $(this).attr('style',`--ig-track-progress: ${percent}`);
-
-                                            logger(`(${storyType})`,'video volume changed #slider');
-                                            $video[0].volume = VIDEO_VOLUME;
-                                        });
-
-                                        $buttonParent.find('div.volume_slider input').on('mouseenter',function(){
-                                            var percent = (VIDEO_VOLUME * 100) + '%';
-                                            $(this).attr('style',`--ig-track-progress: ${percent}`);
-                                            $(this).val(VIDEO_VOLUME);
-
-                                            logger(`(${storyType})`,'video volume changed #slider');
-                                            $video[0].volume = VIDEO_VOLUME;
-                                        });
-
-                                        $buttonParent.find('div.volume_slider').on('click',function(e){
-                                            e.stopPropagation();
-                                            e.preventDefault();
-                                        });
+                                        }).first(), storyType, 'vertical');
                                     }
                                 });
                             }
