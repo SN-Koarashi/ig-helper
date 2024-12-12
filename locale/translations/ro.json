@@ -42,7 +42,7 @@
     "MODIFY_VIDEO_VOLUME": "Modifică volumul videoclipurilor (Click dreapta pentru a seta)",
     "SCROLL_BUTTON": "Activează butoanele de derulare pentru pagina Reels",
     "FORCE_RESOURCE_VIA_MEDIA": "Forțează preluarea resurselor prin intermediul Media API",
-    "USE_BLOB_FETCH_WHEN_MEDIA_RATE_LITMIT": "Folosește alte metode pentru a descărca atunci când Media API nu este accesibil",
+    "USE_BLOB_FETCH_WHEN_MEDIA_RATE_LIMIT": "Folosește metode alternative pentru a descărca atunci când Media API nu este accesibil",
     "NEW_TAB_ALWAYS_FORCE_MEDIA_IN_POST": "„Deschide într-o filă nouă” în postări folosește întotdeauna Media API",
     "AUTO_RENAME_INTRO": "Redenumește automat fișierele într-un format personalizat\nListă de formaturi personalizate: \n%USERNAME% - Numele de utilizator\n%SOURCE_TYPE% - Tipul sursei\n%SHORTCODE% - Codul scurt al postării\n%YEAR% - Anul descărcării/publicării\n%2-YEAR% - Anul (ultimele două cifre) descărcării/publicării\n%MONTH% - Luna descărcării/publicării\n%DAY% - Ziua descărcării/publicării\n%HOUR% - Ora descărcării/publicării\n%MINUTE% - Minutul descărcării/publicării\n%SECOND% - Secunda descărcării/publicării\n%ORIGINAL_NAME% - Numele original al fișierului descărcat\n%ORIGINAL_NAME_FIRST% - Numele original al fișierului descărcat (prima parte a numelui)\n\nDacă este setat pe fals, numele fișierului va rămâne neschimbat.\nExemplu: instagram_321565527_679025940443063_4318007696887450953_n.jpg",
     "RENAME_SHORTCODE_INTRO": "Redenumește automat fișierele cu formatul următor:\nNUME_DE_UTILIZATOR-TIP-COD_SCURT-MARCAJ_DE_TIMP.TIPUL_FIȘIERULUI\nExemplu: instagram-photo-CwkxyiVynpW-1670350000.jpg\n\nFuncționează DOAR dacă setarea [Redenumește automat fișierele] este pe ADEVĂRAT.",
@@ -50,15 +50,15 @@
     "RENAME_LOCATE_DATE_INTRO": "Modifică formatul de dată al marcajului de timp pentru redenumirea fișierelor la ora locală a browserului și formatează-l la formatul regional de dată dorit.\n\nFuncționează DOAR dacă setarea [Redenumește automat fișierele] este pe ADEVĂRAT.",
     "DISABLE_VIDEO_LOOPING_INTRO": "Dezactivează redarea automată în buclă a videoclipurilor din Reels și Postări.",
     "HTML5_VIDEO_CONTROL_INTRO": "Afișează controlerul video HTML5 în resursa video.\n\nAcest lucru va ascunde glisorul personalizat de volum video și îl va înlocui cu controlerul HTML5. Controlerul HTML5 poate fi ascuns făcând clic dreapta pe video pentru a dezvălui detaliile originale.",
-    "REDIRECT_CLICK_USER_STORY_PICTURE_INTRO": "Redirecționează către pagina de profil a unui utilizator când dai click dreapta pe avatarul acestuia în zona storyului de pe pagina principală.\nDacă folosești butonul din mijloc pentru a da click, se va deschide într-o filă nouă.",
+    "REDIRECT_CLICK_USER_STORY_PICTURE_INTRO": "Redirecționează către pagina de profil a unui utilizator când dai click dreapta pe avatarul acestuia în zona dedicată storyurilor de pe pagina principală.\nDacă folosești butonul din mijloc pentru a da click, se va deschide într-o filă nouă.",
     "FORCE_FETCH_ALL_RESOURCES_INTRO": "Forțează preluarea tuturor resurselor (fotografii și videoclipuri) dintr-o postare prin intermediul API-ului Instagram pentru a elimina limita de trei resurse per postare.",
     "DIRECT_DOWNLOAD_VISIBLE_RESOURCE_INTRO": "Descarcă direct resursele actuale din postare.",
     "DIRECT_DOWNLOAD_ALL_INTRO": "Atunci când apeși butonul de descărcare, toate resursele din postare vor fi direct forțate să fie preluate și descărcate.",
     "MODIFY_VIDEO_VOLUME_INTRO": "Modifică volumul redării videoclipurilor în Reels și Postări (click dreapta pentru a deschide cursorul de setare a volumului).",
     "SCROLL_BUTTON_INTRO": "Activează butoanele de derulare pentru colțul din dreapta jos al paginii Reels.",
     "FORCE_RESOURCE_VIA_MEDIA_INTRO": "Media API va încerca să obțină cea mai înaltă calitate posibilă pentru fotografii sau videoclipuri, dar încărcarea va dura mai mult.",
-    "USE_BLOB_FETCH_WHEN_MEDIA_RATE_LITMIT_INTRO": "Când Media API atinge limita de rată sau nu poate fi folosit din alte motive, Forced Fetch API este folosit pentru a descărca resursele (calitatea resurselor este puțin mai scăzută).",
+    "USE_BLOB_FETCH_WHEN_MEDIA_RATE_LIMIT_INTRO": "Când Media API atinge limita de rată sau nu poate fi folosit din alte motive, Forced Fetch API este folosit pentru a descărca resursele (calitatea resurselor este puțin mai scăzută).",
     "NEW_TAB_ALWAYS_FORCE_MEDIA_IN_POST_INTRO": "Butonul [Deschide într-o filă nouă] în postări va folosi întotdeauna Media API pentru a obține resursele la rezoluție înaltă.",
-    "SKIP_VIEW_STORY_CONFIRM": "Omiti pagina de confirmare pentru vizualizarea unei povești/sublinieri",
-    "SKIP_VIEW_STORY_CONFIRM_INTRO": "Omiți automat atunci când pagina de confirmare este afișată în poveste sau subliniere."
+    "SKIP_VIEW_STORY_CONFIRM": "Omite pagina de confirmare la vizualizarea unui story/highlight",
+    "SKIP_VIEW_STORY_CONFIRM_INTRO": "Omite automat când pagina de confirmare este afișată în story sau highlight."
 }
