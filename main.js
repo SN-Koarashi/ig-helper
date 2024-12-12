@@ -5,7 +5,7 @@
 // @name:ja            IG助手
 // @name:ko            IG조수
 // @namespace          https://github.snkms.com/
-// @version            2.39.4
+// @version            2.39.5
 // @description        Downloading is possible for both photos and videos from posts, as well as for stories, reels or profile picture.
 // @description:zh-TW  一鍵下載對方 Instagram 貼文中的相片、影片甚至是他們的限時動態、連續短片及大頭貼圖片！
 // @description:zh-CN  一键下载对方 Instagram 帖子中的相片、视频甚至是他们的快拍、Reels及头像图片！
@@ -221,15 +221,15 @@
                     if($(".IG_DWHISTORY").length){
                         setTimeout(()=>{
                             if(USER_SETTING.SKIP_VIEW_STORY_CONFIRM){
-                                var $viewStoryButton = $('div[id^="mount"] section > div > div div[role="button"]').filter(function(){
-                                    return $(this).children().length === 0
+                                var $viewStoryButton = $('div[id^="mount"] section:last-child > div > div div[role="button"]').filter(function(){
+                                    return $(this).children().length === 0 && this.textContent.trim() !== "";
                                 });
                                 $viewStoryButton?.click();
                             }
 
                             pageLoaded = true;
-                        },150)
-                    };
+                        },150);
+                    }
                 }
                 else if(location.href.match(/^(https:\/\/www\.instagram\.com\/stories\/)/ig)){
                     logger('isStory');
@@ -259,8 +259,8 @@
                     if($(".IG_DWSTORY").length){
                         setTimeout(()=>{
                             if(USER_SETTING.SKIP_VIEW_STORY_CONFIRM){
-                                var $viewStoryButton = $('div[id^="mount"] section > div > div div[role="button"]').filter(function(){
-                                    return $(this).children().length === 0
+                                var $viewStoryButton = $('div[id^="mount"] section:last-child > div > div div[role="button"]').filter(function(){
+                                    return $(this).children().length === 0 && this.textContent.trim() !== "";
                                 });
                                 $viewStoryButton?.click();
                             }
