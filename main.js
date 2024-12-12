@@ -5,7 +5,7 @@
 // @name:ja            IG助手
 // @name:ko            IG조수
 // @namespace          https://github.snkms.com/
-// @version            2.39.5
+// @version            2.39.6
 // @description        Downloading is possible for both photos and videos from posts, as well as for stories, reels or profile picture.
 // @description:zh-TW  一鍵下載對方 Instagram 貼文中的相片、影片甚至是他們的限時動態、連續短片及大頭貼圖片！
 // @description:zh-CN  一键下载对方 Instagram 帖子中的相片、视频甚至是他们的快拍、Reels及头像图片！
@@ -60,13 +60,13 @@
         'MODIFY_VIDEO_VOLUME': false,
         'SCROLL_BUTTON': true,
         'FORCE_RESOURCE_VIA_MEDIA': false,
-        'USE_BLOB_FETCH_WHEN_MEDIA_RATE_LITMIT': false,
+        'USE_BLOB_FETCH_WHEN_MEDIA_RATE_LIMIT': false,
         'NEW_TAB_ALWAYS_FORCE_MEDIA_IN_POST': false,
         'SKIP_VIEW_STORY_CONFIRM': false
     };
-    const CHILD_NODES = ['RENAME_PUBLISH_DATE', 'USE_BLOB_FETCH_WHEN_MEDIA_RATE_LITMIT', 'NEW_TAB_ALWAYS_FORCE_MEDIA_IN_POST'];
+    const CHILD_NODES = ['RENAME_PUBLISH_DATE', 'USE_BLOB_FETCH_WHEN_MEDIA_RATE_LIMIT', 'NEW_TAB_ALWAYS_FORCE_MEDIA_IN_POST'];
     var VIDEO_VOLUME = (GM_getValue('G_VIDEO_VOLUME'))?GM_getValue('G_VIDEO_VOLUME'):1;
-    var TEMP_FETCH_RATE_LITMIT = false;
+    var TEMP_FETCH_RATE_LIMIT = false;
     var RENAME_FORMAT = (GM_getValue('G_RENAME_FORMAT'))? GM_getValue('G_RENAME_FORMAT') : '%USERNAME%-%SOURCE_TYPE%-%SHORTCODE%-%YEAR%%MONTH%%DAY%_%HOUR%%MINUTE%%SECOND%_%ORIGINAL_NAME_FIRST%';
     /*******************************/
 
@@ -387,7 +387,7 @@
                 timestamp = target.taken_at_timestamp;
             }
 
-            if(USER_SETTING.FORCE_RESOURCE_VIA_MEDIA && !TEMP_FETCH_RATE_LITMIT){
+            if(USER_SETTING.FORCE_RESOURCE_VIA_MEDIA && !TEMP_FETCH_RATE_LIMIT){
                 let result = await getMediaInfo(target.id);
 
                 if(result.status === 'ok'){
@@ -409,9 +409,9 @@
                     }
                 }
                 else{
-                    if(USER_SETTING.USE_BLOB_FETCH_WHEN_MEDIA_RATE_LITMIT){
+                    if(USER_SETTING.USE_BLOB_FETCH_WHEN_MEDIA_RATE_LIMIT){
                         delete GL_dataCache.highlights[highlightId];
-                        TEMP_FETCH_RATE_LITMIT = true;
+                        TEMP_FETCH_RATE_LIMIT = true;
 
                         onHighlightsStory(true, isPreview);
                     }
@@ -440,7 +440,7 @@
                     }
                 }
 
-                TEMP_FETCH_RATE_LITMIT = false;
+                TEMP_FETCH_RATE_LIMIT = false;
             }
 
             updateLoadingBar(false);
@@ -569,16 +569,16 @@
                 timestamp = target.taken_at_timestamp;
             }
 
-            if(USER_SETTING.FORCE_RESOURCE_VIA_MEDIA && !TEMP_FETCH_RATE_LITMIT){
+            if(USER_SETTING.FORCE_RESOURCE_VIA_MEDIA && !TEMP_FETCH_RATE_LIMIT){
                 let result = await getMediaInfo(target.id);
 
                 if(result.status === 'ok'){
                     saveFiles(result.items[0].image_versions2.candidates[0].url, username,"highlights",timestamp,'jpg',highlightId);
                 }
                 else{
-                    if(USER_SETTING.USE_BLOB_FETCH_WHEN_MEDIA_RATE_LITMIT){
+                    if(USER_SETTING.USE_BLOB_FETCH_WHEN_MEDIA_RATE_LIMIT){
                         delete GL_dataCache.highlights[highlightId];
-                        TEMP_FETCH_RATE_LITMIT = true;
+                        TEMP_FETCH_RATE_LIMIT = true;
 
                         onHighlightsStoryThumbnail(true);
                     }
@@ -591,7 +591,7 @@
             }
             else{
                 saveFiles(target.display_resources.at(-1).src,username,"highlights",timestamp,'jpg', highlightId);
-                TEMP_FETCH_RATE_LITMIT= false;
+                TEMP_FETCH_RATE_LIMIT= false;
             }
 
             updateLoadingBar(false);
@@ -651,7 +651,7 @@
             let username = $("body > div section._ac0a header._ac0k ._ac0l a + div a").first().text() || location.pathname.split("/").filter(s => s.length > 0).at(1);
 
             updateLoadingBar(true);
-            if(USER_SETTING.FORCE_RESOURCE_VIA_MEDIA && !TEMP_FETCH_RATE_LITMIT){
+            if(USER_SETTING.FORCE_RESOURCE_VIA_MEDIA && !TEMP_FETCH_RATE_LIMIT){
                 let mediaId = null;
 
                 let userInfo = await getUserId(username);
@@ -750,8 +750,8 @@
                     }
                 }
                 else{
-                    if(USER_SETTING.USE_BLOB_FETCH_WHEN_MEDIA_RATE_LITMIT){
-                        TEMP_FETCH_RATE_LITMIT = true;
+                    if(USER_SETTING.USE_BLOB_FETCH_WHEN_MEDIA_RATE_LIMIT){
+                        TEMP_FETCH_RATE_LIMIT = true;
                         onStory(isDownload,isForce,isPreview);
                     }
                     else{
@@ -898,7 +898,7 @@
                 }
             }
 
-            TEMP_FETCH_RATE_LITMIT = false;
+            TEMP_FETCH_RATE_LIMIT = false;
             updateLoadingBar(false);
         }
         else{
@@ -1022,7 +1022,7 @@
 
             updateLoadingBar(true);
 
-            if(USER_SETTING.FORCE_RESOURCE_VIA_MEDIA && !TEMP_FETCH_RATE_LITMIT){
+            if(USER_SETTING.FORCE_RESOURCE_VIA_MEDIA && !TEMP_FETCH_RATE_LIMIT){
                 let userInfo = await getUserId(username);
                 let userId = userInfo.user.pk;
                 let stories = await getStories(userId);
@@ -1085,8 +1085,8 @@
 
                 }
                 else{
-                    if(USER_SETTING.USE_BLOB_FETCH_WHEN_MEDIA_RATE_LITMIT){
-                        TEMP_FETCH_RATE_LITMIT = true;
+                    if(USER_SETTING.USE_BLOB_FETCH_WHEN_MEDIA_RATE_LIMIT){
+                        TEMP_FETCH_RATE_LIMIT = true;
                         onStoryThumbnail(true, isForce);
                     }
                     else{
@@ -1184,7 +1184,7 @@
             }
 
             saveFiles(videoThumbnailURL,username,"thumbnail",timestamp,type,mediaId);
-            TEMP_FETCH_RATE_LITMIT= false;
+            TEMP_FETCH_RATE_LIMIT= false;
             updateLoadingBar(false);
         }
         else{
@@ -2688,7 +2688,7 @@
                 }
             }
             else{
-                if(USER_SETTING.USE_BLOB_FETCH_WHEN_MEDIA_RATE_LITMIT){
+                if(USER_SETTING.USE_BLOB_FETCH_WHEN_MEDIA_RATE_LIMIT){
                     if(isPreview){
                         let urlObj = new URL($(element).attr('data-href'));
                         urlObj.host = 'scontent.cdninstagram.com';
@@ -2763,7 +2763,7 @@
                 "MODIFY_VIDEO_VOLUME": "Modify Video Volume (Right-Click to Set)",
                 "SCROLL_BUTTON": "Enable Scroll Buttons for Reels Page",
                 "FORCE_RESOURCE_VIA_MEDIA": "Force Fetch Resource via Media API",
-                "USE_BLOB_FETCH_WHEN_MEDIA_RATE_LITMIT": "Use Alternative Methods to Download When the Media API is Not Accessible",
+                "USE_BLOB_FETCH_WHEN_MEDIA_RATE_LIMIT": "Use Alternative Methods to Download When the Media API is Not Accessible",
                 "NEW_TAB_ALWAYS_FORCE_MEDIA_IN_POST": "Always Use Media API for 'Open in New Tab' in Posts",
                 "AUTO_RENAME_INTRO": "Auto rename file to custom format:\nCustom Format List: \n%USERNAME% - Username\n%SOURCE_TYPE% - Download Source\n%SHORTCODE% - Post Shortcode\n%YEAR% - Year when downloaded/published\n%2-YEAR% - Year (last two digits) when downloaded/published\n%MONTH% - Month when downloaded/published\n%DAY% - Day when downloaded/published\n%HOUR% - Hour when downloaded/published\n%MINUTE% - Minute when downloaded/published\n%SECOND% - Second when downloaded/published\n%ORIGINAL_NAME% - Original name of downloaded file\n%ORIGINAL_NAME_FIRST% - Original name of downloaded file (first part of name)\n\nIf set to false, the file name will remain unchanged.\nExample: instagram_321565527_679025940443063_4318007696887450953_n.jpg",
                 "RENAME_SHORTCODE_INTRO": "Auto rename file to the following format:\nUSERNAME-TYPE-SHORTCODE-TIMESTAMP.FILETYPE\nExample: instagram-photo-CwkxyiVynpW-1670350000.jpg\n\nThis will ONLY work if [Automatically Rename Files] is set to TRUE.",
@@ -2778,7 +2778,7 @@
                 "MODIFY_VIDEO_VOLUME_INTRO": "Modify the video playback volume in Reels and posts (right-click to open the volume setting slider).",
                 "SCROLL_BUTTON_INTRO": "Enable scroll buttons for the lower right corner of the Reels page.",
                 "FORCE_RESOURCE_VIA_MEDIA_INTRO": "The Media API will try to get the highest quality photo or video possible, but it may take longer to load.",
-                "USE_BLOB_FETCH_WHEN_MEDIA_RATE_LITMIT_INTRO": "When the Media API reaches its rate limit or cannot be used for other reasons, the Forced Fetch API will be used to download resources (the resource quality may be slightly lower).",
+                "USE_BLOB_FETCH_WHEN_MEDIA_RATE_LIMIT_INTRO": "When the Media API reaches its rate limit or cannot be used for other reasons, the Forced Fetch API will be used to download resources (the resource quality may be slightly lower).",
                 "NEW_TAB_ALWAYS_FORCE_MEDIA_IN_POST_INTRO": "The [Open in New Tab] button in posts will always use the Media API to obtain high-resolution resources.",
                 "SKIP_VIEW_STORY_CONFIRM": "Skip the Confirmation Page for Viewing a Story/Highlight",
                 "SKIP_VIEW_STORY_CONFIRM_INTRO": "Automatically skip when confirmation page is shown in story or highlight."
@@ -2985,7 +2985,7 @@
         IG_createDM();
         $('.IG_SN_DIG #post_info').text('Preference Settings');
 
-        $('.IG_SN_DIG .IG_SN_DIG_TITLE > div').append('<select id="langSelect"></select><div style="font-size: 12px;">Some text is translated using machine translation and may be inaccurate; you can contact support to correct the translation.</div>');
+        $('.IG_SN_DIG .IG_SN_DIG_TITLE > div').append('<select id="langSelect"></select><div style="font-size: 12px;">Some texts are machine-translated and may be inaccurate; translation contributions are welcome on GitHub.</div>');
 
         for(let o in locale_manifest){
             $('.IG_SN_DIG .IG_SN_DIG_TITLE > div #langSelect').append(`<option value="${o}" ${(lang == o)?'selected':''}>${locale_manifest[o]}</option>`);
