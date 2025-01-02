@@ -5,7 +5,7 @@
 // @name:ja            IG助手
 // @name:ko            IG조수
 // @namespace          https://github.snkms.com/
-// @version            2.39.6
+// @version            2.40.1
 // @description        Downloading is possible for both photos and videos from posts, as well as for stories, reels or profile picture.
 // @description:zh-TW  一鍵下載對方 Instagram 貼文中的相片、影片甚至是他們的限時動態、連續短片及大頭貼圖片！
 // @description:zh-CN  一键下载对方 Instagram 帖子中的相片、视频甚至是他们的快拍、Reels及头像图片！
@@ -272,9 +272,11 @@
                 else{
                     pageLoaded = false;
                     // Remove icons
-                    // Remove icons
                     if($('.IG_DWSTORY').length){
                         $('.IG_DWSTORY').remove();
+                    }
+                    if($('.IG_DWSTORY_ALL').length){
+                        $('.IG_DWSTORY_ALL').remove();
                     }
                     if($('.IG_DWNEWTAB').length){
                         $('.IG_DWNEWTAB').remove();
@@ -285,6 +287,9 @@
 
                     if($('.IG_DWHISTORY').length){
                         $('.IG_DWHISTORY').remove();
+                    }
+                    if($('.IG_DWHISTORY_ALL').length){
+                        $('.IG_DWHISTORY_ALL').remove();
                     }
                     if($('.IG_DWHINEWTAB').length){
                         $('.IG_DWHINEWTAB').remove();
@@ -342,6 +347,41 @@
                 },150);
             }
         }
+    }
+
+    /**
+     * onHighlightsStoryAll
+     * Trigger user's highlight all download event.
+     *
+     * @return {void}
+     */
+    async function onHighlightsStoryAll(isDownload, isPreview){
+        updateLoadingBar(true);
+
+        let date = new Date().getTime();
+        let timestamp = Math.floor(date / 1000);
+        let highlightId = location.href.replace(/\/$/ig,'').split('/').at(-1);
+        let highStories = await getHighlightStories(highlightId);
+        let username = highStories.data.reels_media[0].owner.username;
+
+        highStories.data.reels_media[0].items.forEach(item => {
+            if(USER_SETTING.RENAME_PUBLISH_DATE){
+                timestamp = item.taken_at_timestamp;
+            }
+
+            item.display_resources.sort(function(a, b) {
+                if (a.config_width < b.config_width) return 1;
+                if (a.config_width > b.config_width) return -1;
+                return 0;
+            });
+
+            if(item.is_video){
+                saveFiles(item.video_resources[0].src, username,"stories",timestamp,'mp4',item.id);
+            }
+            else{
+                saveFiles(item.display_resources[0].src, username,"stories",timestamp,'jpg',item.id);
+            }
+        });
     }
 
     /**
@@ -477,6 +517,7 @@
                     //$element.css('position','relative');
                     $element.append(`<div data-ih-locale-title="DW" title="${_i18n("DW")}" class="IG_DWHISTORY">${SVG.DOWNLOAD}</div>`);
                     $element.append(`<div data-ih-locale-title="NEW_TAB" title="${_i18n("NEW_TAB")}" class="IG_DWHINEWTAB">${SVG.NEW_TAB}</div>`);
+                    $element.append(`<div data-ih-locale-title="DW_ALL" title="${_i18n("DW_ALL")}" class="IG_DWHISTORY_ALL">${SVG.DOWNLOAD}</div>`);
 
                     //// Modify video volume
                     //if(USER_SETTING.MODIFY_VIDEO_VOLUME){
@@ -636,6 +677,43 @@
     }
 
     /**
+     * onStoryAll
+     * Trigger user's story all download event.
+     *
+     * @return {void}
+     */
+    async function onStoryAll(){
+        updateLoadingBar(true);
+
+        let date = new Date().getTime();
+        let timestamp = Math.floor(date / 1000);
+        let username = $("body > div section._ac0a header._ac0k ._ac0l a + div a").first().text() || location.pathname.split("/").filter(s => s.length > 0).at(1);
+
+        let userInfo = await getUserId(username);
+        let userId = userInfo.user.pk;
+        let stories = await getStories(userId);
+
+        stories.data.reels_media[0].items.forEach(item => {
+            if(USER_SETTING.RENAME_PUBLISH_DATE){
+                timestamp = item.taken_at_timestamp;
+            }
+
+            item.display_resources.sort(function(a, b) {
+                if (a.config_width < b.config_width) return 1;
+                if (a.config_width > b.config_width) return -1;
+                return 0;
+            });
+
+            if(item.is_video){
+                saveFiles(item.video_resources[0].src, username,"stories",timestamp,'mp4',item.id);
+            }
+            else{
+                saveFiles(item.display_resources[0].src, username,"stories",timestamp,'jpg',item.id);
+            }
+        });
+    }
+
+    /**
      * onStory
      * Trigger user's story download event or button display event.
      *
@@ -644,7 +722,7 @@
      * @param  {Boolean}  isPreview - Check if it is need to open new tab
      * @return {void}
      */
-    async function onStory(isDownload,isForce,isPreview){
+    async function onStory(isDownload,isForce,isPreview,isAll){
         if(isDownload){
             let date = new Date().getTime();
             let timestamp = Math.floor(date / 1000);
@@ -947,6 +1025,7 @@
                     $element.first().css('position','relative');
                     $element.first().append(`<div data-ih-locale-title="DW" title="${_i18n("DW")}" class="IG_DWSTORY">${SVG.DOWNLOAD}</div>`);
                     $element.first().append(`<div data-ih-locale-title="NEW_TAB" title="${_i18n("NEW_TAB")}" class="IG_DWNEWTAB">${SVG.NEW_TAB}</div>`);
+                    $element.first().append(`<div data-ih-locale-title="DW_ALL" title="${_i18n("DW_ALL")}" class="IG_DWSTORY_ALL">${SVG.DOWNLOAD}</div>`);
 
                     // Modify video volume
                     //if(USER_SETTING.MODIFY_VIDEO_VOLUME){
@@ -2743,6 +2822,7 @@
                 "IMG": "Image",
                 "VID": "Video",
                 "DW": "Download",
+                "DW_ALL": "Download All Resources",
                 "THUMBNAIL_INTRO": "Download Video Thumbnail",
                 "LOAD_BLOB_ONE": "Loading Blob Media...",
                 "LOAD_BLOB_MULTIPLE": "Loading Blob Media and Others...",
@@ -3084,7 +3164,7 @@
         clearInterval(GL_repeat);
 
         $('.SNKMS_IG_NEWTAB_MAIN, .SNKMS_IG_DW_MAIN, .SNKMS_IG_THUMBNAIL_MAIN').remove();
-        $('.IG_DWPROFILE, .IG_DWPROFILE, .IG_DWSTORY, .IG_DWSTORY_THUMBNAIL, .IG_DWNEWTAB, .IG_DWHISTORY, .IG_DWHINEWTAB, .IG_DWHISTORY_THUMBNAIL, .IG_REELS, .IG_REELS_NEWTAB, .IG_REELS_THUMBNAIL').remove();
+        $('.IG_DWPROFILE, .IG_DWPROFILE, .IG_DWSTORY, .IG_DWSTORY_ALL, .IG_DWSTORY_THUMBNAIL, .IG_DWNEWTAB, .IG_DWHISTORY, .IG_DWHISTORY_ALL, .IG_DWHINEWTAB, .IG_DWHISTORY_THUMBNAIL, .IG_REELS, .IG_REELS_NEWTAB, .IG_REELS_THUMBNAIL').remove();
         $('[data-snig]').removeAttr('data-snig');
 
         pageLoaded = false;
@@ -3387,6 +3467,11 @@
             onStory(true);
         });
 
+        // Running if user left-click all download icon in stories
+        $('body').on('click','.IG_DWSTORY_ALL',function(){
+            onStoryAll();
+        });
+
         // Running if user left-click 'open in new tab' icon in stories
         $('body').on('click','.IG_DWNEWTAB',function(e){
             e.preventDefault();
@@ -3407,6 +3492,11 @@
         // Running if user left-click download icon in highlight stories
         $('body').on('click','.IG_DWHISTORY',function(){
             onHighlightsStory(true);
+        });
+
+        // Running if user left-click all download icon in highlight stories
+        $('body').on('click','.IG_DWHISTORY_ALL',function(){
+            onHighlightsStoryAll();
         });
 
         // Running if user left-click 'open in new tab' icon in highlight stories
@@ -3436,7 +3526,7 @@
         });
 
         // Running if user right-click profile picture in stories area
-        $('body').on('mousedown','button[role="menuitem"]',function(e){
+        $('body').on('mousedown','button[role="menuitem"], div[role="menuitem"]',function(e){
             // Right-Click || Middle-Click
             if(e.which === 3 || e.which === 2){
                 if(location.href === 'https://www.instagram.com/' && USER_SETTING.REDIRECT_CLICK_USER_STORY_PICTURE){
