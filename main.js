@@ -5,7 +5,7 @@
 // @name:ja            IG助手
 // @name:ko            IG조수
 // @namespace          https://github.snkms.com/
-// @version            2.40.2
+// @version            2.40.3
 // @description        Downloading is possible for both photos and videos from posts, as well as for stories, reels or profile picture.
 // @description:zh-TW  一鍵下載對方 Instagram 貼文中的相片、影片甚至是他們的限時動態、連續短片及大頭貼圖片！
 // @description:zh-CN  一键下载对方 Instagram 帖子中的相片、视频甚至是他们的快拍、Reels及头像图片！
@@ -2543,8 +2543,18 @@
                         // Image
                         if(mda.video_versions == null){
                             mda.image_versions2.candidates.sort(function(a, b) {
-                                if (a.width < b.width) return 1;
-                                if (a.width > b.width) return -1;
+                                let aSTP = new URL(a.url).searchParams.get('stp');
+                                let bSTP = new URL(b.url).searchParams.get('stp');
+
+                                if(aSTP && bSTP){
+                                    if (aSTP.length > bSTP.length) return 1;
+                                    if (aSTP.length < bSTP.length) return -1;
+                                }
+                                else{
+                                    if (a.width < b.width) return 1;
+                                    if (a.width > b.width) return -1;
+                                }
+
                                 return 0;
                             });
 
@@ -2561,8 +2571,18 @@
                     // Image
                     if(resource.video_versions == null){
                         resource.image_versions2.candidates.sort(function(a, b) {
-                            if (a.width < b.width) return 1;
-                            if (a.width > b.width) return -1;
+                            let aSTP = new URL(a.url).searchParams.get('stp');
+                            let bSTP = new URL(b.url).searchParams.get('stp');
+
+                            if(aSTP && bSTP){
+                                if (aSTP.length > bSTP.length) return 1;
+                                if (aSTP.length < bSTP.length) return -1;
+                            }
+                            else{
+                                if (a.width < b.width) return 1;
+                                if (a.width > b.width) return -1;
+                            }
+
                             return 0;
                         });
 
@@ -2752,8 +2772,18 @@
                 }
                 else{
                     result.items[0].image_versions2.candidates.sort(function(a, b) {
-                        if (a.width < b.width) return 1;
-                        if (a.width > b.width) return -1;
+                        let aSTP = new URL(a.url).searchParams.get('stp');
+                        let bSTP = new URL(b.url).searchParams.get('stp');
+
+                        if(aSTP && bSTP){
+                            if (aSTP.length > bSTP.length) return 1;
+                            if (aSTP.length < bSTP.length) return -1;
+                        }
+                        else{
+                            if (a.width < b.width) return 1;
+                            if (a.width > b.width) return -1;
+                        }
+
                         return 0;
                     });
 
