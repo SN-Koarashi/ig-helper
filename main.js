@@ -5,7 +5,7 @@
 // @name:ja            IG助手
 // @name:ko            IG조수
 // @namespace          https://github.snkms.com/
-// @version            2.40.4
+// @version            2.40.5
 // @description        Downloading is possible for both photos and videos from posts, as well as for stories, reels or profile picture.
 // @description:zh-TW  一鍵下載對方 Instagram 貼文中的相片、影片甚至是他們的限時動態、連續短片及大頭貼圖片！
 // @description:zh-CN  一键下载对方 Instagram 帖子中的相片、视频甚至是他们的快拍、Reels及头像图片！
@@ -1462,11 +1462,14 @@
                                             let $video = $(this);
 
                                             logger('(reel) Added video html5 contorller #modify');
-                                            this.volume = VIDEO_VOLUME;
 
-                                            $(this).on('loadstart',function(){
+                                            if(USER_SETTING.MODIFY_VIDEO_VOLUME){
                                                 this.volume = VIDEO_VOLUME;
-                                            });
+
+                                                $(this).on('loadstart',function(){
+                                                    this.volume = VIDEO_VOLUME;
+                                                });
+                                            }
 
                                             // Restore layout to show details interface
                                             $(this).on('contextmenu',function(e){
@@ -2084,11 +2087,14 @@
                     let $video = $(this);
 
                     logger('(post) Added video html5 contorller #modify');
-                    this.volume = VIDEO_VOLUME;
 
-                    $(this).on('loadstart',function(){
+                    if(USER_SETTING.MODIFY_VIDEO_VOLUME){
                         this.volume = VIDEO_VOLUME;
-                    });
+
+                        $(this).on('loadstart',function(){
+                            this.volume = VIDEO_VOLUME;
+                        });
+                    }
 
                     // Restore layout to show details interface
                     $(this).on('contextmenu',function(e){
@@ -3243,6 +3249,10 @@
         for(let name in USER_SETTING){
             if(GM_getValue(name) != null && typeof GM_getValue(name) === 'boolean'){
                 USER_SETTING[name] = GM_getValue(name);
+
+                if(name === "MODIFY_VIDEO_VOLUME" && GM_getValue(name) !== true){
+                    VIDEO_VOLUME = 1;
+                }
             }
         }
     }
@@ -3693,11 +3703,14 @@
                                     if(USER_SETTING.HTML5_VIDEO_CONTROL){
                                         if(!$video.data('controls')){
                                             logger(`(${storyType})`,'Added video html5 contorller #modify');
-                                            this.volume = VIDEO_VOLUME;
 
-                                            $video.on('loadstart',function(){
+                                            if(USER_SETTING.MODIFY_VIDEO_VOLUME){
                                                 this.volume = VIDEO_VOLUME;
-                                            });
+
+                                                $video.on('loadstart',function(){
+                                                    this.volume = VIDEO_VOLUME;
+                                                });
+                                            }
 
                                             let $videoParent = $video.parents('div').filter(function(){
                                                 return $(this).attr('class') == null && $(this).attr('style') == null;
