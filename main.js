@@ -5,7 +5,7 @@
 // @name:ja            IG助手
 // @name:ko            IG조수
 // @namespace          https://github.snkms.com/
-// @version            2.40.5
+// @version            2.41.1
 // @description        Downloading is possible for both photos and videos from posts, as well as for stories, reels or profile picture.
 // @description:zh-TW  一鍵下載對方 Instagram 貼文中的相片、影片甚至是他們的限時動態、連續短片及大頭貼圖片！
 // @description:zh-CN  一键下载对方 Instagram 帖子中的相片、视频甚至是他们的快拍、Reels及头像图片！
@@ -396,6 +396,10 @@
      * @return {void}
      */
     async function onHighlightsStory(isDownload, isPreview){
+        var username = $('body > div section:visible a[href^="/"]').filter(function(){
+            return $(this).attr('href').split('/').filter(e => e.length > 0).length === 1
+        }).first().attr('href').split('/').filter(e => e.length > 0).at(0);
+
         if(isDownload){
             let date = new Date().getTime();
             let timestamp = Math.floor(date / 1000);
@@ -403,7 +407,6 @@
             let nowIndex = $("body > div section._ac0a header._ac0k > ._ac3r ._ac3n ._ac3p[style]").length ||
                 $('body > div section:visible > div > div:not([class]) > div > div div.x1ned7t2.x78zum5 div.x1caxmr6').length ||
                 $('body > div div:not([hidden]) section:visible > div div[style]:not([class]) > div').find('div div.x1ned7t2.x78zum5 div.x1caxmr6').length;
-            let username = "";
             let target = 0;
 
             updateLoadingBar(true);
@@ -520,7 +523,11 @@
                     //$element.css('position','relative');
                     $element.append(`<div data-ih-locale-title="DW" title="${_i18n("DW")}" class="IG_DWHISTORY">${SVG.DOWNLOAD}</div>`);
                     $element.append(`<div data-ih-locale-title="NEW_TAB" title="${_i18n("NEW_TAB")}" class="IG_DWHINEWTAB">${SVG.NEW_TAB}</div>`);
-                    $element.append(`<div data-ih-locale-title="DW_ALL" title="${_i18n("DW_ALL")}" class="IG_DWHISTORY_ALL">${SVG.DOWNLOAD_ALL}</div>`);
+
+                    let $header = getStoryProgress(username);
+                    if($header.length > 1){
+                        $element.append(`<div data-ih-locale-title="DW_ALL" title="${_i18n("DW_ALL")}" class="IG_DWHISTORY_ALL">${SVG.DOWNLOAD_ALL}</div>`);
+                    }
 
                     //// Modify video volume
                     //if(USER_SETTING.MODIFY_VIDEO_VOLUME){
@@ -728,10 +735,10 @@
      * @return {void}
      */
     async function onStory(isDownload,isForce,isPreview){
+        var username = $("body > div section._ac0a header._ac0k ._ac0l a + div a").first().text() || location.pathname.split("/").filter(s => s.length > 0).at(1);
         if(isDownload){
             let date = new Date().getTime();
             let timestamp = Math.floor(date / 1000);
-            let username = $("body > div section._ac0a header._ac0k ._ac0l a + div a").first().text() || location.pathname.split("/").filter(s => s.length > 0).at(1);
 
             updateLoadingBar(true);
             if(USER_SETTING.FORCE_RESOURCE_VIA_MEDIA && !TEMP_FETCH_RATE_LIMIT){
@@ -769,17 +776,9 @@
                 });
 
                 if(mediaId == null){
-                    let $header = $('body > div section:visible a[href^="/'+(username)+'"] span').filter(function(){
-                        return $(this).children().length === 0 && $(this).find('svg').length === 0 && $(this).text()?.toLowerCase() === username?.toLowerCase();
-                    }).parents('div:not([class]):not([style])').filter(function(){
-                        return $(this).text()?.toLowerCase() !== username?.toLowerCase()
-                    }).filter(function(){
-                        return $(this).children().length > 1
-                    }).first();
+                    let $header = getStoryProgress(username);
 
-                    $header.children().filter(function(){
-                        return $(this).height() < 10
-                    }).first().children().each(function(index){
+                    $header.each(function(index){
                         if($(this).children().length > 0){
                             mediaId = stories.data.reels_media[0].items[index].id;
                         }
@@ -890,17 +889,9 @@
                     // GitHub issue #4: thinkpad4
                     if(videoURL.length == 0){
 
-                        let $header = $('body > div section:visible a[href^="/'+(username)+'"] span').filter(function(){
-                            return $(this).children().length === 0 && $(this).find('svg').length === 0 && $(this).text()?.toLowerCase() === username?.toLowerCase();
-                        }).parents('div:not([class]):not([style])').filter(function(){
-                            return $(this).text()?.toLowerCase() !== username?.toLowerCase()
-                        }).filter(function(){
-                            return $(this).children().length > 1
-                        }).first();
+                        let $header = getStoryProgress(username);
 
-                        $header.children().filter(function(){
-                            return $(this).height() < 10
-                        }).first().children().each(function(index){
+                        $header.each(function(index){
                             if($(this).children().length > 0){
                                 videoURL = stories.data.reels_media[0].items[index].video_resources[0].src;
                                 if(USER_SETTING.RENAME_PUBLISH_DATE){
@@ -1030,7 +1021,11 @@
                     $element.first().css('position','relative');
                     $element.first().append(`<div data-ih-locale-title="DW" title="${_i18n("DW")}" class="IG_DWSTORY">${SVG.DOWNLOAD}</div>`);
                     $element.first().append(`<div data-ih-locale-title="NEW_TAB" title="${_i18n("NEW_TAB")}" class="IG_DWNEWTAB">${SVG.NEW_TAB}</div>`);
-                    $element.first().append(`<div data-ih-locale-title="DW_ALL" title="${_i18n("DW_ALL")}" class="IG_DWSTORY_ALL">${SVG.DOWNLOAD_ALL}</div>`);
+
+                    let $header = getStoryProgress(username);
+                    if($header.length > 1){
+                        $element.first().append(`<div data-ih-locale-title="DW_ALL" title="${_i18n("DW_ALL")}" class="IG_DWSTORY_ALL">${SVG.DOWNLOAD_ALL}</div>`);
+                    }
 
                     // Modify video volume
                     //if(USER_SETTING.MODIFY_VIDEO_VOLUME){
@@ -1119,17 +1114,9 @@
                 });
 
                 if(mediaId == null){
-                    let $header = $('body > div section:visible a[href^="/'+(username)+'"] span').filter(function(){
-                        return $(this).children().length === 0 && $(this).find('svg').length === 0 && $(this).text()?.toLowerCase() === username?.toLowerCase();
-                    }).parents('div:not([class]):not([style])').filter(function(){
-                        return $(this).text()?.toLowerCase() !== username?.toLowerCase()
-                    }).filter(function(){
-                        return $(this).children().length > 1
-                    }).first();
+                    let $header = getStoryProgress(username);
 
-                    $header.children().filter(function(){
-                        return $(this).height() < 10
-                    }).first().children().each(function(index){
+                    $header.each(function(index){
                         if($(this).children().length > 0){
                             mediaId = stories.data.reels_media[0].items[index].id;
                         }
@@ -1219,17 +1206,9 @@
 
                 // GitHub issue #4: thinkpad4
                 if(videoThumbnailURL.length == 0){
-                    let $header = $('body > div section:visible a[href^="/'+(username)+'"] span').filter(function(){
-                        return $(this).children().length === 0 && $(this).find('svg').length === 0 && $(this).text()?.toLowerCase() === username?.toLowerCase();
-                    }).parents('div:not([class]):not([style])').filter(function(){
-                        return $(this).text()?.toLowerCase() !== username?.toLowerCase()
-                    }).filter(function(){
-                        return $(this).children().length > 1
-                    }).first();
+                    let $header = getStoryProgress(username);
 
-                    $header.children().filter(function(){
-                        return $(this).height() < 10
-                    }).first().children().each(function(index){
+                    $header.each(function(index){
                         if($(this).children().length > 0){
                             videoThumbnailURL = stories.data.reels_media[0].items[index].display_url;
                             if(USER_SETTING.RENAME_PUBLISH_DATE){
@@ -1956,6 +1935,36 @@
             $('div[id^="mount"] > div > div > div:first').addClass('x1s85apg');
             $('div[id^="mount"] > div > div > div:first').css('z-index','');
         }
+    }
+
+    /**
+     * getStoryProgress
+     *
+     * @param  {Boolean}  isLoading - Check if loading state
+     * @return {void}
+     */
+    function getStoryProgress(username){
+        let $header = $('body > div section:visible a[href^="/'+(username)+'"] span').filter(function(){
+            return $(this).children().length === 0 && $(this).find('svg').length === 0 && $(this).text()?.toLowerCase() === username?.toLowerCase();
+        }).parents('div:not([class]):not([style])').filter(function(){
+            return $(this).text()?.toLowerCase() !== username?.toLowerCase()
+        }).filter(function(){
+            return $(this).children().length > 1
+        }).first();
+
+        if($header.length === 0){
+            $header = $('body > div section:visible a[href^="/'+(username)+'"]').filter(function(){
+                return $(this).find('img').length > 0
+            }).parents('div:not([class]):not([style])').filter(function(){
+                return $(this).text()?.toLowerCase() !== username?.toLowerCase()
+            }).filter(function(){
+                return $(this).children().length > 1
+            }).first();
+        }
+
+        return $header.children().filter(function(){
+            return $(this).height() < 10
+        }).first().children();
     }
 
     /**
