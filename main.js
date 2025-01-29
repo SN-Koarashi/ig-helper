@@ -5,7 +5,7 @@
 // @name:ja            IG助手
 // @name:ko            IG조수
 // @namespace          https://github.snkms.com/
-// @version            2.41.2
+// @version            2.42.1
 // @description        Downloading is possible for both photos and videos from posts, as well as for stories, reels or profile picture.
 // @description:zh-TW  一鍵下載對方 Instagram 貼文中的相片、影片甚至是他們的限時動態、連續短片及大頭貼圖片！
 // @description:zh-CN  一键下载对方 Instagram 帖子中的相片、视频甚至是他们的快拍、Reels及头像图片！
@@ -2359,6 +2359,42 @@
                                 }
 
                                 updateLoadingBar(false);
+                                $('.IG_SN_DIG').remove();
+                            }
+                        },250);
+                    });
+                });
+
+                // Running if user click the download icon
+                $(this).on('contextmenu','.SNKMS_IG_DW_MAIN', async function(e){
+                    e.preventDefault();
+                    GL_username = $(this).parent().parent().parent().attr('data-username');
+                    GL_postPath = location.pathname.replace(/\/$/,'').split('/').at(-1) || $(this).parent().parent().parent().find('a[href^="/p/"]').first().attr("href").split("/").at(2) || $(this).parent().parent().children("div:last-child").children("div").children("div:last-child").find('a[href^="/p/"]').last().attr("href").split("/").at(2);
+
+                    // Create element that download dailog
+                    IG_createDM(USER_SETTING.DIRECT_DOWNLOAD_ALL, true);
+
+                    $("#article-id").html(`<a href="https://www.instagram.com/p/${GL_postPath}">${GL_postPath}</a>`);
+
+                    $('.IG_SN_DIG .IG_SN_DIG_MAIN .IG_SN_DIG_BODY a').each(function(){
+                        $(this).wrap('<div></div>');
+                        $(this).before('<label class="inner_box_wrapper"><input class="inner_box" type="checkbox"><span></span></label>');
+                        $(this).after(`<div data-ih-locale-title="NEW_TAB" title="${_i18n("NEW_TAB")}" class="newTab">${SVG.NEW_TAB}</div>`);
+
+                        if($(this).attr('data-name') == 'video'){
+                            $(this).after(`<div data-ih-locale-title="THUMBNAIL_INTRO" title="${_i18n("THUMBNAIL_INTRO")}" class="videoThumbnail">${SVG.THUMBNAIL}</div>`);
+                        }
+                    });
+
+
+                    createMediaListDOM(GL_postPath,".IG_SN_DIG .IG_SN_DIG_MAIN .IG_SN_DIG_BODY",_i18n("LOAD_BLOB_MULTIPLE")).then(()=>{
+                        let checkBlob = setInterval(()=>{
+                            if($('.IG_SN_DIG .IG_SN_DIG_MAIN .IG_SN_DIG_BODY a').length > 0){
+                                clearInterval(checkBlob);
+                                $('.IG_SN_DIG .IG_SN_DIG_MAIN .IG_SN_DIG_BODY a').each(function(){
+                                    $(this).click();
+                                });
+
                                 $('.IG_SN_DIG').remove();
                             }
                         },250);
