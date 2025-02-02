@@ -5,7 +5,7 @@
 // @name:ja            IG助手
 // @name:ko            IG조수
 // @namespace          https://github.snkms.com/
-// @version            2.42.1
+// @version            2.42.2
 // @description        Downloading is possible for both photos and videos from posts, as well as for stories, reels or profile picture.
 // @description:zh-TW  一鍵下載對方 Instagram 貼文中的相片、影片甚至是他們的限時動態、連續短片及大頭貼圖片！
 // @description:zh-CN  一键下载对方 Instagram 帖子中的相片、视频甚至是他们的快拍、Reels及头像图片！
@@ -2216,19 +2216,25 @@
                     });
                 }
 
-                // Add icons
-                const DownloadElement = `<div data-ih-locale-title="DW" title="${_i18n("DW")}" class="SNKMS_IG_DW_MAIN" style="right:${rightPos}px;top:${topPos}px;">${SVG.DOWNLOAD}</div>`;
-                const NewTabElement = `<div data-ih-locale-title="NEW_TAB" title="${_i18n("NEW_TAB")}" class="SNKMS_IG_NEWTAB_MAIN" style="right:${rightPos + 35}px;top:${topPos}px;">${SVG.NEW_TAB}</div>`;
-                const ThumbnailElement = `<div data-ih-locale-title="THUMBNAIL_INTRO" title="${_i18n("THUMBNAIL_INTRO")}" class="SNKMS_IG_THUMBNAIL_MAIN" style="right:${rightPos + 70}px;top:${topPos}px;">${SVG.THUMBNAIL}</div>`;
+                $childElement.eq((tagName === "DIV")? 0 : $childElement.length - 2).append(`<div class="button_wrapper">`);
 
-                $childElement.eq((tagName === "DIV")? 0 : $childElement.length - 2).append(DownloadElement);
-                $childElement.eq((tagName === "DIV")? 0 : $childElement.length - 2).append(NewTabElement);
+                // Add icons
+                const DownloadElement = `<div data-ih-locale-title="DW" title="${_i18n("DW")}" class="SNKMS_IG_DW_MAIN">${SVG.DOWNLOAD}</div>`;
+                const NewTabElement = `<div data-ih-locale-title="NEW_TAB" title="${_i18n("NEW_TAB")}" class="SNKMS_IG_NEWTAB_MAIN">${SVG.NEW_TAB}</div>`;
+                const ThumbnailElement = `<div data-ih-locale-title="THUMBNAIL_INTRO" title="${_i18n("THUMBNAIL_INTRO")}" class="SNKMS_IG_THUMBNAIL_MAIN">${SVG.THUMBNAIL}</div>`;
+
+                $childElement.find(".button_wrapper").append(DownloadElement);
+                if(USER_SETTING.DIRECT_DOWNLOAD_VISIBLE_RESOURCE && !USER_SETTING.DIRECT_DOWNLOAD_ALL){
+                    const DownloadAllElement = `<div data-ih-locale-title="DW_ALL" title="${_i18n("DW_ALL")}" class="SNKMS_IG_DW_ALL_MAIN">${SVG.DOWNLOAD_ALL}</div>`;
+                    $childElement.find(".button_wrapper").append(DownloadAllElement);
+                }
+                $childElement.find(".button_wrapper").append(NewTabElement);
 
                 setTimeout(()=>{
                     // Check if visible post is video
                     if($childElement.eq((tagName === "DIV")? 0 : $childElement.length - 2).find('div > ul li._acaz').length === 0){
                         if($childElement.find('video').length > 0){
-                            $childElement.eq((tagName === "DIV")? 0 : $childElement.length - 2).append(ThumbnailElement);
+                            $childElement.find(".button_wrapper").append(ThumbnailElement);
                         }
                     }
                     else{
@@ -2240,7 +2246,7 @@
 
                                     // Check if video?
                                     if($targetNode.find('video').length > 0){
-                                        $childElement.eq((tagName === "DIV")? 0 : $childElement.length - 2).append(ThumbnailElement);
+                                        $childElement.find(".button_wrapper").append(ThumbnailElement);
                                         initPostVideoFunction($mainElement);
                                     }
                                     else{
@@ -2365,8 +2371,8 @@
                     });
                 });
 
-                // Running if user click the download icon
-                $(this).on('contextmenu','.SNKMS_IG_DW_MAIN', async function(e){
+                // Running if user click the download all icon
+                $(this).on('click', '.SNKMS_IG_DW_ALL_MAIN', async function(e){
                     e.preventDefault();
                     GL_username = $(this).parent().parent().parent().attr('data-username');
                     GL_postPath = location.pathname.replace(/\/$/,'').split('/').at(-1) || $(this).parent().parent().parent().find('a[href^="/p/"]').first().attr("href").split("/").at(2) || $(this).parent().parent().children("div:last-child").children("div").children("div:last-child").find('a[href^="/p/"]').last().attr("href").split("/").at(2);
