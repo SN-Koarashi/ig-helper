@@ -2218,10 +2218,14 @@
 
                 // Add icons
                 const DownloadElement = `<div data-ih-locale-title="DW" title="${_i18n("DW")}" class="SNKMS_IG_DW_MAIN" style="right:${rightPos}px;top:${topPos}px;">${SVG.DOWNLOAD}</div>`;
-                const NewTabElement = `<div data-ih-locale-title="NEW_TAB" title="${_i18n("NEW_TAB")}" class="SNKMS_IG_NEWTAB_MAIN" style="right:${rightPos + 35}px;top:${topPos}px;">${SVG.NEW_TAB}</div>`;
+                const NewTabElement = `<div data-ih-locale-title="NEW_TAB" title="${_i18n("NEW_TAB")}" class="SNKMS_IG_NEWTAB_MAIN" style="right:${USER_SETTING.DIRECT_DOWNLOAD_VISIBLE_RESOURCE && !USER_SETTING.DIRECT_DOWNLOAD_ALL ? rightPos + 70 : rightPos + 35}px;top:${topPos}px;">${SVG.NEW_TAB}</div>`;
                 const ThumbnailElement = `<div data-ih-locale-title="THUMBNAIL_INTRO" title="${_i18n("THUMBNAIL_INTRO")}" class="SNKMS_IG_THUMBNAIL_MAIN" style="right:${rightPos + 70}px;top:${topPos}px;">${SVG.THUMBNAIL}</div>`;
 
                 $childElement.eq((tagName === "DIV")? 0 : $childElement.length - 2).append(DownloadElement);
+                if(USER_SETTING.DIRECT_DOWNLOAD_VISIBLE_RESOURCE && !USER_SETTING.DIRECT_DOWNLOAD_ALL){
+                    const DownloadAllElement = `<div data-ih-locale-title="DW_ALL" title="${_i18n("DW_ALL")}" class="SNKMS_IG_DW_ALL_MAIN" style="right:${rightPos + 35}px;top:${topPos}px;">${SVG.DOWNLOAD_ALL}</div>`;
+                    $childElement.eq((tagName === "DIV")? 0 : $childElement.length - 2).append(DownloadAllElement);
+                }
                 $childElement.eq((tagName === "DIV")? 0 : $childElement.length - 2).append(NewTabElement);
 
                 setTimeout(()=>{
@@ -2365,8 +2369,8 @@
                     });
                 });
 
-                // Running if user click the download icon
-                $(this).on('contextmenu','.SNKMS_IG_DW_MAIN', async function(e){
+                // Running if user click the download all icon
+                $(this).on('click', '.SNKMS_IG_DW_ALL_MAIN', async function(e){
                     e.preventDefault();
                     GL_username = $(this).parent().parent().parent().attr('data-username');
                     GL_postPath = location.pathname.replace(/\/$/,'').split('/').at(-1) || $(this).parent().parent().parent().find('a[href^="/p/"]').first().attr("href").split("/").at(2) || $(this).parent().parent().children("div:last-child").children("div").children("div:last-child").find('a[href^="/p/"]').last().attr("href").split("/").at(2);
