@@ -22,6 +22,7 @@
     "IMG": "Immagine",
     "VID": "Video",
     "DW": "Scarica",
+    "DW_ALL": "Scarica tutte le risorse",
     "THUMBNAIL_INTRO": "Scarica la miniatura del video",
     "LOAD_BLOB_ONE": "Caricamento del contenuto multimediale in formato Blob...",
     "LOAD_BLOB_MULTIPLE": "Caricamento dei contenuti multimediali in formato Blob e altri...",

@@ -22,6 +22,7 @@
     "IMG": "图像",
     "VID": "视频",
     "DW": "下载",
+    "DW_ALL": "下载全部资源",
     "THUMBNAIL_INTRO": "下载视频缩略图",
     "LOAD_BLOB_ONE": "正在载入大型媒体对象...",
     "LOAD_BLOB_MULTIPLE": "正在载入多个大型媒体对象...",

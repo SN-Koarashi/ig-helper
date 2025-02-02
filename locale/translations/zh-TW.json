@@ -22,6 +22,7 @@
     "IMG": "相片",
     "VID": "影片",
     "DW": "下載",
+    "DW_ALL": "下載所有資源",
     "THUMBNAIL_INTRO": "下載影片縮圖",
     "LOAD_BLOB_ONE": "正在載入二進位大型物件...",
     "LOAD_BLOB_MULTIPLE": "正在載入多個二進位大型物件...",
