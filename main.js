@@ -2313,11 +2313,10 @@
                 $(this).on('click', '.SNKMS_IG_THUMBNAIL_MAIN', function(e){
                     updateLoadingBar(true);
 
-                    GL_username = $(this).parent().parent().parent().attr('data-username');
-                    GL_postPath = location.pathname.replace(/\/$/,'').split('/').at(-1) || $(this).parent().parent().parent().find('a[href^="/p/"]').first().attr("href").split("/").at(2) || $(this).parent().parent().children("div:last-child").children("div").children("div:last-child").find('a[href^="/p/"]').last().attr("href").split("/").at(2);
+                    GL_username = $mainElement.attr('data-username');
+                    GL_postPath = location.pathname.replace(/\/$/,'').split('/').at(-1) || $mainElement.find('a[href^="/p/"]').first().attr("href").split("/").at(2) || $(this).parent().parent().parent().children("div:last-child").children("div").children("div:last-child").find('a[href^="/p/"]').last().attr("href").split("/").at(2);
 
-                    var $main = $(this).parent().parent().parent();
-                    var index = getVisibleNodeIndex($main);
+                    var index = getVisibleNodeIndex($mainElement);
 
                     IG_createDM(true, false);
 
@@ -2344,11 +2343,10 @@
                 $(this).on('click', '.SNKMS_IG_NEWTAB_MAIN', function(e){
                     updateLoadingBar(true);
 
-                    GL_username = $(this).parent().parent().parent().attr('data-username');
-                    GL_postPath = location.pathname.replace(/\/$/,'').split('/').at(-1) || $(this).parent().parent().parent().find('a[href^="/p/"]').first().attr("href").split("/").at(2) || $(this).parent().parent().children("div:last-child").children("div").children("div:last-child").find('a[href^="/p/"]').last().attr("href").split("/").at(2);
+                    GL_username = $mainElement.attr('data-username');
+                    GL_postPath = location.pathname.replace(/\/$/,'').split('/').at(-1) || $mainElement.find('a[href^="/p/"]').first().attr("href").split("/").at(2) || $(this).parent().parent().parent().children("div:last-child").children("div").children("div:last-child").find('a[href^="/p/"]').last().attr("href").split("/").at(2);
 
-                    var $main = $(this).parent().parent().parent();
-                    var index = getVisibleNodeIndex($main);
+                    var index = getVisibleNodeIndex($mainElement);
 
                     IG_createDM(true, false);
 
@@ -2384,9 +2382,8 @@
 
                 // Running if user click the download all icon
                 $(this).on('click', '.SNKMS_IG_DW_ALL_MAIN', async function(e){
-                    e.preventDefault();
-                    GL_username = $(this).parent().parent().parent().attr('data-username');
-                    GL_postPath = location.pathname.replace(/\/$/,'').split('/').at(-1) || $(this).parent().parent().parent().find('a[href^="/p/"]').first().attr("href").split("/").at(2) || $(this).parent().parent().children("div:last-child").children("div").children("div:last-child").find('a[href^="/p/"]').last().attr("href").split("/").at(2);
+                    GL_username = $mainElement.attr('data-username');
+                    GL_postPath = location.pathname.replace(/\/$/,'').split('/').at(-1) || $mainElement.find('a[href^="/p/"]').first().attr("href").split("/").at(2) || $(this).parent().parent().parent().children("div:last-child").children("div").children("div:last-child").find('a[href^="/p/"]').last().attr("href").split("/").at(2);
 
                     // Create element that download dailog
                     IG_createDM(USER_SETTING.DIRECT_DOWNLOAD_ALL, true);
@@ -2420,8 +2417,8 @@
 
                 // Running if user click the download icon
                 $(this).on('click','.SNKMS_IG_DW_MAIN', async function(e){
-                    GL_username = $(this).parent().parent().parent().attr('data-username');
-                    GL_postPath = location.pathname.replace(/\/$/,'').split('/').at(-1) || $(this).parent().parent().parent().find('a[href^="/p/"]').first().attr("href").split("/").at(2) || $(this).parent().parent().children("div:last-child").children("div").children("div:last-child").find('a[href^="/p/"]').last().attr("href").split("/").at(2);
+                    GL_username = $mainElement.attr('data-username');
+                    GL_postPath = location.pathname.replace(/\/$/,'').split('/').at(-1) || $mainElement.find('a[href^="/p/"]').first().attr("href").split("/").at(2) || $(this).parent().parent().parent().children("div:last-child").children("div").children("div:last-child").find('a[href^="/p/"]').last().attr("href").split("/").at(2);
 
                     // Create element that download dailog
                     IG_createDM(USER_SETTING.DIRECT_DOWNLOAD_ALL, true);
@@ -2458,8 +2455,9 @@
 
                     if(!USER_SETTING.DIRECT_DOWNLOAD_ALL){
                         // Find video/image element and add the download icon
+                        const resourceCountSelector = '._acay ._acaz';
                         var s = 0;
-                        var multiple = $(this).parent().parent().find('._acay ._acaz').length;
+                        var multiple = $(this).parent().parent().find(resourceCountSelector).length;
                         var pathname = window.location.pathname;
                         var fullpathname = "/"+pathname.split('/')[1]+"/"+pathname.split('/')[2]+"/";
                         var blob = USER_SETTING.FORCE_FETCH_ALL_RESOURCES;
@@ -2467,8 +2465,8 @@
 
                         // If posts have more than one images or videos.
                         if(multiple){
-                            $(this).parent().find('._acay ._acaz').each(function(){
-                                let element_videos = $(this).parent().parent().find('video');
+                            $(this).parent().parent().find(resourceCountSelector).each(function(){
+                                let element_videos = $(this).parent().parent().parent().find('video');
                                 //if(element_videos && element_videos.attr('src') && element_videos.attr('src').match(/^blob:/ig)){
                                 if(element_videos && element_videos.attr('src')){
                                     blob = true;
@@ -2480,7 +2478,7 @@
                                 createMediaListDOM(GL_postPath,".IG_SN_DIG .IG_SN_DIG_MAIN .IG_SN_DIG_BODY",_i18n("LOAD_BLOB_MULTIPLE"));
                             }
                             else{
-                                $(this).parent().find('._acay ._acaz').each(function(){
+                                $(this).parent().parent().find(resourceCountSelector).each(function(){
                                     s++;
                                     let element_videos = $(this).find('video');
                                     let element_images = $(this).find('._aagv img');
@@ -2506,8 +2504,8 @@
                             }
                             else{
                                 s++;
-                                let element_videos = $(this).parent().parent().find('video');
-                                let element_images = $(this).parent().parent().find('._aagv img');
+                                let element_videos = $(this).parent().parent().parent().find('video');
+                                let element_images = $(this).parent().parent().parent().find('._aagv img');
                                 let imgLink = (element_images.attr('srcset'))?element_images.attr('srcset').split(" ")[0]:element_images.attr('src');
 
 
