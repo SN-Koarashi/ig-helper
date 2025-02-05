@@ -428,6 +428,7 @@
                 GL_dataCache.highlights[highlightId] = highStories;
             }
 
+            logger('onHighlightsStory', highlightId, GL_dataCache.highlights[highlightId]);
 
 
             if (USER_SETTING.RENAME_PUBLISH_DATE) {
