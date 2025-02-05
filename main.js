@@ -366,6 +366,9 @@
         let highStories = await getHighlightStories(highlightId);
         let username = highStories.data.reels_media[0].owner.username;
 
+        let complete = 0;
+        setDownloadProgress(complete, highStories.data.reels_media[0].items.length);
+
         highStories.data.reels_media[0].items.forEach((item, idx) => {
             setTimeout(() => {
                 if (USER_SETTING.RENAME_PUBLISH_DATE) {
@@ -379,10 +382,14 @@
                 });
 
                 if (item.is_video) {
-                    saveFiles(item.video_resources[0].src, username, "stories", timestamp, 'mp4', item.id);
+                    saveFiles(item.video_resources[0].src, username, "stories", timestamp, 'mp4', item.id).then(() => {
+                        setDownloadProgress(++complete, highStories.data.reels_media[0].items.length);
+                    });
                 }
                 else {
-                    saveFiles(item.display_resources[0].src, username, "stories", timestamp, 'jpg', item.id);
+                    saveFiles(item.display_resources[0].src, username, "stories", timestamp, 'jpg', item.id).then(() => {
+                        setDownloadProgress(++complete, highStories.data.reels_media[0].items.length);
+                    });
                 }
             }, 100 * idx);
         });
@@ -705,6 +712,9 @@
         let userId = userInfo.user.pk;
         let stories = await getStories(userId);
 
+        let complete = 0;
+        setDownloadProgress(complete, stories.data.reels_media[0].items.length);
+
         stories.data.reels_media[0].items.forEach((item, idx) => {
             setTimeout(() => {
                 if (USER_SETTING.RENAME_PUBLISH_DATE) {
@@ -718,10 +728,14 @@
                 });
 
                 if (item.is_video) {
-                    saveFiles(item.video_resources[0].src, username, "stories", timestamp, 'mp4', item.id);
+                    saveFiles(item.video_resources[0].src, username, "stories", timestamp, 'mp4', item.id).then(() => {
+                        setDownloadProgress(++complete, stories.data.reels_media[0].items.length);
+                    });
                 }
                 else {
-                    saveFiles(item.display_resources[0].src, username, "stories", timestamp, 'jpg', item.id);
+                    saveFiles(item.display_resources[0].src, username, "stories", timestamp, 'jpg', item.id).then(() => {
+                        setDownloadProgress(++complete, stories.data.reels_media[0].items.length);
+                    });
                 }
             }, 100 * idx);
         });
@@ -2060,6 +2074,29 @@
     }
 
     /**
+     * setDownloadProgress
+     * @description Show and set download circle progress
+     *
+     * @param  {Integer}  now
+     * @param  {Integer}  total
+     * @return {Void}
+     */
+    function setDownloadProgress(now, total) {
+        if ($('.circle_wrapper').length) {
+            $('.circle_wrapper span').text(`${now}/${total}`);
+
+            if (now >= total) {
+                $('.circle_wrapper').fadeOut(250, function () {
+                    $(this).remove();
+                });
+            }
+        }
+        else {
+            $('body').append(`<div class="circle_wrapper"><circle></circle><span>${now}/${total}</span></div>`);
+        }
+    }
+
+    /**
      * initPostVideoFunction
      * @description Initialize settings related to the video resources in the post
      *
@@ -2190,12 +2227,12 @@
                     // New post UI by Discord: ken
                     // NOT WORKING
                     /*
-                    if(tagName === "DIV" && $(this).attr('role') === "presentation"){
-                        rightPos = 28;
-                        topPos = 75;
-                        $mainElement = $('div._aap0[role="presentation"]').parents('div._aamm').parent().parent().parent().parent().parent();
-                    }
-                    */
+                        if(tagName === "DIV" && $(this).attr('role') === "presentation"){
+                            rightPos = 28;
+                            topPos = 75;
+                            $mainElement = $('div._aap0[role="presentation"]').parents('div._aamm').parent().parent().parent().parent().parent();
+                        }
+                        */
 
                     const $childElement = $mainElement.children("div").children("div");
 
@@ -2728,18 +2765,22 @@
      * @param  {Integer}  timestamp
      * @param  {String}  filetype
      * @param  {String}  shortcode
-     * @return {void}
+     * @return {Promise}
      */
     function saveFiles(downloadLink, username, sourceType, timestamp, filetype, shortcode) {
-        setTimeout(() => {
-            updateLoadingBar(true);
-            fetch(downloadLink).then(res => {
-                return res.blob().then(dwel => {
-                    updateLoadingBar(false);
-                    createSaveFileElement(downloadLink, dwel, username, sourceType, timestamp, filetype, shortcode);
+        return new Promise((resolve) => {
+            setTimeout(() => {
+                updateLoadingBar(true);
+                fetch(downloadLink).then(res => {
+                    return res.blob().then(dwel => {
+                        updateLoadingBar(false);
+                        createSaveFileElement(downloadLink, dwel, username, sourceType, timestamp, filetype, shortcode);
+
+                        resolve(true);
+                    });
                 });
-            });
-        }, 50);
+            }, 50);
+        });
     }
 
     /**
