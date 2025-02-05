@@ -1,4 +1,4 @@
-.IG_SN_DIG{
+.IG_SN_DIG {
     position: fixed;
     left: 0px;
     right: 0px;
@@ -6,58 +6,68 @@
     top: 0px;
     z-index: 500;
 }
-.IG_SN_DIG.hidden{
-    display:none;
+
+.IG_SN_DIG.hidden {
+    display: none;
 }
-.IG_SN_DIG_BG{
+
+.IG_SN_DIG_BG {
     position: fixed;
     left: 0px;
     right: 0px;
     bottom: 0px;
     top: 0px;
-    z-index:502;
-    background: rgba(0,0,0,.75);
+    z-index: 502;
+    background: rgba(0, 0, 0, .75);
 }
-.IG_SN_DIG_MAIN{
+
+.IG_SN_DIG_MAIN {
     z-index: 510;
-    padding:10px 15px;
-    top:7%;
+    padding: 10px 15px;
+    top: 7%;
     position: absolute;
     left: 50%;
     transform: translateX(-50%);
     width: 500px;
-    background:#fff;
+    background: #fff;
     background: rgb(var(--ig-secondary-background));
     color: #000;
     color: rgb(var(--ig-primary-text));
     border-radius: 7px;
 }
-.IG_SN_DIG_BODY{
+
+.IG_SN_DIG_BODY {
     min-height: 100px;
     max-height: 70vh;
-    overflow-y:auto;
+    overflow-y: auto;
 }
-.IG_SN_DIG_BODY a{
-    display:block;
-    padding:5px 0px;
+
+.IG_SN_DIG_BODY a {
+    display: block;
+    padding: 5px 0px;
     color: #111;
     color: rgb(var(--ig-primary-text));
-    font-size:1rem;
-    line-height:1rem;
-    text-align:center;
+    font-size: 1rem;
+    line-height: 1rem;
+    text-align: center;
     border-radius: 5px;
 }
-.SNKMS_IG_DW_MAIN, .SNKMS_IG_NEWTAB_MAIN, .SNKMS_IG_THUMBNAIL_MAIN, .SNKMS_IG_DW_ALL_MAIN {
+
+.SNKMS_IG_DW_MAIN,
+.SNKMS_IG_NEWTAB_MAIN,
+.SNKMS_IG_THUMBNAIL_MAIN,
+.SNKMS_IG_DW_ALL_MAIN {
     position: relative;
-    top:0px;
-    padding:6px;
-    line-height:0;
-    background:#fff;
+    top: 0px;
+    padding: 6px;
+    line-height: 0;
+    background: #fff;
     border-radius: 50%;
-    cursor:pointer;
+    cursor: pointer;
     color: #000;
 }
-.button_wrapper{
+
+.button_wrapper {
     position: absolute;
     top: 15px;
     right: 15px;
@@ -67,99 +77,123 @@
     flex-flow: row-reverse;
     gap: 5px;
 }
-#_SNLOAD{
-    text-align:center;
-    font-size:20px;
+
+#_SNLOAD {
+    text-align: center;
+    font-size: 20px;
 }
-.IG_REELS, .IG_DWSTORY, .IG_DWHISTORY, .IG_DWSTORY_ALL, .IG_DWHISTORY_ALL{
+
+.IG_REELS,
+.IG_DWSTORY,
+.IG_DWHISTORY,
+.IG_DWSTORY_ALL,
+.IG_DWHISTORY_ALL {
     position: absolute;
-    right:40px;
-    top:15px;
-    padding:5px;
-    line-height:0;
-    background:#fff;
+    right: 40px;
+    top: 15px;
+    padding: 5px;
+    line-height: 0;
+    background: #fff;
     border-radius: 5px;
-    cursor:pointer;
+    cursor: pointer;
     z-index: 5;
 }
 
-.IG_REELS_NEWTAB, .IG_DWNEWTAB, .IG_DWHINEWTAB{
+.IG_REELS_NEWTAB,
+.IG_DWNEWTAB,
+.IG_DWHINEWTAB {
     position: absolute;
-    right:40px;
-    top:45px;
-    padding:5px;
-    line-height:0;
-    background:#fff;
+    right: 40px;
+    top: 45px;
+    padding: 5px;
+    line-height: 0;
+    background: #fff;
     border-radius: 5px;
-    cursor:pointer;
+    cursor: pointer;
     z-index: 5;
-    color:#000;
+    color: #000;
 }
 
-.IG_REELS_THUMBNAIL, .IG_DWSTORY_THUMBNAIL, .IG_DWHISTORY_THUMBNAIL{
+.IG_REELS_THUMBNAIL,
+.IG_DWSTORY_THUMBNAIL,
+.IG_DWHISTORY_THUMBNAIL {
     position: absolute;
-    right:40px;
-    top:75px;
-    padding:5px;
-    line-height:1;
-    background:#fff;
+    right: 40px;
+    top: 75px;
+    padding: 5px;
+    line-height: 1;
+    background: #fff;
     border-radius: 5px;
-    cursor:pointer;
+    cursor: pointer;
     z-index: 5;
 }
-.IG_DWSTORY, .IG_DWHISTORY, .IG_DWSTORY_THUMBNAIL, .IG_DWHISTORY_THUMBNAIL, .IG_DWNEWTAB, .IG_DWHINEWTAB{
-    right:-40px;
+
+.IG_DWSTORY,
+.IG_DWHISTORY,
+.IG_DWSTORY_THUMBNAIL,
+.IG_DWHISTORY_THUMBNAIL,
+.IG_DWNEWTAB,
+.IG_DWHINEWTAB {
+    right: -40px;
     color: #000;
 }
-.IG_DWSTORY_ALL, .IG_DWHISTORY_ALL{
-    right:-70px;
+
+.IG_DWSTORY_ALL,
+.IG_DWHISTORY_ALL {
+    right: -70px;
     color: #000;
 }
-.IG_DWPROFILE{
+
+.IG_DWPROFILE {
     position: absolute;
-    right:0px;
-    top:0px;
-    padding:5px;
-    line-height:1;
-    background:#fff;
+    right: 0px;
+    top: 0px;
+    padding: 5px;
+    line-height: 1;
+    background: #fff;
     border-radius: 50%;
-    cursor:pointer;
+    cursor: pointer;
     border: 1px solid #ccc
 }
-.globalSettings{
-    position:relative;
-    display:inline-block;
+
+.globalSettings {
+    position: relative;
+    display: inline-block;
     color: #000;
     color: rgb(var(--ig-primary-text));
-    text-decoration:none;
-    text-align:left;
-    width:100%;
-    min-height:30px;
-    padding:5px;
-    padding-right:60px;
-    line-height:18px;
-    font-size:18px;
+    text-decoration: none;
+    text-align: left;
+    width: 100%;
+    min-height: 30px;
+    padding: 5px;
+    padding-right: 60px;
+    line-height: 18px;
+    font-size: 18px;
     box-sizing: border-box;
-    border-radius:5px;
-    vertical-align:middle;
-    outline:none;
-    cursor:pointer;
+    border-radius: 5px;
+    vertical-align: middle;
+    outline: none;
+    cursor: pointer;
     -ms-user-select: none;
     -moz-user-select: none;
     -webkit-user-select: none;
     user-select: none;
     margin: 5px 0px;
 }
-.globalSettings:hover{
+
+.globalSettings:hover {
     background: #e7e7e7;
     background: rgb(var(--ig-secondary-button-hover));
 }
-.globalSettings:hover > span{
+
+.globalSettings:hover>span {
     cursor: help;
 }
+
 .globalSettings input:not(#date_format) {
     display: none;
 }
+
 .globalSettings input#date_format {
     width: calc(100% - 50px);
     background: rgb(var(--ig-secondary-background));
@@ -168,6 +202,7 @@
     top: 50%;
     transform: translateY(-50%);
 }
+
 .globalSettings .chbtn {
     width: 40px;
     height: 15px;
@@ -181,6 +216,7 @@
     transition: background 0.2s;
     transform: translateY(-50%);
 }
+
 .globalSettings .chbtn .rounds {
     width: 20px;
     height: 20px;
@@ -191,27 +227,32 @@
     position: absolute;
     left: 0px;
     top: -3px;
-    transition: left 0.15s,background 0.15s;
+    transition: left 0.15s, background 0.15s;
 }
-.globalSettings input:checked ~ .chbtn{
+
+.globalSettings input:checked~.chbtn {
     background: #004c5a;
 }
-.globalSettings input:checked ~ .chbtn .rounds{
+
+.globalSettings input:checked~.chbtn .rounds {
     left: 20px;
     background: #048aa4;
 }
-.checkbox{
+
+.checkbox {
     font-size: 18px;
     vertical-align: middle;
     margin: 0px 7px;
     user-select: none;
     margin-left: 0px;
 }
-.checkbox input{
+
+.checkbox input {
     transform: scale(1.5);
     margin-right: 10px;
 }
-.inner_box_wrapper{
+
+.inner_box_wrapper {
     display: block;
     position: absolute;
     left: 0px;
@@ -224,17 +265,20 @@
     cursor: pointer;
     border-radius: 7px 0px 0px 7px;
 }
-.inner_box ~ span{
+
+.inner_box~span {
     position: relative;
     height: 100%;
     width: 100%;
     display: block;
     border-radius: 7px 0px 0px 7px;
 }
-.inner_box:checked ~ span{
+
+.inner_box:checked~span {
     background: rgb(var(--ig-success));
 }
-.inner_box ~ span:after {
+
+.inner_box~span:after {
     content: "";
     position: absolute;
     display: none;
@@ -250,10 +294,12 @@
     -ms-transform: rotate(45deg) translateY(-50%);
     transform: rotate(45deg) translateY(-50%);
 }
-.inner_box:checked ~ span:after{
-    display:block;
+
+.inner_box:checked~span:after {
+    display: block;
 }
-.inner_box{
+
+.inner_box {
     position: absolute;
     top: 10px;
     left: 50%;
@@ -262,24 +308,29 @@
     appearance: none;
     opacity: 0;
 }
-.IG_SN_DIG_BODY > div{
+
+.IG_SN_DIG_BODY>div {
     position: relative;
-    border:1px solid #000;
-    border:1px solid rgb(var(--ig-primary-text));
+    border: 1px solid #000;
+    border: 1px solid rgb(var(--ig-primary-text));
     margin: 5px 0px;
     border-radius: 7px;
 }
-.IG_SN_DIG_BODY > div:hover{
+
+.IG_SN_DIG_BODY>div:hover {
     background: rgba(var(--ig-hover-overlay));
 }
-.IG_SN_DIG_TITLE{
+
+.IG_SN_DIG_TITLE {
     padding-bottom: 5px;
 }
-.IG_SN_DIG_TITLE button{
+
+.IG_SN_DIG_TITLE button {
     font-size: 14px;
     vertical-align: middle;
     margin: 0px 7px;
 }
+
 kbd {
     font-weight: bold;
     padding: 4px 5px;
@@ -288,7 +339,7 @@ kbd {
     border: 1px solid rgb(var(--ig-primary-text));
 }
 
-.globalSettings #tempWrapper{
+.globalSettings #tempWrapper {
     position: absolute;
     top: 0px;
     left: 0px;
@@ -297,14 +348,16 @@ kbd {
     background: #fff;
     background: rgb(var(--ig-secondary-background));
 }
-.globalSettings #tempWrapper input[type="range"]{
+
+.globalSettings #tempWrapper input[type="range"] {
     display: inline-block;
     width: 80%;
     position: relative;
     top: 50%;
     transform: translateY(-50%);
 }
-.globalSettings #tempWrapper input[type="number"]{
+
+.globalSettings #tempWrapper input[type="number"] {
     display: inline-block;
     width: 50px;
     border-radius: 7px;
@@ -315,37 +368,44 @@ kbd {
     top: 50%;
     transform: translateY(-50%);
 }
-.globalSettings.child{
+
+.globalSettings.child {
     margin-left: 15px;
     width: calc(100% - 15px);
 }
 
-#scrollWrapper{
+#scrollWrapper {
     position: fixed;
     right: 15px;
     bottom: 15px;
 }
-#scrollWrapper .button-up, #scrollWrapper .button-down{
+
+#scrollWrapper .button-up,
+#scrollWrapper .button-down {
     width: 32px;
     height: 32px;
     border-radius: 10px;
-    background-color: rgba(0,0,0,0.25);
+    background-color: rgba(0, 0, 0, 0.25);
     background-color: rgba(var(--ig-banner-background));
     cursor: pointer;
-    margin: 5px 0px;--ig-banner-background;
+    margin: 5px 0px;
     border: 1px solid;
     border-color: rgb(var(--ig-separator));
 }
-#scrollWrapper .button-up:hover, #scrollWrapper .button-down:hover{
+
+#scrollWrapper .button-up:hover,
+#scrollWrapper .button-down:hover {
     width: 32px;
     height: 32px;
     border-radius: 10px;
-    background-color: rgba(0,0,0,0.25);
+    background-color: rgba(0, 0, 0, 0.25);
     background-color: rgba(var(--ig-hover-overlay));
     cursor: pointer;
     margin: 5px 0px;
 }
-#scrollWrapper .button-up > div, #scrollWrapper .button-down > div{
+
+#scrollWrapper .button-up>div,
+#scrollWrapper .button-down>div {
     position: relative;
     border: solid #000;
     border: solid rgb(var(--ig-primary-text));
@@ -354,18 +414,20 @@ kbd {
     padding: 4px;
     left: 9.5px;
 }
-#scrollWrapper .button-up > div{
+
+#scrollWrapper .button-up>div {
     transform: rotate(-135deg);
     -webkit-transform: rotate(-135deg);
     top: 9px;
 }
-#scrollWrapper .button-down > div{
+
+#scrollWrapper .button-down>div {
     transform: rotate(45deg);
     -webkit-transform: rotate(45deg);
     top: 6px;
 }
 
-.IG_SN_DIG_BODY .newTab{
+.IG_SN_DIG_BODY .newTab {
     position: absolute;
     right: 0px;
     top: 0px;
@@ -376,7 +438,7 @@ kbd {
     border-radius: 5px;
 }
 
-.IG_SN_DIG_BODY .videoThumbnail{
+.IG_SN_DIG_BODY .videoThumbnail {
     position: absolute;
     right: 0px;
     top: 40px;
@@ -387,30 +449,32 @@ kbd {
     border-radius: 5px;
 }
 
-.IG_SN_DIG_BODY .newTab:hover, .IG_SN_DIG_BODY .videoThumbnail:hover{
+.IG_SN_DIG_BODY .newTab:hover,
+.IG_SN_DIG_BODY .videoThumbnail:hover {
     background: rgb(var(--ig-secondary-button-hover));
 }
 
-.IG_SN_DIG_BODY .newTab svg, .IG_SN_DIG_BODY .videoThumbnail svg{
+.IG_SN_DIG_BODY .newTab svg,
+.IG_SN_DIG_BODY .videoThumbnail svg {
     fill: rgb(var(--ig-primary-text));
 }
 
-.IG_SN_DIG_BTN{
-    cursor:pointer;
-    position:absolute;
-    right:0px;
-    top:0px;
+.IG_SN_DIG_BTN {
+    cursor: pointer;
+    position: absolute;
+    right: 0px;
+    top: 0px;
     fill: rgb(var(--ig-primary-text));
     line-height: 0;
 }
 
-#tempWrapper .IG_SN_DIG_BTN{
+#tempWrapper .IG_SN_DIG_BTN {
     right: 5px;
     transform: translateY(-50%);
     top: 50%;
 }
 
-#tempWrapper #locatePreview{
+#tempWrapper #locatePreview {
     margin-left: 5px;
     display: inline-block;
     text-overflow: ellipsis;
@@ -423,42 +487,43 @@ kbd {
     top: 50%;
 }
 
-#tempWrapper #locateSelect{
+#tempWrapper #locateSelect {
     transform: translateY(-50%);
     top: 50%;
     position: relative;
     vertical-align: middle;
 }
 
-.volume_slider > div{
+.volume_slider>div {
     display: none;
 }
 
-div[class]:hover + .volume_slider > div, .volume_slider:hover > div{
+div[class]:hover+.volume_slider>div,
+.volume_slider:hover>div {
     display: block;
 }
 
-.volume_slider{
+.volume_slider {
     position: absolute;
     height: 30px;
     left: 0px;
     right: 40px;
 }
 
-.volume_slider.bottom{
+.volume_slider.bottom {
     left: 50px;
     right: 45px;
     bottom: 15px;
 }
 
-.volume_slider.vertical{
+.volume_slider.vertical {
     top: 80px;
-    right:25px;
+    right: 25px;
     transform: rotate(-90deg);
     transform-origin: right center;
 }
 
-.volume_slider > div{
+.volume_slider>div {
     width: calc(100% - 20px);
     position: absolute;
     right: 10px;
@@ -469,7 +534,7 @@ div[class]:hover + .volume_slider > div, .volume_slider:hover > div{
     text-align: center;
 }
 
-.volume_slider input[type="range"]{
+.volume_slider input[type="range"] {
     overflow: hidden;
     width: 90%;
     height: inherit;
@@ -481,14 +546,14 @@ div[class]:hover + .volume_slider > div, .volume_slider:hover > div{
 }
 
 .volume_slider input[type="range"]::-webkit-slider-runnable-track {
-    background: rgba(255,255,255,0.35);
+    background: rgba(255, 255, 255, 0.35);
     height: 6px;
     border-radius: 7px;
-    background: linear-gradient(to right, #fff 0%, #fff var(--ig-track-progress), rgba(255,255,255,0.35) var(--ig-track-progress), rgba(255,255,255,0.35) 100%);
+    background: linear-gradient(to right, #fff 0%, #fff var(--ig-track-progress), rgba(255, 255, 255, 0.35) var(--ig-track-progress), rgba(255, 255, 255, 0.35) 100%);
 }
 
 .volume_slider input[type="range"]::-moz-range-track {
-    background: rgba(255,255,255,0.35);
+    background: rgba(255, 255, 255, 0.35);
     height: 6px;
     border-radius: 7px;
 }
@@ -512,8 +577,52 @@ div[class]:hover + .volume_slider > div, .volume_slider:hover > div{
 .volume_slider input[type="range"]::-moz-range-thumb {
     border: none;
     border-radius: 0;
-    background-color: #fff
-        height: 16px;
+    background-color: #fff;
+    height: 16px;
     width: 16px;
     border-radius: 50%;
+}
+
+.circle_wrapper {
+    position: fixed;
+    display: flex;
+    right: 15px;
+    bottom: 15px;
+    z-index: 50000;
+    width: fit-content;
+    align-items: center;
+    flex-direction: row;
+    padding: 7px;
+    border-radius: 7px;
+    box-shadow: 0 0 5px #202020;
+    background: rgb(var(--ig-secondary-background));
+}
+
+.circle_wrapper circle {
+    display: inline-block;
+    border: 2px solid rgba(255, 152, 0, 0.9);
+    opacity: .9;
+    border-left: 2px solid rgba(0, 0, 0, 0);
+    border-right: 2px solid rgba(0, 0, 0, 0);
+    border-radius: 50px;
+    width: 24px;
+    height: 24px;
+    margin: 0 5px;
+    animation: spinoffPulse 0.5s infinite linear;
+}
+
+.circle_wrapper span {
+    font-size: 16px;
+    font-family: monospace;
+    color: rgb(var(--ig-primary-text));
+}
+
+@keyframes spinoffPulse {
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
 }
