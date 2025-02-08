@@ -2214,25 +2214,14 @@
                 if (!$(this).attr('data-snig') && !$(this).hasClass('x1iyjqo2') && !$(this).children('article')?.hasClass('x1iyjqo2') && $(this).parents('div#scrollview').length === 0) {
                     logger("Found post container", $(this));
 
-                    var rightPos = 15;
-                    var topPos = 15;
-                    var $mainElement = $(this);
-                    var tagName = this.tagName;
+                    const $mainElement = $(this);
+                    const tagName = this.tagName;
+                    const resourceCountSelector = '._acay ._acaz';
 
                     // not loop each in single top post
                     if (tagName === "DIV" && index != 0) {
                         return;
                     }
-
-                    // New post UI by Discord: ken
-                    // NOT WORKING
-                    /*
-                        if(tagName === "DIV" && $(this).attr('role') === "presentation"){
-                            rightPos = 28;
-                            topPos = 75;
-                            $mainElement = $('div._aap0[role="presentation"]').parents('div._aamm').parent().parent().parent().parent().parent();
-                        }
-                        */
 
                     const $childElement = $mainElement.children("div").children("div");
 
@@ -2264,10 +2253,14 @@
                     const ThumbnailElement = `<div data-ih-locale-title="THUMBNAIL_INTRO" title="${_i18n("THUMBNAIL_INTRO")}" class="SNKMS_IG_THUMBNAIL_MAIN">${SVG.THUMBNAIL}</div>`;
 
                     $childElement.find(".button_wrapper").append(DownloadElement);
-                    if (USER_SETTING.DIRECT_DOWNLOAD_VISIBLE_RESOURCE && !USER_SETTING.DIRECT_DOWNLOAD_ALL) {
+
+                    const resource_count = $mainElement.find(resourceCountSelector).length;
+
+                    if (resource_count > 1 && USER_SETTING.DIRECT_DOWNLOAD_VISIBLE_RESOURCE && !USER_SETTING.DIRECT_DOWNLOAD_ALL) {
                         const DownloadAllElement = `<div data-ih-locale-title="DW_ALL" title="${_i18n("DW_ALL")}" class="SNKMS_IG_DW_ALL_MAIN">${SVG.DOWNLOAD_ALL}</div>`;
                         $childElement.find(".button_wrapper").append(DownloadAllElement);
                     }
+
                     $childElement.find(".button_wrapper").append(NewTabElement);
 
                     setTimeout(() => {
@@ -2494,11 +2487,8 @@
 
                         if (!USER_SETTING.DIRECT_DOWNLOAD_ALL) {
                             // Find video/image element and add the download icon
-                            const resourceCountSelector = '._acay ._acaz';
                             var s = 0;
                             var multiple = $(this).parent().parent().find(resourceCountSelector).length;
-                            var pathname = window.location.pathname;
-                            var fullpathname = "/" + pathname.split('/')[1] + "/" + pathname.split('/')[2] + "/";
                             var blob = USER_SETTING.FORCE_FETCH_ALL_RESOURCES;
                             var publish_time = new Date($(this).parent().parent().find('a[href^="/p/"] time[datetime]').first().attr('datetime')).getTime();
 
