@@ -1,0 +1,16 @@
+{
+  "name": "ig-helper",
+  "version": "1.0.0",
+  "description": "Simple and fast download of resources from Instagram (posts, reels, stories, and more).",
+  "private": true,
+  "author": "SN-Koarashi",
+  "license": "GPLv3",
+  "devDependencies": {
+    "@eslint/js": "^9.17.0",
+    "eslint": "^9.17.0",
+    "globals": "^15.14.0"
+  },
+  "dependencies": {
+    "jquery": "^3.7.1"
+  }
+}

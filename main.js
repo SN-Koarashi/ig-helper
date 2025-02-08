@@ -100,7 +100,7 @@
         stories: {},
         highlights: {}
     };
-    var GL_observer = new MutationObserver(function (mutation, owner) {
+    var GL_observer = new MutationObserver(function () {
         onReadyMyDW();
     });
 
@@ -123,6 +123,7 @@
     });
 
     // Main Timer
+    // eslint-disable-next-line no-unused-vars
     var timer = setInterval(function () {
         // page loading or unnecessary route
         if ($('div#splash-screen').length > 0 && !$('div#splash-screen').is(':hidden') ||
@@ -200,6 +201,7 @@
 
                 pageLoaded = true;
             }
+            // eslint-disable-next-line no-useless-escape
             if ($('header > *[class]:first-child img[alt]').length && location.pathname.match(/^(\/)([0-9A-Za-z\.\-_]+)\/?(tagged|reels|saved)?\/?$/ig) && !location.pathname.match(/^(\/explore\/?$|\/stories(\/.*)?$|\/p\/)/ig)) {
                 logger('isProfile');
                 setTimeout(() => {
@@ -327,6 +329,7 @@
                 let dataURL = await getUserHighSizeProfile(userInfo.user.pk);
                 saveFiles(dataURL, username, "avatar", timestamp, 'jpg');
             }
+            // eslint-disable-next-line no-unused-vars
             catch (err) {
                 saveFiles(userInfo.user.profile_pic_url, username, "avatar", timestamp, 'jpg');
             }
@@ -993,7 +996,6 @@
         }
         else {
             // Add the stories download button
-            let style = "position: absolute;right:-40px;top:15px;padding:5px;line-height:1;background:#fff;border-radius: 5px;cursor:pointer;";
             if (!$('.IG_DWSTORY').length) {
                 GL_dataCache.stories = {};
                 let $element = null;
@@ -1109,7 +1111,6 @@
             let timestamp = Math.floor(date / 1000);
             let type = 'jpg';
             let username = $("body > div section._ac0a header._ac0k ._ac0l a + div a").first().text() || location.pathname.split('/').at(2);
-            let style = 'margin:5px 0px;padding:5px 0px;color:#111;font-size:1rem;line-height:1rem;text-align:center;border:1px solid #000;border-radius: 5px;';
             // Download thumbnail
             let targetURL = location.pathname.replace(/\/$/ig, '').split("/").at(-1);
             let videoThumbnailURL = "";
@@ -1484,6 +1485,7 @@
 
 
                                             $(this).on('volumechange', function () {
+                                                // eslint-disable-next-line no-unused-vars
                                                 let $element_mute_button = $(this).parent().find('video + div > div').find('button[type="button"], div[role="button"]').filter(function (idx) {
                                                     // This is mute/unmute's icon
                                                     return $(this).width() <= 64 && $(this).height() <= 64 && $(this).find('svg > path[d^="M16.636 7.028a1.5"], svg > path[d^="M1.5 13.3c-.8"]').length > 0;
@@ -1639,6 +1641,7 @@
                     else {
                         getUserIdWithAgent(username).then((result) => {
                             resolve(result);
+                            // eslint-disable-next-line no-unused-vars
                         }).catch((err) => {
                             alert("Can not find user info from getUserId()");
                         });
@@ -2160,6 +2163,7 @@
                     });
 
                     $(this).on('volumechange', function () {
+                        // eslint-disable-next-line no-unused-vars
                         let $element_mute_button = $(this).parent().find('video + div > div').find('button[type="button"], div[role="button"]').filter(function (idx) {
                             // This is mute/unmute's icon
                             return $(this).width() <= 64 && $(this).height() <= 64 && $(this).find('svg > path[d^="M16.636 7.028a1.5"], svg > path[d^="M1.5 13.3c-.8"]').length > 0;
@@ -2203,6 +2207,7 @@
      */
     function createDownloadButton() {
         // Add download icon per each posts
+        // eslint-disable-next-line no-unused-vars
         $('article, section:visible > main > div > div > div > div > div > hr').map(function (index) {
             return $(this).is('section:visible > main > div > div > div > div > div > hr') ? $(this).parent().parent().parent().parent()[0] : this;
         }).filter(function () {
@@ -2236,7 +2241,7 @@
                         }
 
                         const observeNode = $mainElement.find('._acay').first().parent()[0];
-                        var observer = new MutationObserver(function (mutation, owner) {
+                        var observer = new MutationObserver(function () {
                             $mainElement.find('._acay + .x24i39r').css('top', '37px');
                         });
 
@@ -2271,6 +2276,7 @@
                             }
                         }
                         else {
+                            // eslint-disable-next-line no-unused-vars
                             const checkVideoNodeCallback = (entries, observer) => {
                                 entries.forEach((entry) => {
                                     //logger(entry);
@@ -2296,6 +2302,7 @@
                             });
 
                             // trigger when switching resources
+                            // eslint-disable-next-line no-unused-vars
                             const observer = new MutationObserver(function (mutation, owner) {
                                 var target = mutation.at(0)?.target;
 
@@ -2342,7 +2349,7 @@
                         ]
                     });
 
-                    $(this).on('click', '.SNKMS_IG_THUMBNAIL_MAIN', function (e) {
+                    $(this).on('click', '.SNKMS_IG_THUMBNAIL_MAIN', function () {
                         updateLoadingBar(true);
 
                         GL_username = $mainElement.attr('data-username');
@@ -2372,7 +2379,7 @@
                         });
                     });
 
-                    $(this).on('click', '.SNKMS_IG_NEWTAB_MAIN', function (e) {
+                    $(this).on('click', '.SNKMS_IG_NEWTAB_MAIN', function () {
                         updateLoadingBar(true);
 
                         GL_username = $mainElement.attr('data-username');
@@ -2413,7 +2420,7 @@
                     });
 
                     // Running if user click the download all icon
-                    $(this).on('click', '.SNKMS_IG_DW_ALL_MAIN', async function (e) {
+                    $(this).on('click', '.SNKMS_IG_DW_ALL_MAIN', async function () {
                         GL_username = $mainElement.attr('data-username');
                         GL_postPath = location.pathname.replace(/\/$/, '').split('/').at(-1) || $mainElement.find('a[href^="/p/"]').first().attr("href").split("/").at(2) || $(this).parent().parent().parent().children("div:last-child").children("div").children("div:last-child").find('a[href^="/p/"]').last().attr("href").split("/").at(2);
 
@@ -2448,7 +2455,7 @@
                     });
 
                     // Running if user click the download icon
-                    $(this).on('click', '.SNKMS_IG_DW_MAIN', async function (e) {
+                    $(this).on('click', '.SNKMS_IG_DW_MAIN', async function () {
                         GL_username = $mainElement.attr('data-username');
                         GL_postPath = location.pathname.replace(/\/$/, '').split('/').at(-1) || $mainElement.find('a[href^="/p/"]').first().attr("href").split("/").at(2) || $(this).parent().parent().parent().children("div:last-child").children("div").children("div:last-child").find('a[href^="/p/"]').last().attr("href").split("/").at(2);
 
@@ -2594,79 +2601,50 @@
      * @param  {String}  message - i18n display loading message
      * @return {void}
      */
-    function createMediaListDOM(postURL, selector, message) {
-        return new Promise(async (resolve) => {
-            $(`${selector} a`).remove();
-            $(selector).append('<p id="_SNLOAD">' + message + '</p>');
-            let result = await getBlobMedia(postURL);
+    async function createMediaListDOM(postURL, selector, message) {
+        $(`${selector} a`).remove();
+        $(selector).append('<p id="_SNLOAD">' + message + '</p>');
+        let result = await getBlobMedia(postURL);
 
-            if (result.type === 'query_hash') {
-                let idx = 1;
-                let media = result.data;
-                let resource = media.shortcode_media;
+        if (result.type === 'query_hash') {
+            let idx = 1;
+            let media = result.data;
+            let resource = media.shortcode_media;
 
-                // GraphVideo
-                if (resource.__typename == "GraphVideo" && resource.video_url) {
-                    $(selector).append(`<a media-id="${resource.id}" datetime="${resource.taken_at_timestamp}" data-blob="true" data-needed="direct" data-path="${resource.shortcode}" data-name="video" data-type="mp4" data-username="${resource.owner.username}" data-globalIndex="${idx}" href="javascript:;" data-href="${resource.video_url}"><img width="100" src="${resource.display_resources[1].src}" /><br/>- <span data-ih-locale="VID">${_i18n("VID")}</span> ${idx} -</a>`);
-                    idx++;
-                }
-                // GraphImage
-                if (resource.__typename == "GraphImage") {
-                    $(selector).append(`<a media-id="${resource.id}" datetime="${resource.taken_at_timestamp}" data-blob="true" data-needed="direct" data-path="${resource.shortcode}" data-name="photo" data-type="jpg" data-username="${resource.owner.username}" data-globalIndex="${idx}" href="javascript:;" data-href="${resource.display_resources[resource.display_resources.length - 1].src}"><img width="100" src="${resource.display_resources[1].src}" /><br/>- <span data-ih-locale="IMG">${_i18n("IMG")}</span> ${idx} -</a>`);
-                    idx++;
-                }
-                // GraphSidecar
-                if (resource.__typename == "GraphSidecar" && resource.edge_sidecar_to_children) {
-                    for (let e of resource.edge_sidecar_to_children.edges) {
-                        if (e.node.__typename == "GraphVideo") {
-                            $(selector).append(`<a media-id="${e.node.id}" datetime="${resource.taken_at_timestamp}" data-blob="true" data-needed="direct" data-path="${resource.shortcode}" data-name="video" data-type="mp4" data-username="${resource.owner.username}" data-globalIndex="${idx}" href="javascript:;" data-href="${e.node.video_url}"><img width="100" src="${e.node.display_resources[1].src}" /><br/>- <span data-ih-locale-title="VID">${_i18n("VID")}</span> ${idx} -</a>`);
-                        }
-
-                        if (e.node.__typename == "GraphImage") {
-                            $(selector).append(`<a media-id="${e.node.id}" datetime="${resource.taken_at_timestamp}" data-blob="true" data-needed="direct" data-path="${resource.shortcode}" data-name="photo" data-type="jpg" data-username="${resource.owner.username}" data-globalIndex="${idx}" href="javascript:;" data-href="${e.node.display_resources[e.node.display_resources.length - 1].src}"><img width="100" src="${e.node.display_resources[1].src}" /><br/>- <span data-ih-locale="IMG">${_i18n("IMG")}</span> ${idx} -</a>`);
-                        }
-                        idx++;
+            // GraphVideo
+            if (resource.__typename == "GraphVideo" && resource.video_url) {
+                $(selector).append(`<a media-id="${resource.id}" datetime="${resource.taken_at_timestamp}" data-blob="true" data-needed="direct" data-path="${resource.shortcode}" data-name="video" data-type="mp4" data-username="${resource.owner.username}" data-globalIndex="${idx}" href="javascript:;" data-href="${resource.video_url}"><img width="100" src="${resource.display_resources[1].src}" /><br/>- <span data-ih-locale="VID">${_i18n("VID")}</span> ${idx} -</a>`);
+                idx++;
+            }
+            // GraphImage
+            if (resource.__typename == "GraphImage") {
+                $(selector).append(`<a media-id="${resource.id}" datetime="${resource.taken_at_timestamp}" data-blob="true" data-needed="direct" data-path="${resource.shortcode}" data-name="photo" data-type="jpg" data-username="${resource.owner.username}" data-globalIndex="${idx}" href="javascript:;" data-href="${resource.display_resources[resource.display_resources.length - 1].src}"><img width="100" src="${resource.display_resources[1].src}" /><br/>- <span data-ih-locale="IMG">${_i18n("IMG")}</span> ${idx} -</a>`);
+                idx++;
+            }
+            // GraphSidecar
+            if (resource.__typename == "GraphSidecar" && resource.edge_sidecar_to_children) {
+                for (let e of resource.edge_sidecar_to_children.edges) {
+                    if (e.node.__typename == "GraphVideo") {
+                        $(selector).append(`<a media-id="${e.node.id}" datetime="${resource.taken_at_timestamp}" data-blob="true" data-needed="direct" data-path="${resource.shortcode}" data-name="video" data-type="mp4" data-username="${resource.owner.username}" data-globalIndex="${idx}" href="javascript:;" data-href="${e.node.video_url}"><img width="100" src="${e.node.display_resources[1].src}" /><br/>- <span data-ih-locale-title="VID">${_i18n("VID")}</span> ${idx} -</a>`);
                     }
+
+                    if (e.node.__typename == "GraphImage") {
+                        $(selector).append(`<a media-id="${e.node.id}" datetime="${resource.taken_at_timestamp}" data-blob="true" data-needed="direct" data-path="${resource.shortcode}" data-name="photo" data-type="jpg" data-username="${resource.owner.username}" data-globalIndex="${idx}" href="javascript:;" data-href="${e.node.display_resources[e.node.display_resources.length - 1].src}"><img width="100" src="${e.node.display_resources[1].src}" /><br/>- <span data-ih-locale="IMG">${_i18n("IMG")}</span> ${idx} -</a>`);
+                    }
+                    idx++;
                 }
             }
-            else {
-                let resource = result.data;
+        }
+        else {
+            let resource = result.data;
 
-                if (resource.carousel_media) {
-                    logger('carousel_media');
-                    resource.carousel_media.forEach((mda, ind) => {
-                        let idx = ind + 1;
-                        // Image
-                        if (mda.video_versions == null) {
-                            mda.image_versions2.candidates.sort(function (a, b) {
-                                let aSTP = new URL(a.url).searchParams.get('stp');
-                                let bSTP = new URL(b.url).searchParams.get('stp');
-
-                                if (aSTP && bSTP) {
-                                    if (aSTP.length > bSTP.length) return 1;
-                                    if (aSTP.length < bSTP.length) return -1;
-                                }
-                                else {
-                                    if (a.width < b.width) return 1;
-                                    if (a.width > b.width) return -1;
-                                }
-
-                                return 0;
-                            });
-
-                            $(selector).append(`<a media-id="${mda.pk}" datetime="${mda.taken_at}" data-blob="true" data-needed="direct" data-path="${resource.code}" data-name="photo" data-type="jpg" data-username="${resource.owner.username}" data-globalIndex="${idx}" href="javascript:;" data-href="${mda.image_versions2.candidates[0].url}"><img width="100" src="${mda.image_versions2.candidates[0].url}" /><br/>- <span data-ih-locale="IMG">${_i18n("IMG")}</span> ${idx} -</a>`);
-                        }
-                        // Video
-                        else {
-                            $(selector).append(`<a media-id="${mda.pk}" datetime="${mda.taken_at}" data-blob="true" data-needed="direct" data-path="${resource.code}" data-name="video" data-type="mp4" data-username="${resource.owner.username}" data-globalIndex="${idx}" href="javascript:;" data-href="${mda.video_versions[0].url}"><img width="100" src="${mda.image_versions2.candidates[0].url}" /><br/>- <span data-ih-locale="VID">${_i18n("VID")}</span> ${idx} -</a>`);
-                        }
-                    });
-                }
-                else {
-                    let idx = 1;
+            if (resource.carousel_media) {
+                logger('carousel_media');
+                resource.carousel_media.forEach((mda, ind) => {
+                    let idx = ind + 1;
                     // Image
-                    if (resource.video_versions == null) {
-                        resource.image_versions2.candidates.sort(function (a, b) {
+                    if (mda.video_versions == null) {
+                        mda.image_versions2.candidates.sort(function (a, b) {
                             let aSTP = new URL(a.url).searchParams.get('stp');
                             let bSTP = new URL(b.url).searchParams.get('stp');
 
@@ -2682,27 +2660,52 @@
                             return 0;
                         });
 
-                        $(selector).append(`<a media-id="${resource.pk}" datetime="${resource.taken_at}" data-blob="true" data-needed="direct" data-path="${resource.code}" data-name="photo" data-type="jpg" data-username="${resource.owner.username}" data-globalIndex="${idx}" href="javascript:;" data-href="${resource.image_versions2.candidates[0].url}"><img width="100" src="${resource.image_versions2.candidates[0].url}" /><br/>- <span data-ih-locale="IMG">${_i18n("IMG")}</span> ${idx} -</a>`);
+                        $(selector).append(`<a media-id="${mda.pk}" datetime="${mda.taken_at}" data-blob="true" data-needed="direct" data-path="${resource.code}" data-name="photo" data-type="jpg" data-username="${resource.owner.username}" data-globalIndex="${idx}" href="javascript:;" data-href="${mda.image_versions2.candidates[0].url}"><img width="100" src="${mda.image_versions2.candidates[0].url}" /><br/>- <span data-ih-locale="IMG">${_i18n("IMG")}</span> ${idx} -</a>`);
                     }
                     // Video
                     else {
-                        $(selector).append(`<a media-id="${resource.pk}" datetime="${resource.taken_at}" data-blob="true" data-needed="direct" data-path="${resource.code}" data-name="video" data-type="mp4" data-username="${resource.owner.username}" data-globalIndex="${idx}" href="javascript:;" data-href="${resource.video_versions[0].url}"><img width="100" src="${resource.image_versions2.candidates[0].url}" /><br/>- <span data-ih-locale="VID">${_i18n("VID")}</span> ${idx} -</a>`);
+                        $(selector).append(`<a media-id="${mda.pk}" datetime="${mda.taken_at}" data-blob="true" data-needed="direct" data-path="${resource.code}" data-name="video" data-type="mp4" data-username="${resource.owner.username}" data-globalIndex="${idx}" href="javascript:;" data-href="${mda.video_versions[0].url}"><img width="100" src="${mda.image_versions2.candidates[0].url}" /><br/>- <span data-ih-locale="VID">${_i18n("VID")}</span> ${idx} -</a>`);
                     }
+                });
+            }
+            else {
+                let idx = 1;
+                // Image
+                if (resource.video_versions == null) {
+                    resource.image_versions2.candidates.sort(function (a, b) {
+                        let aSTP = new URL(a.url).searchParams.get('stp');
+                        let bSTP = new URL(b.url).searchParams.get('stp');
+
+                        if (aSTP && bSTP) {
+                            if (aSTP.length > bSTP.length) return 1;
+                            if (aSTP.length < bSTP.length) return -1;
+                        }
+                        else {
+                            if (a.width < b.width) return 1;
+                            if (a.width > b.width) return -1;
+                        }
+
+                        return 0;
+                    });
+
+                    $(selector).append(`<a media-id="${resource.pk}" datetime="${resource.taken_at}" data-blob="true" data-needed="direct" data-path="${resource.code}" data-name="photo" data-type="jpg" data-username="${resource.owner.username}" data-globalIndex="${idx}" href="javascript:;" data-href="${resource.image_versions2.candidates[0].url}"><img width="100" src="${resource.image_versions2.candidates[0].url}" /><br/>- <span data-ih-locale="IMG">${_i18n("IMG")}</span> ${idx} -</a>`);
+                }
+                // Video
+                else {
+                    $(selector).append(`<a media-id="${resource.pk}" datetime="${resource.taken_at}" data-blob="true" data-needed="direct" data-path="${resource.code}" data-name="video" data-type="mp4" data-username="${resource.owner.username}" data-globalIndex="${idx}" href="javascript:;" data-href="${resource.video_versions[0].url}"><img width="100" src="${resource.image_versions2.candidates[0].url}" /><br/>- <span data-ih-locale="VID">${_i18n("VID")}</span> ${idx} -</a>`);
                 }
             }
+        }
 
-            $("#_SNLOAD").remove();
-            $('.IG_SN_DIG .IG_SN_DIG_MAIN .IG_SN_DIG_BODY a').each(function () {
-                $(this).wrap('<div></div>');
-                $(this).before('<label class="inner_box_wrapper"><input class="inner_box" type="checkbox"><span></span></label>');
-                $(this).after(`<div data-ih-locale-title="NEW_TAB" title="${_i18n("NEW_TAB")}" class="newTab">${SVG.NEW_TAB}</div>`);
+        $("#_SNLOAD").remove();
+        $('.IG_SN_DIG .IG_SN_DIG_MAIN .IG_SN_DIG_BODY a').each(function () {
+            $(this).wrap('<div></div>');
+            $(this).before('<label class="inner_box_wrapper"><input class="inner_box" type="checkbox"><span></span></label>');
+            $(this).after(`<div data-ih-locale-title="NEW_TAB" title="${_i18n("NEW_TAB")}" class="newTab">${SVG.NEW_TAB}</div>`);
 
-                if ($(this).attr('data-name') == 'video') {
-                    $(this).after(`<div data-ih-locale-title="THUMBNAIL_INTRO" title="${_i18n("THUMBNAIL_INTRO")}" class="videoThumbnail">${SVG.THUMBNAIL}</div>`);
-                }
-            });
-
-            resolve(true);
+            if ($(this).attr('data-name') == 'video') {
+                $(this).after(`<div data-ih-locale-title="THUMBNAIL_INTRO" title="${_i18n("THUMBNAIL_INTRO")}" class="videoThumbnail">${SVG.THUMBNAIL}</div>`);
+            }
         });
     }
 
@@ -2821,6 +2824,7 @@
             '%ORIGINAL_NAME_FIRST%': original_name.split('_').at(0)
         };
 
+        // eslint-disable-next-line no-useless-escape
         filename = filename.replace(/%[\w\-]+%/g, function (str) {
             return replacements[str] || str;
         });
@@ -2927,10 +2931,9 @@
      * translateText
      * @description i18n translation text
      *
-     * @param  {String}  lang
      * @return {void}
      */
-    function translateText(lang) {
+    function translateText() {
         var eLocale = {
             "en-US": {
                 "NOTICE_UPDATE_TITLE": "Wololo! New version released.",
