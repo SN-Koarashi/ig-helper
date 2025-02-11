@@ -5,7 +5,7 @@
 // @name:ja            IG助手
 // @name:ko            IG조수
 // @namespace          https://github.snkms.com/
-// @version            2.43.4
+// @version            2.43.5
 // @description        Downloading is possible for both photos and videos from posts, as well as for stories, reels or profile picture.
 // @description:zh-TW  一鍵下載對方 Instagram 貼文中的相片、影片甚至是他們的限時動態、連續短片及大頭貼圖片！
 // @description:zh-CN  一键下载对方 Instagram 帖子中的相片、视频甚至是他们的快拍、Reels及头像图片！
@@ -2593,6 +2593,27 @@
     }
 
     /**
+     * filterResourceData
+     * @description Standardized resource object format
+     *
+     * @param  {Object}  data
+     * @return {Object}
+     */
+    function filterResourceData(data) {
+        var resource = data.shortcode_media ?? data;
+        if (resource.owner == null && resource.user != null) {
+            resource.owner = resource.user;
+        }
+
+        if (resource.owner == null) {
+            logger('carousel_media:', 'undefined username');
+            alert('carousel_media: undefined username');
+        }
+
+        return resource;
+    }
+
+    /**
      * createMediaListDOM
      * @description Create a list of media elements from post URLs
      *
@@ -2606,11 +2627,10 @@
             $(`${selector} a`).remove();
             $(selector).append('<p id="_SNLOAD">' + message + '</p>');
             let result = await getBlobMedia(postURL);
+            let resource = filterResourceData(result.data);
 
             if (result.type === 'query_hash') {
                 let idx = 1;
-                let media = result.data;
-                let resource = media.shortcode_media;
 
                 // GraphVideo
                 if (resource.__typename == "GraphVideo" && resource.video_url) {
@@ -2637,19 +2657,8 @@
                 }
             }
             else {
-                let resource = result.data;
-
                 if (resource.carousel_media) {
                     logger('carousel_media');
-
-                    if (resource.owner == null && resource.user != null) {
-                        resource.owner = resource.user;
-                    }
-
-                    if (resource.owner == null) {
-                        logger('carousel_media:', 'undefined username');
-                        alert('carousel_media: undefined username');
-                    }
 
                     resource.carousel_media.forEach((mda, ind) => {
                         let idx = ind + 1;
