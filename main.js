@@ -5,7 +5,7 @@
 // @name:ja            IG助手
 // @name:ko            IG조수
 // @namespace          https://github.snkms.com/
-// @version            2.43.3
+// @version            2.43.4
 // @description        Downloading is possible for both photos and videos from posts, as well as for stories, reels or profile picture.
 // @description:zh-TW  一鍵下載對方 Instagram 貼文中的相片、影片甚至是他們的限時動態、連續短片及大頭貼圖片！
 // @description:zh-CN  一键下载对方 Instagram 帖子中的相片、视频甚至是他们的快拍、Reels及头像图片！
@@ -312,7 +312,7 @@
     /**
      * onProfileAvatar
      * @description Trigger user avatar download event or button display event.
-     * 
+     *
      * @param  {Boolean}  isDownload - Check if it is a download operation
      * @return {void}
      */
@@ -1959,7 +1959,7 @@
     /**
      * getStoryProgress
      * @description Get the story progress of the username (post several stories)
-     * 
+     *
      * @param  {String}  username - Get progress of username
      * @return {Object}
      */
@@ -2602,49 +2602,88 @@
      * @return {void}
      */
     async function createMediaListDOM(postURL, selector, message) {
-        $(`${selector} a`).remove();
-        $(selector).append('<p id="_SNLOAD">' + message + '</p>');
-        let result = await getBlobMedia(postURL);
+        try {
+            $(`${selector} a`).remove();
+            $(selector).append('<p id="_SNLOAD">' + message + '</p>');
+            let result = await getBlobMedia(postURL);
 
-        if (result.type === 'query_hash') {
-            let idx = 1;
-            let media = result.data;
-            let resource = media.shortcode_media;
+            if (result.type === 'query_hash') {
+                let idx = 1;
+                let media = result.data;
+                let resource = media.shortcode_media;
 
-            // GraphVideo
-            if (resource.__typename == "GraphVideo" && resource.video_url) {
-                $(selector).append(`<a media-id="${resource.id}" datetime="${resource.taken_at_timestamp}" data-blob="true" data-needed="direct" data-path="${resource.shortcode}" data-name="video" data-type="mp4" data-username="${resource.owner.username}" data-globalIndex="${idx}" href="javascript:;" data-href="${resource.video_url}"><img width="100" src="${resource.display_resources[1].src}" /><br/>- <span data-ih-locale="VID">${_i18n("VID")}</span> ${idx} -</a>`);
-                idx++;
-            }
-            // GraphImage
-            if (resource.__typename == "GraphImage") {
-                $(selector).append(`<a media-id="${resource.id}" datetime="${resource.taken_at_timestamp}" data-blob="true" data-needed="direct" data-path="${resource.shortcode}" data-name="photo" data-type="jpg" data-username="${resource.owner.username}" data-globalIndex="${idx}" href="javascript:;" data-href="${resource.display_resources[resource.display_resources.length - 1].src}"><img width="100" src="${resource.display_resources[1].src}" /><br/>- <span data-ih-locale="IMG">${_i18n("IMG")}</span> ${idx} -</a>`);
-                idx++;
-            }
-            // GraphSidecar
-            if (resource.__typename == "GraphSidecar" && resource.edge_sidecar_to_children) {
-                for (let e of resource.edge_sidecar_to_children.edges) {
-                    if (e.node.__typename == "GraphVideo") {
-                        $(selector).append(`<a media-id="${e.node.id}" datetime="${resource.taken_at_timestamp}" data-blob="true" data-needed="direct" data-path="${resource.shortcode}" data-name="video" data-type="mp4" data-username="${resource.owner.username}" data-globalIndex="${idx}" href="javascript:;" data-href="${e.node.video_url}"><img width="100" src="${e.node.display_resources[1].src}" /><br/>- <span data-ih-locale-title="VID">${_i18n("VID")}</span> ${idx} -</a>`);
-                    }
-
-                    if (e.node.__typename == "GraphImage") {
-                        $(selector).append(`<a media-id="${e.node.id}" datetime="${resource.taken_at_timestamp}" data-blob="true" data-needed="direct" data-path="${resource.shortcode}" data-name="photo" data-type="jpg" data-username="${resource.owner.username}" data-globalIndex="${idx}" href="javascript:;" data-href="${e.node.display_resources[e.node.display_resources.length - 1].src}"><img width="100" src="${e.node.display_resources[1].src}" /><br/>- <span data-ih-locale="IMG">${_i18n("IMG")}</span> ${idx} -</a>`);
-                    }
+                // GraphVideo
+                if (resource.__typename == "GraphVideo" && resource.video_url) {
+                    $(selector).append(`<a media-id="${resource.id}" datetime="${resource.taken_at_timestamp}" data-blob="true" data-needed="direct" data-path="${resource.shortcode}" data-name="video" data-type="mp4" data-username="${resource.owner.username}" data-globalIndex="${idx}" href="javascript:;" data-href="${resource.video_url}"><img width="100" src="${resource.display_resources[1].src}" /><br/>- <span data-ih-locale="VID">${_i18n("VID")}</span> ${idx} -</a>`);
                     idx++;
                 }
-            }
-        }
-        else {
-            let resource = result.data;
+                // GraphImage
+                if (resource.__typename == "GraphImage") {
+                    $(selector).append(`<a media-id="${resource.id}" datetime="${resource.taken_at_timestamp}" data-blob="true" data-needed="direct" data-path="${resource.shortcode}" data-name="photo" data-type="jpg" data-username="${resource.owner.username}" data-globalIndex="${idx}" href="javascript:;" data-href="${resource.display_resources[resource.display_resources.length - 1].src}"><img width="100" src="${resource.display_resources[1].src}" /><br/>- <span data-ih-locale="IMG">${_i18n("IMG")}</span> ${idx} -</a>`);
+                    idx++;
+                }
+                // GraphSidecar
+                if (resource.__typename == "GraphSidecar" && resource.edge_sidecar_to_children) {
+                    for (let e of resource.edge_sidecar_to_children.edges) {
+                        if (e.node.__typename == "GraphVideo") {
+                            $(selector).append(`<a media-id="${e.node.id}" datetime="${resource.taken_at_timestamp}" data-blob="true" data-needed="direct" data-path="${resource.shortcode}" data-name="video" data-type="mp4" data-username="${resource.owner.username}" data-globalIndex="${idx}" href="javascript:;" data-href="${e.node.video_url}"><img width="100" src="${e.node.display_resources[1].src}" /><br/>- <span data-ih-locale-title="VID">${_i18n("VID")}</span> ${idx} -</a>`);
+                        }
 
-            if (resource.carousel_media) {
-                logger('carousel_media');
-                resource.carousel_media.forEach((mda, ind) => {
-                    let idx = ind + 1;
+                        if (e.node.__typename == "GraphImage") {
+                            $(selector).append(`<a media-id="${e.node.id}" datetime="${resource.taken_at_timestamp}" data-blob="true" data-needed="direct" data-path="${resource.shortcode}" data-name="photo" data-type="jpg" data-username="${resource.owner.username}" data-globalIndex="${idx}" href="javascript:;" data-href="${e.node.display_resources[e.node.display_resources.length - 1].src}"><img width="100" src="${e.node.display_resources[1].src}" /><br/>- <span data-ih-locale="IMG">${_i18n("IMG")}</span> ${idx} -</a>`);
+                        }
+                        idx++;
+                    }
+                }
+            }
+            else {
+                let resource = result.data;
+
+                if (resource.carousel_media) {
+                    logger('carousel_media');
+
+                    if (resource.owner == null && resource.user != null) {
+                        resource.owner = resource.user;
+                    }
+
+                    if (resource.owner == null) {
+                        logger('carousel_media:', 'undefined username');
+                        alert('carousel_media: undefined username');
+                    }
+
+                    resource.carousel_media.forEach((mda, ind) => {
+                        let idx = ind + 1;
+                        // Image
+                        if (mda.video_versions == null) {
+                            mda.image_versions2.candidates.sort(function (a, b) {
+                                let aSTP = new URL(a.url).searchParams.get('stp');
+                                let bSTP = new URL(b.url).searchParams.get('stp');
+
+                                if (aSTP && bSTP) {
+                                    if (aSTP.length > bSTP.length) return 1;
+                                    if (aSTP.length < bSTP.length) return -1;
+                                }
+                                else {
+                                    if (a.width < b.width) return 1;
+                                    if (a.width > b.width) return -1;
+                                }
+
+                                return 0;
+                            });
+
+                            $(selector).append(`<a media-id="${mda.pk}" datetime="${mda.taken_at}" data-blob="true" data-needed="direct" data-path="${resource.code}" data-name="photo" data-type="jpg" data-username="${resource.owner.username}" data-globalIndex="${idx}" href="javascript:;" data-href="${mda.image_versions2.candidates[0].url}"><img width="100" src="${mda.image_versions2.candidates[0].url}" /><br/>- <span data-ih-locale="IMG">${_i18n("IMG")}</span> ${idx} -</a>`);
+                        }
+                        // Video
+                        else {
+                            $(selector).append(`<a media-id="${mda.pk}" datetime="${mda.taken_at}" data-blob="true" data-needed="direct" data-path="${resource.code}" data-name="video" data-type="mp4" data-username="${resource.owner.username}" data-globalIndex="${idx}" href="javascript:;" data-href="${mda.video_versions[0].url}"><img width="100" src="${mda.image_versions2.candidates[0].url}" /><br/>- <span data-ih-locale="VID">${_i18n("VID")}</span> ${idx} -</a>`);
+                        }
+                    });
+                }
+                else {
+                    let idx = 1;
                     // Image
-                    if (mda.video_versions == null) {
-                        mda.image_versions2.candidates.sort(function (a, b) {
+                    if (resource.video_versions == null) {
+                        resource.image_versions2.candidates.sort(function (a, b) {
                             let aSTP = new URL(a.url).searchParams.get('stp');
                             let bSTP = new URL(b.url).searchParams.get('stp');
 
@@ -2660,53 +2699,29 @@
                             return 0;
                         });
 
-                        $(selector).append(`<a media-id="${mda.pk}" datetime="${mda.taken_at}" data-blob="true" data-needed="direct" data-path="${resource.code}" data-name="photo" data-type="jpg" data-username="${resource.owner.username}" data-globalIndex="${idx}" href="javascript:;" data-href="${mda.image_versions2.candidates[0].url}"><img width="100" src="${mda.image_versions2.candidates[0].url}" /><br/>- <span data-ih-locale="IMG">${_i18n("IMG")}</span> ${idx} -</a>`);
+                        $(selector).append(`<a media-id="${resource.pk}" datetime="${resource.taken_at}" data-blob="true" data-needed="direct" data-path="${resource.code}" data-name="photo" data-type="jpg" data-username="${resource.owner.username}" data-globalIndex="${idx}" href="javascript:;" data-href="${resource.image_versions2.candidates[0].url}"><img width="100" src="${resource.image_versions2.candidates[0].url}" /><br/>- <span data-ih-locale="IMG">${_i18n("IMG")}</span> ${idx} -</a>`);
                     }
                     // Video
                     else {
-                        $(selector).append(`<a media-id="${mda.pk}" datetime="${mda.taken_at}" data-blob="true" data-needed="direct" data-path="${resource.code}" data-name="video" data-type="mp4" data-username="${resource.owner.username}" data-globalIndex="${idx}" href="javascript:;" data-href="${mda.video_versions[0].url}"><img width="100" src="${mda.image_versions2.candidates[0].url}" /><br/>- <span data-ih-locale="VID">${_i18n("VID")}</span> ${idx} -</a>`);
+                        $(selector).append(`<a media-id="${resource.pk}" datetime="${resource.taken_at}" data-blob="true" data-needed="direct" data-path="${resource.code}" data-name="video" data-type="mp4" data-username="${resource.owner.username}" data-globalIndex="${idx}" href="javascript:;" data-href="${resource.video_versions[0].url}"><img width="100" src="${resource.image_versions2.candidates[0].url}" /><br/>- <span data-ih-locale="VID">${_i18n("VID")}</span> ${idx} -</a>`);
                     }
-                });
-            }
-            else {
-                let idx = 1;
-                // Image
-                if (resource.video_versions == null) {
-                    resource.image_versions2.candidates.sort(function (a, b) {
-                        let aSTP = new URL(a.url).searchParams.get('stp');
-                        let bSTP = new URL(b.url).searchParams.get('stp');
-
-                        if (aSTP && bSTP) {
-                            if (aSTP.length > bSTP.length) return 1;
-                            if (aSTP.length < bSTP.length) return -1;
-                        }
-                        else {
-                            if (a.width < b.width) return 1;
-                            if (a.width > b.width) return -1;
-                        }
-
-                        return 0;
-                    });
-
-                    $(selector).append(`<a media-id="${resource.pk}" datetime="${resource.taken_at}" data-blob="true" data-needed="direct" data-path="${resource.code}" data-name="photo" data-type="jpg" data-username="${resource.owner.username}" data-globalIndex="${idx}" href="javascript:;" data-href="${resource.image_versions2.candidates[0].url}"><img width="100" src="${resource.image_versions2.candidates[0].url}" /><br/>- <span data-ih-locale="IMG">${_i18n("IMG")}</span> ${idx} -</a>`);
-                }
-                // Video
-                else {
-                    $(selector).append(`<a media-id="${resource.pk}" datetime="${resource.taken_at}" data-blob="true" data-needed="direct" data-path="${resource.code}" data-name="video" data-type="mp4" data-username="${resource.owner.username}" data-globalIndex="${idx}" href="javascript:;" data-href="${resource.video_versions[0].url}"><img width="100" src="${resource.image_versions2.candidates[0].url}" /><br/>- <span data-ih-locale="VID">${_i18n("VID")}</span> ${idx} -</a>`);
                 }
             }
+
+            $("#_SNLOAD").remove();
+            $('.IG_SN_DIG .IG_SN_DIG_MAIN .IG_SN_DIG_BODY a').each(function () {
+                $(this).wrap('<div></div>');
+                $(this).before('<label class="inner_box_wrapper"><input class="inner_box" type="checkbox"><span></span></label>');
+                $(this).after(`<div data-ih-locale-title="NEW_TAB" title="${_i18n("NEW_TAB")}" class="newTab">${SVG.NEW_TAB}</div>`);
+
+                if ($(this).attr('data-name') == 'video') {
+                    $(this).after(`<div data-ih-locale-title="THUMBNAIL_INTRO" title="${_i18n("THUMBNAIL_INTRO")}" class="videoThumbnail">${SVG.THUMBNAIL}</div>`);
+                }
+            });
         }
-
-        $("#_SNLOAD").remove();
-        $('.IG_SN_DIG .IG_SN_DIG_MAIN .IG_SN_DIG_BODY a').each(function () {
-            $(this).wrap('<div></div>');
-            $(this).before('<label class="inner_box_wrapper"><input class="inner_box" type="checkbox"><span></span></label>');
-            $(this).after(`<div data-ih-locale-title="NEW_TAB" title="${_i18n("NEW_TAB")}" class="newTab">${SVG.NEW_TAB}</div>`);
-
-            if ($(this).attr('data-name') == 'video') {
-                $(this).after(`<div data-ih-locale-title="THUMBNAIL_INTRO" title="${_i18n("THUMBNAIL_INTRO")}" class="videoThumbnail">${SVG.THUMBNAIL}</div>`);
-            }
-        });
+        catch (err) {
+            logger('createMediaListDOM', err);
+        };
     }
 
     /**
