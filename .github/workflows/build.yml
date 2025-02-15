@@ -3,7 +3,7 @@ name: Build and Commit
 on:
   push:
     branches:
-      - dev-module
+      - master
 
 jobs:
   build:
@@ -32,6 +32,6 @@ jobs:
           git commit -m "Automated build commit" || echo "No changes to commit"
 
       - name: Push changes
-        run: git push origin HEAD:dev-module
+        run: git push origin HEAD:master
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
