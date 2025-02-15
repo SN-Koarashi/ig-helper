@@ -28,7 +28,7 @@ jobs:
         run: |
           git config --local user.email "github-actions[bot]@users.noreply.github.com"
           git config --local user.name "github-actions[bot]"
-          git add .
+          git add -f ./main.js
           git commit -m "Automated build commit" || echo "No changes to commit"
 
       - name: Push changes
