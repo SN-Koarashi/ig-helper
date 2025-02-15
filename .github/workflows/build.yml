@@ -23,9 +23,6 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      - name: Run build script
-        run: node ./build.js
-
       - name: Setup GitHub CLI
         run: |
           sudo apt-get install gh
@@ -47,6 +44,9 @@ jobs:
       - name: Pull the latest changes from automated-build-branch
         run: |
           git pull --rebase origin automated-build-branch
+
+      - name: Run build script
+        run: node ./build.js
 
       - name: Check for changes before committing
         run: |
