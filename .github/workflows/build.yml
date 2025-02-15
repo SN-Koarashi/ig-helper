@@ -20,11 +20,17 @@ jobs:
         with:
           node-version: "20"
 
-      - name: Fetch latest commits
-        run: git fetch origin master
+      - name: Fetch remote automated-build-branch
+        run: |
+          git fetch origin automated-build-branch
+          git checkout automated-build-branch
 
-      - name: Check out latest master
-        run: git checkout master
+      - name: Fetch latest master
+        run: |
+          git fetch origin master
+          git checkout master
+          git checkout automated-build-branch
+          git merge master
 
       - name: Install dependencies
         run: npm install
@@ -48,14 +54,13 @@ jobs:
             git commit -m "Automated build commit" 
           else
             echo "No changes to commit"
+            exit 0
           fi
 
-      - name: Push changes to a new branch
+      - name: Push changes to automated-build-branch
         run: |
-          git fetch origin
-          git checkout -b automated-build-branch origin/automated-build-branch || git checkout -b automated-build-branch
-          git merge automated-build-branch
-          git push origin HEAD:automated-build-branch
+          git push origin automated-build-branch
+
       - name: Create Pull Request
         run: |
           gh auth login --with-token <<< "${{ secrets.GITHUB_TOKEN }}"
