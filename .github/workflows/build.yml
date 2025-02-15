@@ -42,7 +42,7 @@ jobs:
         run: |
           git fetch origin
           git checkout -b automated-build-branch origin/automated-build-branch || git checkout -b automated-build-branch
-          git merge master
+          git merge automated-build-branch
           git push origin HEAD:automated-build-branch
       - name: Create Pull Request
         run: |
