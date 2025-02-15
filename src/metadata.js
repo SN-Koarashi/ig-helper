@@ -37,6 +37,4 @@
 // @compatible         edge >= 100
 // @license            GPL-3.0-only
 // @run-at             document-idle
-// @downloadURL https://update.greasyfork.org/scripts/404535/IG%20Helper.user.js
-// @updateURL https://update.greasyfork.org/scripts/404535/IG%20Helper.meta.js
 // ==/UserScript==

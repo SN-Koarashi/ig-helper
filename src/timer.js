@@ -7,6 +7,7 @@ import { onHighlightsStory, onHighlightsStoryThumbnail } from "./functions/highl
 import { onStory } from "./functions/story";
 
 // Main Timer
+// eslint-disable-next-line no-unused-vars
 export var timer = setInterval(function () {
     // page loading or unnecessary route
     if ($('div#splash-screen').length > 0 && !$('div#splash-screen').is(':hidden') ||

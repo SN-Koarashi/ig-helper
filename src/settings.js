@@ -40,7 +40,7 @@ export var changeable_constant = {
     VIDEO_VOLUME: (GM_getValue('G_VIDEO_VOLUME')) ? GM_getValue('G_VIDEO_VOLUME') : 1,
     TEMP_FETCH_RATE_LIMIT: false,
     RENAME_FORMAT: (GM_getValue('G_RENAME_FORMAT')) ? GM_getValue('G_RENAME_FORMAT') : '%USERNAME%-%SOURCE_TYPE%-%SHORTCODE%-%YEAR%%MONTH%%DAY%_%HOUR%%MINUTE%%SECOND%_%ORIGINAL_NAME_FIRST%'
-}
+};
 
 export var state = {
     GM_menuId: [],
@@ -62,4 +62,4 @@ export var state = {
     GL_observer: new MutationObserver(function () {
         onReadyMyDW();
     })
-}
+};

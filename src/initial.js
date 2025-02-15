@@ -1,13 +1,13 @@
 import { initSettings, registerMenuCommand, checkingScriptUpdate, logger } from "./utils/util";
 import { getTranslationText, repaintingTranslations } from "./utils/i18n";
-import { style, lang, locale } from "./settings";
+import { style, state } from "./settings";
 
 initSettings();
 GM_addStyle(style);
 registerMenuCommand();
 
-getTranslationText(lang).then((res) => {
-    locale[lang] = res;
+getTranslationText(state.lang).then((res) => {
+    state.locale[state.lang] = res;
     repaintingTranslations();
     registerMenuCommand();
     checkingScriptUpdate(300);
@@ -15,7 +15,7 @@ getTranslationText(lang).then((res) => {
     registerMenuCommand();
     checkingScriptUpdate(300);
 
-    if (!lang.startsWith('en')) {
+    if (!state.lang.startsWith('en')) {
         console.error('getTranslationText catch error:', err);
     }
 });
