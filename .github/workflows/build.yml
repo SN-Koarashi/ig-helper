@@ -35,9 +35,17 @@ jobs:
           git config --local user.email "github-actions[bot]@users.noreply.github.com"
           git config --local user.name "github-actions[bot]"
 
+      - name: Check if automated-build-branch exists and checkout
+        run: |
+          git fetch origin
+          if git show-ref --quiet refs/heads/automated-build-branch; then
+            git checkout automated-build-branch
+          else
+            git checkout -b automated-build-branch
+          fi
+
       - name: Pull the latest changes from automated-build-branch
         run: |
-          git checkout automated-build-branch
           git pull --rebase origin automated-build-branch
 
       - name: Check for changes before committing
