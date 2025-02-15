@@ -45,6 +45,10 @@ jobs:
             exit 0
           fi
 
+      - name: Create branch if it does not exist
+        run: |
+          git checkout -b automated-build-branch || git checkout automated-build-branch
+
       - name: Push changes to automated-build-branch
         run: |
           git push origin automated-build-branch
