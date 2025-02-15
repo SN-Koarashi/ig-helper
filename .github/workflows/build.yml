@@ -41,10 +41,14 @@ jobs:
           git config --local user.email "github-actions[bot]@users.noreply.github.com"
           git config --local user.name "github-actions[bot]"
 
-      - name: Commit compiled files
+      - name: Check for changes before committing
         run: |
-          git add -f main.js
-          git commit -m "Automated build commit" || echo "No changes to commit"
+          if [ -n "$(git status --porcelain)" ]; then
+            git add .
+            git commit -m "Automated build commit" 
+          else
+            echo "No changes to commit"
+          fi
 
       - name: Push changes to a new branch
         run: |
