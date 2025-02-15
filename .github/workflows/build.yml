@@ -7,7 +7,7 @@ on:
 
 jobs:
   build:
-    if: contains(github.event.head_commit.message, 'Automated Build PR') == false || (split(github.event.head_commit.message, '\n')[1] != 'Automated Build PR')
+    if: contains(github.event.head_commit.message, 'Automated Build PR') == false
 
     runs-on: ubuntu-latest
 
