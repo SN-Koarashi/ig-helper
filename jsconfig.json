@@ -4,6 +4,7 @@
         "module": "es6"
     },
     "include": [
-        "main.js"
+        "src/**/*",
+        "entry.js"
     ]
 }

@@ -6,10 +6,6 @@ export default [
   {
     files: ["**/*.js"],
     languageOptions: {
-      env: {
-        browser: true,
-        jquery: true
-      },
       globals: {
         // **
         ...globals.browser,
