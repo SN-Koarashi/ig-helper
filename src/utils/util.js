@@ -1,3 +1,7 @@
+import { SVG, USER_SETTING, state, changeable_constant, locale_manifest, CHILD_NODES } from "../settings";
+import { _i18n } from "./i18n";
+import { getPostOwner, getMediaInfo } from "./api";
+
 /**
  * getAppID
  * @description Get Instagram App ID
@@ -189,7 +193,7 @@ export function createSaveFileElement(downloadLink, object, username, sourceType
     const minute = date.getMinutes().toString().padStart(2, '0');
     const second = date.getSeconds().toString().padStart(2, '0');
 
-    var filename = RENAME_FORMAT.toUpperCase();
+    var filename = changeable_constant.RENAME_FORMAT.toUpperCase();
     var format_shortcode = shortcode ?? "";
     var replacements = {
         '%USERNAME%': username,
@@ -229,7 +233,7 @@ export function createSaveFileElement(downloadLink, object, username, sourceType
 export async function triggerLinkElement(element, isPreview) {
     let date = new Date().getTime();
     let timestamp = Math.floor(date / 1000);
-    let username = ($(element).attr('data-username')) ? $(element).attr('data-username') : GL_username;
+    let username = ($(element).attr('data-username')) ? $(element).attr('data-username') : state.GL_username;
 
     if (!username && $(element).attr('data-path')) {
         logger('catching owner name from shortcode:', $(element).attr('data-href'));
@@ -317,42 +321,42 @@ export async function triggerLinkElement(element, isPreview) {
  * @return {void}
  */
 export function registerMenuCommand() {
-    for (let id of GM_menuId) {
+    for (let id of state.GM_menuId) {
         logger('GM_unregisterMenuCommand', id);
         GM_unregisterMenuCommand(id);
     }
 
-    GM_menuId.push(GM_registerMenuCommand(_i18n('SETTING'), () => {
+    state.GM_menuId.push(GM_registerMenuCommand(_i18n('SETTING'), () => {
         showSetting();
     }, {
         accessKey: "w"
     }));
 
-    GM_menuId.push(GM_registerMenuCommand(_i18n('DONATE'), () => {
+    state.GM_menuId.push(GM_registerMenuCommand(_i18n('DONATE'), () => {
         GM_openInTab("https://ko-fi.com/snkoarashi", { active: true });
     }, {
         accessKey: "d"
     }));
 
-    GM_menuId.push(GM_registerMenuCommand(_i18n('DEBUG'), () => {
+    state.GM_menuId.push(GM_registerMenuCommand(_i18n('DEBUG'), () => {
         showDebugDOM();
     }, {
         accessKey: "z"
     }));
 
-    GM_menuId.push(GM_registerMenuCommand(_i18n('FEEDBACK'), () => {
+    state.GM_menuId.push(GM_registerMenuCommand(_i18n('FEEDBACK'), () => {
         showFeedbackDOM();
     }, {
         accessKey: "f"
     }));
 
-    GM_menuId.push(GM_registerMenuCommand(_i18n('CHECK_UPDATE_MENU'), () => {
+    state.GM_menuId.push(GM_registerMenuCommand(_i18n('CHECK_UPDATE_MENU'), () => {
         callNotification();
     }, {
         accessKey: "c"
     }));
 
-    GM_menuId.push(GM_registerMenuCommand(_i18n('RELOAD_SCRIPT'), () => {
+    state.GM_menuId.push(GM_registerMenuCommand(_i18n('RELOAD_SCRIPT'), () => {
         reloadScript();
     }, {
         accessKey: "r"
@@ -440,7 +444,7 @@ export function showSetting() {
     $('.IG_SN_DIG .IG_SN_DIG_TITLE > div').append('<select id="langSelect"></select><div style="font-size: 12px;">Some texts are machine-translated and may be inaccurate; translation contributions are welcome on GitHub.</div>');
 
     for (let o in locale_manifest) {
-        $('.IG_SN_DIG .IG_SN_DIG_TITLE > div #langSelect').append(`<option value="${o}" ${(lang == o) ? 'selected' : ''}>${locale_manifest[o]}</option>`);
+        $('.IG_SN_DIG .IG_SN_DIG_TITLE > div #langSelect').append(`<option value="${o}" ${(state.lang == o) ? 'selected' : ''}>${locale_manifest[o]}</option>`);
     }
 
     for (let name in USER_SETTING) {
@@ -451,8 +455,8 @@ export function showSetting() {
                 e.preventDefault();
                 if ($(this).find('#tempWrapper').length === 0) {
                     $(this).append('<div id="tempWrapper"></div>');
-                    $(this).children('#tempWrapper').append('<input value="' + VIDEO_VOLUME + '" type="range" min="0" max="1" step="0.05" />');
-                    $(this).children('#tempWrapper').append('<input value="' + VIDEO_VOLUME + '" step="0.05" type="number" />');
+                    $(this).children('#tempWrapper').append('<input value="' + changeable_constant.VIDEO_VOLUME + '" type="range" min="0" max="1" step="0.05" />');
+                    $(this).children('#tempWrapper').append('<input value="' + changeable_constant.VIDEO_VOLUME + '" step="0.05" type="number" />');
                     $(this).children('#tempWrapper').append(`<div class="IG_SN_DIG_BTN">${SVG.CLOSE}</div>`);
                 }
             });
@@ -464,7 +468,7 @@ export function showSetting() {
                 if ($(this).find('#tempWrapper').length === 0) {
                     $(this).append('<div id="tempWrapper"></div>');
 
-                    $(this).children('#tempWrapper').append('<input id="date_format" value="' + RENAME_FORMAT + '" />');
+                    $(this).children('#tempWrapper').append('<input id="date_format" value="' + changeable_constant.RENAME_FORMAT + '" />');
                     $(this).children('#tempWrapper').append(`<div class="IG_SN_DIG_BTN">${SVG.CLOSE}</div>`);
                 }
             });
@@ -533,24 +537,24 @@ export function openNewTab(link) {
  * @return {void}
  */
 export function reloadScript() {
-    clearInterval(GL_repeat);
+    clearInterval(state.GL_repeat);
 
     // unregister event in post element
-    GL_registerEventList.forEach(item => {
+    state.GL_registerEventList.forEach(item => {
         item.trigger.forEach(bindElement => {
             $(item.element).off('click', bindElement);
         });
     });
-    GL_registerEventList = [];
+    state.GL_registerEventList = [];
 
     $('.button_wrapper').remove();
     $('.IG_DWPROFILE, .IG_DWPROFILE, .IG_DWSTORY, .IG_DWSTORY_ALL, .IG_DWSTORY_THUMBNAIL, .IG_DWNEWTAB, .IG_DWHISTORY, .IG_DWHISTORY_ALL, .IG_DWHINEWTAB, .IG_DWHISTORY_THUMBNAIL, .IG_REELS, .IG_REELS_NEWTAB, .IG_REELS_THUMBNAIL').remove();
     $('[data-snig]').removeAttr('data-snig');
 
-    pageLoaded = false;
-    firstStarted = false;
-    currentURL = location.href;
-    GL_observer.disconnect();
+    state.pageLoaded = false;
+    state.firstStarted = false;
+    state.currentURL = location.href;
+    state.GL_observer.disconnect();
 
     logger('main timer re-register completed');
 }
@@ -563,16 +567,16 @@ export function reloadScript() {
  */
 export function logger(...messages) {
     var dd = new Date();
-    GL_logger.push({
+    state.GL_logger.push({
         time: dd.getTime(),
         content: [...messages]
     });
 
-    if (GL_logger.length > 1000) {
-        GL_logger = [{
+    if (state.GL_logger.length > 1000) {
+        state.GL_logger = [{
             time: dd.getTime(),
             content: ['logger sliced']
-        }, ...GL_logger.slice(-999)];
+        }, ...state.GL_logger.slice(-999)];
     }
 
     console.log(`[${dd.toISOString()}]`, ...messages);
@@ -590,7 +594,7 @@ export function initSettings() {
             USER_SETTING[name] = GM_getValue(name);
 
             if (name === "MODIFY_VIDEO_VOLUME" && GM_getValue(name) !== true) {
-                VIDEO_VOLUME = 1;
+                changeable_constant.VIDEO_VOLUME = 1;
             }
         }
     }
@@ -610,31 +614,31 @@ export function initSettings() {
 export function toggleVolumeSilder($videos, $buttonParent, loggerType, customClass = "") {
     if ($buttonParent.find('div.volume_slider').length === 0) {
         $buttonParent.append(`<div class="volume_slider ${customClass}" />`);
-        $buttonParent.find('div.volume_slider').append(`<div><input type="range" max="1" min="0" step="0.05" value="${VIDEO_VOLUME}" /></div>`);
-        $buttonParent.find('div.volume_slider input').attr('style', `--ig-track-progress: ${(VIDEO_VOLUME * 100) + '%'}`);
+        $buttonParent.find('div.volume_slider').append(`<div><input type="range" max="1" min="0" step="0.05" value="${changeable_constant.VIDEO_VOLUME}" /></div>`);
+        $buttonParent.find('div.volume_slider input').attr('style', `--ig-track-progress: ${(changeable_constant.VIDEO_VOLUME * 100) + '%'}`);
         $buttonParent.find('div.volume_slider input').on('input', function () {
             var percent = ($(this).val() * 100) + '%';
 
-            VIDEO_VOLUME = $(this).val();
+            changeable_constant.VIDEO_VOLUME = $(this).val();
             GM_setValue('G_VIDEO_VOLUME', $(this).val());
 
             $(this).attr('style', `--ig-track-progress: ${percent}`);
 
             $videos.each(function () {
                 logger(`(${loggerType})`, 'video volume changed #slider');
-                this.volume = VIDEO_VOLUME;
+                this.volume = changeable_constant.VIDEO_VOLUME;
             });
         });
 
         $buttonParent.find('div.volume_slider input').on('mouseenter', function () {
-            var percent = (VIDEO_VOLUME * 100) + '%';
+            var percent = (changeable_constant.VIDEO_VOLUME * 100) + '%';
             $(this).attr('style', `--ig-track-progress: ${percent}`);
-            $(this).val(VIDEO_VOLUME);
+            $(this).val(changeable_constant.VIDEO_VOLUME);
 
 
             $videos.each(function () {
                 logger(`(${loggerType})`, 'video volume changed #slider');
-                this.volume = VIDEO_VOLUME;
+                this.volume = changeable_constant.VIDEO_VOLUME;
             });
         });
 

@@ -1,3 +1,7 @@
+import { initSettings, registerMenuCommand, checkingScriptUpdate, logger } from "./utils/util";
+import { getTranslationText, repaintingTranslations } from "./utils/i18n";
+import { style, lang, locale } from "./settings";
+
 initSettings();
 GM_addStyle(style);
 registerMenuCommand();

@@ -1,3 +1,9 @@
+import { USER_SETTING, SVG, changeable_constant, state } from "../settings";
+import { updateLoadingBar, setDownloadProgress, saveFiles, getStoryProgress, openNewTab, logger } from "../utils/util";
+import { getUserId, getStories, getMediaInfo, getStoryId } from "../utils/api";
+import { _i18n } from "../utils/i18n";
+
+
 /**
  * onStoryAll
  * @description Trigger user's story all download event.
@@ -60,7 +66,7 @@ export async function onStory(isDownload, isForce, isPreview) {
         let timestamp = Math.floor(date / 1000);
 
         updateLoadingBar(true);
-        if (USER_SETTING.FORCE_RESOURCE_VIA_MEDIA && !TEMP_FETCH_RATE_LIMIT) {
+        if (USER_SETTING.FORCE_RESOURCE_VIA_MEDIA && !changeable_constant.TEMP_FETCH_RATE_LIMIT) {
             let mediaId = null;
 
             let userInfo = await getUserId(username);
@@ -152,7 +158,7 @@ export async function onStory(isDownload, isForce, isPreview) {
             }
             else {
                 if (USER_SETTING.USE_BLOB_FETCH_WHEN_MEDIA_RATE_LIMIT) {
-                    TEMP_FETCH_RATE_LIMIT = true;
+                    changeable_constant.TEMP_FETCH_RATE_LIMIT = true;
                     onStory(isDownload, isForce, isPreview);
                 }
                 else {
@@ -172,9 +178,9 @@ export async function onStory(isDownload, isForce, isPreview) {
             let targetURL = location.pathname.replace(/\/$/ig, '').split("/").at(-1);
             let mediaId = null;
 
-            if (GL_dataCache.stories[username] && !isForce) {
+            if (state.GL_dataCache.stories[username] && !isForce) {
                 logger('Fetch from memory cache:', username);
-                GL_dataCache.stories[username].data.reels_media[0].items.forEach(item => {
+                state.GL_dataCache.stories[username].data.reels_media[0].items.forEach(item => {
                     if (item.id == targetURL) {
                         videoURL = item.video_resources[0].src;
                         if (USER_SETTING.RENAME_PUBLISH_DATE) {
@@ -248,7 +254,7 @@ export async function onStory(isDownload, isForce, isPreview) {
                     }
                 }
 
-                GL_dataCache.stories[username] = stories;
+                state.GL_dataCache.stories[username] = stories;
             }
 
             if (videoURL.length == 0) {
@@ -291,13 +297,13 @@ export async function onStory(isDownload, isForce, isPreview) {
             }
         }
 
-        TEMP_FETCH_RATE_LIMIT = false;
+        changeable_constant.TEMP_FETCH_RATE_LIMIT = false;
         updateLoadingBar(false);
     }
     else {
         // Add the stories download button
         if (!$('.IG_DWSTORY').length) {
-            GL_dataCache.stories = {};
+            state.GL_dataCache.stories = {};
             let $element = null;
             // Default detecter (section layout mode)
             if ($('body > div section._ac0a').length > 0) {
@@ -418,7 +424,7 @@ export async function onStoryThumbnail(isDownload, isForce) {
 
         updateLoadingBar(true);
 
-        if (USER_SETTING.FORCE_RESOURCE_VIA_MEDIA && !TEMP_FETCH_RATE_LIMIT) {
+        if (USER_SETTING.FORCE_RESOURCE_VIA_MEDIA && !changeable_constant.TEMP_FETCH_RATE_LIMIT) {
             let userInfo = await getUserId(username);
             let userId = userInfo.user.pk;
             let stories = await getStories(userId);
@@ -474,7 +480,7 @@ export async function onStoryThumbnail(isDownload, isForce) {
             }
             else {
                 if (USER_SETTING.USE_BLOB_FETCH_WHEN_MEDIA_RATE_LIMIT) {
-                    TEMP_FETCH_RATE_LIMIT = true;
+                    changeable_constant.TEMP_FETCH_RATE_LIMIT = true;
                     onStoryThumbnail(true, isForce);
                 }
                 else {
@@ -488,9 +494,9 @@ export async function onStoryThumbnail(isDownload, isForce) {
             return;
         }
 
-        if (GL_dataCache.stories[username] && !isForce) {
+        if (state.GL_dataCache.stories[username] && !isForce) {
             logger('Fetch from memory cache:', username);
-            GL_dataCache.stories[username].data.reels_media[0].items.forEach(item => {
+            state.GL_dataCache.stories[username].data.reels_media[0].items.forEach(item => {
                 if (item.id == targetURL) {
                     videoThumbnailURL = item.display_url;
                     if (USER_SETTING.RENAME_PUBLISH_DATE) {
@@ -564,7 +570,7 @@ export async function onStoryThumbnail(isDownload, isForce) {
         }
 
         saveFiles(videoThumbnailURL, username, "thumbnail", timestamp, type, mediaId);
-        TEMP_FETCH_RATE_LIMIT = false;
+        changeable_constant.TEMP_FETCH_RATE_LIMIT = false;
         updateLoadingBar(false);
     }
     else {

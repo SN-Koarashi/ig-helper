@@ -1,3 +1,5 @@
+import { onReadyMyDW } from "./functions/post";
+
 /******** USER SETTINGS ********/
 // !!! DO NOT CHANGE THIS AREA !!!
 // PLEASE CHANGE SETTING WITH MENU
@@ -19,9 +21,6 @@ export const USER_SETTING = {
     'SKIP_VIEW_STORY_CONFIRM': false
 };
 export const CHILD_NODES = ['RENAME_PUBLISH_DATE', 'USE_BLOB_FETCH_WHEN_MEDIA_RATE_LIMIT', 'NEW_TAB_ALWAYS_FORCE_MEDIA_IN_POST'];
-export var VIDEO_VOLUME = (GM_getValue('G_VIDEO_VOLUME')) ? GM_getValue('G_VIDEO_VOLUME') : 1;
-export var TEMP_FETCH_RATE_LIMIT = false;
-export var RENAME_FORMAT = (GM_getValue('G_RENAME_FORMAT')) ? GM_getValue('G_RENAME_FORMAT') : '%USERNAME%-%SOURCE_TYPE%-%SHORTCODE%-%YEAR%%MONTH%%DAY%_%HOUR%%MINUTE%%SECOND%_%ORIGINAL_NAME_FIRST%';
 /*******************************/
 
 // Icon download by https://www.flaticon.com/authors/pixel-perfect
@@ -37,23 +36,30 @@ export const checkInterval = 250;
 export const style = GM_getResourceText("INTERNAL_CSS");
 export const locale_manifest = JSON.parse(GM_getResourceText("LOCALE_MANIFEST"));
 
-export var GM_menuId = [];
-export var locale = {};
-export var lang = GM_getValue('lang') || navigator.language || navigator.userLanguage;
-export var currentURL = location.href;
-export var firstStarted = false;
-export var pageLoaded = false;
+export var changeable_constant = {
+    VIDEO_VOLUME: (GM_getValue('G_VIDEO_VOLUME')) ? GM_getValue('G_VIDEO_VOLUME') : 1,
+    TEMP_FETCH_RATE_LIMIT: false,
+    RENAME_FORMAT: (GM_getValue('G_RENAME_FORMAT')) ? GM_getValue('G_RENAME_FORMAT') : '%USERNAME%-%SOURCE_TYPE%-%SHORTCODE%-%YEAR%%MONTH%%DAY%_%HOUR%%MINUTE%%SECOND%_%ORIGINAL_NAME_FIRST%'
+}
 
-export var GL_registerEventList = [];
-export var GL_logger = [];
-export var GL_referrer;
-export var GL_postPath;
-export var GL_username;
-export var GL_repeat;
-export var GL_dataCache = {
-    stories: {},
-    highlights: {}
-};
-export var GL_observer = new MutationObserver(function () {
-    onReadyMyDW();
-});
+export var state = {
+    GM_menuId: [],
+    locale: {},
+    lang: GM_getValue('lang') || navigator.language || navigator.userLanguage,
+    currentURL: location.href,
+    firstStarted: false,
+    pageLoaded: false,
+    GL_registerEventList: [],
+    GL_logger: [],
+    GL_referrer: null,
+    GL_postPath: null,
+    GL_username: null,
+    GL_repeat: null,
+    GL_dataCache: {
+        stories: {},
+        highlights: {}
+    },
+    GL_observer: new MutationObserver(function () {
+        onReadyMyDW();
+    })
+}

@@ -1,3 +1,8 @@
+import { USER_SETTING, SVG, changeable_constant, state } from "../settings";
+import { updateLoadingBar, openNewTab, logger, setDownloadProgress, saveFiles, getStoryProgress } from "../utils/util";
+import { _i18n } from "../utils/i18n";
+import { getHighlightStories, getMediaInfo } from "../utils/api";
+
 /**
  * onHighlightsStoryAll
  * @description Trigger user's highlight all download event.
@@ -66,12 +71,12 @@ export async function onHighlightsStory(isDownload, isPreview) {
 
         updateLoadingBar(true);
 
-        if (GL_dataCache.highlights[highlightId]) {
+        if (state.GL_dataCache.highlights[highlightId]) {
             logger('Fetch from memory cache:', highlightId);
 
-            let totIndex = GL_dataCache.highlights[highlightId].data.reels_media[0].items.length;
-            username = GL_dataCache.highlights[highlightId].data.reels_media[0].owner.username;
-            target = GL_dataCache.highlights[highlightId].data.reels_media[0].items[totIndex - nowIndex];
+            let totIndex = state.GL_dataCache.highlights[highlightId].data.reels_media[0].items.length;
+            username = state.GL_dataCache.highlights[highlightId].data.reels_media[0].owner.username;
+            target = state.GL_dataCache.highlights[highlightId].data.reels_media[0].items[totIndex - nowIndex];
         }
         else {
             let highStories = await getHighlightStories(highlightId);
@@ -79,17 +84,17 @@ export async function onHighlightsStory(isDownload, isPreview) {
             username = highStories.data.reels_media[0].owner.username;
             target = highStories.data.reels_media[0].items[totIndex - nowIndex];
 
-            GL_dataCache.highlights[highlightId] = highStories;
+            state.GL_dataCache.highlights[highlightId] = highStories;
         }
 
-        logger('onHighlightsStory', highlightId, GL_dataCache.highlights[highlightId]);
+        logger('onHighlightsStory', highlightId, state.GL_dataCache.highlights[highlightId]);
 
 
         if (USER_SETTING.RENAME_PUBLISH_DATE) {
             timestamp = target.taken_at_timestamp;
         }
 
-        if (USER_SETTING.FORCE_RESOURCE_VIA_MEDIA && !TEMP_FETCH_RATE_LIMIT) {
+        if (USER_SETTING.FORCE_RESOURCE_VIA_MEDIA && !changeable_constant.TEMP_FETCH_RATE_LIMIT) {
             let result = await getMediaInfo(target.id);
 
             if (result.status === 'ok') {
@@ -112,8 +117,8 @@ export async function onHighlightsStory(isDownload, isPreview) {
             }
             else {
                 if (USER_SETTING.USE_BLOB_FETCH_WHEN_MEDIA_RATE_LIMIT) {
-                    delete GL_dataCache.highlights[highlightId];
-                    TEMP_FETCH_RATE_LIMIT = true;
+                    delete state.GL_dataCache.highlights[highlightId];
+                    changeable_constant.TEMP_FETCH_RATE_LIMIT = true;
 
                     onHighlightsStory(true, isPreview);
                 }
@@ -142,7 +147,7 @@ export async function onHighlightsStory(isDownload, isPreview) {
                 }
             }
 
-            TEMP_FETCH_RATE_LIMIT = false;
+            changeable_constant.TEMP_FETCH_RATE_LIMIT = false;
         }
 
         updateLoadingBar(false);
@@ -256,12 +261,12 @@ export async function onHighlightsStoryThumbnail(isDownload) {
 
         updateLoadingBar(true);
 
-        if (GL_dataCache.highlights[highlightId]) {
+        if (state.GL_dataCache.highlights[highlightId]) {
             logger('Fetch from memory cache:', highlightId);
 
-            let totIndex = GL_dataCache.highlights[highlightId].data.reels_media[0].items.length;
-            username = GL_dataCache.highlights[highlightId].data.reels_media[0].owner.username;
-            target = GL_dataCache.highlights[highlightId].data.reels_media[0].items[totIndex - nowIndex];
+            let totIndex = state.GL_dataCache.highlights[highlightId].data.reels_media[0].items.length;
+            username = state.GL_dataCache.highlights[highlightId].data.reels_media[0].owner.username;
+            target = state.GL_dataCache.highlights[highlightId].data.reels_media[0].items[totIndex - nowIndex];
         }
         else {
             let highStories = await getHighlightStories(highlightId);
@@ -269,14 +274,14 @@ export async function onHighlightsStoryThumbnail(isDownload) {
             username = highStories.data.reels_media[0].owner.username;
             target = highStories.data.reels_media[0].items[totIndex - nowIndex];
 
-            GL_dataCache.highlights[highlightId] = highStories;
+            state.GL_dataCache.highlights[highlightId] = highStories;
         }
 
         if (USER_SETTING.RENAME_PUBLISH_DATE) {
             timestamp = target.taken_at_timestamp;
         }
 
-        if (USER_SETTING.FORCE_RESOURCE_VIA_MEDIA && !TEMP_FETCH_RATE_LIMIT) {
+        if (USER_SETTING.FORCE_RESOURCE_VIA_MEDIA && !changeable_constant.TEMP_FETCH_RATE_LIMIT) {
             let result = await getMediaInfo(target.id);
 
             if (result.status === 'ok') {
@@ -284,8 +289,8 @@ export async function onHighlightsStoryThumbnail(isDownload) {
             }
             else {
                 if (USER_SETTING.USE_BLOB_FETCH_WHEN_MEDIA_RATE_LIMIT) {
-                    delete GL_dataCache.highlights[highlightId];
-                    TEMP_FETCH_RATE_LIMIT = true;
+                    delete state.GL_dataCache.highlights[highlightId];
+                    changeable_constant.TEMP_FETCH_RATE_LIMIT = true;
 
                     onHighlightsStoryThumbnail(true);
                 }
@@ -298,7 +303,7 @@ export async function onHighlightsStoryThumbnail(isDownload) {
         }
         else {
             saveFiles(target.display_resources.at(-1).src, username, "highlights", timestamp, 'jpg', highlightId);
-            TEMP_FETCH_RATE_LIMIT = false;
+            changeable_constant.TEMP_FETCH_RATE_LIMIT = false;
         }
 
         updateLoadingBar(false);

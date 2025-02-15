@@ -1,3 +1,8 @@
+import { SVG } from "../settings";
+import { updateLoadingBar, saveFiles } from "../utils/util";
+import { _i18n } from "../utils/i18n";
+import { getUserId, getUserHighSizeProfile } from "../utils/api";
+
 /**
  * onProfileAvatar
  * @description Trigger user avatar download event or button display event.

@@ -1,3 +1,11 @@
+import { state, USER_SETTING, changeable_constant } from "./settings";
+import { showSetting, showDebugDOM, reloadScript, triggerLinkElement, openNewTab, saveFiles, logger, toggleVolumeSilder } from "./utils/util";
+import { onStory, onStoryAll, onStoryThumbnail } from "./functions/story";
+import { onProfileAvatar } from "./functions/profile";
+import { onHighlightsStory, onHighlightsStoryAll, onHighlightsStoryThumbnail } from "./functions/highlight";
+import { onReels } from "./functions/reel";
+import { _i18n, getTranslationText, repaintingTranslations, registerMenuCommand } from "./utils/i18n";
+
 // Running if document is ready
 $(function () {
     function ConvertDOM(domEl) {
@@ -16,7 +24,7 @@ $(function () {
     function setDOMTreeContent() {
         let text = $('div[id^="mount"]')[0];
         var logger = "";
-        GL_logger.forEach(log => {
+        state.GL_logger.forEach(log => {
             var jsonData = JSON.stringify(log.content, function (key, value) {
                 if (Array.isArray(this)) {
                     if (typeof value === "object" && value instanceof jQuery) {
@@ -106,7 +114,7 @@ $(function () {
         }
     });
 
-    $('body').on('change', '.IG_SN_DIG input', function (e) {
+    $('body').on('change', '.IG_SN_DIG input', function () {
         var name = $(this).attr('id');
 
         if (name && USER_SETTING[name] !== undefined) {
@@ -135,12 +143,12 @@ $(function () {
         }
 
         if (value >= 0 && value <= 1) {
-            VIDEO_VOLUME = value;
+            changeable_constant.VIDEO_VOLUME = value;
             GM_setValue('G_VIDEO_VOLUME', value);
         }
     });
 
-    $('body').on('input', '.IG_SN_DIG #tempWrapper input:not(#date_format)', function (e) {
+    $('body').on('input', '.IG_SN_DIG #tempWrapper input:not(#date_format)', function () {
         if ($(this).attr('type') == 'range') {
             let value = $(this).val();
             $(this).next().val(value);
@@ -161,9 +169,9 @@ $(function () {
         }
     });
 
-    $('body').on('input', '.IG_SN_DIG #tempWrapper input#date_format', function (e) {
+    $('body').on('input', '.IG_SN_DIG #tempWrapper input#date_format', function () {
         GM_setValue('G_RENAME_FORMAT', $(this).val());
-        RENAME_FORMAT = $(this).val();
+        changeable_constant.RENAME_FORMAT = $(this).val();
     });
 
     $('body').on('click', 'a[data-needed="direct"]', function (e) {
@@ -310,15 +318,15 @@ $(function () {
 
     $('body').on('change', '.IG_SN_DIG_TITLE #langSelect', function () {
         GM_setValue('lang', $(this).val());
-        lang = $(this).val();
+        state.lang = $(this).val();
 
-        if (lang?.startsWith('en') || locale[lang] != null) {
+        if (state.lang?.startsWith('en') || state.locale[state.lang] != null) {
             repaintingTranslations();
             registerMenuCommand();
         }
         else {
-            getTranslationText(lang).then((res) => {
-                locale[lang] = res;
+            getTranslationText(state.lang).then((res) => {
+                state.locale[state.lang] = res;
                 repaintingTranslations();
                 registerMenuCommand();
             }).catch((err) => {
@@ -327,18 +335,11 @@ $(function () {
         }
     });
 
-    $('body').on('change', '.IG_SN_DIG_BODY #locateSelect', function () {
-        $('#locatePreview').text(`${(new Date().toLocaleString($(this).val(), { hour12: false, second: "2-digit", minute: "2-digit", hour: "2-digit", month: "2-digit", day: "2-digit", year: "numeric" })).replaceAll('/', '-')}`);
-        LOCATE_DATE_FORMAT = $(this).val();
-        GM_setValue('G_LOCATE_DATE_FORMAT', $(this).val());
-    });
-
     $('body').on('click', '.IG_SN_DIG_TITLE #batch_download_direct', function () {
         $('.IG_SN_DIG_BODY a[data-needed="direct"]').each(function () {
             $(this).click();
         });
     });
-
 
     const audio_observer = new MutationObserver((mutationsList) => {
         for (const mutation of mutationsList) {
@@ -352,7 +353,7 @@ $(function () {
                                 $(this).on('play playing', function () {
                                     if (!$(this).data('modify')) {
                                         $(this).attr('data-modify', true);
-                                        this.volume = VIDEO_VOLUME;
+                                        this.volume = changeable_constant.VIDEO_VOLUME;
                                         logger('(audio_observer) Added video event listener #modify');
                                     }
                                 });
@@ -395,10 +396,10 @@ $(function () {
                                         logger(`(${storyType})`, 'Added video html5 contorller #modify');
 
                                         if (USER_SETTING.MODIFY_VIDEO_VOLUME) {
-                                            this.volume = VIDEO_VOLUME;
+                                            this.volume = changeable_constant.VIDEO_VOLUME;
 
                                             $video.on('loadstart', function () {
-                                                this.volume = VIDEO_VOLUME;
+                                                this.volume = changeable_constant.VIDEO_VOLUME;
                                             });
                                         }
 
@@ -453,16 +454,16 @@ $(function () {
                                             var is_elelment_muted = $element_mute_button.find('svg > path[d^="M16.636"]').length === 0;
 
                                             if (this.muted != is_elelment_muted) {
-                                                this.volume = VIDEO_VOLUME;
+                                                this.volume = changeable_constant.VIDEO_VOLUME;
                                                 $element_mute_button?.click();
                                             }
 
                                             if ($(this).attr('data-completed')) {
-                                                VIDEO_VOLUME = this.volume;
+                                                changeable_constant.VIDEO_VOLUME = this.volume;
                                                 GM_setValue('G_VIDEO_VOLUME', this.volume);
                                             }
 
-                                            if (this.volume == VIDEO_VOLUME) {
+                                            if (this.volume == changeable_constant.VIDEO_VOLUME) {
                                                 $(this).attr('data-completed', true);
                                             }
                                         });

@@ -1,27 +1,34 @@
+import { state, checkInterval, USER_SETTING } from "./settings";
+import { logger, checkingScriptUpdate } from "./utils/util";
+import { onReadyMyDW } from "./functions/post";
+import { onReels } from "./functions/reel";
+import { onProfileAvatar } from "./functions/profile";
+import { onHighlightsStory, onHighlightsStoryThumbnail } from "./functions/highlight";
+import { onStory } from "./functions/story";
+
 // Main Timer
-// eslint-disable-next-line no-unused-vars
 export var timer = setInterval(function () {
     // page loading or unnecessary route
     if ($('div#splash-screen').length > 0 && !$('div#splash-screen').is(':hidden') ||
         location.pathname.match(/^\/(explore(\/.*)?|challenge\/?.*|direct\/?.*|qr\/?|accounts\/.*|emails\/.*|language\/?.*?|your_activity\/?.*|settings\/help(\/.*)?$)$/ig) ||
         !location.hostname.startsWith('www.')
     ) {
-        pageLoaded = false;
+        state.pageLoaded = false;
         return;
     }
 
-    if (currentURL != location.href || !firstStarted || !pageLoaded) {
+    if (state.currentURL != location.href || !state.firstStarted || !state.pageLoaded) {
         console.log('Main Timer', 'trigging');
 
-        clearInterval(GL_repeat);
-        pageLoaded = false;
-        firstStarted = true;
-        currentURL = location.href;
-        GL_observer.disconnect();
+        clearInterval(state.GL_repeat);
+        state.pageLoaded = false;
+        state.firstStarted = true;
+        state.currentURL = location.href;
+        state.GL_observer.disconnect();
 
         if (location.href.startsWith("https://www.instagram.com/p/") || location.pathname.match(/^\/(.*?)\/(p|reel)\//ig) || location.href.startsWith("https://www.instagram.com/reel/")) {
-            GL_dataCache.stories = {};
-            GL_dataCache.highlights = {};
+            state.GL_dataCache.stories = {};
+            state.GL_dataCache.highlights = {};
 
             logger('isDialog');
 
@@ -46,7 +53,7 @@ export var timer = setInterval(function () {
                 }
             }, 100);
 
-            pageLoaded = true;
+            state.pageLoaded = true;
         }
 
         if (location.href.startsWith("https://www.instagram.com/reels/")) {
@@ -54,14 +61,14 @@ export var timer = setInterval(function () {
             setTimeout(() => {
                 onReels(false);
             }, 150);
-            pageLoaded = true;
+            state.pageLoaded = true;
         }
 
         if (location.href.split("?")[0] == "https://www.instagram.com/") {
-            GL_dataCache.stories = {};
-            GL_dataCache.highlights = {};
+            state.GL_dataCache.stories = {};
+            state.GL_dataCache.highlights = {};
 
-            let hasReferrer = GL_referrer?.match(/^\/(stories|highlights)\//ig) != null;
+            let hasReferrer = state.GL_referrer?.match(/^\/(stories|highlights)\//ig) != null;
 
             logger('isHomepage', hasReferrer);
             setTimeout(() => {
@@ -69,13 +76,13 @@ export var timer = setInterval(function () {
 
                 const element = $('div[id^="mount"] > div > div div > section > main div:not([class]):not([style]) > div > article')?.parent()[0];
                 if (element) {
-                    GL_observer.observe(element, {
+                    state.GL_observer.observe(element, {
                         childList: true
                     });
                 }
             }, 150);
 
-            pageLoaded = true;
+            state.pageLoaded = true;
         }
         // eslint-disable-next-line no-useless-escape
         if ($('header > *[class]:first-child img[alt]').length && location.pathname.match(/^(\/)([0-9A-Za-z\.\-_]+)\/?(tagged|reels|saved)?\/?$/ig) && !location.pathname.match(/^(\/explore\/?$|\/stories(\/.*)?$|\/p\/)/ig)) {
@@ -83,18 +90,18 @@ export var timer = setInterval(function () {
             setTimeout(() => {
                 onProfileAvatar(false);
             }, 150);
-            pageLoaded = true;
+            state.pageLoaded = true;
         }
 
-        if (!pageLoaded) {
+        if (!state.pageLoaded) {
             // Call Instagram stories function
             if (location.href.match(/^(https:\/\/www\.instagram\.com\/stories\/highlights\/)/ig)) {
-                GL_dataCache.highlights = {};
+                state.GL_dataCache.highlights = {};
 
                 logger('isHighlightsStory');
 
                 onHighlightsStory(false);
-                GL_repeat = setInterval(() => {
+                state.GL_repeat = setInterval(() => {
                     onHighlightsStoryThumbnail(false);
                 }, checkInterval);
 
@@ -107,7 +114,7 @@ export var timer = setInterval(function () {
                             $viewStoryButton?.click();
                         }
 
-                        pageLoaded = true;
+                        state.pageLoaded = true;
                     }, 150);
                 }
             }
@@ -145,12 +152,12 @@ export var timer = setInterval(function () {
                             $viewStoryButton?.click();
                         }
 
-                        pageLoaded = true;
+                        state.pageLoaded = true;
                     }, 150);
                 }
             }
             else {
-                pageLoaded = false;
+                state.pageLoaded = false;
                 // Remove icons
                 if ($('.IG_DWSTORY').length) {
                     $('.IG_DWSTORY').remove();
@@ -181,6 +188,6 @@ export var timer = setInterval(function () {
         }
 
         checkingScriptUpdate(300);
-        GL_referrer = new URL(location.href).pathname;
+        state.GL_referrer = new URL(location.href).pathname;
     }
 }, checkInterval);

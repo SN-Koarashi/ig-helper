@@ -1,3 +1,5 @@
+import { state } from "../settings";
+import { logger } from "./util";
 
 /**
  * translateText
@@ -74,7 +76,7 @@ export function translateText() {
         }
     };
 
-    var resultUnsorted = Object.assign({}, eLocale, locale);
+    var resultUnsorted = Object.assign({}, eLocale, state.locale);
     var resultSorted = Object.keys(resultUnsorted).sort().reduce(
         (obj, key) => {
             obj[key] = resultUnsorted[key];
@@ -124,8 +126,8 @@ export async function getTranslationText(lang) {
 export function _i18n(text) {
     const translate = translateText();
 
-    if (translate[lang] != undefined && translate[lang][text] != undefined) {
-        return translate[lang][text];
+    if (translate[state.lang] != undefined && translate[state.lang][text] != undefined) {
+        return translate[state.lang][text];
     }
     else {
         return translate["en-US"][text];

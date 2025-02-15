@@ -1,3 +1,8 @@
+import { USER_SETTING, SVG, changeable_constant, state } from "../settings";
+import { updateLoadingBar, openNewTab, logger, toggleVolumeSilder, IG_createDM, IG_setDM, triggerLinkElement } from "../utils/util";
+import { getBlobMedia } from "../utils/api";
+import { _i18n } from "../utils/i18n";
+
 /**
  * onReadyMyDW
  * @description Create an event entry point for the download button for the post
@@ -69,7 +74,7 @@ export function initPostVideoFunction($mainElement) {
             $(this).on('play playing', function () {
                 if (!$(this).data('modify')) {
                     $(this).attr('data-modify', true);
-                    this.volume = VIDEO_VOLUME;
+                    this.volume = changeable_constant.VIDEO_VOLUME;
                     logger('(post) Added video event listener #modify');
                 }
             });
@@ -84,10 +89,10 @@ export function initPostVideoFunction($mainElement) {
                 logger('(post) Added video html5 contorller #modify');
 
                 if (USER_SETTING.MODIFY_VIDEO_VOLUME) {
-                    this.volume = VIDEO_VOLUME;
+                    this.volume = changeable_constant.VIDEO_VOLUME;
 
                     $(this).on('loadstart', function () {
-                        this.volume = VIDEO_VOLUME;
+                        this.volume = changeable_constant.VIDEO_VOLUME;
                     });
                 }
 
@@ -115,16 +120,16 @@ export function initPostVideoFunction($mainElement) {
                     var is_elelment_muted = $element_mute_button.find('svg > path[d^="M16.636"]').length === 0;
 
                     if (this.muted != is_elelment_muted) {
-                        this.volume = VIDEO_VOLUME;
+                        this.volume = changeable_constant.VIDEO_VOLUME;
                         $element_mute_button?.click();
                     }
 
                     if ($(this).attr('data-completed')) {
-                        VIDEO_VOLUME = this.volume;
+                        changeable_constant.VIDEO_VOLUME = this.volume;
                         GM_setValue('G_VIDEO_VOLUME', this.volume);
                     }
 
-                    if (this.volume == VIDEO_VOLUME) {
+                    if (this.volume == changeable_constant.VIDEO_VOLUME) {
                         $(this).attr('data-completed', true);
                     }
                 });
@@ -282,7 +287,7 @@ export function createDownloadButton() {
 
                 initPostVideoFunction($mainElement);
 
-                GL_registerEventList.push({
+                state.GL_registerEventList.push({
                     element: this,
                     trigger: [
                         '.SNKMS_IG_THUMBNAIL_MAIN',
@@ -295,14 +300,14 @@ export function createDownloadButton() {
                 $(this).on('click', '.SNKMS_IG_THUMBNAIL_MAIN', function () {
                     updateLoadingBar(true);
 
-                    GL_username = $mainElement.attr('data-username');
-                    GL_postPath = location.pathname.replace(/\/$/, '').split('/').at(-1) || $mainElement.find('a[href^="/p/"]').first().attr("href").split("/").at(2) || $(this).parent().parent().parent().children("div:last-child").children("div").children("div:last-child").find('a[href^="/p/"]').last().attr("href").split("/").at(2);
+                    state.GL_username = $mainElement.attr('data-username');
+                    state.GL_postPath = location.pathname.replace(/\/$/, '').split('/').at(-1) || $mainElement.find('a[href^="/p/"]').first().attr("href").split("/").at(2) || $(this).parent().parent().parent().children("div:last-child").children("div").children("div:last-child").find('a[href^="/p/"]').last().attr("href").split("/").at(2);
 
                     var index = getVisibleNodeIndex($mainElement);
 
                     IG_createDM(true, false);
 
-                    createMediaListDOM(GL_postPath, ".IG_SN_DIG .IG_SN_DIG_MAIN .IG_SN_DIG_BODY", "").then(() => {
+                    createMediaListDOM(state.GL_postPath, ".IG_SN_DIG .IG_SN_DIG_MAIN .IG_SN_DIG_BODY", "").then(() => {
                         let checkBlob = setInterval(() => {
                             if ($('.IG_SN_DIG .IG_SN_DIG_MAIN .IG_SN_DIG_BODY a').length > 0) {
                                 clearInterval(checkBlob);
@@ -325,14 +330,14 @@ export function createDownloadButton() {
                 $(this).on('click', '.SNKMS_IG_NEWTAB_MAIN', function () {
                     updateLoadingBar(true);
 
-                    GL_username = $mainElement.attr('data-username');
-                    GL_postPath = location.pathname.replace(/\/$/, '').split('/').at(-1) || $mainElement.find('a[href^="/p/"]').first().attr("href").split("/").at(2) || $(this).parent().parent().parent().children("div:last-child").children("div").children("div:last-child").find('a[href^="/p/"]').last().attr("href").split("/").at(2);
+                    state.GL_username = $mainElement.attr('data-username');
+                    state.GL_postPath = location.pathname.replace(/\/$/, '').split('/').at(-1) || $mainElement.find('a[href^="/p/"]').first().attr("href").split("/").at(2) || $(this).parent().parent().parent().children("div:last-child").children("div").children("div:last-child").find('a[href^="/p/"]').last().attr("href").split("/").at(2);
 
                     var index = getVisibleNodeIndex($mainElement);
 
                     IG_createDM(true, false);
 
-                    createMediaListDOM(GL_postPath, ".IG_SN_DIG .IG_SN_DIG_MAIN .IG_SN_DIG_BODY", "").then(() => {
+                    createMediaListDOM(state.GL_postPath, ".IG_SN_DIG .IG_SN_DIG_MAIN .IG_SN_DIG_BODY", "").then(() => {
                         let checkBlob = setInterval(() => {
                             if ($('.IG_SN_DIG .IG_SN_DIG_MAIN .IG_SN_DIG_BODY a').length > 0) {
                                 clearInterval(checkBlob);
@@ -364,13 +369,13 @@ export function createDownloadButton() {
 
                 // Running if user click the download all icon
                 $(this).on('click', '.SNKMS_IG_DW_ALL_MAIN', async function () {
-                    GL_username = $mainElement.attr('data-username');
-                    GL_postPath = location.pathname.replace(/\/$/, '').split('/').at(-1) || $mainElement.find('a[href^="/p/"]').first().attr("href").split("/").at(2) || $(this).parent().parent().parent().children("div:last-child").children("div").children("div:last-child").find('a[href^="/p/"]').last().attr("href").split("/").at(2);
+                    state.GL_username = $mainElement.attr('data-username');
+                    state.GL_postPath = location.pathname.replace(/\/$/, '').split('/').at(-1) || $mainElement.find('a[href^="/p/"]').first().attr("href").split("/").at(2) || $(this).parent().parent().parent().children("div:last-child").children("div").children("div:last-child").find('a[href^="/p/"]').last().attr("href").split("/").at(2);
 
                     // Create element that download dailog
                     IG_createDM(USER_SETTING.DIRECT_DOWNLOAD_ALL, true);
 
-                    $("#article-id").html(`<a href="https://www.instagram.com/p/${GL_postPath}">${GL_postPath}</a>`);
+                    $("#article-id").html(`<a href="https://www.instagram.com/p/${state.GL_postPath}">${state.GL_postPath}</a>`);
 
                     $('.IG_SN_DIG .IG_SN_DIG_MAIN .IG_SN_DIG_BODY a').each(function () {
                         $(this).wrap('<div></div>');
@@ -383,7 +388,7 @@ export function createDownloadButton() {
                     });
 
 
-                    createMediaListDOM(GL_postPath, ".IG_SN_DIG .IG_SN_DIG_MAIN .IG_SN_DIG_BODY", _i18n("LOAD_BLOB_MULTIPLE")).then(() => {
+                    createMediaListDOM(state.GL_postPath, ".IG_SN_DIG .IG_SN_DIG_MAIN .IG_SN_DIG_BODY", _i18n("LOAD_BLOB_MULTIPLE")).then(() => {
                         let checkBlob = setInterval(() => {
                             if ($('.IG_SN_DIG .IG_SN_DIG_MAIN .IG_SN_DIG_BODY a').length > 0) {
                                 clearInterval(checkBlob);
@@ -399,13 +404,13 @@ export function createDownloadButton() {
 
                 // Running if user click the download icon
                 $(this).on('click', '.SNKMS_IG_DW_MAIN', async function () {
-                    GL_username = $mainElement.attr('data-username');
-                    GL_postPath = location.pathname.replace(/\/$/, '').split('/').at(-1) || $mainElement.find('a[href^="/p/"]').first().attr("href").split("/").at(2) || $(this).parent().parent().parent().children("div:last-child").children("div").children("div:last-child").find('a[href^="/p/"]').last().attr("href").split("/").at(2);
+                    state.GL_username = $mainElement.attr('data-username');
+                    state.GL_postPath = location.pathname.replace(/\/$/, '').split('/').at(-1) || $mainElement.find('a[href^="/p/"]').first().attr("href").split("/").at(2) || $(this).parent().parent().parent().children("div:last-child").children("div").children("div:last-child").find('a[href^="/p/"]').last().attr("href").split("/").at(2);
 
                     // Create element that download dailog
                     IG_createDM(USER_SETTING.DIRECT_DOWNLOAD_ALL, true);
 
-                    $("#article-id").html(`<a href="https://www.instagram.com/p/${GL_postPath}">${GL_postPath}</a>`);
+                    $("#article-id").html(`<a href="https://www.instagram.com/p/${state.GL_postPath}">${state.GL_postPath}</a>`);
 
                     if (USER_SETTING.DIRECT_DOWNLOAD_VISIBLE_RESOURCE) {
                         updateLoadingBar(true);
@@ -413,7 +418,7 @@ export function createDownloadButton() {
 
                         var index = getVisibleNodeIndex($(this).parent().parent().parent());
 
-                        createMediaListDOM(GL_postPath, ".IG_SN_DIG .IG_SN_DIG_MAIN .IG_SN_DIG_BODY", "").then(() => {
+                        createMediaListDOM(state.GL_postPath, ".IG_SN_DIG .IG_SN_DIG_MAIN .IG_SN_DIG_BODY", "").then(() => {
                             let checkBlob = setInterval(() => {
                                 if ($('.IG_SN_DIG .IG_SN_DIG_MAIN .IG_SN_DIG_BODY a').length > 0) {
                                     clearInterval(checkBlob);
@@ -454,7 +459,7 @@ export function createDownloadButton() {
 
 
                             if (blob || USER_SETTING.FORCE_RESOURCE_VIA_MEDIA) {
-                                createMediaListDOM(GL_postPath, ".IG_SN_DIG .IG_SN_DIG_MAIN .IG_SN_DIG_BODY", _i18n("LOAD_BLOB_MULTIPLE"));
+                                createMediaListDOM(state.GL_postPath, ".IG_SN_DIG .IG_SN_DIG_MAIN .IG_SN_DIG_BODY", _i18n("LOAD_BLOB_MULTIPLE"));
                             }
                             else {
                                 $(this).parent().parent().find(resourceCountSelector).each(function () {
@@ -467,19 +472,19 @@ export function createDownloadButton() {
                                         blob = true;
                                     }
                                     if (element_images && imgLink) {
-                                        $('.IG_SN_DIG .IG_SN_DIG_MAIN .IG_SN_DIG_BODY').append(`<a datetime="${publish_time}" data-needed="direct" data-path="${GL_postPath}" data-name="photo" data-type="jpg" data-globalIndex="${s}" href="javascript:;" data-href="${imgLink}"><img width="100" src="${imgLink}" /><br/>- <span data-ih-locale="IMG">${_i18n("IMG")}</span> ${s} -</a>`);
+                                        $('.IG_SN_DIG .IG_SN_DIG_MAIN .IG_SN_DIG_BODY').append(`<a datetime="${publish_time}" data-needed="direct" data-path="${state.GL_postPath}" data-name="photo" data-type="jpg" data-globalIndex="${s}" href="javascript:;" data-href="${imgLink}"><img width="100" src="${imgLink}" /><br/>- <span data-ih-locale="IMG">${_i18n("IMG")}</span> ${s} -</a>`);
                                     }
 
                                 });
 
                                 if (blob) {
-                                    createMediaListDOM(GL_postPath, ".IG_SN_DIG .IG_SN_DIG_MAIN .IG_SN_DIG_BODY", _i18n("LOAD_BLOB_RELOAD"));
+                                    createMediaListDOM(state.GL_postPath, ".IG_SN_DIG .IG_SN_DIG_MAIN .IG_SN_DIG_BODY", _i18n("LOAD_BLOB_RELOAD"));
                                 }
                             }
                         }
                         else {
                             if (USER_SETTING.FORCE_RESOURCE_VIA_MEDIA) {
-                                createMediaListDOM(GL_postPath, ".IG_SN_DIG .IG_SN_DIG_MAIN .IG_SN_DIG_BODY", _i18n("LOAD_BLOB_MULTIPLE"));
+                                createMediaListDOM(state.GL_postPath, ".IG_SN_DIG .IG_SN_DIG_MAIN .IG_SN_DIG_BODY", _i18n("LOAD_BLOB_MULTIPLE"));
                             }
                             else {
                                 s++;
@@ -489,10 +494,10 @@ export function createDownloadButton() {
 
 
                                 if (element_videos && element_videos.attr('src')) {
-                                    createMediaListDOM(GL_postPath, ".IG_SN_DIG .IG_SN_DIG_MAIN .IG_SN_DIG_BODY", _i18n("LOAD_BLOB_ONE"));
+                                    createMediaListDOM(state.GL_postPath, ".IG_SN_DIG .IG_SN_DIG_MAIN .IG_SN_DIG_BODY", _i18n("LOAD_BLOB_ONE"));
                                 }
                                 if (element_images && imgLink) {
-                                    $('.IG_SN_DIG .IG_SN_DIG_MAIN .IG_SN_DIG_BODY').append(`<a datetime="${publish_time}" data-needed="direct" data-path="${GL_postPath}" data-name="photo" data-type="jpg" data-globalIndex="${s}" href="javascript:;" href="" data-href="${imgLink}"><img width="100" src="${imgLink}" /><br/>- <span data-ih-locale="IMG">${_i18n("IMG")}</span> ${s} -</a>`);
+                                    $('.IG_SN_DIG .IG_SN_DIG_MAIN .IG_SN_DIG_BODY').append(`<a datetime="${publish_time}" data-needed="direct" data-path="${state.GL_postPath}" data-name="photo" data-type="jpg" data-globalIndex="${s}" href="javascript:;" href="" data-href="${imgLink}"><img width="100" src="${imgLink}" /><br/>- <span data-ih-locale="IMG">${_i18n("IMG")}</span> ${s} -</a>`);
                                 }
                             }
                         }
@@ -509,7 +514,7 @@ export function createDownloadButton() {
                     });
 
                     if (USER_SETTING.DIRECT_DOWNLOAD_ALL) {
-                        createMediaListDOM(GL_postPath, ".IG_SN_DIG .IG_SN_DIG_MAIN .IG_SN_DIG_BODY", _i18n("LOAD_BLOB_MULTIPLE")).then(() => {
+                        createMediaListDOM(state.GL_postPath, ".IG_SN_DIG .IG_SN_DIG_MAIN .IG_SN_DIG_BODY", _i18n("LOAD_BLOB_MULTIPLE")).then(() => {
                             let checkBlob = setInterval(() => {
                                 if ($('.IG_SN_DIG .IG_SN_DIG_MAIN .IG_SN_DIG_BODY a').length > 0) {
                                     clearInterval(checkBlob);
