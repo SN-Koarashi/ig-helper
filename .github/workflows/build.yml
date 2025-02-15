@@ -7,6 +7,8 @@ on:
 
 jobs:
   build:
+    if: contains(github.event.head_commit.message, 'Automated Build PR') == false || (split(github.event.head_commit.message, '\n')[1] != 'Automated Build PR')
+
     runs-on: ubuntu-latest
 
     steps:
@@ -17,6 +19,12 @@ jobs:
         uses: actions/setup-node@v2
         with:
           node-version: "20"
+
+      - name: Fetch latest commits
+        run: git fetch origin master
+
+      - name: Check out latest master
+        run: git checkout master
 
       - name: Install dependencies
         run: npm install
