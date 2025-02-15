@@ -6,10 +6,6 @@ export default [
   {
     files: ["**/*.js"],
     languageOptions: {
-      env: {
-        browser: true,
-        jquery: true
-      },
       globals: {
         // **
         ...globals.browser,
@@ -24,9 +20,20 @@ export default [
         GM_unregisterMenuCommand: 'readable',
         GM_getResourceText: 'readable',
         GM_notification: 'readable',
-        GM_openInTab: 'readable'
+        GM_openInTab: 'readable',
+        FS_IMPORT: 'readable'
       },
     },
+  },
+  {
+    files: ["build.js", "webpack.config.js"],
+    sourceType: "commonjs",
+    languageOptions: {
+      globals: {
+        ...globals.browser,
+        ...globals.node
+      }
+    }
   },
   pluginJs.configs.recommended,
 ];
