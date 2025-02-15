@@ -1,4 +1,4 @@
-import { SVG, USER_SETTING, state, changeable_constant, locale_manifest, CHILD_NODES } from "../settings";
+import { SVG, USER_SETTING, state, locale_manifest, CHILD_NODES } from "../settings";
 import { _i18n } from "./i18n";
 import { getPostOwner, getMediaInfo } from "./api";
 
@@ -193,7 +193,7 @@ export function createSaveFileElement(downloadLink, object, username, sourceType
     const minute = date.getMinutes().toString().padStart(2, '0');
     const second = date.getSeconds().toString().padStart(2, '0');
 
-    var filename = changeable_constant.RENAME_FORMAT.toUpperCase();
+    var filename = state.fileRenameFormat.toUpperCase();
     var format_shortcode = shortcode ?? "";
     var replacements = {
         '%USERNAME%': username,
@@ -321,42 +321,42 @@ export async function triggerLinkElement(element, isPreview) {
  * @return {void}
  */
 export function registerMenuCommand() {
-    for (let id of state.GM_menuId) {
+    for (let id of state.registerMenuIds) {
         logger('GM_unregisterMenuCommand', id);
         GM_unregisterMenuCommand(id);
     }
 
-    state.GM_menuId.push(GM_registerMenuCommand(_i18n('SETTING'), () => {
+    state.registerMenuIds.push(GM_registerMenuCommand(_i18n('SETTING'), () => {
         showSetting();
     }, {
         accessKey: "w"
     }));
 
-    state.GM_menuId.push(GM_registerMenuCommand(_i18n('DONATE'), () => {
+    state.registerMenuIds.push(GM_registerMenuCommand(_i18n('DONATE'), () => {
         GM_openInTab("https://ko-fi.com/snkoarashi", { active: true });
     }, {
         accessKey: "d"
     }));
 
-    state.GM_menuId.push(GM_registerMenuCommand(_i18n('DEBUG'), () => {
+    state.registerMenuIds.push(GM_registerMenuCommand(_i18n('DEBUG'), () => {
         showDebugDOM();
     }, {
         accessKey: "z"
     }));
 
-    state.GM_menuId.push(GM_registerMenuCommand(_i18n('FEEDBACK'), () => {
+    state.registerMenuIds.push(GM_registerMenuCommand(_i18n('FEEDBACK'), () => {
         showFeedbackDOM();
     }, {
         accessKey: "f"
     }));
 
-    state.GM_menuId.push(GM_registerMenuCommand(_i18n('CHECK_UPDATE_MENU'), () => {
+    state.registerMenuIds.push(GM_registerMenuCommand(_i18n('CHECK_UPDATE_MENU'), () => {
         callNotification();
     }, {
         accessKey: "c"
     }));
 
-    state.GM_menuId.push(GM_registerMenuCommand(_i18n('RELOAD_SCRIPT'), () => {
+    state.registerMenuIds.push(GM_registerMenuCommand(_i18n('RELOAD_SCRIPT'), () => {
         reloadScript();
     }, {
         accessKey: "r"
@@ -455,8 +455,8 @@ export function showSetting() {
                 e.preventDefault();
                 if ($(this).find('#tempWrapper').length === 0) {
                     $(this).append('<div id="tempWrapper"></div>');
-                    $(this).children('#tempWrapper').append('<input value="' + changeable_constant.VIDEO_VOLUME + '" type="range" min="0" max="1" step="0.05" />');
-                    $(this).children('#tempWrapper').append('<input value="' + changeable_constant.VIDEO_VOLUME + '" step="0.05" type="number" />');
+                    $(this).children('#tempWrapper').append('<input value="' + state.videoVolume + '" type="range" min="0" max="1" step="0.05" />');
+                    $(this).children('#tempWrapper').append('<input value="' + state.videoVolume + '" step="0.05" type="number" />');
                     $(this).children('#tempWrapper').append(`<div class="IG_SN_DIG_BTN">${SVG.CLOSE}</div>`);
                 }
             });
@@ -468,7 +468,7 @@ export function showSetting() {
                 if ($(this).find('#tempWrapper').length === 0) {
                     $(this).append('<div id="tempWrapper"></div>');
 
-                    $(this).children('#tempWrapper').append('<input id="date_format" value="' + changeable_constant.RENAME_FORMAT + '" />');
+                    $(this).children('#tempWrapper').append('<input id="date_format" value="' + state.fileRenameFormat + '" />');
                     $(this).children('#tempWrapper').append(`<div class="IG_SN_DIG_BTN">${SVG.CLOSE}</div>`);
                 }
             });
@@ -594,7 +594,7 @@ export function initSettings() {
             USER_SETTING[name] = GM_getValue(name);
 
             if (name === "MODIFY_VIDEO_VOLUME" && GM_getValue(name) !== true) {
-                changeable_constant.VIDEO_VOLUME = 1;
+                state.videoVolume = 1;
             }
         }
     }
@@ -614,31 +614,31 @@ export function initSettings() {
 export function toggleVolumeSilder($videos, $buttonParent, loggerType, customClass = "") {
     if ($buttonParent.find('div.volume_slider').length === 0) {
         $buttonParent.append(`<div class="volume_slider ${customClass}" />`);
-        $buttonParent.find('div.volume_slider').append(`<div><input type="range" max="1" min="0" step="0.05" value="${changeable_constant.VIDEO_VOLUME}" /></div>`);
-        $buttonParent.find('div.volume_slider input').attr('style', `--ig-track-progress: ${(changeable_constant.VIDEO_VOLUME * 100) + '%'}`);
+        $buttonParent.find('div.volume_slider').append(`<div><input type="range" max="1" min="0" step="0.05" value="${state.videoVolume}" /></div>`);
+        $buttonParent.find('div.volume_slider input').attr('style', `--ig-track-progress: ${(state.videoVolume * 100) + '%'}`);
         $buttonParent.find('div.volume_slider input').on('input', function () {
             var percent = ($(this).val() * 100) + '%';
 
-            changeable_constant.VIDEO_VOLUME = $(this).val();
+            state.videoVolume = $(this).val();
             GM_setValue('G_VIDEO_VOLUME', $(this).val());
 
             $(this).attr('style', `--ig-track-progress: ${percent}`);
 
             $videos.each(function () {
                 logger(`(${loggerType})`, 'video volume changed #slider');
-                this.volume = changeable_constant.VIDEO_VOLUME;
+                this.volume = state.videoVolume;
             });
         });
 
         $buttonParent.find('div.volume_slider input').on('mouseenter', function () {
-            var percent = (changeable_constant.VIDEO_VOLUME * 100) + '%';
+            var percent = (state.videoVolume * 100) + '%';
             $(this).attr('style', `--ig-track-progress: ${percent}`);
-            $(this).val(changeable_constant.VIDEO_VOLUME);
+            $(this).val(state.videoVolume);
 
 
             $videos.each(function () {
                 logger(`(${loggerType})`, 'video volume changed #slider');
-                this.volume = changeable_constant.VIDEO_VOLUME;
+                this.volume = state.videoVolume;
             });
         });
 

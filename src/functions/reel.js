@@ -1,4 +1,4 @@
-import { USER_SETTING, SVG, changeable_constant } from "../settings";
+import { USER_SETTING, SVG, state } from "../settings";
 import { updateLoadingBar, saveFiles, openNewTab, logger, toggleVolumeSilder } from "../utils/util";
 import { getBlobMedia } from "../utils/api";
 import { filterResourceData } from "./post";
@@ -150,10 +150,10 @@ export async function onReels(isDownload, isVideo, isPreview) {
                                         logger('(reel) Added video html5 contorller #modify');
 
                                         if (USER_SETTING.MODIFY_VIDEO_VOLUME) {
-                                            this.volume = changeable_constant.VIDEO_VOLUME;
+                                            this.volume = state.videoVolume;
 
                                             $(this).on('loadstart', function () {
-                                                this.volume = changeable_constant.VIDEO_VOLUME;
+                                                this.volume = state.videoVolume;
                                             });
                                         }
 
@@ -184,16 +184,16 @@ export async function onReels(isDownload, isVideo, isPreview) {
                                             var is_elelment_muted = $element_mute_button.find('svg > path[d^="M16.636"]').length === 0;
 
                                             if (this.muted != is_elelment_muted) {
-                                                this.volume = changeable_constant.VIDEO_VOLUME;
+                                                this.volume = state.videoVolume;
                                                 $element_mute_button?.click();
                                             }
 
                                             if ($(this).attr('data-completed')) {
-                                                changeable_constant.VIDEO_VOLUME = this.volume;
+                                                state.videoVolume = this.volume;
                                                 GM_setValue('G_VIDEO_VOLUME', this.volume);
                                             }
 
-                                            if (this.volume == changeable_constant.VIDEO_VOLUME) {
+                                            if (this.volume == state.videoVolume) {
                                                 $(this).attr('data-completed', true);
                                             }
                                         });

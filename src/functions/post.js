@@ -1,4 +1,4 @@
-import { USER_SETTING, SVG, changeable_constant, state } from "../settings";
+import { USER_SETTING, SVG, state } from "../settings";
 import { updateLoadingBar, openNewTab, logger, toggleVolumeSilder, IG_createDM, IG_setDM, triggerLinkElement } from "../utils/util";
 import { getBlobMedia } from "../utils/api";
 import { _i18n } from "../utils/i18n";
@@ -74,7 +74,7 @@ export function initPostVideoFunction($mainElement) {
             $(this).on('play playing', function () {
                 if (!$(this).data('modify')) {
                     $(this).attr('data-modify', true);
-                    this.volume = changeable_constant.VIDEO_VOLUME;
+                    this.volume = state.videoVolume;
                     logger('(post) Added video event listener #modify');
                 }
             });
@@ -89,10 +89,10 @@ export function initPostVideoFunction($mainElement) {
                 logger('(post) Added video html5 contorller #modify');
 
                 if (USER_SETTING.MODIFY_VIDEO_VOLUME) {
-                    this.volume = changeable_constant.VIDEO_VOLUME;
+                    this.volume = state.videoVolume;
 
                     $(this).on('loadstart', function () {
-                        this.volume = changeable_constant.VIDEO_VOLUME;
+                        this.volume = state.videoVolume;
                     });
                 }
 
@@ -120,16 +120,16 @@ export function initPostVideoFunction($mainElement) {
                     var is_elelment_muted = $element_mute_button.find('svg > path[d^="M16.636"]').length === 0;
 
                     if (this.muted != is_elelment_muted) {
-                        this.volume = changeable_constant.VIDEO_VOLUME;
+                        this.volume = state.videoVolume;
                         $element_mute_button?.click();
                     }
 
                     if ($(this).attr('data-completed')) {
-                        changeable_constant.VIDEO_VOLUME = this.volume;
+                        state.videoVolume = this.volume;
                         GM_setValue('G_VIDEO_VOLUME', this.volume);
                     }
 
-                    if (this.volume == changeable_constant.VIDEO_VOLUME) {
+                    if (this.volume == state.videoVolume) {
                         $(this).attr('data-completed', true);
                     }
                 });
