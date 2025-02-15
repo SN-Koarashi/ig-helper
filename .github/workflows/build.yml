@@ -40,8 +40,10 @@ jobs:
 
       - name: Push changes to a new branch
         run: |
+          git fetch origin
+          git checkout -b automated-build-branch origin/automated-build-branch || git checkout -b automated-build-branch
+          git merge master
           git push origin HEAD:automated-build-branch
-
       - name: Create Pull Request
         run: |
           gh auth login --with-token <<< "${{ secrets.GITHUB_TOKEN }}"
