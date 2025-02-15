@@ -44,7 +44,7 @@ jobs:
       - name: Check if remote automated-build-branch exists and pull
         run: |
           if git ls-remote --heads origin automated-build-branch | grep -q automated-build-branch; then
-            git pull --rebase origin automated-build-branch
+            git pull --rebase --strategy-option theirs origin automated-build-branch || echo "There were conflicts that were automatically resolved using 'theirs'."
           else
             echo "Remote branch automated-build-branch does not exist."
           fi
