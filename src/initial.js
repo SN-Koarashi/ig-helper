@@ -2,6 +2,7 @@ import { initSettings, registerMenuCommand, checkingScriptUpdate, logger } from 
 import { getTranslationText, repaintingTranslations } from "./utils/i18n";
 import { style, state } from "./settings";
 
+// initialization script
 initSettings();
 GM_addStyle(style);
 registerMenuCommand();
@@ -21,3 +22,4 @@ getTranslationText(state.lang).then((res) => {
 });
 
 logger('Script Loaded', GM_info.script.name, 'version:', GM_info.script.version);
+/*******************************/

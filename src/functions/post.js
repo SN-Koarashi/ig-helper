@@ -121,7 +121,7 @@ export function initPostVideoFunction($mainElement) {
 
                     if (this.muted != is_elelment_muted) {
                         this.volume = state.videoVolume;
-                        $element_mute_button?.click();
+                        $element_mute_button?.trigger("click");
                     }
 
                     if ($(this).attr('data-completed')) {
@@ -314,7 +314,7 @@ export function createDownloadButton() {
                                 var $videoThumbnail = $('.IG_SN_DIG .IG_SN_DIG_BODY a[data-globalindex="' + (index + 1) + '"]')?.parent().find('.videoThumbnail')?.first();
 
                                 if ($videoThumbnail != null && $videoThumbnail.length > 0) {
-                                    $videoThumbnail.click();
+                                    $videoThumbnail.trigger("click");
                                 }
                                 else {
                                     alert('Can not find thumbnail url.');
@@ -393,7 +393,7 @@ export function createDownloadButton() {
                             if ($('.IG_SN_DIG .IG_SN_DIG_MAIN .IG_SN_DIG_BODY a').length > 0) {
                                 clearInterval(checkBlob);
                                 $('.IG_SN_DIG .IG_SN_DIG_MAIN .IG_SN_DIG_BODY a').each(function () {
-                                    $(this).click();
+                                    $(this).trigger("click");
                                 });
 
                                 $('.IG_SN_DIG').remove();
@@ -426,7 +426,7 @@ export function createDownloadButton() {
 
                                     if (href) {
                                         updateLoadingBar(false);
-                                        $('.IG_SN_DIG .IG_SN_DIG_BODY a[data-globalindex="' + (index + 1) + '"]')?.click();
+                                        $('.IG_SN_DIG .IG_SN_DIG_BODY a[data-globalindex="' + (index + 1) + '"]')?.trigger("click");
                                     }
                                     else {
                                         alert('Can not find download url.');
@@ -519,7 +519,7 @@ export function createDownloadButton() {
                                 if ($('.IG_SN_DIG .IG_SN_DIG_MAIN .IG_SN_DIG_BODY a').length > 0) {
                                     clearInterval(checkBlob);
                                     $('.IG_SN_DIG .IG_SN_DIG_MAIN .IG_SN_DIG_BODY a').each(function () {
-                                        $(this).click();
+                                        $(this).trigger("click");
                                     });
 
                                     $('.IG_SN_DIG').remove();

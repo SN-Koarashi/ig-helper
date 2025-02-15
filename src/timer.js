@@ -112,7 +112,7 @@ export var timer = setInterval(function () {
                             var $viewStoryButton = $('div[id^="mount"] section:last-child > div > div div[role="button"]').filter(function () {
                                 return $(this).children().length === 0 && this.textContent.trim() !== "";
                             });
-                            $viewStoryButton?.click();
+                            $viewStoryButton?.trigger("click");
                         }
 
                         state.pageLoaded = true;

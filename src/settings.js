@@ -2,7 +2,7 @@ import { onReadyMyDW } from "./functions/post";
 
 /******** USER SETTINGS ********/
 // !!! DO NOT CHANGE THIS AREA !!!
-// PLEASE CHANGE SETTING WITH MENU
+// ??? PLEASE CHANGE SETTING WITH MENU ???
 export const USER_SETTING = {
     'CHECK_UPDATE': true,
     'AUTO_RENAME': true,
@@ -32,6 +32,7 @@ export const SVG = {
     CLOSE: '<svg width="26" height="26" xmlns="http://www.w3.org/2000/svg" id="bold" enable-background="new 0 0 24 24" viewBox="0 0 24 24"><path d="m14.828 12 5.303-5.303c.586-.586.586-1.536 0-2.121l-.707-.707c-.586-.586-1.536-.586-2.121 0l-5.303 5.303-5.303-5.304c-.586-.586-1.536-.586-2.121 0l-.708.707c-.586.586-.586 1.536 0 2.121l5.304 5.304-5.303 5.303c-.586.586-.586 1.536 0 2.121l.707.707c.586.586 1.536.586 2.121 0l5.303-5.303 5.303 5.303c.586.586 1.536.586 2.121 0l.707-.707c.586-.586.586-1.536 0-2.121z"></path></svg>'
 };
 
+/*******************************/
 export const checkInterval = 250;
 export const style = GM_getResourceText("INTERNAL_CSS");
 export const locale_manifest = JSON.parse(GM_getResourceText("LOCALE_MANIFEST"));
@@ -60,3 +61,4 @@ export var state = {
         onReadyMyDW();
     })
 };
+/*******************************/

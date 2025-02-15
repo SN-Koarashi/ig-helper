@@ -5,7 +5,7 @@
 // @name:ja            IG助手
 // @name:ko            IG조수
 // @namespace          https://github.snkms.com/
-// @version            3.0.2.4
+// @version            3.0.4
 // @description        Downloading is possible for both photos and videos from posts, as well as for stories, reels or profile picture.
 // @description:zh-TW  一鍵下載對方 Instagram 貼文中的相片、影片甚至是他們的限時動態、連續短片及大頭貼圖片！
 // @description:zh-CN  一键下载对方 Instagram 帖子中的相片、视频甚至是他们的快拍、Reels及头像图片！
@@ -43,9 +43,11 @@
 (function ($) {
     'use strict';
 
+    /* initial */
+
     /******** USER SETTINGS ********/
     // !!! DO NOT CHANGE THIS AREA !!!
-    // PLEASE CHANGE SETTING WITH MENU
+    // ??? PLEASE CHANGE SETTING WITH MENU ???
     const USER_SETTING = {
         'CHECK_UPDATE': true,
         'AUTO_RENAME': true,
@@ -75,18 +77,16 @@
         CLOSE: '<svg width="26" height="26" xmlns="http://www.w3.org/2000/svg" id="bold" enable-background="new 0 0 24 24" viewBox="0 0 24 24"><path d="m14.828 12 5.303-5.303c.586-.586.586-1.536 0-2.121l-.707-.707c-.586-.586-1.536-.586-2.121 0l-5.303 5.303-5.303-5.304c-.586-.586-1.536-.586-2.121 0l-.708.707c-.586.586-.586 1.536 0 2.121l5.304 5.304-5.303 5.303c-.586.586-.586 1.536 0 2.121l.707.707c.586.586 1.536.586 2.121 0l5.303-5.303 5.303 5.303c.586.586 1.536.586 2.121 0l.707-.707c.586-.586.586-1.536 0-2.121z"></path></svg>'
     };
 
+    /*******************************/
     const checkInterval = 250;
     const style = GM_getResourceText("INTERNAL_CSS");
     const locale_manifest = JSON.parse(GM_getResourceText("LOCALE_MANIFEST"));
 
-    var changeable_constant = {
-        VIDEO_VOLUME: (GM_getValue('G_VIDEO_VOLUME')) ? GM_getValue('G_VIDEO_VOLUME') : 1,
-        TEMP_FETCH_RATE_LIMIT: false,
-        RENAME_FORMAT: (GM_getValue('G_RENAME_FORMAT')) ? GM_getValue('G_RENAME_FORMAT') : '%USERNAME%-%SOURCE_TYPE%-%SHORTCODE%-%YEAR%%MONTH%%DAY%_%HOUR%%MINUTE%%SECOND%_%ORIGINAL_NAME_FIRST%'
-    };
-
     var state = {
-        GM_menuId: [],
+        videoVolume: (GM_getValue('G_VIDEO_VOLUME')) ? GM_getValue('G_VIDEO_VOLUME') : 1,
+        tempFetchRateLimit: false,
+        fileRenameFormat: (GM_getValue('G_RENAME_FORMAT')) ? GM_getValue('G_RENAME_FORMAT') : '%USERNAME%-%SOURCE_TYPE%-%SHORTCODE%-%YEAR%%MONTH%%DAY%_%HOUR%%MINUTE%%SECOND%_%ORIGINAL_NAME_FIRST%',
+        registerMenuIds: [],
         locale: {},
         lang: GM_getValue('lang') || navigator.language || navigator.userLanguage,
         currentURL: location.href,
@@ -106,8 +106,9 @@
             onReadyMyDW();
         })
     };
+    /*******************************/
 
-
+    // initialization script
     initSettings();
     GM_addStyle(style);
     registerMenuCommand();
@@ -127,6 +128,7 @@
     });
 
     logger('Script Loaded', GM_info.script.name, 'version:', GM_info.script.version);
+    /*******************************/
 
     // Main Timer
     // eslint-disable-next-line no-unused-vars
@@ -234,7 +236,7 @@
                                 var $viewStoryButton = $('div[id^="mount"] section:last-child > div > div div[role="button"]').filter(function () {
                                     return $(this).children().length === 0 && this.textContent.trim() !== "";
                                 });
-                                $viewStoryButton?.click();
+                                $viewStoryButton?.trigger("click");
                             }
 
                             state.pageLoaded = true;
@@ -315,6 +317,7 @@
         }
     }, checkInterval);
 
+    /* Main functions */
 
     /**
      * onHighlightsStoryAll
@@ -407,7 +410,7 @@
                 timestamp = target.taken_at_timestamp;
             }
 
-            if (USER_SETTING.FORCE_RESOURCE_VIA_MEDIA && !changeable_constant.TEMP_FETCH_RATE_LIMIT) {
+            if (USER_SETTING.FORCE_RESOURCE_VIA_MEDIA && !state.tempFetchRateLimit) {
                 let result = await getMediaInfo(target.id);
 
                 if (result.status === 'ok') {
@@ -431,7 +434,7 @@
                 else {
                     if (USER_SETTING.USE_BLOB_FETCH_WHEN_MEDIA_RATE_LIMIT) {
                         delete state.GL_dataCache.highlights[highlightId];
-                        changeable_constant.TEMP_FETCH_RATE_LIMIT = true;
+                        state.tempFetchRateLimit = true;
 
                         onHighlightsStory(true, isPreview);
                     }
@@ -460,7 +463,7 @@
                     }
                 }
 
-                changeable_constant.TEMP_FETCH_RATE_LIMIT = false;
+                state.tempFetchRateLimit = false;
             }
 
             updateLoadingBar(false);
@@ -594,7 +597,7 @@
                 timestamp = target.taken_at_timestamp;
             }
 
-            if (USER_SETTING.FORCE_RESOURCE_VIA_MEDIA && !changeable_constant.TEMP_FETCH_RATE_LIMIT) {
+            if (USER_SETTING.FORCE_RESOURCE_VIA_MEDIA && !state.tempFetchRateLimit) {
                 let result = await getMediaInfo(target.id);
 
                 if (result.status === 'ok') {
@@ -603,7 +606,7 @@
                 else {
                     if (USER_SETTING.USE_BLOB_FETCH_WHEN_MEDIA_RATE_LIMIT) {
                         delete state.GL_dataCache.highlights[highlightId];
-                        changeable_constant.TEMP_FETCH_RATE_LIMIT = true;
+                        state.tempFetchRateLimit = true;
 
                         onHighlightsStoryThumbnail(true);
                     }
@@ -616,7 +619,7 @@
             }
             else {
                 saveFiles(target.display_resources.at(-1).src, username, "highlights", timestamp, 'jpg', highlightId);
-                changeable_constant.TEMP_FETCH_RATE_LIMIT = false;
+                state.tempFetchRateLimit = false;
             }
 
             updateLoadingBar(false);
@@ -731,7 +734,7 @@
                 $(this).on('play playing', function () {
                     if (!$(this).data('modify')) {
                         $(this).attr('data-modify', true);
-                        this.volume = changeable_constant.VIDEO_VOLUME;
+                        this.volume = state.videoVolume;
                         logger('(post) Added video event listener #modify');
                     }
                 });
@@ -746,10 +749,10 @@
                     logger('(post) Added video html5 contorller #modify');
 
                     if (USER_SETTING.MODIFY_VIDEO_VOLUME) {
-                        this.volume = changeable_constant.VIDEO_VOLUME;
+                        this.volume = state.videoVolume;
 
                         $(this).on('loadstart', function () {
-                            this.volume = changeable_constant.VIDEO_VOLUME;
+                            this.volume = state.videoVolume;
                         });
                     }
 
@@ -777,16 +780,16 @@
                         var is_elelment_muted = $element_mute_button.find('svg > path[d^="M16.636"]').length === 0;
 
                         if (this.muted != is_elelment_muted) {
-                            this.volume = changeable_constant.VIDEO_VOLUME;
-                            $element_mute_button?.click();
+                            this.volume = state.videoVolume;
+                            $element_mute_button?.trigger("click");
                         }
 
                         if ($(this).attr('data-completed')) {
-                            changeable_constant.VIDEO_VOLUME = this.volume;
+                            state.videoVolume = this.volume;
                             GM_setValue('G_VIDEO_VOLUME', this.volume);
                         }
 
-                        if (this.volume == changeable_constant.VIDEO_VOLUME) {
+                        if (this.volume == state.videoVolume) {
                             $(this).attr('data-completed', true);
                         }
                     });
@@ -971,7 +974,7 @@
                                     var $videoThumbnail = $('.IG_SN_DIG .IG_SN_DIG_BODY a[data-globalindex="' + (index + 1) + '"]')?.parent().find('.videoThumbnail')?.first();
 
                                     if ($videoThumbnail != null && $videoThumbnail.length > 0) {
-                                        $videoThumbnail.click();
+                                        $videoThumbnail.trigger("click");
                                     }
                                     else {
                                         alert('Can not find thumbnail url.');
@@ -1050,7 +1053,7 @@
                                 if ($('.IG_SN_DIG .IG_SN_DIG_MAIN .IG_SN_DIG_BODY a').length > 0) {
                                     clearInterval(checkBlob);
                                     $('.IG_SN_DIG .IG_SN_DIG_MAIN .IG_SN_DIG_BODY a').each(function () {
-                                        $(this).click();
+                                        $(this).trigger("click");
                                     });
 
                                     $('.IG_SN_DIG').remove();
@@ -1083,7 +1086,7 @@
 
                                         if (href) {
                                             updateLoadingBar(false);
-                                            $('.IG_SN_DIG .IG_SN_DIG_BODY a[data-globalindex="' + (index + 1) + '"]')?.click();
+                                            $('.IG_SN_DIG .IG_SN_DIG_BODY a[data-globalindex="' + (index + 1) + '"]')?.trigger("click");
                                         }
                                         else {
                                             alert('Can not find download url.');
@@ -1176,7 +1179,7 @@
                                     if ($('.IG_SN_DIG .IG_SN_DIG_MAIN .IG_SN_DIG_BODY a').length > 0) {
                                         clearInterval(checkBlob);
                                         $('.IG_SN_DIG .IG_SN_DIG_MAIN .IG_SN_DIG_BODY a').each(function () {
-                                            $(this).click();
+                                            $(this).trigger("click");
                                         });
 
                                         $('.IG_SN_DIG').remove();
@@ -1523,7 +1526,7 @@
                                                 let $element_play_button = $(this).next().find('div[role="presentation"] > div svg > path[d^="M5.888"]').parents('button[role="button"], div[role="button"]');
                                                 if ($element_play_button.length > 0) {
                                                     $(this).attr('data-loop', true);
-                                                    $element_play_button.click();
+                                                    $element_play_button.trigger("click");
                                                     logger('Adding video event listener #loop, then paused click()');
                                                 }
                                                 else {
@@ -1558,10 +1561,10 @@
                                             logger('(reel) Added video html5 contorller #modify');
 
                                             if (USER_SETTING.MODIFY_VIDEO_VOLUME) {
-                                                this.volume = changeable_constant.VIDEO_VOLUME;
+                                                this.volume = state.videoVolume;
 
                                                 $(this).on('loadstart', function () {
-                                                    this.volume = changeable_constant.VIDEO_VOLUME;
+                                                    this.volume = state.videoVolume;
                                                 });
                                             }
 
@@ -1592,16 +1595,16 @@
                                                 var is_elelment_muted = $element_mute_button.find('svg > path[d^="M16.636"]').length === 0;
 
                                                 if (this.muted != is_elelment_muted) {
-                                                    this.volume = changeable_constant.VIDEO_VOLUME;
-                                                    $element_mute_button?.click();
+                                                    this.volume = state.videoVolume;
+                                                    $element_mute_button?.trigger("click");
                                                 }
 
                                                 if ($(this).attr('data-completed')) {
-                                                    changeable_constant.VIDEO_VOLUME = this.volume;
+                                                    state.videoVolume = this.volume;
                                                     GM_setValue('G_VIDEO_VOLUME', this.volume);
                                                 }
 
-                                                if (this.volume == changeable_constant.VIDEO_VOLUME) {
+                                                if (this.volume == state.videoVolume) {
                                                     $(this).attr('data-completed', true);
                                                 }
                                             });
@@ -1688,7 +1691,7 @@
             let timestamp = Math.floor(date / 1000);
 
             updateLoadingBar(true);
-            if (USER_SETTING.FORCE_RESOURCE_VIA_MEDIA && !changeable_constant.TEMP_FETCH_RATE_LIMIT) {
+            if (USER_SETTING.FORCE_RESOURCE_VIA_MEDIA && !state.tempFetchRateLimit) {
                 let mediaId = null;
 
                 let userInfo = await getUserId(username);
@@ -1780,7 +1783,7 @@
                 }
                 else {
                     if (USER_SETTING.USE_BLOB_FETCH_WHEN_MEDIA_RATE_LIMIT) {
-                        changeable_constant.TEMP_FETCH_RATE_LIMIT = true;
+                        state.tempFetchRateLimit = true;
                         onStory(isDownload, isForce, isPreview);
                     }
                     else {
@@ -1919,7 +1922,7 @@
                 }
             }
 
-            changeable_constant.TEMP_FETCH_RATE_LIMIT = false;
+            state.tempFetchRateLimit = false;
             updateLoadingBar(false);
         }
         else {
@@ -2046,7 +2049,7 @@
 
             updateLoadingBar(true);
 
-            if (USER_SETTING.FORCE_RESOURCE_VIA_MEDIA && !changeable_constant.TEMP_FETCH_RATE_LIMIT) {
+            if (USER_SETTING.FORCE_RESOURCE_VIA_MEDIA && !state.tempFetchRateLimit) {
                 let userInfo = await getUserId(username);
                 let userId = userInfo.user.pk;
                 let stories = await getStories(userId);
@@ -2102,7 +2105,7 @@
                 }
                 else {
                     if (USER_SETTING.USE_BLOB_FETCH_WHEN_MEDIA_RATE_LIMIT) {
-                        changeable_constant.TEMP_FETCH_RATE_LIMIT = true;
+                        state.tempFetchRateLimit = true;
                         onStoryThumbnail(true, isForce);
                     }
                     else {
@@ -2192,7 +2195,7 @@
             }
 
             saveFiles(videoThumbnailURL, username, "thumbnail", timestamp, type, mediaId);
-            changeable_constant.TEMP_FETCH_RATE_LIMIT = false;
+            state.tempFetchRateLimit = false;
             updateLoadingBar(false);
         }
         else {
@@ -2242,6 +2245,7 @@
         }
     }
 
+    /* untils */
 
     /**
      * getStoryId
@@ -2846,7 +2850,7 @@
         const minute = date.getMinutes().toString().padStart(2, '0');
         const second = date.getSeconds().toString().padStart(2, '0');
 
-        var filename = changeable_constant.RENAME_FORMAT.toUpperCase();
+        var filename = state.fileRenameFormat.toUpperCase();
         var format_shortcode = shortcode ?? "";
         var replacements = {
             '%USERNAME%': username,
@@ -2974,42 +2978,42 @@
      * @return {void}
      */
     function registerMenuCommand() {
-        for (let id of state.GM_menuId) {
+        for (let id of state.registerMenuIds) {
             logger('GM_unregisterMenuCommand', id);
             GM_unregisterMenuCommand(id);
         }
 
-        state.GM_menuId.push(GM_registerMenuCommand(_i18n('SETTING'), () => {
+        state.registerMenuIds.push(GM_registerMenuCommand(_i18n('SETTING'), () => {
             showSetting();
         }, {
             accessKey: "w"
         }));
 
-        state.GM_menuId.push(GM_registerMenuCommand(_i18n('DONATE'), () => {
+        state.registerMenuIds.push(GM_registerMenuCommand(_i18n('DONATE'), () => {
             GM_openInTab("https://ko-fi.com/snkoarashi", { active: true });
         }, {
             accessKey: "d"
         }));
 
-        state.GM_menuId.push(GM_registerMenuCommand(_i18n('DEBUG'), () => {
+        state.registerMenuIds.push(GM_registerMenuCommand(_i18n('DEBUG'), () => {
             showDebugDOM();
         }, {
             accessKey: "z"
         }));
 
-        state.GM_menuId.push(GM_registerMenuCommand(_i18n('FEEDBACK'), () => {
+        state.registerMenuIds.push(GM_registerMenuCommand(_i18n('FEEDBACK'), () => {
             showFeedbackDOM();
         }, {
             accessKey: "f"
         }));
 
-        state.GM_menuId.push(GM_registerMenuCommand(_i18n('CHECK_UPDATE_MENU'), () => {
+        state.registerMenuIds.push(GM_registerMenuCommand(_i18n('CHECK_UPDATE_MENU'), () => {
             callNotification();
         }, {
             accessKey: "c"
         }));
 
-        state.GM_menuId.push(GM_registerMenuCommand(_i18n('RELOAD_SCRIPT'), () => {
+        state.registerMenuIds.push(GM_registerMenuCommand(_i18n('RELOAD_SCRIPT'), () => {
             reloadScript();
         }, {
             accessKey: "r"
@@ -3108,8 +3112,8 @@
                     e.preventDefault();
                     if ($(this).find('#tempWrapper').length === 0) {
                         $(this).append('<div id="tempWrapper"></div>');
-                        $(this).children('#tempWrapper').append('<input value="' + changeable_constant.VIDEO_VOLUME + '" type="range" min="0" max="1" step="0.05" />');
-                        $(this).children('#tempWrapper').append('<input value="' + changeable_constant.VIDEO_VOLUME + '" step="0.05" type="number" />');
+                        $(this).children('#tempWrapper').append('<input value="' + state.videoVolume + '" type="range" min="0" max="1" step="0.05" />');
+                        $(this).children('#tempWrapper').append('<input value="' + state.videoVolume + '" step="0.05" type="number" />');
                         $(this).children('#tempWrapper').append(`<div class="IG_SN_DIG_BTN">${SVG.CLOSE}</div>`);
                     }
                 });
@@ -3121,7 +3125,7 @@
                     if ($(this).find('#tempWrapper').length === 0) {
                         $(this).append('<div id="tempWrapper"></div>');
 
-                        $(this).children('#tempWrapper').append('<input id="date_format" value="' + changeable_constant.RENAME_FORMAT + '" />');
+                        $(this).children('#tempWrapper').append('<input id="date_format" value="' + state.fileRenameFormat + '" />');
                         $(this).children('#tempWrapper').append(`<div class="IG_SN_DIG_BTN">${SVG.CLOSE}</div>`);
                     }
                 });
@@ -3247,7 +3251,7 @@
                 USER_SETTING[name] = GM_getValue(name);
 
                 if (name === "MODIFY_VIDEO_VOLUME" && GM_getValue(name) !== true) {
-                    changeable_constant.VIDEO_VOLUME = 1;
+                    state.videoVolume = 1;
                 }
             }
         }
@@ -3267,31 +3271,31 @@
     function toggleVolumeSilder($videos, $buttonParent, loggerType, customClass = "") {
         if ($buttonParent.find('div.volume_slider').length === 0) {
             $buttonParent.append(`<div class="volume_slider ${customClass}" />`);
-            $buttonParent.find('div.volume_slider').append(`<div><input type="range" max="1" min="0" step="0.05" value="${changeable_constant.VIDEO_VOLUME}" /></div>`);
-            $buttonParent.find('div.volume_slider input').attr('style', `--ig-track-progress: ${(changeable_constant.VIDEO_VOLUME * 100) + '%'}`);
+            $buttonParent.find('div.volume_slider').append(`<div><input type="range" max="1" min="0" step="0.05" value="${state.videoVolume}" /></div>`);
+            $buttonParent.find('div.volume_slider input').attr('style', `--ig-track-progress: ${(state.videoVolume * 100) + '%'}`);
             $buttonParent.find('div.volume_slider input').on('input', function () {
                 var percent = ($(this).val() * 100) + '%';
 
-                changeable_constant.VIDEO_VOLUME = $(this).val();
+                state.videoVolume = $(this).val();
                 GM_setValue('G_VIDEO_VOLUME', $(this).val());
 
                 $(this).attr('style', `--ig-track-progress: ${percent}`);
 
                 $videos.each(function () {
                     logger(`(${loggerType})`, 'video volume changed #slider');
-                    this.volume = changeable_constant.VIDEO_VOLUME;
+                    this.volume = state.videoVolume;
                 });
             });
 
             $buttonParent.find('div.volume_slider input').on('mouseenter', function () {
-                var percent = (changeable_constant.VIDEO_VOLUME * 100) + '%';
+                var percent = (state.videoVolume * 100) + '%';
                 $(this).attr('style', `--ig-track-progress: ${percent}`);
-                $(this).val(changeable_constant.VIDEO_VOLUME);
+                $(this).val(state.videoVolume);
 
 
                 $videos.each(function () {
                     logger(`(${loggerType})`, 'video volume changed #slider');
-                    this.volume = changeable_constant.VIDEO_VOLUME;
+                    this.volume = state.videoVolume;
                 });
             });
 
@@ -3453,6 +3457,7 @@
         });
     }
 
+    /* register all events */
 
     // Running if document is ready
     $(function () {
@@ -3484,7 +3489,7 @@
                         return value;
                     }
                 }, "\t");
-                logger += `${log.time}: ${jsonData}\n`
+                logger += `${new Date(log.time).toISOString()}: ${jsonData}\n`
             });
             $('.IG_SN_DIG .IG_SN_DIG_BODY textarea').text("Logger:\n" + logger + "\n-----\n\nLocation: " + location.pathname + "\nDOM Tree with div#mount:\n" + text.innerHTML);
         }
@@ -3553,10 +3558,10 @@
             // Hot key [Alt+S] to download story/highlights resource
             if (e.keyCode == '83' && e.altKey) {
                 if (location.href.match(/^(https:\/\/www\.instagram\.com\/stories\/)/ig) && $('.IG_DWSTORY').length > 0) {
-                    $('.IG_DWSTORY')?.click();
+                    $('.IG_DWSTORY')?.trigger("click");
                 }
                 if (location.href.match(/^(https:\/\/www\.instagram\.com\/stories\/highlights\/)/ig) && $('.IG_DWHISTORY').length > 0) {
-                    $('.IG_DWHISTORY')?.click();
+                    $('.IG_DWHISTORY')?.trigger("click");
                 }
                 e.preventDefault();
             }
@@ -3591,7 +3596,7 @@
             }
 
             if (value >= 0 && value <= 1) {
-                changeable_constant.VIDEO_VOLUME = value;
+                state.videoVolume = value;
                 GM_setValue('G_VIDEO_VOLUME', value);
             }
         });
@@ -3619,7 +3624,7 @@
 
         $('body').on('input', '.IG_SN_DIG #tempWrapper input#date_format', function () {
             GM_setValue('G_RENAME_FORMAT', $(this).val());
-            changeable_constant.RENAME_FORMAT = $(this).val();
+            state.fileRenameFormat = $(this).val();
         });
 
         $('body').on('click', 'a[data-needed="direct"]', function (e) {
@@ -3754,7 +3759,7 @@
             let index = 0;
             $('.IG_SN_DIG_BODY a[data-needed="direct"]').each(function () {
                 if ($(this).prev().children('input').prop('checked')) {
-                    $(this).click();
+                    $(this).trigger("click");
                     index++;
                 }
             });
@@ -3785,7 +3790,7 @@
 
         $('body').on('click', '.IG_SN_DIG_TITLE #batch_download_direct', function () {
             $('.IG_SN_DIG_BODY a[data-needed="direct"]').each(function () {
-                $(this).click();
+                $(this).trigger("click");
             });
         });
 
@@ -3801,7 +3806,7 @@
                                     $(this).on('play playing', function () {
                                         if (!$(this).data('modify')) {
                                             $(this).attr('data-modify', true);
-                                            this.volume = changeable_constant.VIDEO_VOLUME;
+                                            this.volume = state.videoVolume;
                                             logger('(audio_observer) Added video event listener #modify');
                                         }
                                     });
@@ -3844,10 +3849,10 @@
                                             logger(`(${storyType})`, 'Added video html5 contorller #modify');
 
                                             if (USER_SETTING.MODIFY_VIDEO_VOLUME) {
-                                                this.volume = changeable_constant.VIDEO_VOLUME;
+                                                this.volume = state.videoVolume;
 
                                                 $video.on('loadstart', function () {
-                                                    this.volume = changeable_constant.VIDEO_VOLUME;
+                                                    this.volume = state.videoVolume;
                                                 });
                                             }
 
@@ -3902,16 +3907,16 @@
                                                 var is_elelment_muted = $element_mute_button.find('svg > path[d^="M16.636"]').length === 0;
 
                                                 if (this.muted != is_elelment_muted) {
-                                                    this.volume = changeable_constant.VIDEO_VOLUME;
-                                                    $element_mute_button?.click();
+                                                    this.volume = state.videoVolume;
+                                                    $element_mute_button?.trigger("click");
                                                 }
 
                                                 if ($(this).attr('data-completed')) {
-                                                    changeable_constant.VIDEO_VOLUME = this.volume;
+                                                    state.videoVolume = this.volume;
                                                     GM_setValue('G_VIDEO_VOLUME', this.volume);
                                                 }
 
-                                                if (this.volume == changeable_constant.VIDEO_VOLUME) {
+                                                if (this.volume == state.videoVolume) {
                                                     $(this).attr('data-completed', true);
                                                 }
                                             });
