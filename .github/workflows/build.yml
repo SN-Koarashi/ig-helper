@@ -20,18 +20,6 @@ jobs:
         with:
           node-version: "20"
 
-      - name: Fetch remote automated-build-branch
-        run: |
-          git fetch origin automated-build-branch
-          git checkout automated-build-branch
-
-      - name: Fetch latest master
-        run: |
-          git fetch origin master
-          git checkout master
-          git checkout automated-build-branch
-          git merge master
-
       - name: Install dependencies
         run: npm install
 
