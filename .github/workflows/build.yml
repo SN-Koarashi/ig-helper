@@ -37,9 +37,16 @@ jobs:
           git fetch origin
           if git show-ref --quiet refs/heads/automated-build-branch; then
             git checkout automated-build-branch
-            git pull --rebase origin automated-build-branch
           else
             git checkout -b automated-build-branch
+          fi
+
+      - name: Check if remote automated-build-branch exists and pull
+        run: |
+          if git ls-remote --heads origin automated-build-branch | grep -q automated-build-branch; then
+            git pull --rebase origin automated-build-branch
+          else
+            echo "Remote branch automated-build-branch does not exist."
           fi
 
       - name: Run build script
