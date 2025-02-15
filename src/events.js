@@ -1,4 +1,4 @@
-import { state, USER_SETTING, changeable_constant } from "./settings";
+import { state, USER_SETTING } from "./settings";
 import { showSetting, showDebugDOM, reloadScript, triggerLinkElement, openNewTab, saveFiles, logger, toggleVolumeSilder } from "./utils/util";
 import { onStory, onStoryAll, onStoryThumbnail } from "./functions/story";
 import { onProfileAvatar } from "./functions/profile";
@@ -36,7 +36,7 @@ $(function () {
                     return value;
                 }
             }, "\t");
-            logger += `${log.time}: ${jsonData}\n`
+            logger += `${new Date(log.time).toISOString()}: ${jsonData}\n`
         });
         $('.IG_SN_DIG .IG_SN_DIG_BODY textarea').text("Logger:\n" + logger + "\n-----\n\nLocation: " + location.pathname + "\nDOM Tree with div#mount:\n" + text.innerHTML);
     }
@@ -143,7 +143,7 @@ $(function () {
         }
 
         if (value >= 0 && value <= 1) {
-            changeable_constant.VIDEO_VOLUME = value;
+            state.videoVolume = value;
             GM_setValue('G_VIDEO_VOLUME', value);
         }
     });
@@ -171,7 +171,7 @@ $(function () {
 
     $('body').on('input', '.IG_SN_DIG #tempWrapper input#date_format', function () {
         GM_setValue('G_RENAME_FORMAT', $(this).val());
-        changeable_constant.RENAME_FORMAT = $(this).val();
+        state.fileRenameFormat = $(this).val();
     });
 
     $('body').on('click', 'a[data-needed="direct"]', function (e) {
@@ -353,7 +353,7 @@ $(function () {
                                 $(this).on('play playing', function () {
                                     if (!$(this).data('modify')) {
                                         $(this).attr('data-modify', true);
-                                        this.volume = changeable_constant.VIDEO_VOLUME;
+                                        this.volume = state.videoVolume;
                                         logger('(audio_observer) Added video event listener #modify');
                                     }
                                 });
@@ -396,10 +396,10 @@ $(function () {
                                         logger(`(${storyType})`, 'Added video html5 contorller #modify');
 
                                         if (USER_SETTING.MODIFY_VIDEO_VOLUME) {
-                                            this.volume = changeable_constant.VIDEO_VOLUME;
+                                            this.volume = state.videoVolume;
 
                                             $video.on('loadstart', function () {
-                                                this.volume = changeable_constant.VIDEO_VOLUME;
+                                                this.volume = state.videoVolume;
                                             });
                                         }
 
@@ -454,16 +454,16 @@ $(function () {
                                             var is_elelment_muted = $element_mute_button.find('svg > path[d^="M16.636"]').length === 0;
 
                                             if (this.muted != is_elelment_muted) {
-                                                this.volume = changeable_constant.VIDEO_VOLUME;
+                                                this.volume = state.videoVolume;
                                                 $element_mute_button?.click();
                                             }
 
                                             if ($(this).attr('data-completed')) {
-                                                changeable_constant.VIDEO_VOLUME = this.volume;
+                                                state.videoVolume = this.volume;
                                                 GM_setValue('G_VIDEO_VOLUME', this.volume);
                                             }
 
-                                            if (this.volume == changeable_constant.VIDEO_VOLUME) {
+                                            if (this.volume == state.videoVolume) {
                                                 $(this).attr('data-completed', true);
                                             }
                                         });

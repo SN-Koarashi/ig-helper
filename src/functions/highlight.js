@@ -1,4 +1,4 @@
-import { USER_SETTING, SVG, changeable_constant, state } from "../settings";
+import { USER_SETTING, SVG, state } from "../settings";
 import { updateLoadingBar, openNewTab, logger, setDownloadProgress, saveFiles, getStoryProgress } from "../utils/util";
 import { _i18n } from "../utils/i18n";
 import { getHighlightStories, getMediaInfo } from "../utils/api";
@@ -94,7 +94,7 @@ export async function onHighlightsStory(isDownload, isPreview) {
             timestamp = target.taken_at_timestamp;
         }
 
-        if (USER_SETTING.FORCE_RESOURCE_VIA_MEDIA && !changeable_constant.TEMP_FETCH_RATE_LIMIT) {
+        if (USER_SETTING.FORCE_RESOURCE_VIA_MEDIA && !state.tempFetchRateLimit) {
             let result = await getMediaInfo(target.id);
 
             if (result.status === 'ok') {
@@ -118,7 +118,7 @@ export async function onHighlightsStory(isDownload, isPreview) {
             else {
                 if (USER_SETTING.USE_BLOB_FETCH_WHEN_MEDIA_RATE_LIMIT) {
                     delete state.GL_dataCache.highlights[highlightId];
-                    changeable_constant.TEMP_FETCH_RATE_LIMIT = true;
+                    state.tempFetchRateLimit = true;
 
                     onHighlightsStory(true, isPreview);
                 }
@@ -147,7 +147,7 @@ export async function onHighlightsStory(isDownload, isPreview) {
                 }
             }
 
-            changeable_constant.TEMP_FETCH_RATE_LIMIT = false;
+            state.tempFetchRateLimit = false;
         }
 
         updateLoadingBar(false);
@@ -281,7 +281,7 @@ export async function onHighlightsStoryThumbnail(isDownload) {
             timestamp = target.taken_at_timestamp;
         }
 
-        if (USER_SETTING.FORCE_RESOURCE_VIA_MEDIA && !changeable_constant.TEMP_FETCH_RATE_LIMIT) {
+        if (USER_SETTING.FORCE_RESOURCE_VIA_MEDIA && !state.tempFetchRateLimit) {
             let result = await getMediaInfo(target.id);
 
             if (result.status === 'ok') {
@@ -290,7 +290,7 @@ export async function onHighlightsStoryThumbnail(isDownload) {
             else {
                 if (USER_SETTING.USE_BLOB_FETCH_WHEN_MEDIA_RATE_LIMIT) {
                     delete state.GL_dataCache.highlights[highlightId];
-                    changeable_constant.TEMP_FETCH_RATE_LIMIT = true;
+                    state.tempFetchRateLimit = true;
 
                     onHighlightsStoryThumbnail(true);
                 }
@@ -303,7 +303,7 @@ export async function onHighlightsStoryThumbnail(isDownload) {
         }
         else {
             saveFiles(target.display_resources.at(-1).src, username, "highlights", timestamp, 'jpg', highlightId);
-            changeable_constant.TEMP_FETCH_RATE_LIMIT = false;
+            state.tempFetchRateLimit = false;
         }
 
         updateLoadingBar(false);

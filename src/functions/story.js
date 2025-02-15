@@ -1,4 +1,4 @@
-import { USER_SETTING, SVG, changeable_constant, state } from "../settings";
+import { USER_SETTING, SVG, state } from "../settings";
 import { updateLoadingBar, setDownloadProgress, saveFiles, getStoryProgress, openNewTab, logger } from "../utils/util";
 import { getUserId, getStories, getMediaInfo, getStoryId } from "../utils/api";
 import { _i18n } from "../utils/i18n";
@@ -66,7 +66,7 @@ export async function onStory(isDownload, isForce, isPreview) {
         let timestamp = Math.floor(date / 1000);
 
         updateLoadingBar(true);
-        if (USER_SETTING.FORCE_RESOURCE_VIA_MEDIA && !changeable_constant.TEMP_FETCH_RATE_LIMIT) {
+        if (USER_SETTING.FORCE_RESOURCE_VIA_MEDIA && !state.tempFetchRateLimit) {
             let mediaId = null;
 
             let userInfo = await getUserId(username);
@@ -158,7 +158,7 @@ export async function onStory(isDownload, isForce, isPreview) {
             }
             else {
                 if (USER_SETTING.USE_BLOB_FETCH_WHEN_MEDIA_RATE_LIMIT) {
-                    changeable_constant.TEMP_FETCH_RATE_LIMIT = true;
+                    state.tempFetchRateLimit = true;
                     onStory(isDownload, isForce, isPreview);
                 }
                 else {
@@ -297,7 +297,7 @@ export async function onStory(isDownload, isForce, isPreview) {
             }
         }
 
-        changeable_constant.TEMP_FETCH_RATE_LIMIT = false;
+        state.tempFetchRateLimit = false;
         updateLoadingBar(false);
     }
     else {
@@ -424,7 +424,7 @@ export async function onStoryThumbnail(isDownload, isForce) {
 
         updateLoadingBar(true);
 
-        if (USER_SETTING.FORCE_RESOURCE_VIA_MEDIA && !changeable_constant.TEMP_FETCH_RATE_LIMIT) {
+        if (USER_SETTING.FORCE_RESOURCE_VIA_MEDIA && !state.tempFetchRateLimit) {
             let userInfo = await getUserId(username);
             let userId = userInfo.user.pk;
             let stories = await getStories(userId);
@@ -480,7 +480,7 @@ export async function onStoryThumbnail(isDownload, isForce) {
             }
             else {
                 if (USER_SETTING.USE_BLOB_FETCH_WHEN_MEDIA_RATE_LIMIT) {
-                    changeable_constant.TEMP_FETCH_RATE_LIMIT = true;
+                    state.tempFetchRateLimit = true;
                     onStoryThumbnail(true, isForce);
                 }
                 else {
@@ -570,7 +570,7 @@ export async function onStoryThumbnail(isDownload, isForce) {
         }
 
         saveFiles(videoThumbnailURL, username, "thumbnail", timestamp, type, mediaId);
-        changeable_constant.TEMP_FETCH_RATE_LIMIT = false;
+        state.tempFetchRateLimit = false;
         updateLoadingBar(false);
     }
     else {

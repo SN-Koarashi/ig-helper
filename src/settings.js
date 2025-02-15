@@ -36,14 +36,11 @@ export const checkInterval = 250;
 export const style = GM_getResourceText("INTERNAL_CSS");
 export const locale_manifest = JSON.parse(GM_getResourceText("LOCALE_MANIFEST"));
 
-export var changeable_constant = {
-    VIDEO_VOLUME: (GM_getValue('G_VIDEO_VOLUME')) ? GM_getValue('G_VIDEO_VOLUME') : 1,
-    TEMP_FETCH_RATE_LIMIT: false,
-    RENAME_FORMAT: (GM_getValue('G_RENAME_FORMAT')) ? GM_getValue('G_RENAME_FORMAT') : '%USERNAME%-%SOURCE_TYPE%-%SHORTCODE%-%YEAR%%MONTH%%DAY%_%HOUR%%MINUTE%%SECOND%_%ORIGINAL_NAME_FIRST%'
-};
-
 export var state = {
-    GM_menuId: [],
+    videoVolume: (GM_getValue('G_VIDEO_VOLUME')) ? GM_getValue('G_VIDEO_VOLUME') : 1,
+    tempFetchRateLimit: false,
+    fileRenameFormat: (GM_getValue('G_RENAME_FORMAT')) ? GM_getValue('G_RENAME_FORMAT') : '%USERNAME%-%SOURCE_TYPE%-%SHORTCODE%-%YEAR%%MONTH%%DAY%_%HOUR%%MINUTE%%SECOND%_%ORIGINAL_NAME_FIRST%',
+    registerMenuIds: [],
     locale: {},
     lang: GM_getValue('lang') || navigator.language || navigator.userLanguage,
     currentURL: location.href,
