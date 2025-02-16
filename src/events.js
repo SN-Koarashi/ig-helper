@@ -78,37 +78,37 @@ $(function () {
         }
     });
 
-    $(window).keydown(function (e) {
+    $(window).on('keydown', function (e) {
         // Hot key [Alt+Q] to close the download dialog
-        if (e.keyCode == '81' && e.altKey) {
+        if (e.which == '81' && e.altKey) {
             $('.IG_SN_DIG').remove();
             e.preventDefault();
         }
         // Hot key [Alt+W] to open the settings dialog
-        if (e.keyCode == '87' && e.altKey) {
+        if (e.which == '87' && e.altKey) {
             showSetting();
             e.preventDefault();
         }
 
         // Hot key [Alt+Z] to open the settings dialog
-        if (e.keyCode == '90' && e.altKey) {
+        if (e.which == '90' && e.altKey) {
             showDebugDOM();
             e.preventDefault();
         }
 
         // Hot key [Alt+R] to open the settings dialog
-        if (e.keyCode == '82' && e.altKey) {
+        if (e.which == '82' && e.altKey) {
             reloadScript();
             e.preventDefault();
         }
 
         // Hot key [Alt+S] to download story/highlights resource
-        if (e.keyCode == '83' && e.altKey) {
+        if (e.which == '83' && e.altKey) {
             if (location.href.match(/^(https:\/\/www\.instagram\.com\/stories\/)/ig) && $('.IG_DWSTORY').length > 0) {
-                $('.IG_DWSTORY')?.click();
+                $('.IG_DWSTORY')?.trigger("click");
             }
             if (location.href.match(/^(https:\/\/www\.instagram\.com\/stories\/highlights\/)/ig) && $('.IG_DWHISTORY').length > 0) {
-                $('.IG_DWHISTORY')?.click();
+                $('.IG_DWHISTORY')?.trigger("click");
             }
             e.preventDefault();
         }
@@ -306,7 +306,7 @@ $(function () {
         let index = 0;
         $('.IG_SN_DIG_BODY a[data-needed="direct"]').each(function () {
             if ($(this).prev().children('input').prop('checked')) {
-                $(this).click();
+                $(this).trigger("click");
                 index++;
             }
         });
@@ -337,7 +337,7 @@ $(function () {
 
     $('body').on('click', '.IG_SN_DIG_TITLE #batch_download_direct', function () {
         $('.IG_SN_DIG_BODY a[data-needed="direct"]').each(function () {
-            $(this).click();
+            $(this).trigger("click");
         });
     });
 
@@ -455,7 +455,7 @@ $(function () {
 
                                             if (this.muted != is_elelment_muted) {
                                                 this.volume = state.videoVolume;
-                                                $element_mute_button?.click();
+                                                $element_mute_button?.trigger("click");
                                             }
 
                                             if ($(this).attr('data-completed')) {

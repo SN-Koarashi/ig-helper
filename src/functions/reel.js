@@ -115,7 +115,7 @@ export async function onReels(isDownload, isVideo, isPreview) {
                                             let $element_play_button = $(this).next().find('div[role="presentation"] > div svg > path[d^="M5.888"]').parents('button[role="button"], div[role="button"]');
                                             if ($element_play_button.length > 0) {
                                                 $(this).attr('data-loop', true);
-                                                $element_play_button.click();
+                                                $element_play_button.trigger("click");
                                                 logger('Adding video event listener #loop, then paused click()');
                                             }
                                             else {
@@ -185,7 +185,7 @@ export async function onReels(isDownload, isVideo, isPreview) {
 
                                             if (this.muted != is_elelment_muted) {
                                                 this.volume = state.videoVolume;
-                                                $element_mute_button?.click();
+                                                $element_mute_button?.trigger("click");
                                             }
 
                                             if ($(this).attr('data-completed')) {

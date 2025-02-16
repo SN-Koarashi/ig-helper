@@ -2,7 +2,8 @@ const fs = require("fs");
 const path = require("path");
 const readline = require("readline");
 
-const inputFilePath = "./entry.js";
+const inputRootPath = path.join(__dirname, 'src');
+const inputFilePath = "./src/entry.js";
 const outputFilePath = "./main.js";
 
 const inputStream = fs.createReadStream(inputFilePath);
@@ -10,7 +11,7 @@ const outputStream = fs.createWriteStream(outputFilePath);
 
 const rl = readline.createInterface({
     input: inputStream,
-    output: null, // 設為null，因為我們不需要輸出到控制台
+    output: null,
     terminal: false,
 });
 
@@ -44,13 +45,12 @@ const processImportedFile = (full_path) => {
     });
 };
 
-// 逐行讀取並處理檔案
 const processLines = async () => {
     for await (const line of rl) {
         if (line.trim().startsWith("FS_IMPORT")) {
             const filter_path = line.trim().match(/^FS_IMPORT\(['"]?(.*?)['"]?\);?$/i);
             if (filter_path !== null && filter_path.length > 0) {
-                const full_path = path.join(__dirname, filter_path[1]);
+                const full_path = path.join(inputRootPath, filter_path[1]);
 
                 await processImportedFile(full_path);
             }
@@ -61,9 +61,8 @@ const processLines = async () => {
     }
 };
 
-// 開始逐行處理檔案
 processLines().then(() => {
-    outputStream.end(); // 完成所有處理後關閉輸出流
+    outputStream.end();
     console.log("File concat done.");
 }).catch(err => {
     console.error("Error processing lines:", err);

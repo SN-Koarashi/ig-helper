@@ -5,7 +5,7 @@
 // @name:ja            IG助手
 // @name:ko            IG조수
 // @namespace          https://github.snkms.com/
-// @version            3.0.3
+// @version            3.0.5
 // @description        Downloading is possible for both photos and videos from posts, as well as for stories, reels or profile picture.
 // @description:zh-TW  一鍵下載對方 Instagram 貼文中的相片、影片甚至是他們的限時動態、連續短片及大頭貼圖片！
 // @description:zh-CN  一键下载对方 Instagram 帖子中的相片、视频甚至是他们的快拍、Reels及头像图片！
@@ -43,9 +43,11 @@
 (function ($) {
     'use strict';
 
+    /* initial */
+
     /******** USER SETTINGS ********/
     // !!! DO NOT CHANGE THIS AREA !!!
-    // PLEASE CHANGE SETTING WITH MENU
+    // ??? PLEASE CHANGE SETTING WITH MENU ???
     const USER_SETTING = {
         'CHECK_UPDATE': true,
         'AUTO_RENAME': true,
@@ -75,6 +77,7 @@
         CLOSE: '<svg width="26" height="26" xmlns="http://www.w3.org/2000/svg" id="bold" enable-background="new 0 0 24 24" viewBox="0 0 24 24"><path d="m14.828 12 5.303-5.303c.586-.586.586-1.536 0-2.121l-.707-.707c-.586-.586-1.536-.586-2.121 0l-5.303 5.303-5.303-5.304c-.586-.586-1.536-.586-2.121 0l-.708.707c-.586.586-.586 1.536 0 2.121l5.304 5.304-5.303 5.303c-.586.586-.586 1.536 0 2.121l.707.707c.586.586 1.536.586 2.121 0l5.303-5.303 5.303 5.303c.586.586 1.536.586 2.121 0l.707-.707c.586-.586.586-1.536 0-2.121z"></path></svg>'
     };
 
+    /*******************************/
     const checkInterval = 250;
     const style = GM_getResourceText("INTERNAL_CSS");
     const locale_manifest = JSON.parse(GM_getResourceText("LOCALE_MANIFEST"));
@@ -103,8 +106,9 @@
             onReadyMyDW();
         })
     };
+    /*******************************/
 
-
+    // initialization script
     initSettings();
     GM_addStyle(style);
     registerMenuCommand();
@@ -124,6 +128,7 @@
     });
 
     logger('Script Loaded', GM_info.script.name, 'version:', GM_info.script.version);
+    /*******************************/
 
     // Main Timer
     // eslint-disable-next-line no-unused-vars
@@ -231,7 +236,7 @@
                                 var $viewStoryButton = $('div[id^="mount"] section:last-child > div > div div[role="button"]').filter(function () {
                                     return $(this).children().length === 0 && this.textContent.trim() !== "";
                                 });
-                                $viewStoryButton?.click();
+                                $viewStoryButton?.trigger("click");
                             }
 
                             state.pageLoaded = true;
@@ -312,6 +317,7 @@
         }
     }, checkInterval);
 
+    /* Main functions */
 
     /**
      * onHighlightsStoryAll
@@ -775,7 +781,7 @@
 
                         if (this.muted != is_elelment_muted) {
                             this.volume = state.videoVolume;
-                            $element_mute_button?.click();
+                            $element_mute_button?.trigger("click");
                         }
 
                         if ($(this).attr('data-completed')) {
@@ -968,7 +974,7 @@
                                     var $videoThumbnail = $('.IG_SN_DIG .IG_SN_DIG_BODY a[data-globalindex="' + (index + 1) + '"]')?.parent().find('.videoThumbnail')?.first();
 
                                     if ($videoThumbnail != null && $videoThumbnail.length > 0) {
-                                        $videoThumbnail.click();
+                                        $videoThumbnail.trigger("click");
                                     }
                                     else {
                                         alert('Can not find thumbnail url.');
@@ -1047,7 +1053,7 @@
                                 if ($('.IG_SN_DIG .IG_SN_DIG_MAIN .IG_SN_DIG_BODY a').length > 0) {
                                     clearInterval(checkBlob);
                                     $('.IG_SN_DIG .IG_SN_DIG_MAIN .IG_SN_DIG_BODY a').each(function () {
-                                        $(this).click();
+                                        $(this).trigger("click");
                                     });
 
                                     $('.IG_SN_DIG').remove();
@@ -1080,7 +1086,7 @@
 
                                         if (href) {
                                             updateLoadingBar(false);
-                                            $('.IG_SN_DIG .IG_SN_DIG_BODY a[data-globalindex="' + (index + 1) + '"]')?.click();
+                                            $('.IG_SN_DIG .IG_SN_DIG_BODY a[data-globalindex="' + (index + 1) + '"]')?.trigger("click");
                                         }
                                         else {
                                             alert('Can not find download url.');
@@ -1173,7 +1179,7 @@
                                     if ($('.IG_SN_DIG .IG_SN_DIG_MAIN .IG_SN_DIG_BODY a').length > 0) {
                                         clearInterval(checkBlob);
                                         $('.IG_SN_DIG .IG_SN_DIG_MAIN .IG_SN_DIG_BODY a').each(function () {
-                                            $(this).click();
+                                            $(this).trigger("click");
                                         });
 
                                         $('.IG_SN_DIG').remove();
@@ -1520,7 +1526,7 @@
                                                 let $element_play_button = $(this).next().find('div[role="presentation"] > div svg > path[d^="M5.888"]').parents('button[role="button"], div[role="button"]');
                                                 if ($element_play_button.length > 0) {
                                                     $(this).attr('data-loop', true);
-                                                    $element_play_button.click();
+                                                    $element_play_button.trigger("click");
                                                     logger('Adding video event listener #loop, then paused click()');
                                                 }
                                                 else {
@@ -1590,7 +1596,7 @@
 
                                                 if (this.muted != is_elelment_muted) {
                                                     this.volume = state.videoVolume;
-                                                    $element_mute_button?.click();
+                                                    $element_mute_button?.trigger("click");
                                                 }
 
                                                 if ($(this).attr('data-completed')) {
@@ -2239,6 +2245,7 @@
         }
     }
 
+    /* untils */
 
     /**
      * getStoryId
@@ -3450,6 +3457,7 @@
         });
     }
 
+    /* register all events */
 
     // Running if document is ready
     $(function () {
@@ -3523,37 +3531,37 @@
             }
         });
 
-        $(window).keydown(function (e) {
+        $(window).on('keydown', function (e) {
             // Hot key [Alt+Q] to close the download dialog
-            if (e.keyCode == '81' && e.altKey) {
+            if (e.which == '81' && e.altKey) {
                 $('.IG_SN_DIG').remove();
                 e.preventDefault();
             }
             // Hot key [Alt+W] to open the settings dialog
-            if (e.keyCode == '87' && e.altKey) {
+            if (e.which == '87' && e.altKey) {
                 showSetting();
                 e.preventDefault();
             }
 
             // Hot key [Alt+Z] to open the settings dialog
-            if (e.keyCode == '90' && e.altKey) {
+            if (e.which == '90' && e.altKey) {
                 showDebugDOM();
                 e.preventDefault();
             }
 
             // Hot key [Alt+R] to open the settings dialog
-            if (e.keyCode == '82' && e.altKey) {
+            if (e.which == '82' && e.altKey) {
                 reloadScript();
                 e.preventDefault();
             }
 
             // Hot key [Alt+S] to download story/highlights resource
-            if (e.keyCode == '83' && e.altKey) {
+            if (e.which == '83' && e.altKey) {
                 if (location.href.match(/^(https:\/\/www\.instagram\.com\/stories\/)/ig) && $('.IG_DWSTORY').length > 0) {
-                    $('.IG_DWSTORY')?.click();
+                    $('.IG_DWSTORY')?.trigger("click");
                 }
                 if (location.href.match(/^(https:\/\/www\.instagram\.com\/stories\/highlights\/)/ig) && $('.IG_DWHISTORY').length > 0) {
-                    $('.IG_DWHISTORY')?.click();
+                    $('.IG_DWHISTORY')?.trigger("click");
                 }
                 e.preventDefault();
             }
@@ -3751,7 +3759,7 @@
             let index = 0;
             $('.IG_SN_DIG_BODY a[data-needed="direct"]').each(function () {
                 if ($(this).prev().children('input').prop('checked')) {
-                    $(this).click();
+                    $(this).trigger("click");
                     index++;
                 }
             });
@@ -3782,7 +3790,7 @@
 
         $('body').on('click', '.IG_SN_DIG_TITLE #batch_download_direct', function () {
             $('.IG_SN_DIG_BODY a[data-needed="direct"]').each(function () {
-                $(this).click();
+                $(this).trigger("click");
             });
         });
 
@@ -3900,7 +3908,7 @@
 
                                                 if (this.muted != is_elelment_muted) {
                                                     this.volume = state.videoVolume;
-                                                    $element_mute_button?.click();
+                                                    $element_mute_button?.trigger("click");
                                                 }
 
                                                 if ($(this).attr('data-completed')) {
