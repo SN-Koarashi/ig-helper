@@ -69,8 +69,8 @@ jobs:
       - name: Check for differences
         id: diff
         run: |
-          git fetch origin master
-          if git diff --quiet origin/master..origin/automated-build-branch; then
+          git checkout automated-build-branch
+          if git diff --quiet master; then
             echo "No changes found."
             echo "::set-output name=changes::false"
           else
