@@ -2,7 +2,8 @@ const fs = require("fs");
 const path = require("path");
 const readline = require("readline");
 
-const inputFilePath = "./entry.js";
+const inputRootPath = path.join(__dirname, 'src');
+const inputFilePath = "./src/entry.js";
 const outputFilePath = "./main.js";
 
 const inputStream = fs.createReadStream(inputFilePath);
@@ -49,7 +50,7 @@ const processLines = async () => {
         if (line.trim().startsWith("FS_IMPORT")) {
             const filter_path = line.trim().match(/^FS_IMPORT\(['"]?(.*?)['"]?\);?$/i);
             if (filter_path !== null && filter_path.length > 0) {
-                const full_path = path.join(__dirname, filter_path[1]);
+                const full_path = path.join(inputRootPath, filter_path[1]);
 
                 await processImportedFile(full_path);
             }
