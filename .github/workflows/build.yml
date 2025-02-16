@@ -61,9 +61,9 @@ jobs:
             git add .
             git commit -m "Automated build commit" 
             git fetch origin master
-            if ! git merge --no-commit --no-ff origin/master; then
+            if ! git merge --no-commit --no-ff origin/master --allow-unrelated-histories; then
               echo "Merge conflict detected, resolving by keeping automated-build-branch changes."
-              git merge --abort
+              git merge --abort || true
             fi
             git push origin automated-build-branch
             gh auth login --with-token <<< "${{ secrets.GITHUB_TOKEN }}"
