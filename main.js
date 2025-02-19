@@ -5,7 +5,7 @@
 // @name:ja            IG助手
 // @name:ko            IG조수
 // @namespace          https://github.snkms.com/
-// @version            3.0.5.3
+// @version            3.0.6
 // @description        Downloading is possible for both photos and videos from posts, as well as for stories, reels or profile picture.
 // @description:zh-TW  一鍵下載對方 Instagram 貼文中的相片、影片甚至是他們的限時動態、連續短片及大頭貼圖片！
 // @description:zh-CN  一键下载对方 Instagram 帖子中的相片、视频甚至是他们的快拍、Reels及头像图片！
@@ -419,7 +419,7 @@
                             openNewTab(result.items[0].video_versions[0].url);
                         }
                         else {
-                            saveFiles(result.items[0].video_versions[0].url, username, "highlights", timestamp, 'mp4', highlightId);
+                            saveFiles(result.items[0].video_versions[0].url, username, "highlights", timestamp, 'mp4', result.items[0].id);
                         }
                     }
                     else {
@@ -427,7 +427,7 @@
                             openNewTab(result.items[0].image_versions2.candidates[0].url);
                         }
                         else {
-                            saveFiles(result.items[0].image_versions2.candidates[0].url, username, "highlights", timestamp, 'jpg', highlightId);
+                            saveFiles(result.items[0].image_versions2.candidates[0].url, username, "highlights", timestamp, 'jpg', result.items[0].id);
                         }
                     }
                 }
@@ -451,7 +451,7 @@
                         openNewTab(target.video_resources.at(-1).src, username);
                     }
                     else {
-                        saveFiles(target.video_resources.at(-1).src, username, "highlights", timestamp, 'mp4', highlightId);
+                        saveFiles(target.video_resources.at(-1).src, username, "highlights", timestamp, 'mp4', target.id);
                     }
                 }
                 else {
@@ -459,7 +459,7 @@
                         openNewTab(target.display_resources.at(-1).src, username);
                     }
                     else {
-                        saveFiles(target.display_resources.at(-1).src, username, "highlights", timestamp, 'jpg', highlightId);
+                        saveFiles(target.display_resources.at(-1).src, username, "highlights", timestamp, 'jpg', target.id);
                     }
                 }
 

@@ -107,7 +107,7 @@ export async function onHighlightsStory(isDownload, isPreview) {
                         openNewTab(result.items[0].video_versions[0].url);
                     }
                     else {
-                        saveFiles(result.items[0].video_versions[0].url, username, "highlights", timestamp, 'mp4', highlightId);
+                        saveFiles(result.items[0].video_versions[0].url, username, "highlights", timestamp, 'mp4', result.items[0].id);
                     }
                 }
                 else {
@@ -115,7 +115,7 @@ export async function onHighlightsStory(isDownload, isPreview) {
                         openNewTab(result.items[0].image_versions2.candidates[0].url);
                     }
                     else {
-                        saveFiles(result.items[0].image_versions2.candidates[0].url, username, "highlights", timestamp, 'jpg', highlightId);
+                        saveFiles(result.items[0].image_versions2.candidates[0].url, username, "highlights", timestamp, 'jpg', result.items[0].id);
                     }
                 }
             }
@@ -139,7 +139,7 @@ export async function onHighlightsStory(isDownload, isPreview) {
                     openNewTab(target.video_resources.at(-1).src, username);
                 }
                 else {
-                    saveFiles(target.video_resources.at(-1).src, username, "highlights", timestamp, 'mp4', highlightId);
+                    saveFiles(target.video_resources.at(-1).src, username, "highlights", timestamp, 'mp4', target.id);
                 }
             }
             else {
@@ -147,7 +147,7 @@ export async function onHighlightsStory(isDownload, isPreview) {
                     openNewTab(target.display_resources.at(-1).src, username);
                 }
                 else {
-                    saveFiles(target.display_resources.at(-1).src, username, "highlights", timestamp, 'jpg', highlightId);
+                    saveFiles(target.display_resources.at(-1).src, username, "highlights", timestamp, 'jpg', target.id);
                 }
             }
 
