@@ -1,7 +1,11 @@
 import { USER_SETTING, SVG, state } from "../settings";
-import { updateLoadingBar, openNewTab, logger, toggleVolumeSilder, IG_createDM, IG_setDM, triggerLinkElement } from "../utils/util";
+import {
+    updateLoadingBar, openNewTab, logger,
+    toggleVolumeSilder, IG_createDM, IG_setDM, triggerLinkElement
+} from "../utils/util";
 import { getBlobMedia } from "../utils/api";
 import { _i18n } from "../utils/i18n";
+/*! ESLINT IMPORT END !*/
 
 /**
  * onReadyMyDW

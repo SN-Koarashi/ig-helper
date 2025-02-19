@@ -1,7 +1,11 @@
 import { USER_SETTING, SVG, state } from "../settings";
-import { updateLoadingBar, openNewTab, logger, setDownloadProgress, saveFiles, getStoryProgress } from "../utils/util";
+import {
+    updateLoadingBar, openNewTab, logger,
+    setDownloadProgress, saveFiles, getStoryProgress
+} from "../utils/util";
 import { _i18n } from "../utils/i18n";
 import { getHighlightStories, getMediaInfo } from "../utils/api";
+/*! ESLINT IMPORT END !*/
 
 /**
  * onHighlightsStoryAll

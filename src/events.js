@@ -1,10 +1,14 @@
 import { state, USER_SETTING } from "./settings";
-import { showSetting, showDebugDOM, reloadScript, triggerLinkElement, openNewTab, saveFiles, logger, toggleVolumeSilder } from "./utils/util";
+import {
+    showSetting, showDebugDOM, reloadScript,
+    triggerLinkElement, openNewTab, saveFiles, logger, toggleVolumeSilder
+} from "./utils/util";
 import { onStory, onStoryAll, onStoryThumbnail } from "./functions/story";
 import { onProfileAvatar } from "./functions/profile";
 import { onHighlightsStory, onHighlightsStoryAll, onHighlightsStoryThumbnail } from "./functions/highlight";
 import { onReels } from "./functions/reel";
 import { _i18n, getTranslationText, repaintingTranslations, registerMenuCommand } from "./utils/i18n";
+/*! ESLINT IMPORT END !*/
 
 // Running if document is ready
 $(function () {

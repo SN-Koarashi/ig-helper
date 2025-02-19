@@ -1,5 +1,6 @@
 import { state } from "../settings";
 import { logger } from "./util";
+/*! ESLINT IMPORT END !*/
 
 /**
  * translateText
