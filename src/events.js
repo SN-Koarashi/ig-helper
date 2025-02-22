@@ -273,7 +273,7 @@ $(function () {
     });
 
     // Running if user right-click profile picture in stories area
-    $('body').on('mousedown', 'button[role="menuitem"], div[role="menuitem"]', function (e) {
+    $('body').on('mousedown', 'button[role="menuitem"], div[role="menuitem"], ul > li[tabindex="-1"] > div[role="button"]', function (e) {
         // Right-Click || Middle-Click
         if (e.which === 3 || e.which === 2) {
             if (location.href === 'https://www.instagram.com/' && USER_SETTING.REDIRECT_CLICK_USER_STORY_PICTURE) {

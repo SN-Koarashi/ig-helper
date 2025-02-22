@@ -5,7 +5,7 @@
 // @name:ja            IG助手
 // @name:ko            IG조수
 // @namespace          https://github.snkms.com/
-// @version            3.0.6
+// @version            3.0.7
 // @description        Downloading is possible for both photos and videos from posts, as well as for stories, reels or profile picture.
 // @description:zh-TW  一鍵下載對方 Instagram 貼文中的相片、影片甚至是他們的限時動態、連續短片及大頭貼圖片！
 // @description:zh-CN  一键下载对方 Instagram 帖子中的相片、视频甚至是他们的快拍、Reels及头像图片！
@@ -2247,24 +2247,6 @@
     /* untils */
 
     /**
-     * getStoryId
-     * @description Obtain the media id through the resource URL.
-     *
-     * @param  {string}  url
-     * @return {string}
-     */
-    function getStoryId(url) {
-        let obj = new URL(url);
-        let base64 = obj?.searchParams?.get('ig_cache_key')?.split('.').at(0);
-        if (base64) {
-            return atob(base64);
-        }
-        else {
-            return null;
-        }
-    }
-
-    /**
      * getHighlightStories
      * @description Get a list of all stories in highlight Id.
      *
@@ -2656,6 +2638,24 @@
                 }
             });
         });
+    }
+
+    /**
+     * getStoryId
+     * @description Obtain the media id through the resource URL.
+     *
+     * @param  {string}  url
+     * @return {string}
+     */
+    function getStoryId(url) {
+        let obj = new URL(url);
+        let base64 = obj?.searchParams?.get('ig_cache_key')?.split('.').at(0);
+        if (base64) {
+            return atob(base64);
+        }
+        else {
+            return null;
+        }
     }
 
     /**
@@ -3721,7 +3721,7 @@
         });
 
         // Running if user right-click profile picture in stories area
-        $('body').on('mousedown', 'button[role="menuitem"], div[role="menuitem"]', function (e) {
+        $('body').on('mousedown', 'button[role="menuitem"], div[role="menuitem"], ul > li[tabindex="-1"] > div[role="button"]', function (e) {
             // Right-Click || Middle-Click
             if (e.which === 3 || e.which === 2) {
                 if (location.href === 'https://www.instagram.com/' && USER_SETTING.REDIRECT_CLICK_USER_STORY_PICTURE) {
