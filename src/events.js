@@ -2,7 +2,7 @@ import { state, USER_SETTING } from "./settings";
 import {
     showSetting, showDebugDOM, reloadScript,
     triggerLinkElement, openNewTab, saveFiles, logger, toggleVolumeSilder
-} from "./utils/util";
+} from "./utils/general";
 import { onStory, onStoryAll, onStoryThumbnail } from "./functions/story";
 import { onProfileAvatar } from "./functions/profile";
 import { onHighlightsStory, onHighlightsStoryAll, onHighlightsStoryThumbnail } from "./functions/highlight";

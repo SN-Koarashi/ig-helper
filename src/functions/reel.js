@@ -1,5 +1,5 @@
 import { USER_SETTING, SVG, state } from "../settings";
-import { updateLoadingBar, saveFiles, openNewTab, logger, toggleVolumeSilder } from "../utils/util";
+import { updateLoadingBar, saveFiles, openNewTab, logger, toggleVolumeSilder } from "../utils/general";
 import { getBlobMedia } from "../utils/api";
 import { filterResourceData } from "./post";
 import { _i18n } from "../utils/i18n";

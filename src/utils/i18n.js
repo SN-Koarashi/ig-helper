@@ -1,5 +1,5 @@
 import { state } from "../settings";
-import { logger } from "./util";
+import { logger } from "./general";
 /*! ESLINT IMPORT END !*/
 
 /**

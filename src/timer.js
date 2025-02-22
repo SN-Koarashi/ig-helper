@@ -1,5 +1,5 @@
 import { state, checkInterval, USER_SETTING } from "./settings";
-import { logger, checkingScriptUpdate } from "./utils/util";
+import { logger, checkingScriptUpdate } from "./utils/general";
 import { onReadyMyDW } from "./functions/post";
 import { onReels } from "./functions/reel";
 import { onProfileAvatar } from "./functions/profile";

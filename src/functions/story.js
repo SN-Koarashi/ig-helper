@@ -1,9 +1,10 @@
 import { USER_SETTING, SVG, state } from "../settings";
 import {
     updateLoadingBar, setDownloadProgress,
-    saveFiles, getStoryProgress, openNewTab, logger
-} from "../utils/util";
-import { getUserId, getStories, getMediaInfo, getStoryId } from "../utils/api";
+    saveFiles, getStoryProgress, openNewTab, logger,
+    getStoryId
+} from "../utils/general";
+import { getUserId, getStories, getMediaInfo } from "../utils/api";
 import { _i18n } from "../utils/i18n";
 /*! ESLINT IMPORT END !*/
 
