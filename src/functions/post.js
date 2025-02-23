@@ -237,7 +237,10 @@ export function createDownloadButton() {
 
                                     // Check if video?
                                     if ($targetNode.find('video').length > 0) {
-                                        $childElement.find(".button_wrapper").append(ThumbnailElement);
+                                        if ($childElement.find('.SNKMS_IG_THUMBNAIL_MAIN').length === 0) {
+                                            $childElement.find(".button_wrapper").append(ThumbnailElement);
+                                        }
+
                                         initPostVideoFunction($mainElement);
                                     }
                                     else {
