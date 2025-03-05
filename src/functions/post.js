@@ -1,7 +1,8 @@
 import { USER_SETTING, SVG, state } from "../settings";
 import {
     updateLoadingBar, openNewTab, logger,
-    toggleVolumeSilder, IG_createDM, IG_setDM, triggerLinkElement
+    toggleVolumeSilder, IG_createDM, IG_setDM, triggerLinkElement,
+    openImageViewer
 } from "../utils/general";
 import { getBlobMedia } from "../utils/api";
 import { _i18n } from "../utils/i18n";
@@ -174,6 +175,7 @@ export function createDownloadButton() {
                 const $mainElement = $(this);
                 const tagName = this.tagName;
                 const resourceCountSelector = '._acay ._acaz';
+                var displayResourceURL;
 
                 // not loop each in single top post
                 if (tagName === "DIV" && index != 0) {
@@ -208,6 +210,7 @@ export function createDownloadButton() {
                 const DownloadElement = `<div data-ih-locale-title="DW" title="${_i18n("DW")}" class="SNKMS_IG_DW_MAIN">${SVG.DOWNLOAD}</div>`;
                 const NewTabElement = `<div data-ih-locale-title="NEW_TAB" title="${_i18n("NEW_TAB")}" class="SNKMS_IG_NEWTAB_MAIN">${SVG.NEW_TAB}</div>`;
                 const ThumbnailElement = `<div data-ih-locale-title="THUMBNAIL_INTRO" title="${_i18n("THUMBNAIL_INTRO")}" class="SNKMS_IG_THUMBNAIL_MAIN">${SVG.THUMBNAIL}</div>`;
+                const ViewerElement = `<div data-ih-locale-title="IMAGE_VIEWER" title="${_i18n("IMAGE_VIEWER")}" class="SNKMS_IG_IMAGE_VIEWER">${SVG.FULLSCREEN}</div>`;
 
                 $childElement.find(".button_wrapper").append(DownloadElement);
 
@@ -226,6 +229,9 @@ export function createDownloadButton() {
                         if ($childElement.find('video').length > 0) {
                             $childElement.find(".button_wrapper").append(ThumbnailElement);
                         }
+                        else {
+                            $childElement.find(".button_wrapper").append(ViewerElement);
+                        }
                     }
                     else {
                         // eslint-disable-next-line no-unused-vars
@@ -234,6 +240,9 @@ export function createDownloadButton() {
                                 //logger(entry);
                                 if (entry.isIntersecting) {
                                     var $targetNode = $(entry.target);
+                                    $childElement.find('.SNKMS_IG_THUMBNAIL_MAIN')?.remove();
+                                    $childElement.find('.SNKMS_IG_IMAGE_VIEWER')?.remove();
+                                    displayResourceURL = null;
 
                                     // Check if video?
                                     if ($targetNode.find('video').length > 0) {
@@ -243,8 +252,10 @@ export function createDownloadButton() {
 
                                         initPostVideoFunction($mainElement);
                                     }
+                                    // is Image
                                     else {
-                                        $childElement.find('.SNKMS_IG_THUMBNAIL_MAIN')?.remove();
+                                        displayResourceURL = $targetNode.find('img').attr('src');
+                                        $childElement.find(".button_wrapper").append(ViewerElement);
                                     }
                                 }
                             });
@@ -300,8 +311,18 @@ export function createDownloadButton() {
                         '.SNKMS_IG_THUMBNAIL_MAIN',
                         '.SNKMS_IG_NEWTAB_MAIN',
                         '.SNKMS_IG_DW_ALL_MAIN',
-                        '.SNKMS_IG_DW_MAIN'
+                        '.SNKMS_IG_DW_MAIN',
+                        '.SNKMS_IG_IMAGE_VIEWER'
                     ]
+                });
+
+                $(this).on('click', '.SNKMS_IG_IMAGE_VIEWER', function () {
+                    if (displayResourceURL != null) {
+                        openImageViewer(displayResourceURL);
+                    }
+                    else {
+                        alert("Cannot find resource url.");
+                    }
                 });
 
                 $(this).on('click', '.SNKMS_IG_THUMBNAIL_MAIN', function () {

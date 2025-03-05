@@ -56,10 +56,11 @@
 .SNKMS_IG_DW_MAIN,
 .SNKMS_IG_NEWTAB_MAIN,
 .SNKMS_IG_THUMBNAIL_MAIN,
-.SNKMS_IG_DW_ALL_MAIN {
+.SNKMS_IG_DW_ALL_MAIN,
+.SNKMS_IG_IMAGE_VIEWER {
     position: relative;
     top: 0px;
-    padding: 6px;
+    padding: 4px;
     line-height: 0;
     background: #fff;
     border-radius: 50%;
@@ -625,4 +626,45 @@ div[class]:hover+.volume_slider>div,
     100% {
         transform: rotate(360deg);
     }
+}
+
+#imageViewer {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.8);
+    display: none;
+    justify-content: center;
+    align-items: center;
+}
+
+#imageViewer>div {
+    position: absolute;
+    top: 0px;
+    left: 0px;
+    right: 0px;
+    height: 35px;
+    background: rgba(0, 0, 0, 0.2);
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    z-index: 2;
+    color: #fff;
+    padding: 0px 15px;
+}
+
+#imageViewer>div>div#iv_close {
+    cursor: pointer;
+}
+
+#iv_image {
+    position: absolute;
+    max-width: none;
+    max-height: none;
+    width: 100%;
+    height: auto;
+    user-select: none;
+    cursor: grab;
 }

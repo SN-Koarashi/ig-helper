@@ -670,3 +670,98 @@ export function toggleVolumeSilder($videos, $buttonParent, loggerType, customCla
         $buttonParent.find('div.volume_slider').remove();
     }
 }
+
+export function openImageViewer(imageUrl) {
+    removeViewer();
+
+    $('body').append(
+        `<div id="imageViewer">
+	<div id="iv_header">
+		<div style="flex:1;">Image Viewer</div>
+		<div id="iv_close">[Close]</div>
+	</div>
+    <img id="iv_image" src="" />
+</div>`);
+
+    const $container = $('#imageViewer');
+    const $header = $('#iv_header');
+    const $closeIcon = $('#iv_close');
+    const $image = $('#iv_image');
+
+
+    $image.attr('src', imageUrl);
+    $container.css('display', 'flex');
+
+    let scale = 0.75;
+    let posX = 0, posY = 0;
+    let isDragging = false;
+    let startX, startY;
+
+    $image.on('load', () => {
+        posX = (window.innerWidth - $image[0].width) / 2;
+        posY = (window.innerHeight - $image[0].height) / 2;
+        updateImageStyle();
+    });
+
+    $image.on('dragstart drop', (e) => {
+        e.preventDefault();
+    });
+
+    $image.on('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+    });
+
+    $image.on('wheel', (e) => {
+        e.preventDefault();
+        scale += e.originalEvent.deltaY > 0 ? -0.15 : 0.15;
+        scale = Math.min(Math.max(0.75, scale), 5);
+        updateImageStyle();
+    });
+
+    $image.on('mousedown', (e) => {
+        isDragging = true;
+        startX = e.pageX - posX;
+        startY = e.pageY - posY;
+        $image.css('cursor', 'grabbing');
+    });
+
+    $image.on('mouseup', () => {
+        isDragging = false;
+        $image.css('cursor', 'grab');
+    });
+
+    $(document).on('mousemove.igHelper', (e) => {
+        if (!isDragging) return;
+        e.preventDefault();
+
+        posX = e.pageX - startX;
+        posY = e.pageY - startY;
+
+        updateImageStyle();
+    });
+
+    $container.on('click', () => {
+        removeViewer();
+    });
+
+    $closeIcon.on('click', () => {
+        removeViewer();
+    });
+
+    $header.on('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+    });
+
+    function updateImageStyle() {
+        $image.css('transform', `scale(${scale})`);
+        $image.css('left', `${posX}px`);
+        $image.css('top', `${posY}px`);
+    }
+
+    function removeViewer() {
+        $('#imageViewer').remove();
+        $(document).off('mousemove.igHelper');
+    }
+}
