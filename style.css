@@ -1,3 +1,7 @@
+[data-ih-locale-title] svg {
+    vertical-align: middle;
+}
+
 .IG_SN_DIG {
     position: fixed;
     left: 0px;
@@ -60,7 +64,7 @@
 .SNKMS_IG_IMAGE_VIEWER {
     position: relative;
     top: 0px;
-    padding: 4px;
+    padding: 2px;
     line-height: 0;
     background: #fff;
     border-radius: 50%;
@@ -92,7 +96,7 @@
     position: absolute;
     right: 40px;
     top: 15px;
-    padding: 5px;
+    padding: 2px;
     line-height: 0;
     background: #fff;
     border-radius: 5px;
@@ -105,8 +109,8 @@
 .IG_DWHINEWTAB {
     position: absolute;
     right: 40px;
-    top: 45px;
-    padding: 5px;
+    top: 47px;
+    padding: 2px;
     line-height: 0;
     background: #fff;
     border-radius: 5px;
@@ -120,8 +124,8 @@
 .IG_DWHISTORY_THUMBNAIL {
     position: absolute;
     right: 40px;
-    top: 75px;
-    padding: 5px;
+    top: 79px;
+    padding: 2px;
     line-height: 1;
     background: #fff;
     border-radius: 5px;
@@ -149,7 +153,7 @@
     position: absolute;
     right: 0px;
     top: 0px;
-    padding: 5px;
+    padding: 2px;
     line-height: 1;
     background: #fff;
     border-radius: 50%;
@@ -638,6 +642,7 @@ div[class]:hover+.volume_slider>div,
     display: none;
     justify-content: center;
     align-items: center;
+    z-index: 600001;
 }
 
 #imageViewer>div {
@@ -663,8 +668,12 @@ div[class]:hover+.volume_slider>div,
     position: absolute;
     max-width: none;
     max-height: none;
-    width: 100%;
-    height: auto;
+    width: auto;
+    height: 100%;
     user-select: none;
     cursor: grab;
+}
+
+#iv_close {
+    filter: invert(1);
 }

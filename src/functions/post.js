@@ -230,6 +230,9 @@ export function createDownloadButton() {
                             $childElement.find(".button_wrapper").append(ThumbnailElement);
                         }
                         else {
+                            displayResourceURL = $mainElement.find('img').filter(function () {
+                                return $(this).width() > 200 && $(this).height() > 200
+                            }).attr('src');
                             $childElement.find(".button_wrapper").append(ViewerElement);
                         }
                     }
@@ -242,7 +245,6 @@ export function createDownloadButton() {
                                     var $targetNode = $(entry.target);
                                     $childElement.find('.SNKMS_IG_THUMBNAIL_MAIN')?.remove();
                                     $childElement.find('.SNKMS_IG_IMAGE_VIEWER')?.remove();
-                                    displayResourceURL = null;
 
                                     // Check if video?
                                     if ($targetNode.find('video').length > 0) {

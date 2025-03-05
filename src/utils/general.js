@@ -672,13 +672,13 @@ export function toggleVolumeSilder($videos, $buttonParent, loggerType, customCla
 }
 
 export function openImageViewer(imageUrl) {
-    removeViewer();
+    removeImageViewer();
 
     $('body').append(
         `<div id="imageViewer">
 	<div id="iv_header">
 		<div style="flex:1;">Image Viewer</div>
-		<div id="iv_close">[Close]</div>
+		<div id="iv_close">${SVG.CLOSE}</div>
 	</div>
     <img id="iv_image" src="" />
 </div>`);
@@ -742,11 +742,11 @@ export function openImageViewer(imageUrl) {
     });
 
     $container.on('click', () => {
-        removeViewer();
+        removeImageViewer();
     });
 
     $closeIcon.on('click', () => {
-        removeViewer();
+        removeImageViewer();
     });
 
     $header.on('click', (e) => {
@@ -759,9 +759,9 @@ export function openImageViewer(imageUrl) {
         $image.css('left', `${posX}px`);
         $image.css('top', `${posY}px`);
     }
+}
 
-    function removeViewer() {
-        $('#imageViewer').remove();
-        $(document).off('mousemove.igHelper');
-    }
+export function removeImageViewer() {
+    $('#imageViewer').remove();
+    $(document).off('mousemove.igHelper');
 }
