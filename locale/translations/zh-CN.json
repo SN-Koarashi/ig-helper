@@ -7,6 +7,7 @@
     "RELOAD_SCRIPT": "重新载入脚本",
     "DONATE": "捐助",
     "FEEDBACK": "反馈问题",
+    "IMAGE_VIEWER": "在检视器中打开图片",
     "NEW_TAB": "在新选项卡中打开",
     "SHOW_DOM_TREE": "显示 DOM Tree",
     "SELECT_AND_COPY": "全选并复制输入框的内容",
