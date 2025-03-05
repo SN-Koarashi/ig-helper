@@ -42,24 +42,24 @@ $(function () {
             }, "\t");
             logger += `${new Date(log.time).toISOString()}: ${jsonData}\n`
         });
-        $('.IG_SN_DIG .IG_SN_DIG_BODY textarea').text("Logger:\n" + logger + "\n-----\n\nLocation: " + location.pathname + "\nDOM Tree with div#mount:\n" + text.innerHTML);
+        $('.IG_POPUP_DIG .IG_POPUP_DIG_BODY textarea').text("Logger:\n" + logger + "\n-----\n\nLocation: " + location.pathname + "\nDOM Tree with div#mount:\n" + text.innerHTML);
     }
 
-    $('body').on('click', '.IG_SN_DIG .IG_SN_DIG_BODY .IG_DISPLAY_DOM_TREE', function () {
+    $('body').on('click', '.IG_POPUP_DIG .IG_POPUP_DIG_BODY .IG_DISPLAY_DOM_TREE', function () {
         setDOMTreeContent();
     });
 
-    $('body').on('click', '.IG_SN_DIG .IG_SN_DIG_BODY .IG_SELECT_DOM_TREE', function () {
-        $('.IG_SN_DIG .IG_SN_DIG_BODY textarea').select();
+    $('body').on('click', '.IG_POPUP_DIG .IG_POPUP_DIG_BODY .IG_SELECT_DOM_TREE', function () {
+        $('.IG_POPUP_DIG .IG_POPUP_DIG_BODY textarea').select();
         document.execCommand('copy');
     });
 
-    $('body').on('click', '.IG_SN_DIG .IG_SN_DIG_BODY .IG_DOWNLOAD_DOM_TREE', function () {
-        if ($('.IG_SN_DIG .IG_SN_DIG_BODY textarea').text().length === 0) {
+    $('body').on('click', '.IG_POPUP_DIG .IG_POPUP_DIG_BODY .IG_DOWNLOAD_DOM_TREE', function () {
+        if ($('.IG_POPUP_DIG .IG_POPUP_DIG_BODY textarea').text().length === 0) {
             setDOMTreeContent();
         }
 
-        var text = $('.IG_SN_DIG .IG_SN_DIG_BODY textarea').text();
+        var text = $('.IG_POPUP_DIG .IG_POPUP_DIG_BODY textarea').text();
         var a = document.createElement("a");
         var file = new Blob([text], { type: "text/plain" });
         a.href = URL.createObjectURL(file);
@@ -71,21 +71,21 @@ $(function () {
     });
 
     // Close the download dialog if user click the close icon
-    $('body').on('click', '.IG_SN_DIG_BTN, .IG_SN_DIG_BG', function () {
+    $('body').on('click', '.IG_POPUP_DIG_BTN, .IG_POPUP_DIG_BG', function () {
         if ($(this).parent('#tempWrapper').length > 0) {
             $(this).parent('#tempWrapper').fadeOut(250, function () {
                 $(this).remove();
             });
         }
         else {
-            $('.IG_SN_DIG').remove();
+            $('.IG_POPUP_DIG').remove();
         }
     });
 
     $(window).on('keydown', function (e) {
         // Hot key [Alt+Q] to close the download dialog
         if (e.which == '81' && e.altKey) {
-            $('.IG_SN_DIG').remove();
+            $('.IG_POPUP_DIG').remove();
             e.preventDefault();
         }
         // Hot key [Alt+W] to open the settings dialog
@@ -118,7 +118,7 @@ $(function () {
         }
     });
 
-    $('body').on('change', '.IG_SN_DIG input', function () {
+    $('body').on('change', '.IG_POPUP_DIG input', function () {
         var name = $(this).attr('id');
 
         if (name && USER_SETTING[name] !== undefined) {
@@ -130,13 +130,13 @@ $(function () {
         }
     });
 
-    $('body').on('click', '.IG_SN_DIG .globalSettings', function (e) {
+    $('body').on('click', '.IG_POPUP_DIG .globalSettings', function (e) {
         if ($(this).find('#tempWrapper').length > 0) {
             e.preventDefault();
         }
     });
 
-    $('body').on('change', '.IG_SN_DIG #tempWrapper input:not(#date_format)', function () {
+    $('body').on('change', '.IG_POPUP_DIG #tempWrapper input:not(#date_format)', function () {
         let value = $(this).val();
 
         if ($(this).attr('type') == 'range') {
@@ -152,7 +152,7 @@ $(function () {
         }
     });
 
-    $('body').on('input', '.IG_SN_DIG #tempWrapper input:not(#date_format)', function () {
+    $('body').on('input', '.IG_POPUP_DIG #tempWrapper input:not(#date_format)', function () {
         if ($(this).attr('type') == 'range') {
             let value = $(this).val();
             $(this).next().val(value);
@@ -173,7 +173,7 @@ $(function () {
         }
     });
 
-    $('body').on('input', '.IG_SN_DIG #tempWrapper input#date_format', function () {
+    $('body').on('input', '.IG_POPUP_DIG #tempWrapper input#date_format', function () {
         GM_setValue('G_RENAME_FORMAT', $(this).val());
         state.fileRenameFormat = $(this).val();
     });
@@ -183,7 +183,7 @@ $(function () {
         triggerLinkElement(this);
     });
 
-    $('body').on('click', '.IG_SN_DIG_BODY .newTab', function () {
+    $('body').on('click', '.IG_POPUP_DIG_BODY .newTab', function () {
         // replace https://instagram.ftpe8-2.fna.fbcdn.net/ to https://scontent.cdninstagram.com/ becase of same origin policy (some video)
 
         if (USER_SETTING.FORCE_RESOURCE_VIA_MEDIA && USER_SETTING.NEW_TAB_ALWAYS_FORCE_MEDIA_IN_POST) {
@@ -197,7 +197,7 @@ $(function () {
         }
     });
 
-    $('body').on('click', '.IG_SN_DIG_BODY .videoThumbnail', function () {
+    $('body').on('click', '.IG_POPUP_DIG_BODY .videoThumbnail', function () {
         let timestamp = new Date().getTime();
 
         if (USER_SETTING.RENAME_PUBLISH_DATE && $(this).parent().children('a').attr('datetime')) {
@@ -291,24 +291,24 @@ $(function () {
         }
     });
 
-    $('body').on('change', '.IG_SN_DIG_TITLE .checkbox', function () {
+    $('body').on('change', '.IG_POPUP_DIG_TITLE .checkbox', function () {
         var isChecked = $(this).find('input').prop('checked');
-        $('.IG_SN_DIG_BODY .inner_box').each(function () {
+        $('.IG_POPUP_DIG_BODY .inner_box').each(function () {
             $(this).prop('checked', isChecked);
         });
     });
 
-    $('body').on('change', '.IG_SN_DIG_BODY .inner_box', function () {
-        var checked = $('.IG_SN_DIG_BODY .inner_box:checked').length;
-        var total = $('.IG_SN_DIG_BODY .inner_box').length;
+    $('body').on('change', '.IG_POPUP_DIG_BODY .inner_box', function () {
+        var checked = $('.IG_POPUP_DIG_BODY .inner_box:checked').length;
+        var total = $('.IG_POPUP_DIG_BODY .inner_box').length;
 
 
-        $('.IG_SN_DIG_TITLE .checkbox').find('input').prop('checked', checked == total);
+        $('.IG_POPUP_DIG_TITLE .checkbox').find('input').prop('checked', checked == total);
     });
 
-    $('body').on('click', '.IG_SN_DIG_TITLE #batch_download_selected', function () {
+    $('body').on('click', '.IG_POPUP_DIG_TITLE #batch_download_selected', function () {
         let index = 0;
-        $('.IG_SN_DIG_BODY a[data-needed="direct"]').each(function () {
+        $('.IG_POPUP_DIG_BODY a[data-needed="direct"]').each(function () {
             if ($(this).prev().children('input').prop('checked')) {
                 $(this).trigger("click");
                 index++;
@@ -320,7 +320,7 @@ $(function () {
         }
     });
 
-    $('body').on('change', '.IG_SN_DIG_TITLE #langSelect', function () {
+    $('body').on('change', '.IG_POPUP_DIG_TITLE #langSelect', function () {
         GM_setValue('lang', $(this).val());
         state.lang = $(this).val();
 
@@ -339,8 +339,8 @@ $(function () {
         }
     });
 
-    $('body').on('click', '.IG_SN_DIG_TITLE #batch_download_direct', function () {
-        $('.IG_SN_DIG_BODY a[data-needed="direct"]').each(function () {
+    $('body').on('click', '.IG_POPUP_DIG_TITLE #batch_download_direct', function () {
+        $('.IG_POPUP_DIG_BODY a[data-needed="direct"]').each(function () {
             $(this).trigger("click");
         });
     });

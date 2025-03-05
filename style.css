@@ -2,7 +2,7 @@
     vertical-align: middle;
 }
 
-.IG_SN_DIG {
+.IG_POPUP_DIG {
     position: fixed;
     left: 0px;
     right: 0px;
@@ -11,11 +11,11 @@
     z-index: 500;
 }
 
-.IG_SN_DIG.hidden {
+.IG_POPUP_DIG.hidden {
     display: none;
 }
 
-.IG_SN_DIG_BG {
+.IG_POPUP_DIG_BG {
     position: fixed;
     left: 0px;
     right: 0px;
@@ -25,7 +25,7 @@
     background: rgba(0, 0, 0, .75);
 }
 
-.IG_SN_DIG_MAIN {
+.IG_POPUP_DIG_MAIN {
     z-index: 510;
     padding: 10px 15px;
     top: 7%;
@@ -40,13 +40,13 @@
     border-radius: 7px;
 }
 
-.IG_SN_DIG_BODY {
+.IG_POPUP_DIG_BODY {
     min-height: 100px;
     max-height: 70vh;
     overflow-y: auto;
 }
 
-.IG_SN_DIG_BODY a {
+.IG_POPUP_DIG_BODY a {
     display: block;
     padding: 5px 0px;
     color: #111;
@@ -57,11 +57,11 @@
     border-radius: 5px;
 }
 
-.SNKMS_IG_DW_MAIN,
-.SNKMS_IG_NEWTAB_MAIN,
-.SNKMS_IG_THUMBNAIL_MAIN,
-.SNKMS_IG_DW_ALL_MAIN,
-.SNKMS_IG_IMAGE_VIEWER {
+.IG_DW_MAIN,
+.IG_NEWTAB_MAIN,
+.IG_THUMBNAIL_MAIN,
+.IG_DW_ALL_MAIN,
+.IG_IMAGE_VIEWER {
     position: relative;
     top: 0px;
     padding: 2px;
@@ -314,7 +314,7 @@
     opacity: 0;
 }
 
-.IG_SN_DIG_BODY>div {
+.IG_POPUP_DIG_BODY>div {
     position: relative;
     border: 1px solid #000;
     border: 1px solid rgb(var(--ig-primary-text));
@@ -322,15 +322,15 @@
     border-radius: 7px;
 }
 
-.IG_SN_DIG_BODY>div:hover {
+.IG_POPUP_DIG_BODY>div:hover {
     background: rgba(var(--ig-hover-overlay));
 }
 
-.IG_SN_DIG_TITLE {
+.IG_POPUP_DIG_TITLE {
     padding-bottom: 5px;
 }
 
-.IG_SN_DIG_TITLE button {
+.IG_POPUP_DIG_TITLE button {
     font-size: 14px;
     vertical-align: middle;
     margin: 0px 7px;
@@ -432,7 +432,7 @@ kbd {
     top: 6px;
 }
 
-.IG_SN_DIG_BODY .newTab {
+.IG_POPUP_DIG_BODY .newTab {
     position: absolute;
     right: 0px;
     top: 0px;
@@ -443,7 +443,7 @@ kbd {
     border-radius: 5px;
 }
 
-.IG_SN_DIG_BODY .videoThumbnail {
+.IG_POPUP_DIG_BODY .videoThumbnail {
     position: absolute;
     right: 0px;
     top: 40px;
@@ -454,17 +454,17 @@ kbd {
     border-radius: 5px;
 }
 
-.IG_SN_DIG_BODY .newTab:hover,
-.IG_SN_DIG_BODY .videoThumbnail:hover {
+.IG_POPUP_DIG_BODY .newTab:hover,
+.IG_POPUP_DIG_BODY .videoThumbnail:hover {
     background: rgb(var(--ig-secondary-button-hover));
 }
 
-.IG_SN_DIG_BODY .newTab svg,
-.IG_SN_DIG_BODY .videoThumbnail svg {
+.IG_POPUP_DIG_BODY .newTab svg,
+.IG_POPUP_DIG_BODY .videoThumbnail svg {
     fill: rgb(var(--ig-primary-text));
 }
 
-.IG_SN_DIG_BTN {
+.IG_POPUP_DIG_BTN {
     cursor: pointer;
     position: absolute;
     right: 0px;
@@ -473,7 +473,7 @@ kbd {
     line-height: 0;
 }
 
-#tempWrapper .IG_SN_DIG_BTN {
+#tempWrapper .IG_POPUP_DIG_BTN {
     right: 5px;
     transform: translateY(-50%);
     top: 50%;

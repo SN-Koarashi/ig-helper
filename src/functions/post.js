@@ -20,7 +20,7 @@ export function onReadyMyDW(NoDialog, hasReferrer) {
     if (hasReferrer === true) {
         logger('hasReferrer', 'regenerated');
         $('article[data-snig="canDownload"], div[data-snig="canDownload"]').filter(function () {
-            return $(this).find('.SNKMS_IG_DW_MAIN').length === 0
+            return $(this).find('.IG_DW_MAIN').length === 0
         }).removeAttr('data-snig');
     }
 
@@ -207,17 +207,17 @@ export function createDownloadButton() {
                 $childElement.eq((tagName === "DIV") ? 0 : $childElement.length - 2).append(`<div class="button_wrapper">`);
 
                 // Add icons
-                const DownloadElement = `<div data-ih-locale-title="DW" title="${_i18n("DW")}" class="SNKMS_IG_DW_MAIN">${SVG.DOWNLOAD}</div>`;
-                const NewTabElement = `<div data-ih-locale-title="NEW_TAB" title="${_i18n("NEW_TAB")}" class="SNKMS_IG_NEWTAB_MAIN">${SVG.NEW_TAB}</div>`;
-                const ThumbnailElement = `<div data-ih-locale-title="THUMBNAIL_INTRO" title="${_i18n("THUMBNAIL_INTRO")}" class="SNKMS_IG_THUMBNAIL_MAIN">${SVG.THUMBNAIL}</div>`;
-                const ViewerElement = `<div data-ih-locale-title="IMAGE_VIEWER" title="${_i18n("IMAGE_VIEWER")}" class="SNKMS_IG_IMAGE_VIEWER">${SVG.FULLSCREEN}</div>`;
+                const DownloadElement = `<div data-ih-locale-title="DW" title="${_i18n("DW")}" class="IG_DW_MAIN">${SVG.DOWNLOAD}</div>`;
+                const NewTabElement = `<div data-ih-locale-title="NEW_TAB" title="${_i18n("NEW_TAB")}" class="IG_NEWTAB_MAIN">${SVG.NEW_TAB}</div>`;
+                const ThumbnailElement = `<div data-ih-locale-title="THUMBNAIL_INTRO" title="${_i18n("THUMBNAIL_INTRO")}" class="IG_THUMBNAIL_MAIN">${SVG.THUMBNAIL}</div>`;
+                const ViewerElement = `<div data-ih-locale-title="IMAGE_VIEWER" title="${_i18n("IMAGE_VIEWER")}" class="IG_IMAGE_VIEWER">${SVG.FULLSCREEN}</div>`;
 
                 $childElement.find(".button_wrapper").append(DownloadElement);
 
                 const resource_count = $mainElement.find(resourceCountSelector).length;
 
                 if (resource_count > 1 && USER_SETTING.DIRECT_DOWNLOAD_VISIBLE_RESOURCE && !USER_SETTING.DIRECT_DOWNLOAD_ALL) {
-                    const DownloadAllElement = `<div data-ih-locale-title="DW_ALL" title="${_i18n("DW_ALL")}" class="SNKMS_IG_DW_ALL_MAIN">${SVG.DOWNLOAD_ALL}</div>`;
+                    const DownloadAllElement = `<div data-ih-locale-title="DW_ALL" title="${_i18n("DW_ALL")}" class="IG_DW_ALL_MAIN">${SVG.DOWNLOAD_ALL}</div>`;
                     $childElement.find(".button_wrapper").append(DownloadAllElement);
                 }
 
@@ -243,12 +243,12 @@ export function createDownloadButton() {
                                 //logger(entry);
                                 if (entry.isIntersecting) {
                                     var $targetNode = $(entry.target);
-                                    $childElement.find('.SNKMS_IG_THUMBNAIL_MAIN')?.remove();
-                                    $childElement.find('.SNKMS_IG_IMAGE_VIEWER')?.remove();
+                                    $childElement.find('.IG_THUMBNAIL_MAIN')?.remove();
+                                    $childElement.find('.IG_IMAGE_VIEWER')?.remove();
 
                                     // Check if video?
                                     if ($targetNode.find('video').length > 0) {
-                                        if ($childElement.find('.SNKMS_IG_THUMBNAIL_MAIN').length === 0) {
+                                        if ($childElement.find('.IG_THUMBNAIL_MAIN').length === 0) {
                                             $childElement.find(".button_wrapper").append(ThumbnailElement);
                                         }
 
@@ -310,15 +310,15 @@ export function createDownloadButton() {
                 state.GL_registerEventList.push({
                     element: this,
                     trigger: [
-                        '.SNKMS_IG_THUMBNAIL_MAIN',
-                        '.SNKMS_IG_NEWTAB_MAIN',
-                        '.SNKMS_IG_DW_ALL_MAIN',
-                        '.SNKMS_IG_DW_MAIN',
-                        '.SNKMS_IG_IMAGE_VIEWER'
+                        '.IG_THUMBNAIL_MAIN',
+                        '.IG_NEWTAB_MAIN',
+                        '.IG_DW_ALL_MAIN',
+                        '.IG_DW_MAIN',
+                        '.IG_IMAGE_VIEWER'
                     ]
                 });
 
-                $(this).on('click', '.SNKMS_IG_IMAGE_VIEWER', function () {
+                $(this).on('click', '.IG_IMAGE_VIEWER', function () {
                     if (displayResourceURL != null) {
                         openImageViewer(displayResourceURL);
                     }
@@ -327,7 +327,7 @@ export function createDownloadButton() {
                     }
                 });
 
-                $(this).on('click', '.SNKMS_IG_THUMBNAIL_MAIN', function () {
+                $(this).on('click', '.IG_THUMBNAIL_MAIN', function () {
                     updateLoadingBar(true);
 
                     state.GL_username = $mainElement.attr('data-username');
@@ -337,11 +337,11 @@ export function createDownloadButton() {
 
                     IG_createDM(true, false);
 
-                    createMediaListDOM(state.GL_postPath, ".IG_SN_DIG .IG_SN_DIG_MAIN .IG_SN_DIG_BODY", "").then(() => {
+                    createMediaListDOM(state.GL_postPath, ".IG_POPUP_DIG .IG_POPUP_DIG_MAIN .IG_POPUP_DIG_BODY", "").then(() => {
                         let checkBlob = setInterval(() => {
-                            if ($('.IG_SN_DIG .IG_SN_DIG_MAIN .IG_SN_DIG_BODY a').length > 0) {
+                            if ($('.IG_POPUP_DIG .IG_POPUP_DIG_MAIN .IG_POPUP_DIG_BODY a').length > 0) {
                                 clearInterval(checkBlob);
-                                var $videoThumbnail = $('.IG_SN_DIG .IG_SN_DIG_BODY a[data-globalindex="' + (index + 1) + '"]')?.parent().find('.videoThumbnail')?.first();
+                                var $videoThumbnail = $('.IG_POPUP_DIG .IG_POPUP_DIG_BODY a[data-globalindex="' + (index + 1) + '"]')?.parent().find('.videoThumbnail')?.first();
 
                                 if ($videoThumbnail != null && $videoThumbnail.length > 0) {
                                     $videoThumbnail.trigger("click");
@@ -351,13 +351,13 @@ export function createDownloadButton() {
                                 }
 
                                 updateLoadingBar(false);
-                                $('.IG_SN_DIG').remove();
+                                $('.IG_POPUP_DIG').remove();
                             }
                         }, 250);
                     });
                 });
 
-                $(this).on('click', '.SNKMS_IG_NEWTAB_MAIN', function () {
+                $(this).on('click', '.IG_NEWTAB_MAIN', function () {
                     updateLoadingBar(true);
 
                     state.GL_username = $mainElement.attr('data-username');
@@ -367,11 +367,11 @@ export function createDownloadButton() {
 
                     IG_createDM(true, false);
 
-                    createMediaListDOM(state.GL_postPath, ".IG_SN_DIG .IG_SN_DIG_MAIN .IG_SN_DIG_BODY", "").then(() => {
+                    createMediaListDOM(state.GL_postPath, ".IG_POPUP_DIG .IG_POPUP_DIG_MAIN .IG_POPUP_DIG_BODY", "").then(() => {
                         let checkBlob = setInterval(() => {
-                            if ($('.IG_SN_DIG .IG_SN_DIG_MAIN .IG_SN_DIG_BODY a').length > 0) {
+                            if ($('.IG_POPUP_DIG .IG_POPUP_DIG_MAIN .IG_POPUP_DIG_BODY a').length > 0) {
                                 clearInterval(checkBlob);
-                                var $linkElement = $('.IG_SN_DIG .IG_SN_DIG_BODY a[data-globalindex="' + (index + 1) + '"]');
+                                var $linkElement = $('.IG_POPUP_DIG .IG_POPUP_DIG_BODY a[data-globalindex="' + (index + 1) + '"]');
 
                                 if (USER_SETTING.FORCE_RESOURCE_VIA_MEDIA && USER_SETTING.NEW_TAB_ALWAYS_FORCE_MEDIA_IN_POST) {
                                     triggerLinkElement($linkElement.first()[0], true);
@@ -391,14 +391,14 @@ export function createDownloadButton() {
                                 }
 
                                 updateLoadingBar(false);
-                                $('.IG_SN_DIG').remove();
+                                $('.IG_POPUP_DIG').remove();
                             }
                         }, 250);
                     });
                 });
 
                 // Running if user click the download all icon
-                $(this).on('click', '.SNKMS_IG_DW_ALL_MAIN', async function () {
+                $(this).on('click', '.IG_DW_ALL_MAIN', async function () {
                     state.GL_username = $mainElement.attr('data-username');
                     state.GL_postPath = location.pathname.replace(/\/$/, '').split('/').at(-1) || $mainElement.find('a[href^="/p/"]').first().attr("href").split("/").at(2) || $(this).parent().parent().parent().children("div:last-child").children("div").children("div:last-child").find('a[href^="/p/"]').last().attr("href").split("/").at(2);
 
@@ -407,7 +407,7 @@ export function createDownloadButton() {
 
                     $("#article-id").html(`<a href="https://www.instagram.com/p/${state.GL_postPath}">${state.GL_postPath}</a>`);
 
-                    $('.IG_SN_DIG .IG_SN_DIG_MAIN .IG_SN_DIG_BODY a').each(function () {
+                    $('.IG_POPUP_DIG .IG_POPUP_DIG_MAIN .IG_POPUP_DIG_BODY a').each(function () {
                         $(this).wrap('<div></div>');
                         $(this).before('<label class="inner_box_wrapper"><input class="inner_box" type="checkbox"><span></span></label>');
                         $(this).after(`<div data-ih-locale-title="NEW_TAB" title="${_i18n("NEW_TAB")}" class="newTab">${SVG.NEW_TAB}</div>`);
@@ -418,22 +418,22 @@ export function createDownloadButton() {
                     });
 
 
-                    createMediaListDOM(state.GL_postPath, ".IG_SN_DIG .IG_SN_DIG_MAIN .IG_SN_DIG_BODY", _i18n("LOAD_BLOB_MULTIPLE")).then(() => {
+                    createMediaListDOM(state.GL_postPath, ".IG_POPUP_DIG .IG_POPUP_DIG_MAIN .IG_POPUP_DIG_BODY", _i18n("LOAD_BLOB_MULTIPLE")).then(() => {
                         let checkBlob = setInterval(() => {
-                            if ($('.IG_SN_DIG .IG_SN_DIG_MAIN .IG_SN_DIG_BODY a').length > 0) {
+                            if ($('.IG_POPUP_DIG .IG_POPUP_DIG_MAIN .IG_POPUP_DIG_BODY a').length > 0) {
                                 clearInterval(checkBlob);
-                                $('.IG_SN_DIG .IG_SN_DIG_MAIN .IG_SN_DIG_BODY a').each(function () {
+                                $('.IG_POPUP_DIG .IG_POPUP_DIG_MAIN .IG_POPUP_DIG_BODY a').each(function () {
                                     $(this).trigger("click");
                                 });
 
-                                $('.IG_SN_DIG').remove();
+                                $('.IG_POPUP_DIG').remove();
                             }
                         }, 250);
                     });
                 });
 
                 // Running if user click the download icon
-                $(this).on('click', '.SNKMS_IG_DW_MAIN', async function () {
+                $(this).on('click', '.IG_DW_MAIN', async function () {
                     state.GL_username = $mainElement.attr('data-username');
                     state.GL_postPath = location.pathname.replace(/\/$/, '').split('/').at(-1) || $mainElement.find('a[href^="/p/"]').first().attr("href").split("/").at(2) || $(this).parent().parent().parent().children("div:last-child").children("div").children("div:last-child").find('a[href^="/p/"]').last().attr("href").split("/").at(2);
 
@@ -448,21 +448,21 @@ export function createDownloadButton() {
 
                         var index = getVisibleNodeIndex($(this).parent().parent().parent());
 
-                        createMediaListDOM(state.GL_postPath, ".IG_SN_DIG .IG_SN_DIG_MAIN .IG_SN_DIG_BODY", "").then(() => {
+                        createMediaListDOM(state.GL_postPath, ".IG_POPUP_DIG .IG_POPUP_DIG_MAIN .IG_POPUP_DIG_BODY", "").then(() => {
                             let checkBlob = setInterval(() => {
-                                if ($('.IG_SN_DIG .IG_SN_DIG_MAIN .IG_SN_DIG_BODY a').length > 0) {
+                                if ($('.IG_POPUP_DIG .IG_POPUP_DIG_MAIN .IG_POPUP_DIG_BODY a').length > 0) {
                                     clearInterval(checkBlob);
-                                    var href = $('.IG_SN_DIG .IG_SN_DIG_BODY a[data-globalindex="' + (index + 1) + '"]')?.attr('data-href');
+                                    var href = $('.IG_POPUP_DIG .IG_POPUP_DIG_BODY a[data-globalindex="' + (index + 1) + '"]')?.attr('data-href');
 
                                     if (href) {
                                         updateLoadingBar(false);
-                                        $('.IG_SN_DIG .IG_SN_DIG_BODY a[data-globalindex="' + (index + 1) + '"]')?.trigger("click");
+                                        $('.IG_POPUP_DIG .IG_POPUP_DIG_BODY a[data-globalindex="' + (index + 1) + '"]')?.trigger("click");
                                     }
                                     else {
                                         alert('Can not find download url.');
                                     }
 
-                                    $('.IG_SN_DIG').remove();
+                                    $('.IG_POPUP_DIG').remove();
                                 }
                             }, 250);
                         });
@@ -489,7 +489,7 @@ export function createDownloadButton() {
 
 
                             if (blob || USER_SETTING.FORCE_RESOURCE_VIA_MEDIA) {
-                                createMediaListDOM(state.GL_postPath, ".IG_SN_DIG .IG_SN_DIG_MAIN .IG_SN_DIG_BODY", _i18n("LOAD_BLOB_MULTIPLE"));
+                                createMediaListDOM(state.GL_postPath, ".IG_POPUP_DIG .IG_POPUP_DIG_MAIN .IG_POPUP_DIG_BODY", _i18n("LOAD_BLOB_MULTIPLE"));
                             }
                             else {
                                 $(this).parent().parent().find(resourceCountSelector).each(function () {
@@ -502,19 +502,19 @@ export function createDownloadButton() {
                                         blob = true;
                                     }
                                     if (element_images && imgLink) {
-                                        $('.IG_SN_DIG .IG_SN_DIG_MAIN .IG_SN_DIG_BODY').append(`<a datetime="${publish_time}" data-needed="direct" data-path="${state.GL_postPath}" data-name="photo" data-type="jpg" data-globalIndex="${s}" href="javascript:;" data-href="${imgLink}"><img width="100" src="${imgLink}" /><br/>- <span data-ih-locale="IMG">${_i18n("IMG")}</span> ${s} -</a>`);
+                                        $('.IG_POPUP_DIG .IG_POPUP_DIG_MAIN .IG_POPUP_DIG_BODY').append(`<a datetime="${publish_time}" data-needed="direct" data-path="${state.GL_postPath}" data-name="photo" data-type="jpg" data-globalIndex="${s}" href="javascript:;" data-href="${imgLink}"><img width="100" src="${imgLink}" /><br/>- <span data-ih-locale="IMG">${_i18n("IMG")}</span> ${s} -</a>`);
                                     }
 
                                 });
 
                                 if (blob) {
-                                    createMediaListDOM(state.GL_postPath, ".IG_SN_DIG .IG_SN_DIG_MAIN .IG_SN_DIG_BODY", _i18n("LOAD_BLOB_RELOAD"));
+                                    createMediaListDOM(state.GL_postPath, ".IG_POPUP_DIG .IG_POPUP_DIG_MAIN .IG_POPUP_DIG_BODY", _i18n("LOAD_BLOB_RELOAD"));
                                 }
                             }
                         }
                         else {
                             if (USER_SETTING.FORCE_RESOURCE_VIA_MEDIA) {
-                                createMediaListDOM(state.GL_postPath, ".IG_SN_DIG .IG_SN_DIG_MAIN .IG_SN_DIG_BODY", _i18n("LOAD_BLOB_MULTIPLE"));
+                                createMediaListDOM(state.GL_postPath, ".IG_POPUP_DIG .IG_POPUP_DIG_MAIN .IG_POPUP_DIG_BODY", _i18n("LOAD_BLOB_MULTIPLE"));
                             }
                             else {
                                 s++;
@@ -524,16 +524,16 @@ export function createDownloadButton() {
 
 
                                 if (element_videos && element_videos.attr('src')) {
-                                    createMediaListDOM(state.GL_postPath, ".IG_SN_DIG .IG_SN_DIG_MAIN .IG_SN_DIG_BODY", _i18n("LOAD_BLOB_ONE"));
+                                    createMediaListDOM(state.GL_postPath, ".IG_POPUP_DIG .IG_POPUP_DIG_MAIN .IG_POPUP_DIG_BODY", _i18n("LOAD_BLOB_ONE"));
                                 }
                                 if (element_images && imgLink) {
-                                    $('.IG_SN_DIG .IG_SN_DIG_MAIN .IG_SN_DIG_BODY').append(`<a datetime="${publish_time}" data-needed="direct" data-path="${state.GL_postPath}" data-name="photo" data-type="jpg" data-globalIndex="${s}" href="javascript:;" href="" data-href="${imgLink}"><img width="100" src="${imgLink}" /><br/>- <span data-ih-locale="IMG">${_i18n("IMG")}</span> ${s} -</a>`);
+                                    $('.IG_POPUP_DIG .IG_POPUP_DIG_MAIN .IG_POPUP_DIG_BODY').append(`<a datetime="${publish_time}" data-needed="direct" data-path="${state.GL_postPath}" data-name="photo" data-type="jpg" data-globalIndex="${s}" href="javascript:;" href="" data-href="${imgLink}"><img width="100" src="${imgLink}" /><br/>- <span data-ih-locale="IMG">${_i18n("IMG")}</span> ${s} -</a>`);
                                 }
                             }
                         }
                     }
 
-                    $('.IG_SN_DIG .IG_SN_DIG_MAIN .IG_SN_DIG_BODY a').each(function () {
+                    $('.IG_POPUP_DIG .IG_POPUP_DIG_MAIN .IG_POPUP_DIG_BODY a').each(function () {
                         $(this).wrap('<div></div>');
                         $(this).before('<label class="inner_box_wrapper"><input class="inner_box" type="checkbox"><span></span></label>');
                         $(this).after(`<div data-ih-locale-title="NEW_TAB" title="${_i18n("NEW_TAB")}" class="newTab">${SVG.NEW_TAB}</div>`);
@@ -544,15 +544,15 @@ export function createDownloadButton() {
                     });
 
                     if (USER_SETTING.DIRECT_DOWNLOAD_ALL) {
-                        createMediaListDOM(state.GL_postPath, ".IG_SN_DIG .IG_SN_DIG_MAIN .IG_SN_DIG_BODY", _i18n("LOAD_BLOB_MULTIPLE")).then(() => {
+                        createMediaListDOM(state.GL_postPath, ".IG_POPUP_DIG .IG_POPUP_DIG_MAIN .IG_POPUP_DIG_BODY", _i18n("LOAD_BLOB_MULTIPLE")).then(() => {
                             let checkBlob = setInterval(() => {
-                                if ($('.IG_SN_DIG .IG_SN_DIG_MAIN .IG_SN_DIG_BODY a').length > 0) {
+                                if ($('.IG_POPUP_DIG .IG_POPUP_DIG_MAIN .IG_POPUP_DIG_BODY a').length > 0) {
                                     clearInterval(checkBlob);
-                                    $('.IG_SN_DIG .IG_SN_DIG_MAIN .IG_SN_DIG_BODY a').each(function () {
+                                    $('.IG_POPUP_DIG .IG_POPUP_DIG_MAIN .IG_POPUP_DIG_BODY a').each(function () {
                                         $(this).trigger("click");
                                     });
 
-                                    $('.IG_SN_DIG').remove();
+                                    $('.IG_POPUP_DIG').remove();
                                 }
                             }, 250);
                         });
@@ -698,7 +698,7 @@ export async function createMediaListDOM(postURL, selector, message) {
         }
 
         $("#_SNLOAD").remove();
-        $('.IG_SN_DIG .IG_SN_DIG_MAIN .IG_SN_DIG_BODY a').each(function () {
+        $('.IG_POPUP_DIG .IG_POPUP_DIG_MAIN .IG_POPUP_DIG_BODY a').each(function () {
             $(this).wrap('<div></div>');
             $(this).before('<label class="inner_box_wrapper"><input class="inner_box" type="checkbox"><span></span></label>');
             $(this).after(`<div data-ih-locale-title="NEW_TAB" title="${_i18n("NEW_TAB")}" class="newTab">${SVG.NEW_TAB}</div>`);
