@@ -5,7 +5,7 @@
 // @name:ja            IG助手
 // @name:ko            IG조수
 // @namespace          https://github.snkms.com/
-// @version            3.0.8
+// @version            3.1.0
 // @description        Downloading is possible for both photos and videos from posts, as well as for stories, reels or profile picture.
 // @description:zh-TW  一鍵下載對方 Instagram 貼文中的相片、影片甚至是他們的限時動態、連續短片及大頭貼圖片！
 // @description:zh-CN  一键下载对方 Instagram 帖子中的相片、视频甚至是他们的快拍、Reels及头像图片！
@@ -68,7 +68,7 @@
     const CHILD_NODES = ['RENAME_PUBLISH_DATE', 'USE_BLOB_FETCH_WHEN_MEDIA_RATE_LIMIT', 'NEW_TAB_ALWAYS_FORCE_MEDIA_IN_POST'];
     /*******************************/
 
-    // Icon download by https://www.flaticon.com/authors/pixel-perfect
+    // Icon download by Google Fonts Material Icon
     const SVG = {
         DOWNLOAD: '<svg xmlns="http://www.w3.org/2000/svg" enable-background="new 0 0 24 24" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"><g><rect fill="none" height="24" width="24"/></g><g><path d="M18,15v3H6v-3H4v3c0,1.1,0.9,2,2,2h12c1.1,0,2-0.9,2-2v-3H18z M17,11l-1.41-1.41L13,12.17V4h-2v8.17L8.41,9.59L7,11l5,5 L17,11z"/></g></svg>',
         NEW_TAB: '<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M19 19H5V5h7V3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2v-7h-2v7zM14 3v2h3.59l-9.83 9.83 1.41 1.41L19 6.41V10h2V3h-7z"/></svg>',
@@ -3335,7 +3335,7 @@
     }
 
     function openImageViewer(imageUrl) {
-        removeViewer();
+        removeImageViewer();
 
         $('body').append(
             `<div id="imageViewer">
@@ -3405,11 +3405,11 @@
         });
 
         $container.on('click', () => {
-            removeViewer();
+            removeImageViewer();
         });
 
         $closeIcon.on('click', () => {
-            removeViewer();
+            removeImageViewer();
         });
 
         $header.on('click', (e) => {
@@ -3422,11 +3422,11 @@
             $image.css('left', `${posX}px`);
             $image.css('top', `${posY}px`);
         }
+    }
 
-        function removeViewer() {
-            $('#imageViewer').remove();
-            $(document).off('mousemove.igHelper');
-        }
+    function removeImageViewer() {
+        $('#imageViewer').remove();
+        $(document).off('mousemove.igHelper');
     }
 
     /**
