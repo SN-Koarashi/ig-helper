@@ -643,6 +643,12 @@ div[class]:hover+.volume_slider>div,
     justify-content: center;
     align-items: center;
     z-index: 600001;
+    transform: scale(1);
+    transition: transform 0.15s;
+
+    @starting-style {
+        transform: scale(0);
+    }
 }
 
 #imageViewer>div {
