@@ -1131,7 +1131,12 @@
                             var s = 0;
                             var multiple = $(this).parent().parent().find(resourceCountSelector).length;
                             var blob = USER_SETTING.FORCE_FETCH_ALL_RESOURCES;
-                            var publish_time = new Date($(this).parent().parent().find('a[href^="/p/"] time[datetime]').first().attr('datetime')).getTime();
+                            var publish_time = new Date(
+                                $(this).parent().parent().parent().find('a[href] time[datetime]').filter(function () {
+                                    let href = $(this).parents("a[href]").attr("href");
+                                    return href?.startsWith("/p/") || href?.match(/\/([\w.\-_]+)\/p\//ig) != null;
+                                }).first().attr('datetime')
+                            ).getTime();
 
                             // If posts have more than one images or videos.
                             if (multiple) {
