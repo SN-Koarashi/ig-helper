@@ -5,7 +5,7 @@
 // @name:ja            IG助手
 // @name:ko            IG조수
 // @namespace          https://github.snkms.com/
-// @version            3.1.2
+// @version            3.2.1
 // @description        Downloading is possible for both photos and videos from posts, as well as for stories, reels or profile picture.
 // @description:zh-TW  一鍵下載對方 Instagram 貼文中的相片、影片甚至是他們的限時動態、連續短片及大頭貼圖片！
 // @description:zh-CN  一键下载对方 Instagram 帖子中的相片、视频甚至是他们的快拍、Reels及头像图片！
@@ -505,6 +505,12 @@
                     let $header = getStoryProgress(username);
                     if ($header.length > 1) {
                         $element.append(`<div data-ih-locale-title="DW_ALL" title="${_i18n("DW_ALL")}" class="IG_DWHISTORY_ALL">${SVG.DOWNLOAD_ALL}</div>`);
+                    }
+
+                    // replace something times ago format to publish time in first init
+                    let publishTitle = $header.parents("div[class]").find("time[datetime]")?.attr('title');
+                    if (publishTitle != null) {
+                        $header.parents("div[class]").find("time[datetime]").text(publishTitle);
                     }
 
                     //// Modify video volume
@@ -3920,11 +3926,27 @@
             });
         });
 
-        const audio_observer = new MutationObserver((mutationsList) => {
+        const element_observer = new MutationObserver((mutationsList) => {
             for (const mutation of mutationsList) {
                 if (mutation.type === 'childList') {
                     mutation.addedNodes.forEach((node) => {
                         const $videos = $(node).find('video');
+
+                        if (location.pathname.startsWith("/stories/highlights/")) {
+                            if (
+                                $(node).attr("data-ih-locale-title") == null &&
+                                $(node).attr("data-visualcompletion") == null &&
+                                node.tagName === "DIV"
+                            ) {
+                                // replace something times ago format to publish time when switch highlight
+                                var $time = $(node).find("time[datetime]");
+                                let publishTitle = $time?.attr('title');
+                                if (publishTitle != null) {
+                                    $time.text(publishTitle);
+                                }
+                            }
+                        }
+
                         if ($videos.length > 0) {
                             // Modify video volume
                             if (USER_SETTING.MODIFY_VIDEO_VOLUME) {
@@ -4066,7 +4088,7 @@
             }
         });
 
-        audio_observer.observe($('div[id^="mount"]')[0], {
+        element_observer.observe($('div[id^="mount"]')[0], {
             childList: true,
             subtree: true,
         });

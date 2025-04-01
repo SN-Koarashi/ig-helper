@@ -345,11 +345,27 @@ $(function () {
         });
     });
 
-    const audio_observer = new MutationObserver((mutationsList) => {
+    const element_observer = new MutationObserver((mutationsList) => {
         for (const mutation of mutationsList) {
             if (mutation.type === 'childList') {
                 mutation.addedNodes.forEach((node) => {
                     const $videos = $(node).find('video');
+
+                    if (location.pathname.startsWith("/stories/highlights/")) {
+                        if (
+                            $(node).attr("data-ih-locale-title") == null &&
+                            $(node).attr("data-visualcompletion") == null &&
+                            node.tagName === "DIV"
+                        ) {
+                            // replace something times ago format to publish time when switch highlight
+                            var $time = $(node).find("time[datetime]");
+                            let publishTitle = $time?.attr('title');
+                            if (publishTitle != null) {
+                                $time.text(publishTitle);
+                            }
+                        }
+                    }
+
                     if ($videos.length > 0) {
                         // Modify video volume
                         if (USER_SETTING.MODIFY_VIDEO_VOLUME) {
@@ -491,7 +507,7 @@ $(function () {
         }
     });
 
-    audio_observer.observe($('div[id^="mount"]')[0], {
+    element_observer.observe($('div[id^="mount"]')[0], {
         childList: true,
         subtree: true,
     });

@@ -194,6 +194,12 @@ export async function onHighlightsStory(isDownload, isPreview) {
                     $element.append(`<div data-ih-locale-title="DW_ALL" title="${_i18n("DW_ALL")}" class="IG_DWHISTORY_ALL">${SVG.DOWNLOAD_ALL}</div>`);
                 }
 
+                // replace something times ago format to publish time in first init
+                let publishTitle = $header.parents("div[class]").find("time[datetime]")?.attr('title');
+                if (publishTitle != null) {
+                    $header.parents("div[class]").find("time[datetime]").text(publishTitle);
+                }
+
                 //// Modify video volume
                 //if(USER_SETTING.MODIFY_VIDEO_VOLUME){
                 //    $element.find('video').each(function(){
