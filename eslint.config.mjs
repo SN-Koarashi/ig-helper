@@ -26,7 +26,7 @@ export default [
     },
   },
   {
-    files: ["build.js", "webpack.config.js"],
+    files: ["build.js"],
     sourceType: "commonjs",
     languageOptions: {
       globals: {

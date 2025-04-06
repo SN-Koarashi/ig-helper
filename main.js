@@ -5,7 +5,7 @@
 // @name:ja            IG助手
 // @name:ko            IG조수
 // @namespace          https://github.snkms.com/
-// @version            3.0.5.3
+// @version            3.2.1
 // @description        Downloading is possible for both photos and videos from posts, as well as for stories, reels or profile picture.
 // @description:zh-TW  一鍵下載對方 Instagram 貼文中的相片、影片甚至是他們的限時動態、連續短片及大頭貼圖片！
 // @description:zh-CN  一键下载对方 Instagram 帖子中的相片、视频甚至是他们的快拍、Reels及头像图片！
@@ -68,13 +68,14 @@
     const CHILD_NODES = ['RENAME_PUBLISH_DATE', 'USE_BLOB_FETCH_WHEN_MEDIA_RATE_LIMIT', 'NEW_TAB_ALWAYS_FORCE_MEDIA_IN_POST'];
     /*******************************/
 
-    // Icon download by https://www.flaticon.com/authors/pixel-perfect
+    // Icon download by Google Fonts Material Icon
     const SVG = {
-        DOWNLOAD: '<svg width="16" height="16" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" id="Capa_1" x="0px" y="0px" viewBox="0 0 512 512" style="enable-background:new 0 0 512 512;" xml:space="preserve"><g><g><path d="M382.56,233.376C379.968,227.648,374.272,224,368,224h-64V16c0-8.832-7.168-16-16-16h-64c-8.832,0-16,7.168-16,16v208h-64    c-6.272,0-11.968,3.68-14.56,9.376c-2.624,5.728-1.6,12.416,2.528,17.152l112,128c3.04,3.488,7.424,5.472,12.032,5.472    c4.608,0,8.992-2.016,12.032-5.472l112-128C384.192,245.824,385.152,239.104,382.56,233.376z"/></g></g><g><g><path d="M432,352v96H80v-96H16v128c0,17.696,14.336,32,32,32h416c17.696,0,32-14.304,32-32V352H432z"/></g></g>',
-        NEW_TAB: '<svg width="16" height="16" viewBox="3 3 18 18" fill="none" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" clip-rule="evenodd" d="M20 14a1 1 0 0 0-1 1v3.077c0 .459-.022.57-.082.684a.363.363 0 0 1-.157.157c-.113.06-.225.082-.684.082H5.923c-.459 0-.571-.022-.684-.082a.363.363 0 0 1-.157-.157c-.06-.113-.082-.225-.082-.684L4.999 5.5a.5.5 0 0 1 .5-.5l3.5.005a1 1 0 1 0 .002-2L5.501 3a2.5 2.5 0 0 0-2.502 2.5v12.577c0 .76.083 1.185.32 1.627.223.419.558.753.977.977.442.237.866.319 1.627.319h12.154c.76 0 1.185-.082 1.627-.319.419-.224.753-.558.977-.977.237-.442.319-.866.319-1.627V15a1 1 0 0 0-1-1zm-2-9.055v-.291l-.39.09A10 10 0 0 1 15.36 5H14a1 1 0 1 1 0-2l5.5.003a1.5 1.5 0 0 1 1.5 1.5V10a1 1 0 1 1-2 0V8.639c0-.757.086-1.511.256-2.249l.09-.39h-.295a10 10 0 0 1-1.411 1.775l-5.933 5.932a1 1 0 0 1-1.414-1.414l5.944-5.944A10 10 0 0 1 18 4.945z" fill="currentColor"/></svg>',
-        THUMBNAIL: '<svg width="16" height="16" xmlns="http://www.w3.org/2000/svg" enable-background="new 0 0 24 24" height="512" viewBox="0 0 24 24" width="512"><circle cx="8.25" cy="5.25" r=".5"/><path d="m8.25 6.5c-.689 0-1.25-.561-1.25-1.25s.561-1.25 1.25-1.25 1.25.561 1.25 1.25-.561 1.25-1.25 1.25zm0-1.5c-.138 0-.25.112-.25.25 0 .275.5.275.5 0 0-.138-.112-.25-.25-.25z"/><path d="m7.25 11.25 2-2.5 2.25 1.5 2.25-3.5 3 4.5z"/><path d="m16.75 12h-9.5c-.288 0-.551-.165-.676-.425s-.09-.568.09-.793l2-2.5c.243-.304.678-.372 1.002-.156l1.616 1.077 1.837-2.859c.137-.212.372-.342.625-.344.246-.026.49.123.63.334l3 4.5c.153.23.168.526.037.77-.13.244-.385.396-.661.396zm-4.519-1.5h3.118l-1.587-2.381zm-3.42 0h1.712l-1.117-.745z"/><path d="m22.25 14h-2.756c-.778 0-1.452.501-1.676 1.247l-.859 2.862c-.16.533-.641.891-1.197.891h-7.524c-.556 0-1.037-.358-1.197-.891l-.859-2.861c-.224-.747-.897-1.248-1.676-1.248h-2.756c-.965 0-1.75.785-1.75 1.75v5.5c0 1.517 1.233 2.75 2.75 2.75h18.5c1.517 0 2.75-1.233 2.75-2.75v-5.5c0-.965-.785-1.75-1.75-1.75z"/><path d="m4 12c-.552 0-1-.448-1-1v-8c0-1.654 1.346-3 3-3h12c1.654 0 3 1.346 3 3v8c0 .552-.448 1-1 1s-1-.448-1-1v-8c0-.551-.449-1-1-1h-12c-.551 0-1 .449-1 1v8c0 .552-.448 1-1 1z"/></svg>',
-        DOWNLOAD_ALL: '<svg width="16" height="16" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" x="0px" y="0px" viewBox="0 0 512 512" style="enable-background:new 0 0 512 512;" xml:space="preserve"><g><g><path d="m191 208c-1-5-6-8-10-8l-42 0 0-184c0-8-5-15-11-15l-42 0c-6 0-11 7-11 15l0 184-42 0c-4 0-8 3-9 8c-2 6-1 12 1 16l74 105c2 3 5 5 8 5s6-2 8-5l74-105c2-4 4-9 2-16z"></g></g><g><g><path d="m486.3 208c-1-5-6-8-10-8l-42 0 0-184c0-8-5-15-11-15l-43 0c-6 0-11 7-11 15l0 184-41 0c-4 0-8 3-9 8c-2 6-1 12 1 16l74 105c2 3 5 5 8 5s6-2 8-5l74-105c2-4 4-9 2-16z"></g></g><g><g><path d="m342.3 299c-1-5-6-8-10-8l-42 0 0-275c0-8-5-15-11-15l-42 0c-6 0-11 7-11 15l0 275-42 0c-4 0-8 3-9 8c-2 6-1 12 1 16l74 105c2 3 5 5 8 5s6-2 8-5l74-105c2-4 4-9 2-16z"></g></g><g><g><path d="m422.79 380.79l0 74.12-338.83 0 0-74.12-67.34 0 0 89.45c0 23 14.73 40.89 33.67 40.89l408.28 0c18.94 0 33.67-17.89 33.67-40.89l0-89.45-69.45 0z"/></g></g></svg>',
-        CLOSE: '<svg width="26" height="26" xmlns="http://www.w3.org/2000/svg" id="bold" enable-background="new 0 0 24 24" viewBox="0 0 24 24"><path d="m14.828 12 5.303-5.303c.586-.586.586-1.536 0-2.121l-.707-.707c-.586-.586-1.536-.586-2.121 0l-5.303 5.303-5.303-5.304c-.586-.586-1.536-.586-2.121 0l-.708.707c-.586.586-.586 1.536 0 2.121l5.304 5.304-5.303 5.303c-.586.586-.586 1.536 0 2.121l.707.707c.586.586 1.536.586 2.121 0l5.303-5.303 5.303 5.303c.586.586 1.536.586 2.121 0l.707-.707c.586-.586.586-1.536 0-2.121z"></path></svg>'
+        DOWNLOAD: '<svg xmlns="http://www.w3.org/2000/svg" enable-background="new 0 0 24 24" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"><g><rect fill="none" height="24" width="24"/></g><g><path d="M18,15v3H6v-3H4v3c0,1.1,0.9,2,2,2h12c1.1,0,2-0.9,2-2v-3H18z M17,11l-1.41-1.41L13,12.17V4h-2v8.17L8.41,9.59L7,11l5,5 L17,11z"/></g></svg>',
+        NEW_TAB: '<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M19 19H5V5h7V3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2v-7h-2v7zM14 3v2h3.59l-9.83 9.83 1.41 1.41L19 6.41V10h2V3h-7z"/></svg>',
+        THUMBNAIL: '<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M19 5v14H5V5h14m0-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-4.86 8.86l-3 3.87L9 13.14 6 17h12l-3.86-5.14z"/></svg>',
+        DOWNLOAD_ALL: '<svg xmlns="http://www.w3.org/2000/svg" enable-background="new 0 0 24 24" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"><g><rect fill="none" height="24" width="24"/></g><g><g><polygon points="18,6.41 16.59,5 12,9.58 7.41,5 6,6.41 12,12.41"/><polygon points="18,13 16.59,11.59 12,16.17 7.41,11.59 6,13 12,19"/></g></g></svg>',
+        CLOSE: '<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z"/></svg>',
+        FULLSCREEN: '<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"/></svg>'
     };
 
     /*******************************/
@@ -419,7 +420,7 @@
                             openNewTab(result.items[0].video_versions[0].url);
                         }
                         else {
-                            saveFiles(result.items[0].video_versions[0].url, username, "highlights", timestamp, 'mp4', highlightId);
+                            saveFiles(result.items[0].video_versions[0].url, username, "highlights", timestamp, 'mp4', result.items[0].id);
                         }
                     }
                     else {
@@ -427,7 +428,7 @@
                             openNewTab(result.items[0].image_versions2.candidates[0].url);
                         }
                         else {
-                            saveFiles(result.items[0].image_versions2.candidates[0].url, username, "highlights", timestamp, 'jpg', highlightId);
+                            saveFiles(result.items[0].image_versions2.candidates[0].url, username, "highlights", timestamp, 'jpg', result.items[0].id);
                         }
                     }
                 }
@@ -451,7 +452,7 @@
                         openNewTab(target.video_resources.at(-1).src, username);
                     }
                     else {
-                        saveFiles(target.video_resources.at(-1).src, username, "highlights", timestamp, 'mp4', highlightId);
+                        saveFiles(target.video_resources.at(-1).src, username, "highlights", timestamp, 'mp4', target.id);
                     }
                 }
                 else {
@@ -459,7 +460,7 @@
                         openNewTab(target.display_resources.at(-1).src, username);
                     }
                     else {
-                        saveFiles(target.display_resources.at(-1).src, username, "highlights", timestamp, 'jpg', highlightId);
+                        saveFiles(target.display_resources.at(-1).src, username, "highlights", timestamp, 'jpg', target.id);
                     }
                 }
 
@@ -504,6 +505,12 @@
                     let $header = getStoryProgress(username);
                     if ($header.length > 1) {
                         $element.append(`<div data-ih-locale-title="DW_ALL" title="${_i18n("DW_ALL")}" class="IG_DWHISTORY_ALL">${SVG.DOWNLOAD_ALL}</div>`);
+                    }
+
+                    // replace something times ago format to publish time in first init
+                    let publishTitle = $header.parents("div[class]").find("time[datetime]")?.attr('title');
+                    if (publishTitle != null) {
+                        $header.parents("div[class]").find("time[datetime]").text(publishTitle);
                     }
 
                     //// Modify video volume
@@ -675,7 +682,7 @@
         if (hasReferrer === true) {
             logger('hasReferrer', 'regenerated');
             $('article[data-snig="canDownload"], div[data-snig="canDownload"]').filter(function () {
-                return $(this).find('.SNKMS_IG_DW_MAIN').length === 0
+                return $(this).find('.IG_DW_MAIN').length === 0
             }).removeAttr('data-snig');
         }
 
@@ -830,6 +837,7 @@
                     const $mainElement = $(this);
                     const tagName = this.tagName;
                     const resourceCountSelector = '._acay ._acaz';
+                    var displayResourceURL;
 
                     // not loop each in single top post
                     if (tagName === "DIV" && index != 0) {
@@ -861,16 +869,17 @@
                     $childElement.eq((tagName === "DIV") ? 0 : $childElement.length - 2).append(`<div class="button_wrapper">`);
 
                     // Add icons
-                    const DownloadElement = `<div data-ih-locale-title="DW" title="${_i18n("DW")}" class="SNKMS_IG_DW_MAIN">${SVG.DOWNLOAD}</div>`;
-                    const NewTabElement = `<div data-ih-locale-title="NEW_TAB" title="${_i18n("NEW_TAB")}" class="SNKMS_IG_NEWTAB_MAIN">${SVG.NEW_TAB}</div>`;
-                    const ThumbnailElement = `<div data-ih-locale-title="THUMBNAIL_INTRO" title="${_i18n("THUMBNAIL_INTRO")}" class="SNKMS_IG_THUMBNAIL_MAIN">${SVG.THUMBNAIL}</div>`;
+                    const DownloadElement = `<div data-ih-locale-title="DW" title="${_i18n("DW")}" class="IG_DW_MAIN">${SVG.DOWNLOAD}</div>`;
+                    const NewTabElement = `<div data-ih-locale-title="NEW_TAB" title="${_i18n("NEW_TAB")}" class="IG_NEWTAB_MAIN">${SVG.NEW_TAB}</div>`;
+                    const ThumbnailElement = `<div data-ih-locale-title="THUMBNAIL_INTRO" title="${_i18n("THUMBNAIL_INTRO")}" class="IG_THUMBNAIL_MAIN">${SVG.THUMBNAIL}</div>`;
+                    const ViewerElement = `<div data-ih-locale-title="IMAGE_VIEWER" title="${_i18n("IMAGE_VIEWER")}" class="IG_IMAGE_VIEWER">${SVG.FULLSCREEN}</div>`;
 
                     $childElement.find(".button_wrapper").append(DownloadElement);
 
                     const resource_count = $mainElement.find(resourceCountSelector).length;
 
                     if (resource_count > 1 && USER_SETTING.DIRECT_DOWNLOAD_VISIBLE_RESOURCE && !USER_SETTING.DIRECT_DOWNLOAD_ALL) {
-                        const DownloadAllElement = `<div data-ih-locale-title="DW_ALL" title="${_i18n("DW_ALL")}" class="SNKMS_IG_DW_ALL_MAIN">${SVG.DOWNLOAD_ALL}</div>`;
+                        const DownloadAllElement = `<div data-ih-locale-title="DW_ALL" title="${_i18n("DW_ALL")}" class="IG_DW_ALL_MAIN">${SVG.DOWNLOAD_ALL}</div>`;
                         $childElement.find(".button_wrapper").append(DownloadAllElement);
                     }
 
@@ -882,6 +891,12 @@
                             if ($childElement.find('video').length > 0) {
                                 $childElement.find(".button_wrapper").append(ThumbnailElement);
                             }
+                            else {
+                                displayResourceURL = $mainElement.find('img').filter(function () {
+                                    return $(this).width() > 200 && $(this).height() > 200
+                                }).attr('src');
+                                $childElement.find(".button_wrapper").append(ViewerElement);
+                            }
                         }
                         else {
                             // eslint-disable-next-line no-unused-vars
@@ -890,14 +905,21 @@
                                     //logger(entry);
                                     if (entry.isIntersecting) {
                                         var $targetNode = $(entry.target);
+                                        $childElement.find('.IG_THUMBNAIL_MAIN')?.remove();
+                                        $childElement.find('.IG_IMAGE_VIEWER')?.remove();
 
                                         // Check if video?
                                         if ($targetNode.find('video').length > 0) {
-                                            $childElement.find(".button_wrapper").append(ThumbnailElement);
+                                            if ($childElement.find('.IG_THUMBNAIL_MAIN').length === 0) {
+                                                $childElement.find(".button_wrapper").append(ThumbnailElement);
+                                            }
+
                                             initPostVideoFunction($mainElement);
                                         }
+                                        // is Image
                                         else {
-                                            $childElement.find('.SNKMS_IG_THUMBNAIL_MAIN')?.remove();
+                                            displayResourceURL = $targetNode.find('img').attr('src');
+                                            $childElement.find(".button_wrapper").append(ViewerElement);
                                         }
                                     }
                                 });
@@ -950,14 +972,24 @@
                     state.GL_registerEventList.push({
                         element: this,
                         trigger: [
-                            '.SNKMS_IG_THUMBNAIL_MAIN',
-                            '.SNKMS_IG_NEWTAB_MAIN',
-                            '.SNKMS_IG_DW_ALL_MAIN',
-                            '.SNKMS_IG_DW_MAIN'
+                            '.IG_THUMBNAIL_MAIN',
+                            '.IG_NEWTAB_MAIN',
+                            '.IG_DW_ALL_MAIN',
+                            '.IG_DW_MAIN',
+                            '.IG_IMAGE_VIEWER'
                         ]
                     });
 
-                    $(this).on('click', '.SNKMS_IG_THUMBNAIL_MAIN', function () {
+                    $(this).on('click', '.IG_IMAGE_VIEWER', function () {
+                        if (displayResourceURL != null) {
+                            openImageViewer(displayResourceURL);
+                        }
+                        else {
+                            alert("Cannot find resource url.");
+                        }
+                    });
+
+                    $(this).on('click', '.IG_THUMBNAIL_MAIN', function () {
                         updateLoadingBar(true);
 
                         state.GL_username = $mainElement.attr('data-username');
@@ -967,11 +999,11 @@
 
                         IG_createDM(true, false);
 
-                        createMediaListDOM(state.GL_postPath, ".IG_SN_DIG .IG_SN_DIG_MAIN .IG_SN_DIG_BODY", "").then(() => {
+                        createMediaListDOM(state.GL_postPath, ".IG_POPUP_DIG .IG_POPUP_DIG_MAIN .IG_POPUP_DIG_BODY", "").then(() => {
                             let checkBlob = setInterval(() => {
-                                if ($('.IG_SN_DIG .IG_SN_DIG_MAIN .IG_SN_DIG_BODY a').length > 0) {
+                                if ($('.IG_POPUP_DIG .IG_POPUP_DIG_MAIN .IG_POPUP_DIG_BODY a').length > 0) {
                                     clearInterval(checkBlob);
-                                    var $videoThumbnail = $('.IG_SN_DIG .IG_SN_DIG_BODY a[data-globalindex="' + (index + 1) + '"]')?.parent().find('.videoThumbnail')?.first();
+                                    var $videoThumbnail = $('.IG_POPUP_DIG .IG_POPUP_DIG_BODY a[data-globalindex="' + (index + 1) + '"]')?.parent().find('.videoThumbnail')?.first();
 
                                     if ($videoThumbnail != null && $videoThumbnail.length > 0) {
                                         $videoThumbnail.trigger("click");
@@ -981,13 +1013,13 @@
                                     }
 
                                     updateLoadingBar(false);
-                                    $('.IG_SN_DIG').remove();
+                                    $('.IG_POPUP_DIG').remove();
                                 }
                             }, 250);
                         });
                     });
 
-                    $(this).on('click', '.SNKMS_IG_NEWTAB_MAIN', function () {
+                    $(this).on('click', '.IG_NEWTAB_MAIN', function () {
                         updateLoadingBar(true);
 
                         state.GL_username = $mainElement.attr('data-username');
@@ -997,11 +1029,11 @@
 
                         IG_createDM(true, false);
 
-                        createMediaListDOM(state.GL_postPath, ".IG_SN_DIG .IG_SN_DIG_MAIN .IG_SN_DIG_BODY", "").then(() => {
+                        createMediaListDOM(state.GL_postPath, ".IG_POPUP_DIG .IG_POPUP_DIG_MAIN .IG_POPUP_DIG_BODY", "").then(() => {
                             let checkBlob = setInterval(() => {
-                                if ($('.IG_SN_DIG .IG_SN_DIG_MAIN .IG_SN_DIG_BODY a').length > 0) {
+                                if ($('.IG_POPUP_DIG .IG_POPUP_DIG_MAIN .IG_POPUP_DIG_BODY a').length > 0) {
                                     clearInterval(checkBlob);
-                                    var $linkElement = $('.IG_SN_DIG .IG_SN_DIG_BODY a[data-globalindex="' + (index + 1) + '"]');
+                                    var $linkElement = $('.IG_POPUP_DIG .IG_POPUP_DIG_BODY a[data-globalindex="' + (index + 1) + '"]');
 
                                     if (USER_SETTING.FORCE_RESOURCE_VIA_MEDIA && USER_SETTING.NEW_TAB_ALWAYS_FORCE_MEDIA_IN_POST) {
                                         triggerLinkElement($linkElement.first()[0], true);
@@ -1021,14 +1053,14 @@
                                     }
 
                                     updateLoadingBar(false);
-                                    $('.IG_SN_DIG').remove();
+                                    $('.IG_POPUP_DIG').remove();
                                 }
                             }, 250);
                         });
                     });
 
                     // Running if user click the download all icon
-                    $(this).on('click', '.SNKMS_IG_DW_ALL_MAIN', async function () {
+                    $(this).on('click', '.IG_DW_ALL_MAIN', async function () {
                         state.GL_username = $mainElement.attr('data-username');
                         state.GL_postPath = location.pathname.replace(/\/$/, '').split('/').at(-1) || $mainElement.find('a[href^="/p/"]').first().attr("href").split("/").at(2) || $(this).parent().parent().parent().children("div:last-child").children("div").children("div:last-child").find('a[href^="/p/"]').last().attr("href").split("/").at(2);
 
@@ -1037,7 +1069,7 @@
 
                         $("#article-id").html(`<a href="https://www.instagram.com/p/${state.GL_postPath}">${state.GL_postPath}</a>`);
 
-                        $('.IG_SN_DIG .IG_SN_DIG_MAIN .IG_SN_DIG_BODY a').each(function () {
+                        $('.IG_POPUP_DIG .IG_POPUP_DIG_MAIN .IG_POPUP_DIG_BODY a').each(function () {
                             $(this).wrap('<div></div>');
                             $(this).before('<label class="inner_box_wrapper"><input class="inner_box" type="checkbox"><span></span></label>');
                             $(this).after(`<div data-ih-locale-title="NEW_TAB" title="${_i18n("NEW_TAB")}" class="newTab">${SVG.NEW_TAB}</div>`);
@@ -1048,22 +1080,22 @@
                         });
 
 
-                        createMediaListDOM(state.GL_postPath, ".IG_SN_DIG .IG_SN_DIG_MAIN .IG_SN_DIG_BODY", _i18n("LOAD_BLOB_MULTIPLE")).then(() => {
+                        createMediaListDOM(state.GL_postPath, ".IG_POPUP_DIG .IG_POPUP_DIG_MAIN .IG_POPUP_DIG_BODY", _i18n("LOAD_BLOB_MULTIPLE")).then(() => {
                             let checkBlob = setInterval(() => {
-                                if ($('.IG_SN_DIG .IG_SN_DIG_MAIN .IG_SN_DIG_BODY a').length > 0) {
+                                if ($('.IG_POPUP_DIG .IG_POPUP_DIG_MAIN .IG_POPUP_DIG_BODY a').length > 0) {
                                     clearInterval(checkBlob);
-                                    $('.IG_SN_DIG .IG_SN_DIG_MAIN .IG_SN_DIG_BODY a').each(function () {
+                                    $('.IG_POPUP_DIG .IG_POPUP_DIG_MAIN .IG_POPUP_DIG_BODY a').each(function () {
                                         $(this).trigger("click");
                                     });
 
-                                    $('.IG_SN_DIG').remove();
+                                    $('.IG_POPUP_DIG').remove();
                                 }
                             }, 250);
                         });
                     });
 
                     // Running if user click the download icon
-                    $(this).on('click', '.SNKMS_IG_DW_MAIN', async function () {
+                    $(this).on('click', '.IG_DW_MAIN', async function () {
                         state.GL_username = $mainElement.attr('data-username');
                         state.GL_postPath = location.pathname.replace(/\/$/, '').split('/').at(-1) || $mainElement.find('a[href^="/p/"]').first().attr("href").split("/").at(2) || $(this).parent().parent().parent().children("div:last-child").children("div").children("div:last-child").find('a[href^="/p/"]').last().attr("href").split("/").at(2);
 
@@ -1078,21 +1110,21 @@
 
                             var index = getVisibleNodeIndex($(this).parent().parent().parent());
 
-                            createMediaListDOM(state.GL_postPath, ".IG_SN_DIG .IG_SN_DIG_MAIN .IG_SN_DIG_BODY", "").then(() => {
+                            createMediaListDOM(state.GL_postPath, ".IG_POPUP_DIG .IG_POPUP_DIG_MAIN .IG_POPUP_DIG_BODY", "").then(() => {
                                 let checkBlob = setInterval(() => {
-                                    if ($('.IG_SN_DIG .IG_SN_DIG_MAIN .IG_SN_DIG_BODY a').length > 0) {
+                                    if ($('.IG_POPUP_DIG .IG_POPUP_DIG_MAIN .IG_POPUP_DIG_BODY a').length > 0) {
                                         clearInterval(checkBlob);
-                                        var href = $('.IG_SN_DIG .IG_SN_DIG_BODY a[data-globalindex="' + (index + 1) + '"]')?.attr('data-href');
+                                        var href = $('.IG_POPUP_DIG .IG_POPUP_DIG_BODY a[data-globalindex="' + (index + 1) + '"]')?.attr('data-href');
 
                                         if (href) {
                                             updateLoadingBar(false);
-                                            $('.IG_SN_DIG .IG_SN_DIG_BODY a[data-globalindex="' + (index + 1) + '"]')?.trigger("click");
+                                            $('.IG_POPUP_DIG .IG_POPUP_DIG_BODY a[data-globalindex="' + (index + 1) + '"]')?.trigger("click");
                                         }
                                         else {
                                             alert('Can not find download url.');
                                         }
 
-                                        $('.IG_SN_DIG').remove();
+                                        $('.IG_POPUP_DIG').remove();
                                     }
                                 }, 250);
                             });
@@ -1105,7 +1137,12 @@
                             var s = 0;
                             var multiple = $(this).parent().parent().find(resourceCountSelector).length;
                             var blob = USER_SETTING.FORCE_FETCH_ALL_RESOURCES;
-                            var publish_time = new Date($(this).parent().parent().find('a[href^="/p/"] time[datetime]').first().attr('datetime')).getTime();
+                            var publish_time = new Date(
+                                $(this).parent().parent().parent().find('a[href] time[datetime]').filter(function () {
+                                    let href = $(this).parents("a[href]").attr("href");
+                                    return href?.startsWith("/p/") || href?.match(/\/([\w.\-_]+)\/p\//ig) != null;
+                                }).first().attr('datetime')
+                            ).getTime();
 
                             // If posts have more than one images or videos.
                             if (multiple) {
@@ -1119,7 +1156,7 @@
 
 
                                 if (blob || USER_SETTING.FORCE_RESOURCE_VIA_MEDIA) {
-                                    createMediaListDOM(state.GL_postPath, ".IG_SN_DIG .IG_SN_DIG_MAIN .IG_SN_DIG_BODY", _i18n("LOAD_BLOB_MULTIPLE"));
+                                    createMediaListDOM(state.GL_postPath, ".IG_POPUP_DIG .IG_POPUP_DIG_MAIN .IG_POPUP_DIG_BODY", _i18n("LOAD_BLOB_MULTIPLE"));
                                 }
                                 else {
                                     $(this).parent().parent().find(resourceCountSelector).each(function () {
@@ -1132,19 +1169,19 @@
                                             blob = true;
                                         }
                                         if (element_images && imgLink) {
-                                            $('.IG_SN_DIG .IG_SN_DIG_MAIN .IG_SN_DIG_BODY').append(`<a datetime="${publish_time}" data-needed="direct" data-path="${state.GL_postPath}" data-name="photo" data-type="jpg" data-globalIndex="${s}" href="javascript:;" data-href="${imgLink}"><img width="100" src="${imgLink}" /><br/>- <span data-ih-locale="IMG">${_i18n("IMG")}</span> ${s} -</a>`);
+                                            $('.IG_POPUP_DIG .IG_POPUP_DIG_MAIN .IG_POPUP_DIG_BODY').append(`<a datetime="${publish_time}" data-needed="direct" data-path="${state.GL_postPath}" data-name="photo" data-type="jpg" data-globalIndex="${s}" href="javascript:;" data-href="${imgLink}"><img width="100" src="${imgLink}" /><br/>- <span data-ih-locale="IMG">${_i18n("IMG")}</span> ${s} -</a>`);
                                         }
 
                                     });
 
                                     if (blob) {
-                                        createMediaListDOM(state.GL_postPath, ".IG_SN_DIG .IG_SN_DIG_MAIN .IG_SN_DIG_BODY", _i18n("LOAD_BLOB_RELOAD"));
+                                        createMediaListDOM(state.GL_postPath, ".IG_POPUP_DIG .IG_POPUP_DIG_MAIN .IG_POPUP_DIG_BODY", _i18n("LOAD_BLOB_RELOAD"));
                                     }
                                 }
                             }
                             else {
                                 if (USER_SETTING.FORCE_RESOURCE_VIA_MEDIA) {
-                                    createMediaListDOM(state.GL_postPath, ".IG_SN_DIG .IG_SN_DIG_MAIN .IG_SN_DIG_BODY", _i18n("LOAD_BLOB_MULTIPLE"));
+                                    createMediaListDOM(state.GL_postPath, ".IG_POPUP_DIG .IG_POPUP_DIG_MAIN .IG_POPUP_DIG_BODY", _i18n("LOAD_BLOB_MULTIPLE"));
                                 }
                                 else {
                                     s++;
@@ -1154,16 +1191,16 @@
 
 
                                     if (element_videos && element_videos.attr('src')) {
-                                        createMediaListDOM(state.GL_postPath, ".IG_SN_DIG .IG_SN_DIG_MAIN .IG_SN_DIG_BODY", _i18n("LOAD_BLOB_ONE"));
+                                        createMediaListDOM(state.GL_postPath, ".IG_POPUP_DIG .IG_POPUP_DIG_MAIN .IG_POPUP_DIG_BODY", _i18n("LOAD_BLOB_ONE"));
                                     }
                                     if (element_images && imgLink) {
-                                        $('.IG_SN_DIG .IG_SN_DIG_MAIN .IG_SN_DIG_BODY').append(`<a datetime="${publish_time}" data-needed="direct" data-path="${state.GL_postPath}" data-name="photo" data-type="jpg" data-globalIndex="${s}" href="javascript:;" href="" data-href="${imgLink}"><img width="100" src="${imgLink}" /><br/>- <span data-ih-locale="IMG">${_i18n("IMG")}</span> ${s} -</a>`);
+                                        $('.IG_POPUP_DIG .IG_POPUP_DIG_MAIN .IG_POPUP_DIG_BODY').append(`<a datetime="${publish_time}" data-needed="direct" data-path="${state.GL_postPath}" data-name="photo" data-type="jpg" data-globalIndex="${s}" href="javascript:;" href="" data-href="${imgLink}"><img width="100" src="${imgLink}" /><br/>- <span data-ih-locale="IMG">${_i18n("IMG")}</span> ${s} -</a>`);
                                     }
                                 }
                             }
                         }
 
-                        $('.IG_SN_DIG .IG_SN_DIG_MAIN .IG_SN_DIG_BODY a').each(function () {
+                        $('.IG_POPUP_DIG .IG_POPUP_DIG_MAIN .IG_POPUP_DIG_BODY a').each(function () {
                             $(this).wrap('<div></div>');
                             $(this).before('<label class="inner_box_wrapper"><input class="inner_box" type="checkbox"><span></span></label>');
                             $(this).after(`<div data-ih-locale-title="NEW_TAB" title="${_i18n("NEW_TAB")}" class="newTab">${SVG.NEW_TAB}</div>`);
@@ -1174,15 +1211,15 @@
                         });
 
                         if (USER_SETTING.DIRECT_DOWNLOAD_ALL) {
-                            createMediaListDOM(state.GL_postPath, ".IG_SN_DIG .IG_SN_DIG_MAIN .IG_SN_DIG_BODY", _i18n("LOAD_BLOB_MULTIPLE")).then(() => {
+                            createMediaListDOM(state.GL_postPath, ".IG_POPUP_DIG .IG_POPUP_DIG_MAIN .IG_POPUP_DIG_BODY", _i18n("LOAD_BLOB_MULTIPLE")).then(() => {
                                 let checkBlob = setInterval(() => {
-                                    if ($('.IG_SN_DIG .IG_SN_DIG_MAIN .IG_SN_DIG_BODY a').length > 0) {
+                                    if ($('.IG_POPUP_DIG .IG_POPUP_DIG_MAIN .IG_POPUP_DIG_BODY a').length > 0) {
                                         clearInterval(checkBlob);
-                                        $('.IG_SN_DIG .IG_SN_DIG_MAIN .IG_SN_DIG_BODY a').each(function () {
+                                        $('.IG_POPUP_DIG .IG_POPUP_DIG_MAIN .IG_POPUP_DIG_BODY a').each(function () {
                                             $(this).trigger("click");
                                         });
 
-                                        $('.IG_SN_DIG').remove();
+                                        $('.IG_POPUP_DIG').remove();
                                     }
                                 }, 250);
                             });
@@ -1328,7 +1365,7 @@
             }
 
             $("#_SNLOAD").remove();
-            $('.IG_SN_DIG .IG_SN_DIG_MAIN .IG_SN_DIG_BODY a').each(function () {
+            $('.IG_POPUP_DIG .IG_POPUP_DIG_MAIN .IG_POPUP_DIG_BODY a').each(function () {
                 $(this).wrap('<div></div>');
                 $(this).before('<label class="inner_box_wrapper"><input class="inner_box" type="checkbox"><span></span></label>');
                 $(this).after(`<div data-ih-locale-title="NEW_TAB" title="${_i18n("NEW_TAB")}" class="newTab">${SVG.NEW_TAB}</div>`);
@@ -1627,7 +1664,6 @@
             }, 250);
         }
     }
-
 
     /**
      * onStoryAll
@@ -2248,24 +2284,6 @@
     /* untils */
 
     /**
-     * getStoryId
-     * @description Obtain the media id through the resource URL.
-     *
-     * @param  {string}  url
-     * @return {string}
-     */
-    function getStoryId(url) {
-        let obj = new URL(url);
-        let base64 = obj?.searchParams?.get('ig_cache_key')?.split('.').at(0);
-        if (base64) {
-            return atob(base64);
-        }
-        else {
-            return null;
-        }
-    }
-
-    /**
      * getHighlightStories
      * @description Get a list of all stories in highlight Id.
      *
@@ -2660,6 +2678,24 @@
     }
 
     /**
+     * getStoryId
+     * @description Obtain the media id through the resource URL.
+     *
+     * @param  {string}  url
+     * @return {string}
+     */
+    function getStoryId(url) {
+        let obj = new URL(url);
+        let base64 = obj?.searchParams?.get('ig_cache_key')?.split('.').at(0);
+        if (base64) {
+            return atob(base64);
+        }
+        else {
+            return null;
+        }
+    }
+
+    /**
      * getAppID
      * @description Get Instagram App ID
      *
@@ -2762,14 +2798,14 @@
      */
     function IG_createDM(hasHidden, hasCheckbox) {
         let isHidden = (hasHidden) ? "hidden" : "";
-        $('body').append('<div class="IG_SN_DIG ' + isHidden + '"><div class="IG_SN_DIG_BG"></div><div class="IG_SN_DIG_MAIN"><div class="IG_SN_DIG_TITLE"></div><div class="IG_SN_DIG_BODY"></div></div></div>');
-        $('.IG_SN_DIG .IG_SN_DIG_MAIN .IG_SN_DIG_TITLE').append(`<div style="position:relative;min-height:36px;text-align:center;margin-bottom: 7px;"><div style="position:absolute;left:0px;line-height: 18px;"><kbd>Alt</kbd>+<kbd>Q</kbd> [<span data-ih-locale="CLOSE">${_i18n("CLOSE")}</span>]</div><div style="line-height: 18px;">IG Helper v${GM_info.script.version}</div><div id="post_info" style="line-height: 14px;font-size:14px;">Post ID: <span id="article-id"></span></div><div class="IG_SN_DIG_BTN">${SVG.CLOSE}</div></div>`);
+        $('body').append('<div class="IG_POPUP_DIG ' + isHidden + '"><div class="IG_POPUP_DIG_BG"></div><div class="IG_POPUP_DIG_MAIN"><div class="IG_POPUP_DIG_TITLE"></div><div class="IG_POPUP_DIG_BODY"></div></div></div>');
+        $('.IG_POPUP_DIG .IG_POPUP_DIG_MAIN .IG_POPUP_DIG_TITLE').append(`<div style="position:relative;min-height:36px;text-align:center;margin-bottom: 7px;"><div style="position:absolute;left:0px;line-height: 18px;"><kbd>Alt</kbd>+<kbd>Q</kbd> [<span data-ih-locale="CLOSE">${_i18n("CLOSE")}</span>]</div><div style="line-height: 18px;">IG Helper v${GM_info.script.version}</div><div id="post_info" style="line-height: 14px;font-size:14px;">Post ID: <span id="article-id"></span></div><div class="IG_POPUP_DIG_BTN">${SVG.CLOSE}</div></div>`);
 
         if (hasCheckbox) {
-            $('.IG_SN_DIG .IG_SN_DIG_MAIN .IG_SN_DIG_TITLE').append(`<div style="text-align: center;" id="button_group"></div>`);
-            $('.IG_SN_DIG .IG_SN_DIG_MAIN .IG_SN_DIG_TITLE > div#button_group').append(`<button id="batch_download_selected" data-ih-locale="BATCH_DOWNLOAD_SELECTED">${_i18n('BATCH_DOWNLOAD_SELECTED')}</button>`);
-            $('.IG_SN_DIG .IG_SN_DIG_MAIN .IG_SN_DIG_TITLE > div#button_group').append(`<button id="batch_download_direct" data-ih-locale="BATCH_DOWNLOAD_DIRECT">${_i18n('BATCH_DOWNLOAD_DIRECT')}</button>`);
-            $('.IG_SN_DIG .IG_SN_DIG_MAIN .IG_SN_DIG_TITLE').append(`<label class="checkbox"><input value="yes" type="checkbox" /><span data-ih-locale="ALL_CHECK">${_i18n('ALL_CHECK')}</span></label>`);
+            $('.IG_POPUP_DIG .IG_POPUP_DIG_MAIN .IG_POPUP_DIG_TITLE').append(`<div style="text-align: center;" id="button_group"></div>`);
+            $('.IG_POPUP_DIG .IG_POPUP_DIG_MAIN .IG_POPUP_DIG_TITLE > div#button_group').append(`<button id="batch_download_selected" data-ih-locale="BATCH_DOWNLOAD_SELECTED">${_i18n('BATCH_DOWNLOAD_SELECTED')}</button>`);
+            $('.IG_POPUP_DIG .IG_POPUP_DIG_MAIN .IG_POPUP_DIG_TITLE > div#button_group').append(`<button id="batch_download_direct" data-ih-locale="BATCH_DOWNLOAD_DIRECT">${_i18n('BATCH_DOWNLOAD_DIRECT')}</button>`);
+            $('.IG_POPUP_DIG .IG_POPUP_DIG_MAIN .IG_POPUP_DIG_TITLE').append(`<label class="checkbox"><input value="yes" type="checkbox" /><span data-ih-locale="ALL_CHECK">${_i18n('ALL_CHECK')}</span></label>`);
         }
     }
 
@@ -2781,12 +2817,12 @@
      * @return {void}
      */
     function IG_setDM(hasHidden) {
-        if ($('.IG_SN_DIG').length) {
+        if ($('.IG_POPUP_DIG').length) {
             if (hasHidden) {
-                $('.IG_SN_DIG').addClass("hidden");
+                $('.IG_POPUP_DIG').addClass("hidden");
             }
             else {
-                $('.IG_SN_DIG').removeClass("hidden");
+                $('.IG_POPUP_DIG').removeClass("hidden");
             }
         }
     }
@@ -3094,39 +3130,39 @@
      * @return {void}
      */
     function showSetting() {
-        $('.IG_SN_DIG').remove();
+        $('.IG_POPUP_DIG').remove();
         IG_createDM();
-        $('.IG_SN_DIG #post_info').text('Preference Settings');
+        $('.IG_POPUP_DIG #post_info').text('Preference Settings');
 
-        $('.IG_SN_DIG .IG_SN_DIG_TITLE > div').append('<select id="langSelect"></select><div style="font-size: 12px;">Some texts are machine-translated and may be inaccurate; translation contributions are welcome on GitHub.</div>');
+        $('.IG_POPUP_DIG .IG_POPUP_DIG_TITLE > div').append('<select id="langSelect"></select><div style="font-size: 12px;">Some texts are machine-translated and may be inaccurate; translation contributions are welcome on GitHub.</div>');
 
         for (let o in locale_manifest) {
-            $('.IG_SN_DIG .IG_SN_DIG_TITLE > div #langSelect').append(`<option value="${o}" ${(state.lang == o) ? 'selected' : ''}>${locale_manifest[o]}</option>`);
+            $('.IG_POPUP_DIG .IG_POPUP_DIG_TITLE > div #langSelect').append(`<option value="${o}" ${(state.lang == o) ? 'selected' : ''}>${locale_manifest[o]}</option>`);
         }
 
         for (let name in USER_SETTING) {
-            $('.IG_SN_DIG .IG_SN_DIG_BODY').append(`<label class="globalSettings${(CHILD_NODES.includes(name)) ? ' child' : ''}" title="${_i18n(name + '_INTRO')}" data-ih-locale-title="${name + '_INTRO'}"><span data-ih-locale="${name}">${_i18n(name)}</span> <input id="${name}" value="box" type="checkbox" ${(USER_SETTING[name] === true) ? 'checked' : ''}><div class="chbtn"><div class="rounds"></div></div></label>`);
+            $('.IG_POPUP_DIG .IG_POPUP_DIG_BODY').append(`<label class="globalSettings${(CHILD_NODES.includes(name)) ? ' child' : ''}" title="${_i18n(name + '_INTRO')}" data-ih-locale-title="${name + '_INTRO'}"><span data-ih-locale="${name}">${_i18n(name)}</span> <input id="${name}" value="box" type="checkbox" ${(USER_SETTING[name] === true) ? 'checked' : ''}><div class="chbtn"><div class="rounds"></div></div></label>`);
 
             if (name === 'MODIFY_VIDEO_VOLUME') {
-                $('.IG_SN_DIG .IG_SN_DIG_BODY input[id="' + name + '"]').parent('label').on('contextmenu', function (e) {
+                $('.IG_POPUP_DIG .IG_POPUP_DIG_BODY input[id="' + name + '"]').parent('label').on('contextmenu', function (e) {
                     e.preventDefault();
                     if ($(this).find('#tempWrapper').length === 0) {
                         $(this).append('<div id="tempWrapper"></div>');
                         $(this).children('#tempWrapper').append('<input value="' + state.videoVolume + '" type="range" min="0" max="1" step="0.05" />');
                         $(this).children('#tempWrapper').append('<input value="' + state.videoVolume + '" step="0.05" type="number" />');
-                        $(this).children('#tempWrapper').append(`<div class="IG_SN_DIG_BTN">${SVG.CLOSE}</div>`);
+                        $(this).children('#tempWrapper').append(`<div class="IG_POPUP_DIG_BTN">${SVG.CLOSE}</div>`);
                     }
                 });
             }
 
             if (name === 'AUTO_RENAME') {
-                $('.IG_SN_DIG .IG_SN_DIG_BODY input[id="' + name + '"]').parent('label').on('contextmenu', function (e) {
+                $('.IG_POPUP_DIG .IG_POPUP_DIG_BODY input[id="' + name + '"]').parent('label').on('contextmenu', function (e) {
                     e.preventDefault();
                     if ($(this).find('#tempWrapper').length === 0) {
                         $(this).append('<div id="tempWrapper"></div>');
 
                         $(this).children('#tempWrapper').append('<input id="date_format" value="' + state.fileRenameFormat + '" />');
-                        $(this).children('#tempWrapper').append(`<div class="IG_SN_DIG_BTN">${SVG.CLOSE}</div>`);
+                        $(this).children('#tempWrapper').append(`<div class="IG_POPUP_DIG_BTN">${SVG.CLOSE}</div>`);
                     }
                 });
             }
@@ -3140,17 +3176,17 @@
      * @return {void}
      */
     function showDebugDOM() {
-        $('.IG_SN_DIG').remove();
+        $('.IG_POPUP_DIG').remove();
         IG_createDM();
-        $('.IG_SN_DIG #post_info').text('IG Debug DOM Tree');
+        $('.IG_POPUP_DIG #post_info').text('IG Debug DOM Tree');
 
-        $('.IG_SN_DIG .IG_SN_DIG_BODY').append(`<textarea style="font-family: monospace;width:100%;box-sizing: border-box;height:300px;background: transparent;" readonly></textarea>`);
-        $('.IG_SN_DIG .IG_SN_DIG_BODY').append(`<span style="display:block;text-align:center;">`);
-        $('.IG_SN_DIG .IG_SN_DIG_BODY span').append(`<button style="margin: 3px;" class="IG_DISPLAY_DOM_TREE"><a>${_i18n('SHOW_DOM_TREE')}</a></button>`);
-        $('.IG_SN_DIG .IG_SN_DIG_BODY span').append(`<button style="margin: 3px;" class="IG_SELECT_DOM_TREE"><a>${_i18n('SELECT_AND_COPY')}</a></button>`);
-        $('.IG_SN_DIG .IG_SN_DIG_BODY span').append(`<button style="margin: 3px;" class="IG_DOWNLOAD_DOM_TREE"><a>${_i18n('DOWNLOAD_DOM_TREE')}</a></button><br/>`);
-        $('.IG_SN_DIG .IG_SN_DIG_BODY span').append(`<button style="margin: 3px;" class="IG_REPORT_GITHUB"><a href="https://github.com/SN-Koarashi/ig-helper/issues" target="_blank">${_i18n('REPORT_GITHUB')}</a></button>`);
-        $('.IG_SN_DIG .IG_SN_DIG_BODY span').append(`<button style="margin: 3px;" class="IG_REPORT_DISCORD"><a href="https://discord.gg/q3KT4hdq8x" target="_blank">${_i18n('REPORT_DISCORD')}</a></button>`);
+        $('.IG_POPUP_DIG .IG_POPUP_DIG_BODY').append(`<textarea style="font-family: monospace;width:100%;box-sizing: border-box;height:300px;background: transparent;" readonly></textarea>`);
+        $('.IG_POPUP_DIG .IG_POPUP_DIG_BODY').append(`<span style="display:block;text-align:center;">`);
+        $('.IG_POPUP_DIG .IG_POPUP_DIG_BODY span').append(`<button style="margin: 3px;" class="IG_DISPLAY_DOM_TREE"><a>${_i18n('SHOW_DOM_TREE')}</a></button>`);
+        $('.IG_POPUP_DIG .IG_POPUP_DIG_BODY span').append(`<button style="margin: 3px;" class="IG_SELECT_DOM_TREE"><a>${_i18n('SELECT_AND_COPY')}</a></button>`);
+        $('.IG_POPUP_DIG .IG_POPUP_DIG_BODY span').append(`<button style="margin: 3px;" class="IG_DOWNLOAD_DOM_TREE"><a>${_i18n('DOWNLOAD_DOM_TREE')}</a></button><br/>`);
+        $('.IG_POPUP_DIG .IG_POPUP_DIG_BODY span').append(`<button style="margin: 3px;" class="IG_REPORT_GITHUB"><a href="https://github.com/SN-Koarashi/ig-helper/issues" target="_blank">${_i18n('REPORT_GITHUB')}</a></button>`);
+        $('.IG_POPUP_DIG .IG_POPUP_DIG_BODY span').append(`<button style="margin: 3px;" class="IG_REPORT_DISCORD"><a href="https://discord.gg/q3KT4hdq8x" target="_blank">${_i18n('REPORT_DISCORD')}</a></button>`);
     }
 
     /**
@@ -3160,14 +3196,14 @@
      * @return {void}
      */
     function showFeedbackDOM() {
-        $('.IG_SN_DIG').remove();
+        $('.IG_POPUP_DIG').remove();
         IG_createDM();
-        $('.IG_SN_DIG #post_info').text('Feedback Options');
+        $('.IG_POPUP_DIG #post_info').text('Feedback Options');
 
-        $('.IG_SN_DIG .IG_SN_DIG_BODY').append(`<span style="display:block;text-align:center;">`);
-        $('.IG_SN_DIG .IG_SN_DIG_BODY span').append(`<button style="margin: 3px;" class="IG_REPORT_FORK"><a href="https://greasyfork.org/en/scripts/404535-ig-helper/feedback" target="_blank">${_i18n('REPORT_FORK')}</a></button>`);
-        $('.IG_SN_DIG .IG_SN_DIG_BODY span').append(`<button style="margin: 3px;" class="IG_REPORT_GITHUB"><a href="https://github.com/SN-Koarashi/ig-helper/issues" target="_blank">${_i18n('REPORT_GITHUB')}</a></button>`);
-        $('.IG_SN_DIG .IG_SN_DIG_BODY span').append(`<button style="margin: 3px;" class="IG_REPORT_DISCORD"><a href="https://discord.gg/q3KT4hdq8x" target="_blank">${_i18n('REPORT_DISCORD')}</a></button>`);
+        $('.IG_POPUP_DIG .IG_POPUP_DIG_BODY').append(`<span style="display:block;text-align:center;">`);
+        $('.IG_POPUP_DIG .IG_POPUP_DIG_BODY span').append(`<button style="margin: 3px;" class="IG_REPORT_FORK"><a href="https://greasyfork.org/en/scripts/404535-ig-helper/feedback" target="_blank">${_i18n('REPORT_FORK')}</a></button>`);
+        $('.IG_POPUP_DIG .IG_POPUP_DIG_BODY span').append(`<button style="margin: 3px;" class="IG_REPORT_GITHUB"><a href="https://github.com/SN-Koarashi/ig-helper/issues" target="_blank">${_i18n('REPORT_GITHUB')}</a></button>`);
+        $('.IG_POPUP_DIG .IG_POPUP_DIG_BODY span').append(`<button style="margin: 3px;" class="IG_REPORT_DISCORD"><a href="https://discord.gg/q3KT4hdq8x" target="_blank">${_i18n('REPORT_DISCORD')}</a></button>`);
     }
 
     /**
@@ -3309,6 +3345,101 @@
         }
     }
 
+    function openImageViewer(imageUrl) {
+        removeImageViewer();
+
+        $('body').append(
+            `<div id="imageViewer">
+    	<div id="iv_header">
+    		<div style="flex:1;">Image Viewer</div>
+    		<div id="iv_close">${SVG.CLOSE}</div>
+    	</div>
+        <img id="iv_image" src="" />
+    </div>`);
+
+        const $container = $('#imageViewer');
+        const $header = $('#iv_header');
+        const $closeIcon = $('#iv_close');
+        const $image = $('#iv_image');
+
+
+        $image.attr('src', imageUrl);
+        $container.css('display', 'flex');
+
+        let scale = 0.75;
+        let posX = 0, posY = 0;
+        let isDragging = false;
+        let startX, startY;
+
+        $image.on('load', () => {
+            posX = (window.innerWidth - $image[0].width) / 2;
+            posY = (window.innerHeight - $image[0].height) / 2;
+            updateImageStyle();
+        });
+
+        $image.on('dragstart drop', (e) => {
+            e.preventDefault();
+        });
+
+        $image.on('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+        });
+
+        $image.on('wheel', (e) => {
+            e.preventDefault();
+            scale += e.originalEvent.deltaY > 0 ? -0.15 : 0.15;
+            scale = Math.min(Math.max(0.75, scale), 5);
+            updateImageStyle();
+        });
+
+        $image.on('mousedown', (e) => {
+            isDragging = true;
+            startX = e.pageX - posX;
+            startY = e.pageY - posY;
+            $image.css('cursor', 'grabbing');
+        });
+
+        $image.on('mouseup', () => {
+            isDragging = false;
+            $image.css('cursor', 'grab');
+        });
+
+        $(document).on('mousemove.igHelper', (e) => {
+            if (!isDragging) return;
+            e.preventDefault();
+
+            posX = e.pageX - startX;
+            posY = e.pageY - startY;
+
+            updateImageStyle();
+        });
+
+        $container.on('click', () => {
+            removeImageViewer();
+        });
+
+        $closeIcon.on('click', () => {
+            removeImageViewer();
+        });
+
+        $header.on('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+        });
+
+        function updateImageStyle() {
+            $image.css('transform', `scale(${scale})`);
+            $image.css('left', `${posX}px`);
+            $image.css('top', `${posY}px`);
+        }
+    }
+
+    function removeImageViewer() {
+        $('#imageViewer').remove();
+        $(document).off('mousemove.igHelper');
+    }
+
     /**
      * translateText
      * @description i18n translation text
@@ -3326,6 +3457,7 @@
                 "RELOAD_SCRIPT": "Reload Script",
                 "DONATE": "Donate",
                 "FEEDBACK": "Feedback",
+                "IMAGE_VIEWER": "Open Image In Viewer",
                 "NEW_TAB": "Open in New Tab",
                 "SHOW_DOM_TREE": "Show DOM Tree",
                 "SELECT_AND_COPY": "Select All and Copy from the Input Box",
@@ -3491,24 +3623,24 @@
                 }, "\t");
                 logger += `${new Date(log.time).toISOString()}: ${jsonData}\n`
             });
-            $('.IG_SN_DIG .IG_SN_DIG_BODY textarea').text("Logger:\n" + logger + "\n-----\n\nLocation: " + location.pathname + "\nDOM Tree with div#mount:\n" + text.innerHTML);
+            $('.IG_POPUP_DIG .IG_POPUP_DIG_BODY textarea').text("Logger:\n" + logger + "\n-----\n\nLocation: " + location.pathname + "\nDOM Tree with div#mount:\n" + text.innerHTML);
         }
 
-        $('body').on('click', '.IG_SN_DIG .IG_SN_DIG_BODY .IG_DISPLAY_DOM_TREE', function () {
+        $('body').on('click', '.IG_POPUP_DIG .IG_POPUP_DIG_BODY .IG_DISPLAY_DOM_TREE', function () {
             setDOMTreeContent();
         });
 
-        $('body').on('click', '.IG_SN_DIG .IG_SN_DIG_BODY .IG_SELECT_DOM_TREE', function () {
-            $('.IG_SN_DIG .IG_SN_DIG_BODY textarea').select();
+        $('body').on('click', '.IG_POPUP_DIG .IG_POPUP_DIG_BODY .IG_SELECT_DOM_TREE', function () {
+            $('.IG_POPUP_DIG .IG_POPUP_DIG_BODY textarea').select();
             document.execCommand('copy');
         });
 
-        $('body').on('click', '.IG_SN_DIG .IG_SN_DIG_BODY .IG_DOWNLOAD_DOM_TREE', function () {
-            if ($('.IG_SN_DIG .IG_SN_DIG_BODY textarea').text().length === 0) {
+        $('body').on('click', '.IG_POPUP_DIG .IG_POPUP_DIG_BODY .IG_DOWNLOAD_DOM_TREE', function () {
+            if ($('.IG_POPUP_DIG .IG_POPUP_DIG_BODY textarea').text().length === 0) {
                 setDOMTreeContent();
             }
 
-            var text = $('.IG_SN_DIG .IG_SN_DIG_BODY textarea').text();
+            var text = $('.IG_POPUP_DIG .IG_POPUP_DIG_BODY textarea').text();
             var a = document.createElement("a");
             var file = new Blob([text], { type: "text/plain" });
             a.href = URL.createObjectURL(file);
@@ -3520,21 +3652,21 @@
         });
 
         // Close the download dialog if user click the close icon
-        $('body').on('click', '.IG_SN_DIG_BTN, .IG_SN_DIG_BG', function () {
+        $('body').on('click', '.IG_POPUP_DIG_BTN, .IG_POPUP_DIG_BG', function () {
             if ($(this).parent('#tempWrapper').length > 0) {
                 $(this).parent('#tempWrapper').fadeOut(250, function () {
                     $(this).remove();
                 });
             }
             else {
-                $('.IG_SN_DIG').remove();
+                $('.IG_POPUP_DIG').remove();
             }
         });
 
         $(window).on('keydown', function (e) {
             // Hot key [Alt+Q] to close the download dialog
             if (e.which == '81' && e.altKey) {
-                $('.IG_SN_DIG').remove();
+                $('.IG_POPUP_DIG').remove();
                 e.preventDefault();
             }
             // Hot key [Alt+W] to open the settings dialog
@@ -3567,7 +3699,7 @@
             }
         });
 
-        $('body').on('change', '.IG_SN_DIG input', function () {
+        $('body').on('change', '.IG_POPUP_DIG input', function () {
             var name = $(this).attr('id');
 
             if (name && USER_SETTING[name] !== undefined) {
@@ -3579,13 +3711,13 @@
             }
         });
 
-        $('body').on('click', '.IG_SN_DIG .globalSettings', function (e) {
+        $('body').on('click', '.IG_POPUP_DIG .globalSettings', function (e) {
             if ($(this).find('#tempWrapper').length > 0) {
                 e.preventDefault();
             }
         });
 
-        $('body').on('change', '.IG_SN_DIG #tempWrapper input:not(#date_format)', function () {
+        $('body').on('change', '.IG_POPUP_DIG #tempWrapper input:not(#date_format)', function () {
             let value = $(this).val();
 
             if ($(this).attr('type') == 'range') {
@@ -3601,7 +3733,7 @@
             }
         });
 
-        $('body').on('input', '.IG_SN_DIG #tempWrapper input:not(#date_format)', function () {
+        $('body').on('input', '.IG_POPUP_DIG #tempWrapper input:not(#date_format)', function () {
             if ($(this).attr('type') == 'range') {
                 let value = $(this).val();
                 $(this).next().val(value);
@@ -3622,7 +3754,7 @@
             }
         });
 
-        $('body').on('input', '.IG_SN_DIG #tempWrapper input#date_format', function () {
+        $('body').on('input', '.IG_POPUP_DIG #tempWrapper input#date_format', function () {
             GM_setValue('G_RENAME_FORMAT', $(this).val());
             state.fileRenameFormat = $(this).val();
         });
@@ -3632,7 +3764,7 @@
             triggerLinkElement(this);
         });
 
-        $('body').on('click', '.IG_SN_DIG_BODY .newTab', function () {
+        $('body').on('click', '.IG_POPUP_DIG_BODY .newTab', function () {
             // replace https://instagram.ftpe8-2.fna.fbcdn.net/ to https://scontent.cdninstagram.com/ becase of same origin policy (some video)
 
             if (USER_SETTING.FORCE_RESOURCE_VIA_MEDIA && USER_SETTING.NEW_TAB_ALWAYS_FORCE_MEDIA_IN_POST) {
@@ -3646,7 +3778,7 @@
             }
         });
 
-        $('body').on('click', '.IG_SN_DIG_BODY .videoThumbnail', function () {
+        $('body').on('click', '.IG_POPUP_DIG_BODY .videoThumbnail', function () {
             let timestamp = new Date().getTime();
 
             if (USER_SETTING.RENAME_PUBLISH_DATE && $(this).parent().children('a').attr('datetime')) {
@@ -3722,7 +3854,7 @@
         });
 
         // Running if user right-click profile picture in stories area
-        $('body').on('mousedown', 'button[role="menuitem"], div[role="menuitem"]', function (e) {
+        $('body').on('mousedown', 'button[role="menuitem"], div[role="menuitem"], ul > li[tabindex="-1"] > div[role="button"]', function (e) {
             // Right-Click || Middle-Click
             if (e.which === 3 || e.which === 2) {
                 if (location.href === 'https://www.instagram.com/' && USER_SETTING.REDIRECT_CLICK_USER_STORY_PICTURE) {
@@ -3740,24 +3872,24 @@
             }
         });
 
-        $('body').on('change', '.IG_SN_DIG_TITLE .checkbox', function () {
+        $('body').on('change', '.IG_POPUP_DIG_TITLE .checkbox', function () {
             var isChecked = $(this).find('input').prop('checked');
-            $('.IG_SN_DIG_BODY .inner_box').each(function () {
+            $('.IG_POPUP_DIG_BODY .inner_box').each(function () {
                 $(this).prop('checked', isChecked);
             });
         });
 
-        $('body').on('change', '.IG_SN_DIG_BODY .inner_box', function () {
-            var checked = $('.IG_SN_DIG_BODY .inner_box:checked').length;
-            var total = $('.IG_SN_DIG_BODY .inner_box').length;
+        $('body').on('change', '.IG_POPUP_DIG_BODY .inner_box', function () {
+            var checked = $('.IG_POPUP_DIG_BODY .inner_box:checked').length;
+            var total = $('.IG_POPUP_DIG_BODY .inner_box').length;
 
 
-            $('.IG_SN_DIG_TITLE .checkbox').find('input').prop('checked', checked == total);
+            $('.IG_POPUP_DIG_TITLE .checkbox').find('input').prop('checked', checked == total);
         });
 
-        $('body').on('click', '.IG_SN_DIG_TITLE #batch_download_selected', function () {
+        $('body').on('click', '.IG_POPUP_DIG_TITLE #batch_download_selected', function () {
             let index = 0;
-            $('.IG_SN_DIG_BODY a[data-needed="direct"]').each(function () {
+            $('.IG_POPUP_DIG_BODY a[data-needed="direct"]').each(function () {
                 if ($(this).prev().children('input').prop('checked')) {
                     $(this).trigger("click");
                     index++;
@@ -3769,7 +3901,7 @@
             }
         });
 
-        $('body').on('change', '.IG_SN_DIG_TITLE #langSelect', function () {
+        $('body').on('change', '.IG_POPUP_DIG_TITLE #langSelect', function () {
             GM_setValue('lang', $(this).val());
             state.lang = $(this).val();
 
@@ -3788,17 +3920,33 @@
             }
         });
 
-        $('body').on('click', '.IG_SN_DIG_TITLE #batch_download_direct', function () {
-            $('.IG_SN_DIG_BODY a[data-needed="direct"]').each(function () {
+        $('body').on('click', '.IG_POPUP_DIG_TITLE #batch_download_direct', function () {
+            $('.IG_POPUP_DIG_BODY a[data-needed="direct"]').each(function () {
                 $(this).trigger("click");
             });
         });
 
-        const audio_observer = new MutationObserver((mutationsList) => {
+        const element_observer = new MutationObserver((mutationsList) => {
             for (const mutation of mutationsList) {
                 if (mutation.type === 'childList') {
                     mutation.addedNodes.forEach((node) => {
                         const $videos = $(node).find('video');
+
+                        if (location.pathname.startsWith("/stories/highlights/")) {
+                            if (
+                                $(node).attr("data-ih-locale-title") == null &&
+                                $(node).attr("data-visualcompletion") == null &&
+                                node.tagName === "DIV"
+                            ) {
+                                // replace something times ago format to publish time when switch highlight
+                                var $time = $(node).find("time[datetime]");
+                                let publishTitle = $time?.attr('title');
+                                if (publishTitle != null) {
+                                    $time.text(publishTitle);
+                                }
+                            }
+                        }
+
                         if ($videos.length > 0) {
                             // Modify video volume
                             if (USER_SETTING.MODIFY_VIDEO_VOLUME) {
@@ -3940,7 +4088,7 @@
             }
         });
 
-        audio_observer.observe($('div[id^="mount"]')[0], {
+        element_observer.observe($('div[id^="mount"]')[0], {
             childList: true,
             subtree: true,
         });

@@ -1,5 +1,6 @@
 import { state } from "../settings";
-import { logger } from "./util";
+import { logger } from "./general";
+/*! ESLINT IMPORT END !*/
 
 /**
  * translateText
@@ -18,6 +19,7 @@ export function translateText() {
             "RELOAD_SCRIPT": "Reload Script",
             "DONATE": "Donate",
             "FEEDBACK": "Feedback",
+            "IMAGE_VIEWER": "Open Image In Viewer",
             "NEW_TAB": "Open in New Tab",
             "SHOW_DOM_TREE": "Show DOM Tree",
             "SELECT_AND_COPY": "Select All and Copy from the Input Box",

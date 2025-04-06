@@ -1,7 +1,8 @@
 import { SVG } from "../settings";
-import { updateLoadingBar, saveFiles } from "../utils/util";
+import { updateLoadingBar, saveFiles } from "../utils/general";
 import { _i18n } from "../utils/i18n";
 import { getUserId, getUserHighSizeProfile } from "../utils/api";
+/*! ESLINT IMPORT END !*/
 
 /**
  * onProfileAvatar

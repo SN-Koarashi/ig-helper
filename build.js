@@ -23,9 +23,10 @@ const processImportedFile = (full_path) => {
             output: null,
             terminal: false,
         });
+        var startingCatch = false;
 
         importedRl.on("line", (importedLine) => {
-            if (!importedLine.startsWith("import ")) {
+            if (startingCatch || path.basename(full_path) === "metadata.js") {
                 if (importedLine.trim() === "") {
                     outputStream.write("\n");
                 }
@@ -36,6 +37,12 @@ const processImportedFile = (full_path) => {
                     }
                     outputStream.write(prefix + importedLine.replace(/^(export )/i, "") + "\n");
                 }
+            }
+
+            /*! ESLINT IMPORT END !*/
+            const cuttingPattern = importedLine.trim().match(/^(\/\*\!)(.*?)(\!\*\/)$/i);
+            if (!startingCatch && cuttingPattern != null && cuttingPattern.at(2).trim().includes("ESLINT IMPORT END")) {
+                startingCatch = true;
             }
         });
 

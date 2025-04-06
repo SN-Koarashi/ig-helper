@@ -1,22 +1,5 @@
-import { logger, getAppID, updateLoadingBar } from "./util";
-
-/**
- * getStoryId
- * @description Obtain the media id through the resource URL.
- *
- * @param  {string}  url
- * @return {string}
- */
-export function getStoryId(url) {
-    let obj = new URL(url);
-    let base64 = obj?.searchParams?.get('ig_cache_key')?.split('.').at(0);
-    if (base64) {
-        return atob(base64);
-    }
-    else {
-        return null;
-    }
-}
+import { logger, getAppID, updateLoadingBar } from "./general";
+/*! ESLINT IMPORT END !*/
 
 /**
  * getHighlightStories

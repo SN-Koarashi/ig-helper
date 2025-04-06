@@ -1,7 +1,11 @@
 import { USER_SETTING, SVG, state } from "../settings";
-import { updateLoadingBar, openNewTab, logger, setDownloadProgress, saveFiles, getStoryProgress } from "../utils/util";
+import {
+    updateLoadingBar, openNewTab, logger,
+    setDownloadProgress, saveFiles, getStoryProgress
+} from "../utils/general";
 import { _i18n } from "../utils/i18n";
 import { getHighlightStories, getMediaInfo } from "../utils/api";
+/*! ESLINT IMPORT END !*/
 
 /**
  * onHighlightsStoryAll
@@ -103,7 +107,7 @@ export async function onHighlightsStory(isDownload, isPreview) {
                         openNewTab(result.items[0].video_versions[0].url);
                     }
                     else {
-                        saveFiles(result.items[0].video_versions[0].url, username, "highlights", timestamp, 'mp4', highlightId);
+                        saveFiles(result.items[0].video_versions[0].url, username, "highlights", timestamp, 'mp4', result.items[0].id);
                     }
                 }
                 else {
@@ -111,7 +115,7 @@ export async function onHighlightsStory(isDownload, isPreview) {
                         openNewTab(result.items[0].image_versions2.candidates[0].url);
                     }
                     else {
-                        saveFiles(result.items[0].image_versions2.candidates[0].url, username, "highlights", timestamp, 'jpg', highlightId);
+                        saveFiles(result.items[0].image_versions2.candidates[0].url, username, "highlights", timestamp, 'jpg', result.items[0].id);
                     }
                 }
             }
@@ -135,7 +139,7 @@ export async function onHighlightsStory(isDownload, isPreview) {
                     openNewTab(target.video_resources.at(-1).src, username);
                 }
                 else {
-                    saveFiles(target.video_resources.at(-1).src, username, "highlights", timestamp, 'mp4', highlightId);
+                    saveFiles(target.video_resources.at(-1).src, username, "highlights", timestamp, 'mp4', target.id);
                 }
             }
             else {
@@ -143,7 +147,7 @@ export async function onHighlightsStory(isDownload, isPreview) {
                     openNewTab(target.display_resources.at(-1).src, username);
                 }
                 else {
-                    saveFiles(target.display_resources.at(-1).src, username, "highlights", timestamp, 'jpg', highlightId);
+                    saveFiles(target.display_resources.at(-1).src, username, "highlights", timestamp, 'jpg', target.id);
                 }
             }
 
@@ -188,6 +192,12 @@ export async function onHighlightsStory(isDownload, isPreview) {
                 let $header = getStoryProgress(username);
                 if ($header.length > 1) {
                     $element.append(`<div data-ih-locale-title="DW_ALL" title="${_i18n("DW_ALL")}" class="IG_DWHISTORY_ALL">${SVG.DOWNLOAD_ALL}</div>`);
+                }
+
+                // replace something times ago format to publish time in first init
+                let publishTitle = $header.parents("div[class]").find("time[datetime]")?.attr('title');
+                if (publishTitle != null) {
+                    $header.parents("div[class]").find("time[datetime]").text(publishTitle);
                 }
 
                 //// Modify video volume

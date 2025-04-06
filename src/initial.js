@@ -1,6 +1,7 @@
-import { initSettings, registerMenuCommand, checkingScriptUpdate, logger } from "./utils/util";
+import { initSettings, registerMenuCommand, checkingScriptUpdate, logger } from "./utils/general";
 import { getTranslationText, repaintingTranslations } from "./utils/i18n";
 import { style, state } from "./settings";
+/*! ESLINT IMPORT END !*/
 
 // initialization script
 initSettings();
