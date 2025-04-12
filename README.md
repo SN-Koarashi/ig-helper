@@ -42,7 +42,7 @@
 3. Extensive use of this script, especially when enabling the "Media API" or "Force Fetch API," may trigger Instagram's automation bot checks, potentially leading to account warnings, being logged out, or even being banned. Please use it with caution.
 
 > [!IMPORTANT]
-> On GreasyFork: https://greasyfork.org/en/scripts/404535-ig-helper
+> On GreasyFork: https://greasyfork.org/scripts/404535-ig-helper
 > 
 > The extensions we support and test is Tampermonkey and make sure that you are downloaded the script from GreasyFork.
 

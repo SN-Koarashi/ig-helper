@@ -671,6 +671,8 @@ export function toggleVolumeSilder($videos, $buttonParent, loggerType, customCla
     }
 }
 
+var detectMovingViewerTimer = null;
+
 export function openImageViewer(imageUrl) {
     removeImageViewer();
 
@@ -688,14 +690,25 @@ export function openImageViewer(imageUrl) {
     const $closeIcon = $('#iv_close');
     const $image = $('#iv_image');
 
-
     $image.attr('src', imageUrl);
     $container.css('display', 'flex');
 
     let scale = 0.75;
     let posX = 0, posY = 0;
     let isDragging = false;
+    let isMovingPhoto = false;
     let startX, startY;
+    var previousPosition = $image.position();
+
+    detectMovingViewerTimer = setInterval(() => {
+        const currentPosition = $image.position();
+        if (currentPosition.left !== previousPosition.left || currentPosition.top !== previousPosition.top) {
+            isMovingPhoto = true;
+        } else {
+            isMovingPhoto = false;
+        }
+        previousPosition = currentPosition;
+    }, 100);
 
     $image.on('load', () => {
         posX = (window.innerWidth - $image[0].width) / 2;
@@ -710,6 +723,17 @@ export function openImageViewer(imageUrl) {
     $image.on('click', (e) => {
         e.preventDefault();
         e.stopPropagation();
+
+        if (!isMovingPhoto) {
+            if (scale <= 0.8) {
+                scale += 1.25;
+                scale = Math.min(Math.max(0.75, scale), 5);
+            }
+            else {
+                scale = 0.75;
+            }
+            updateImageStyle();
+        }
     });
 
     $image.on('wheel', (e) => {
@@ -762,6 +786,7 @@ export function openImageViewer(imageUrl) {
 }
 
 export function removeImageViewer() {
+    clearInterval(detectMovingViewerTimer);
     $('#imageViewer').remove();
     $(document).off('mousemove.igHelper');
 }
