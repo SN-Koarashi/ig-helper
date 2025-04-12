@@ -5,7 +5,7 @@
 // @name:ja            IG助手
 // @name:ko            IG조수
 // @namespace          https://github.snkms.com/
-// @version            3.2.2
+// @version            3.3.1
 // @description        Downloading is possible for both photos and videos from posts, as well as for stories, reels or profile picture.
 // @description:zh-TW  一鍵下載對方 Instagram 貼文中的相片、影片甚至是他們的限時動態、連續短片及大頭貼圖片！
 // @description:zh-CN  一键下载对方 Instagram 帖子中的相片、视频甚至是他们的快拍、Reels及头像图片！
@@ -3346,6 +3346,8 @@
         }
     }
 
+    var detectMovingViewerTimer = null;
+
     function openImageViewer(imageUrl) {
         removeImageViewer();
 
@@ -3363,14 +3365,25 @@
         const $closeIcon = $('#iv_close');
         const $image = $('#iv_image');
 
-
         $image.attr('src', imageUrl);
         $container.css('display', 'flex');
 
         let scale = 0.75;
         let posX = 0, posY = 0;
         let isDragging = false;
+        let isMovingPhoto = false;
         let startX, startY;
+        var previousPosition = $image.position();
+
+        detectMovingViewerTimer = setInterval(() => {
+            const currentPosition = $image.position();
+            if (currentPosition.left !== previousPosition.left || currentPosition.top !== previousPosition.top) {
+                isMovingPhoto = true;
+            } else {
+                isMovingPhoto = false;
+            }
+            previousPosition = currentPosition;
+        }, 100);
 
         $image.on('load', () => {
             posX = (window.innerWidth - $image[0].width) / 2;
@@ -3385,6 +3398,17 @@
         $image.on('click', (e) => {
             e.preventDefault();
             e.stopPropagation();
+
+            if (!isMovingPhoto) {
+                if (scale <= 0.8) {
+                    scale += 1.25;
+                    scale = Math.min(Math.max(0.75, scale), 5);
+                }
+                else {
+                    scale = 0.75;
+                }
+                updateImageStyle();
+            }
         });
 
         $image.on('wheel', (e) => {
@@ -3437,6 +3461,7 @@
     }
 
     function removeImageViewer() {
+        clearInterval(detectMovingViewerTimer);
         $('#imageViewer').remove();
         $(document).off('mousemove.igHelper');
     }
