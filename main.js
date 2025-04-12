@@ -3346,6 +3346,8 @@
         }
     }
 
+    var detectMovingViewerTimer = null;
+
     function openImageViewer(imageUrl) {
         removeImageViewer();
 
@@ -3363,14 +3365,25 @@
         const $closeIcon = $('#iv_close');
         const $image = $('#iv_image');
 
-
         $image.attr('src', imageUrl);
         $container.css('display', 'flex');
 
         let scale = 0.75;
         let posX = 0, posY = 0;
         let isDragging = false;
+        let isMovingPhoto = false;
         let startX, startY;
+        var previousPosition = $image.position();
+
+        detectMovingViewerTimer = setInterval(() => {
+            const currentPosition = $image.position();
+            if (currentPosition.left !== previousPosition.left || currentPosition.top !== previousPosition.top) {
+                isMovingPhoto = true;
+            } else {
+                isMovingPhoto = false;
+            }
+            previousPosition = currentPosition;
+        }, 100);
 
         $image.on('load', () => {
             posX = (window.innerWidth - $image[0].width) / 2;
@@ -3385,6 +3398,17 @@
         $image.on('click', (e) => {
             e.preventDefault();
             e.stopPropagation();
+
+            if (!isMovingPhoto) {
+                if (scale <= 0.8) {
+                    scale += 1.25;
+                    scale = Math.min(Math.max(0.75, scale), 5);
+                }
+                else {
+                    scale = 0.75;
+                }
+                updateImageStyle();
+            }
         });
 
         $image.on('wheel', (e) => {
@@ -3437,6 +3461,7 @@
     }
 
     function removeImageViewer() {
+        clearInterval(detectMovingViewerTimer);
         $('#imageViewer').remove();
         $(document).off('mousemove.igHelper');
     }
