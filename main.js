@@ -27,6 +27,7 @@
 // @connect            i.instagram.com
 // @connect            raw.githubusercontent.com
 // @require            https://code.jquery.com/jquery-3.7.1.min.js#sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=
+// @require            https://cdn.jsdelivr.net/npm/piexifjs@1.0.6/piexif.min.js#sha256-JbSirLOu9KeEGo4tAOxJrerAXvlp8fHxSpS3wVndlBA=
 // @resource           INTERNAL_CSS https://raw.githubusercontent.com/SN-Koarashi/ig-helper/master/style.css
 // @resource           LOCALE_MANIFEST https://raw.githubusercontent.com/SN-Koarashi/ig-helper/master/locale/manifest.json
 // @supportURL         https://github.com/SN-Koarashi/ig-helper/
@@ -2857,6 +2858,37 @@
     }
 
     /**
+     * @description Convert base64 DataURL string to Blob
+     * 
+     * @param {string} dataURL
+     * @return {Blob}
+     */
+    function dataURLtoBlob(dataURL) {
+        const [header, b64] = dataURL.split(',');
+        const mime = header.match(/:(.*?);/)[1];
+        const binary = atob(b64);
+        const buffer = new Uint8Array(binary.length);
+        for (let i = 0; i < binary.length; i++) {
+            buffer[i] = binary.charCodeAt(i);
+        }
+        return new Blob([buffer], { type: mime });
+    }
+
+    /**
+     * @description Trigger download from Blob with filename
+     * 
+     * @param {Blob} blob
+     * @param {string} filename
+     */
+    function triggerDownload(blob, filename) {
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = filename;
+        link.click();
+        link.remove();
+    }
+
+    /**
      * createSaveFileElement
      * @description Download the specified media with link element
      *
@@ -2878,7 +2910,6 @@
 
         const date = new Date(timestamp);
 
-        const a = document.createElement("a");
         const original_name = new URL(downloadLink).pathname.split('/').at(-1).split('.').slice(0, -1).join('.');
         const year = date.getFullYear().toString();
         const month = (date.getMonth() + 1).toString().padStart(2, '0');
@@ -2910,11 +2941,24 @@
         });
 
         const originally = username + '_' + original_name + '.' + filetype;
-
-        a.href = URL.createObjectURL(object);
-        a.setAttribute("download", (USER_SETTING.AUTO_RENAME) ? filename + '.' + filetype : originally);
-        a.click();
-        a.remove();
+        const downloadName = USER_SETTING.AUTO_RENAME ? filename + '.' + filetype : originally;
+        if (filetype === 'jpg' && shortcode && sourceType == 'photo') {
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                const b64 = e.target.result;
+                const zeroth = {};
+                zeroth[piexif.ImageIFD.ImageDescription] =
+                    `https://www.instagram.com/p/${shortcode}/`;
+                const exifObj = { '0th': zeroth, 'Exif': {}, 'GPS': {}, '1st': {}, 'thumbnail': null };
+                const exifBytes = piexif.dump(exifObj);
+                const newB64 = piexif.insert(exifBytes, b64);
+                const newBlob = dataURLtoBlob(newB64);
+                triggerDownload(newBlob, downloadName);
+            };
+            reader.readAsDataURL(object);
+        } else {
+            triggerDownload(object, downloadName);
+        }
     }
 
     /**
