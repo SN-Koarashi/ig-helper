@@ -184,11 +184,11 @@ export function saveFiles(downloadLink, username, sourceType, timestamp, filetyp
 /**
  * @description Convert base64 DataURL string to Blob
  * 
- * @param {string} dataurl
+ * @param {string} dataURL
  * @return {Blob}
  */
-function dataURLtoBlob(dataurl) {
-    const [header, b64] = dataurl.split(',');
+function dataURLtoBlob(dataURL) {
+    const [header, b64] = dataURL.split(',');
     const mime = header.match(/:(.*?);/)[1];
     const binary = atob(b64);
     const buffer = new Uint8Array(binary.length);
@@ -234,7 +234,6 @@ export function createSaveFileElement(downloadLink, object, username, sourceType
 
     const date = new Date(timestamp);
 
-    const a = document.createElement("a");
     const original_name = new URL(downloadLink).pathname.split('/').at(-1).split('.').slice(0, -1).join('.');
     const year = date.getFullYear().toString();
     const month = (date.getMonth() + 1).toString().padStart(2, '0');
@@ -269,7 +268,7 @@ export function createSaveFileElement(downloadLink, object, username, sourceType
     const downloadName = USER_SETTING.AUTO_RENAME ? filename + '.' + filetype : originally;
     if (filetype === 'jpg' && shortcode && sourceType == 'photo') {
         const reader = new FileReader();
-        reader.onload = function(e) {
+        reader.onload = function (e) {
             const b64 = e.target.result;
             const zeroth = {};
             zeroth[piexif.ImageIFD.ImageDescription] =

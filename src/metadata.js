@@ -27,6 +27,7 @@
 // @connect            i.instagram.com
 // @connect            raw.githubusercontent.com
 // @require            https://code.jquery.com/jquery-3.7.1.min.js#sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=
+// @require            https://cdn.jsdelivr.net/npm/piexifjs@1.0.6/piexif.min.js#sha256-JbSirLOu9KeEGo4tAOxJrerAXvlp8fHxSpS3wVndlBA=
 // @resource           INTERNAL_CSS https://raw.githubusercontent.com/SN-Koarashi/ig-helper/master/style.css
 // @resource           LOCALE_MANIFEST https://raw.githubusercontent.com/SN-Koarashi/ig-helper/master/locale/manifest.json
 // @supportURL         https://github.com/SN-Koarashi/ig-helper/
