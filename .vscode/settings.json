@@ -1,10 +1,11 @@
 {
     "files.exclude": {
         "**/node_modules": true,
-		"/main.js": true
+        "/main.js": true
     },
     "search.exclude": {
         "**/node_modules": true,
-		"/main.js": true
-    }
+        "/main.js": true
+    },
+    "cSpell.diagnosticLevel": "Hint"
 }
