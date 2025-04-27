@@ -266,7 +266,7 @@ export function createSaveFileElement(downloadLink, object, username, sourceType
 
     const originally = username + '_' + original_name + '.' + filetype;
     const downloadName = USER_SETTING.AUTO_RENAME ? filename + '.' + filetype : originally;
-    if (filetype === 'jpg' && shortcode && sourceType == 'photo') {
+    if (filetype === 'jpg' && shortcode && sourceType == 'photo' && object.type === 'image/jpeg') {
         const reader = new FileReader();
         reader.onload = function (e) {
             const b64 = e.target.result;
