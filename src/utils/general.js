@@ -250,7 +250,7 @@ export function createSaveFileElement(downloadLink, object, username, sourceType
     const originally = username + '_' + original_name + '.' + filetype;
     const downloadName = USER_SETTING.AUTO_RENAME ? filename + '.' + filetype : originally;
     if (filetype === 'jpg' && shortcode && sourceType === 'photo' && (object.type === 'image/jpeg' || object.type === 'image/webp')) {
-        stripExifAndAttachPostUrltoExif(object, shortcode)
+        changeExifData(object, shortcode)
             .then(newBlob => triggerDownload(newBlob, downloadName))
             .catch(err => {
                 console.error('Failed to strip EXIF and/or attach post URL to EXIF.”', err);
@@ -262,14 +262,14 @@ export function createSaveFileElement(downloadLink, object, username, sourceType
 }
 
 /**
- * stripExifAndAttachPostUrltoExif
+ * changeExifData
  * @description Strips EXIF metadata and attaches post URLs to the EXIF of downloaded image resources
  *
  * @param  {Object}  blob
  * @param  {string}  shortcode
  * @return {Blob}
  */
-async function stripExifAndAttachPostUrltoExif(blob, shortcode) {
+async function changeExifData(blob, shortcode) {
     const concat = (...arr) => {
         const len = arr.reduce((s, a) => s + a.length, 0);
         const out = new Uint8Array(len);
