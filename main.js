@@ -5,7 +5,7 @@
 // @name:ja            IG助手
 // @name:ko            IG조수
 // @namespace          https://github.snkms.com/
-// @version            3.4.4
+// @version            3.4.5
 // @description        Downloading is possible for both photos and videos from posts, as well as for stories, reels or profile picture.
 // @description:zh-TW  一鍵下載對方 Instagram 貼文中的相片、影片甚至是他們的限時動態、連續短片及大頭貼圖片！
 // @description:zh-CN  一键下载对方 Instagram 帖子中的相片、视频甚至是他们的快拍、Reels及头像图片！
@@ -27,7 +27,6 @@
 // @connect            i.instagram.com
 // @connect            raw.githubusercontent.com
 // @require            https://code.jquery.com/jquery-3.7.1.min.js#sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=
-// @require            https://cdn.jsdelivr.net/npm/piexifjs@1.0.6/piexif.min.js
 // @resource           INTERNAL_CSS https://raw.githubusercontent.com/SN-Koarashi/ig-helper/master/style.css
 // @resource           LOCALE_MANIFEST https://raw.githubusercontent.com/SN-Koarashi/ig-helper/master/locale/manifest.json
 // @supportURL         https://github.com/SN-Koarashi/ig-helper/
@@ -2858,23 +2857,6 @@
     }
 
     /**
-     * @description Convert base64 DataURL string to Blob
-     * 
-     * @param {string} dataURL
-     * @return {Blob}
-     */
-    function dataURLtoBlob(dataURL) {
-        const [header, b64] = dataURL.split(',');
-        const mime = header.match(/:(.*?);/)[1];
-        const binary = atob(b64);
-        const buffer = new Uint8Array(binary.length);
-        for (let i = 0; i < binary.length; i++) {
-            buffer[i] = binary.charCodeAt(i);
-        }
-        return new Blob([buffer], { type: mime });
-    }
-
-    /**
      * @description Trigger download from Blob with filename
      * 
      * @param {Blob} blob
@@ -2942,23 +2924,141 @@
 
         const originally = username + '_' + original_name + '.' + filetype;
         const downloadName = USER_SETTING.AUTO_RENAME ? filename + '.' + filetype : originally;
-        if (filetype === 'jpg' && shortcode && sourceType == 'photo' && object.type === 'image/jpeg') {
-            const reader = new FileReader();
-            reader.onload = function (e) {
-                const b64 = e.target.result;
-                const zeroth = {};
-                zeroth[piexif.ImageIFD.ImageDescription] =
-                    `https://www.instagram.com/p/${shortcode}/`;
-                const exifObj = { '0th': zeroth, 'Exif': {}, 'GPS': {}, '1st': {}, 'thumbnail': null };
-                const exifBytes = piexif.dump(exifObj);
-                const newB64 = piexif.insert(exifBytes, b64);
-                const newBlob = dataURLtoBlob(newB64);
-                triggerDownload(newBlob, downloadName);
-            };
-            reader.readAsDataURL(object);
+        if (filetype === 'jpg' && shortcode && sourceType === 'photo' && (object.type === 'image/jpeg' || object.type === 'image/webp')) {
+            changeExifData(object, shortcode)
+                .then(newBlob => triggerDownload(newBlob, downloadName))
+                .catch(err => {
+                    console.error('Failed to strip EXIF and/or attach post URL to EXIF.”', err);
+                    triggerDownload(object, downloadName);
+                });
         } else {
             triggerDownload(object, downloadName);
         }
+    }
+
+    /**
+     * changeExifData
+     * @description Strips EXIF metadata and attaches post URLs to the EXIF of downloaded image resources
+     *
+     * @param  {Object}  blob
+     * @param  {string}  shortcode
+     * @return {Blob}
+     */
+    async function changeExifData(blob, shortcode) {
+        const concat = (...arr) => {
+            const len = arr.reduce((s, a) => s + a.length, 0);
+            const out = new Uint8Array(len);
+            let p = 0;
+            for (const a of arr) {
+                out.set(a, p);
+                p += a.length;
+            }
+            return out;
+        };
+        const u32le = v => {
+            const b = new Uint8Array(4);
+            new DataView(b.buffer).setUint32(0, v, true);
+            return b;
+        };
+        const enc = s => new TextEncoder().encode(s);
+        const fourCC = (dv, o) =>
+            String.fromCharCode(dv.getUint8(o), dv.getUint8(o + 1), dv.getUint8(o + 2), dv.getUint8(o + 3));
+
+        const head = new Uint8Array(await blob.slice(0, 12).arrayBuffer());
+        const isJPEG = head[0] === 0xFF && head[1] === 0xD8;
+        const isWEBP = head.length >= 12 &&
+            String.fromCharCode(...head.subarray(0, 4)) === 'RIFF' &&
+            String.fromCharCode(...head.subarray(8, 12)) === 'WEBP';
+        if (!isJPEG && !isWEBP) throw new Error('Not a JPEG or WEBP');
+
+        const urlBytes = enc(`https://www.instagram.com/p/${shortcode}/\0`);
+        const exifPrefix = enc('Exif\0\0');
+        const tiffHeader = Uint8Array.from([0x49, 0x49, 0x2A, 0x00, 0x08, 0x00, 0x00, 0x00]);
+        const entryCount = Uint8Array.from([0x01, 0x00]);
+        const entry = concat(
+            Uint8Array.from([0x0E, 0x01, 0x02, 0x00]),
+            u32le(urlBytes.length),
+            u32le(8 + 2 + 12 + 4)
+        );
+        const tiffBody = concat(tiffHeader, entryCount, entry, u32le(0), urlBytes);
+
+        if (isJPEG) {
+            const ab = await blob.arrayBuffer();
+            const dv = new DataView(ab);
+            const app1Body = concat(exifPrefix, tiffBody);
+            const app1Header = new Uint8Array(4);
+            new DataView(app1Header.buffer).setUint16(0, 0xFFE1);
+            new DataView(app1Header.buffer).setUint16(2, app1Body.length + 2);
+            const newAPP1 = concat(app1Header, app1Body);
+
+            const parts = [new Uint8Array(ab, 0, 2)];
+            let off = 2,
+                added = false;
+            while (off < dv.byteLength) {
+                const marker = dv.getUint16(off);
+                if ((marker & 0xFF00) !== 0xFF00) break;
+                if (marker === 0xFFDA) {
+                    if (!added) parts.push(newAPP1);
+                    parts.push(new Uint8Array(ab, off));
+                    break;
+                }
+                const len = dv.getUint16(off + 2) + 2;
+                if (marker === 0xFFE1) {
+                    off += len;
+                    continue;
+                }
+                parts.push(new Uint8Array(ab, off, len));
+                off += len;
+            }
+            const total = parts.reduce((s, a) => s + a.length, 0);
+            const out = new Uint8Array(total);
+            let p = 0;
+            parts.forEach(a => {
+                out.set(a, p);
+                p += a.length;
+            });
+            return new Blob([out], {
+                type: 'image/jpeg'
+            });
+        }
+
+        const ab = await blob.arrayBuffer();
+        const dv = new DataView(ab);
+        const chunks = [];
+        let vp8xIdx = -1;
+        let offset = 12;
+        while (offset < dv.byteLength) {
+            const cc = fourCC(dv, offset);
+            const sz = dv.getUint32(offset + 4, true);
+            const pad = sz & 1;
+            const full = 8 + sz + pad;
+            if (cc !== 'EXIF' && cc !== 'XMP ') {
+                chunks.push(new Uint8Array(ab, offset, full));
+                if (cc === 'VP8X') vp8xIdx = chunks.length - 1;
+            }
+            offset += full;
+        }
+        let exifChunk = concat(
+            enc('EXIF'),
+            u32le(exifPrefix.length + tiffBody.length),
+            exifPrefix,
+            tiffBody
+        );
+        if (exifChunk.length & 1) exifChunk = concat(exifChunk, Uint8Array.of(0));
+        if (vp8xIdx !== -1) {
+            const vp8x = new Uint8Array(chunks[vp8xIdx]);
+            vp8x[8] |= 0x10;
+            chunks[vp8xIdx] = vp8x;
+            chunks.splice(vp8xIdx + 1, 0, exifChunk);
+        } else {
+            chunks.push(exifChunk);
+        }
+        const payload = chunks.reduce((s, c) => s + c.length, 0);
+        const riffHeader = concat(enc('RIFF'), u32le(payload + 4), enc('WEBP'));
+        const finalBuf = concat(riffHeader, ...chunks);
+        return new Blob([finalBuf], {
+            type: 'image/webp'
+        });
     }
 
     /**
