@@ -824,6 +824,10 @@ export function openImageViewer(imageUrl) {
         `<div id="imageViewer">
 	<div id="iv_header">
 		<div style="flex:1;">Image Viewer</div>
+		<div style="display: flex;filter: invert(1);gap: 8px;margin-right: 8px;">
+            <div id="rotate_left" style="cursor: pointer;">${SVG.TURN_DEG}</div>
+            <div id="rotate_right" style="transform: scaleX(-1);cursor: pointer;">${SVG.TURN_DEG}</div>
+        </div>
 		<div id="iv_close">${SVG.CLOSE}</div>
 	</div>
     <img id="iv_image" src="" />
@@ -833,10 +837,13 @@ export function openImageViewer(imageUrl) {
     const $header = $('#iv_header');
     const $closeIcon = $('#iv_close');
     const $image = $('#iv_image');
+    const $rotateLeft = $('#rotate_left');
+    const $rotateRight = $('#rotate_right');
 
     $image.attr('src', imageUrl);
     $container.css('display', 'flex');
 
+    let rotate = 0;
     let scale = 0.75;
     let posX = 0, posY = 0;
     let isDragging = false;
@@ -853,6 +860,7 @@ export function openImageViewer(imageUrl) {
         }
         previousPosition = currentPosition;
     }, 100);
+
 
     $image.on('load', () => {
         posX = (window.innerWidth - $image[0].width) / 2;
@@ -875,6 +883,8 @@ export function openImageViewer(imageUrl) {
             }
             else {
                 scale = 0.75;
+                posX = (window.innerWidth - $image[0].width) / 2;
+                posY = (window.innerHeight - $image[0].height) / 2;
             }
             updateImageStyle();
         }
@@ -897,6 +907,16 @@ export function openImageViewer(imageUrl) {
     $image.on('mouseup', () => {
         isDragging = false;
         $image.css('cursor', 'grab');
+    });
+
+    $rotateLeft.on('click', function () {
+        rotate -= 90;
+        updateImageStyle();
+    });
+
+    $rotateRight.on('click', function () {
+        rotate += 90;
+        updateImageStyle();
     });
 
     $(document).on('mousemove.igHelper', (e) => {
@@ -923,7 +943,8 @@ export function openImageViewer(imageUrl) {
     });
 
     function updateImageStyle() {
-        $image.css('transform', `scale(${scale})`);
+        $image.css('transition', `transform 0.15s`);
+        $image.css('transform', `scale(${scale}) rotate(${rotate}deg)`);
         $image.css('left', `${posX}px`);
         $image.css('top', `${posY}px`);
     }

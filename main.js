@@ -5,7 +5,7 @@
 // @name:ja            IG助手
 // @name:ko            IG조수
 // @namespace          https://github.snkms.com/
-// @version            3.4.5
+// @version            3.5.1
 // @description        Downloading is possible for both photos and videos from posts, as well as for stories, reels or profile picture.
 // @description:zh-TW  一鍵下載對方 Instagram 貼文中的相片、影片甚至是他們的限時動態、連續短片及大頭貼圖片！
 // @description:zh-CN  一键下载对方 Instagram 帖子中的相片、视频甚至是他们的快拍、Reels及头像图片！
@@ -75,7 +75,8 @@
         THUMBNAIL: '<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M19 5v14H5V5h14m0-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-4.86 8.86l-3 3.87L9 13.14 6 17h12l-3.86-5.14z"/></svg>',
         DOWNLOAD_ALL: '<svg xmlns="http://www.w3.org/2000/svg" enable-background="new 0 0 24 24" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"><g><rect fill="none" height="24" width="24"/></g><g><g><polygon points="18,6.41 16.59,5 12,9.58 7.41,5 6,6.41 12,12.41"/><polygon points="18,13 16.59,11.59 12,16.17 7.41,11.59 6,13 12,19"/></g></g></svg>',
         CLOSE: '<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z"/></svg>',
-        FULLSCREEN: '<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"/></svg>'
+        FULLSCREEN: '<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"/></svg>',
+        TURN_DEG: '<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#1f1f1f"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M7.34 6.41L.86 12.9l6.49 6.48 6.49-6.48-6.5-6.49zM3.69 12.9l3.66-3.66L11 12.9l-3.66 3.66-3.65-3.66zm15.67-6.26C17.61 4.88 15.3 4 13 4V.76L8.76 5 13 9.24V6c1.79 0 3.58.68 4.95 2.05 2.73 2.73 2.73 7.17 0 9.9C16.58 19.32 14.79 20 13 20c-.97 0-1.94-.21-2.84-.61l-1.49 1.49C10.02 21.62 11.51 22 13 22c2.3 0 4.61-.88 6.36-2.64 3.52-3.51 3.52-9.21 0-12.72z"/></svg>'
     };
 
     /*******************************/
@@ -3499,6 +3500,10 @@
             `<div id="imageViewer">
     	<div id="iv_header">
     		<div style="flex:1;">Image Viewer</div>
+    		<div style="display: flex;filter: invert(1);gap: 8px;margin-right: 8px;">
+                <div id="rotate_left" style="cursor: pointer;">${SVG.TURN_DEG}</div>
+                <div id="rotate_right" style="transform: scaleX(-1);cursor: pointer;">${SVG.TURN_DEG}</div>
+            </div>
     		<div id="iv_close">${SVG.CLOSE}</div>
     	</div>
         <img id="iv_image" src="" />
@@ -3508,10 +3513,13 @@
         const $header = $('#iv_header');
         const $closeIcon = $('#iv_close');
         const $image = $('#iv_image');
+        const $rotateLeft = $('#rotate_left');
+        const $rotateRight = $('#rotate_right');
 
         $image.attr('src', imageUrl);
         $container.css('display', 'flex');
 
+        let rotate = 0;
         let scale = 0.75;
         let posX = 0, posY = 0;
         let isDragging = false;
@@ -3528,6 +3536,7 @@
             }
             previousPosition = currentPosition;
         }, 100);
+
 
         $image.on('load', () => {
             posX = (window.innerWidth - $image[0].width) / 2;
@@ -3550,6 +3559,8 @@
                 }
                 else {
                     scale = 0.75;
+                    posX = (window.innerWidth - $image[0].width) / 2;
+                    posY = (window.innerHeight - $image[0].height) / 2;
                 }
                 updateImageStyle();
             }
@@ -3572,6 +3583,16 @@
         $image.on('mouseup', () => {
             isDragging = false;
             $image.css('cursor', 'grab');
+        });
+
+        $rotateLeft.on('click', function () {
+            rotate -= 90;
+            updateImageStyle();
+        });
+
+        $rotateRight.on('click', function () {
+            rotate += 90;
+            updateImageStyle();
         });
 
         $(document).on('mousemove.igHelper', (e) => {
@@ -3598,7 +3619,8 @@
         });
 
         function updateImageStyle() {
-            $image.css('transform', `scale(${scale})`);
+            $image.css('transition', `transform 0.15s`);
+            $image.css('transform', `scale(${scale}) rotate(${rotate}deg)`);
             $image.css('left', `${posX}px`);
             $image.css('top', `${posY}px`);
         }
