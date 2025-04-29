@@ -253,7 +253,7 @@ export function createSaveFileElement(downloadLink, object, username, sourceType
         changeExifData(object, shortcode)
             .then(newBlob => triggerDownload(newBlob, downloadName))
             .catch(err => {
-                console.error('Failed to strip EXIF and/or attach post URL to EXIF.”', err);
+                console.error('Failed to strip EXIF and/or attach post URL to EXIF.', err);
                 triggerDownload(object, downloadName);
             });
     } else {

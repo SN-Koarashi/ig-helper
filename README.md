@@ -53,5 +53,5 @@
 
 ### [@sn-o-w](https://github.com/sn-o-w)
 - Text translation (Romanian)
-- Judgmental optimization and debugging of code
+- Miscellaneous optimizations and enhancements, plus code debugging
 
