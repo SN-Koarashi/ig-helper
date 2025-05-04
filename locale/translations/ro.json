@@ -62,5 +62,7 @@
     "USE_BLOB_FETCH_WHEN_MEDIA_RATE_LIMIT_INTRO": "Când Media API atinge limita de rată sau nu poate fi folosit din alte motive, Forced Fetch API este folosit pentru a descărca resursele (calitatea resurselor este puțin mai scăzută).",
     "NEW_TAB_ALWAYS_FORCE_MEDIA_IN_POST_INTRO": "Butonul [Deschide într-o filă nouă] în postări va folosi întotdeauna Media API pentru a obține resursele la rezoluție înaltă.",
     "SKIP_VIEW_STORY_CONFIRM": "Omite pagina de confirmare la vizualizarea unui story/highlight",
-    "SKIP_VIEW_STORY_CONFIRM_INTRO": "Omite automat când pagina de confirmare este afișată în story sau highlight."
+    "SKIP_VIEW_STORY_CONFIRM_INTRO": "Omite automat când pagina de confirmare este afișată în story sau highlight.",
+    "MODIFY_RESOURCE_EXIF": "Modifică atributele EXIF ale resursei",
+    "MODIFY_RESOURCE_EXIF_INTRO": "Modifică atributele EXIF ale resursei imaginii pentru a plasa linkul postării în acesta."
 }

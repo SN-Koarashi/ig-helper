@@ -62,5 +62,7 @@
     "USE_BLOB_FETCH_WHEN_MEDIA_RATE_LIMIT_INTRO": "Lorsque l'API Media atteint sa limite de taux ou ne peut pas être utilisée pour d'autres raisons, l'API de récupération forcée sera utilisée pour télécharger les ressources (la qualité des ressources peut être légèrement inférieure).",
     "NEW_TAB_ALWAYS_FORCE_MEDIA_IN_POST_INTRO": "Le bouton [Ouvrir dans un nouvel onglet] dans les posts utilisera toujours l'API Media pour obtenir des ressources en haute résolution.",
     "SKIP_VIEW_STORY_CONFIRM": "Ignorer la page de confirmation lors de la visualisation d'une story ou d'un contenu à la une",
-    "SKIP_VIEW_STORY_CONFIRM_INTRO": "Ignorer automatiquement lorsque la page de confirmation est affichée dans la story ou le contenu à la une."
+    "SKIP_VIEW_STORY_CONFIRM_INTRO": "Ignorer automatiquement lorsque la page de confirmation est affichée dans la story ou le contenu à la une.",
+    "MODIFY_RESOURCE_EXIF": "Modifier les attributs EXIF de la ressource",
+    "MODIFY_RESOURCE_EXIF_INTRO": "Modifier les attributs EXIF de la ressource image afin de placer le lien du post à l'intérieur."
 }

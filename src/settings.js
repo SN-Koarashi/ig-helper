@@ -15,6 +15,7 @@ export const USER_SETTING = {
     'DIRECT_DOWNLOAD_VISIBLE_RESOURCE': false,
     'DIRECT_DOWNLOAD_ALL': false,
     'MODIFY_VIDEO_VOLUME': false,
+    'MODIFY_RESOURCE_EXIF': false,
     'SCROLL_BUTTON': true,
     'FORCE_RESOURCE_VIA_MEDIA': false,
     'USE_BLOB_FETCH_WHEN_MEDIA_RATE_LIMIT': false,

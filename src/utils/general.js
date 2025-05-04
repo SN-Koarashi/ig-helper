@@ -249,7 +249,7 @@ export function createSaveFileElement(downloadLink, object, username, sourceType
 
     const originally = username + '_' + original_name + '.' + filetype;
     const downloadName = USER_SETTING.AUTO_RENAME ? filename + '.' + filetype : originally;
-    if (filetype === 'jpg' && shortcode && sourceType === 'photo' && (object.type === 'image/jpeg' || object.type === 'image/webp')) {
+    if (USER_SETTING.MODIFY_RESOURCE_EXIF && filetype === 'jpg' && shortcode && sourceType === 'photo' && (object.type === 'image/jpeg' || object.type === 'image/webp')) {
         changeExifData(object, shortcode)
             .then(newBlob => triggerDownload(newBlob, downloadName))
             .catch(err => {

@@ -62,5 +62,7 @@
     "USE_BLOB_FETCH_WHEN_MEDIA_RATE_LIMIT_INTRO": "当 Media API 到达速率限制或因为其他原因而无法下载时，则使用强制获取API下载资源 (资源质量略低)。",
     "NEW_TAB_ALWAYS_FORCE_MEDIA_IN_POST_INTRO": "在帖子中的「在新选项卡中打开」功能将一律使用 Media API 取得高分辨率资源",
     "SKIP_VIEW_STORY_CONFIRM": "自动跳过在快拍/快拍精选中显示的确认页面",
-    "SKIP_VIEW_STORY_CONFIRM_INTRO": "在查看快拍/快拍精选时，如果有确认页面时会自动跳过"
+    "SKIP_VIEW_STORY_CONFIRM_INTRO": "在查看快拍/快拍精选时，如果有确认页面时会自动跳过。",
+    "MODIFY_RESOURCE_EXIF": "修改资源EXIF属性",
+    "MODIFY_RESOURCE_EXIF_INTRO": "修改图片资源的EXIF属性，以便将帖子链结放置于其中。"
 }

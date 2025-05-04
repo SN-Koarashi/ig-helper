@@ -5,7 +5,7 @@
 // @name:ja            IG助手
 // @name:ko            IG조수
 // @namespace          https://github.snkms.com/
-// @version            3.5.1
+// @version            3.5.2
 // @description        Downloading is possible for both photos and videos from posts, as well as for stories, reels or profile picture.
 // @description:zh-TW  一鍵下載對方 Instagram 貼文中的相片、影片甚至是他們的限時動態、連續短片及大頭貼圖片！
 // @description:zh-CN  一键下载对方 Instagram 帖子中的相片、视频甚至是他们的快拍、Reels及头像图片！
@@ -59,6 +59,7 @@
         'DIRECT_DOWNLOAD_VISIBLE_RESOURCE': false,
         'DIRECT_DOWNLOAD_ALL': false,
         'MODIFY_VIDEO_VOLUME': false,
+        'MODIFY_RESOURCE_EXIF': false,
         'SCROLL_BUTTON': true,
         'FORCE_RESOURCE_VIA_MEDIA': false,
         'USE_BLOB_FETCH_WHEN_MEDIA_RATE_LIMIT': false,
@@ -2925,7 +2926,7 @@
 
         const originally = username + '_' + original_name + '.' + filetype;
         const downloadName = USER_SETTING.AUTO_RENAME ? filename + '.' + filetype : originally;
-        if (filetype === 'jpg' && shortcode && sourceType === 'photo' && (object.type === 'image/jpeg' || object.type === 'image/webp')) {
+        if (USER_SETTING.MODIFY_RESOURCE_EXIF && filetype === 'jpg' && shortcode && sourceType === 'photo' && (object.type === 'image/jpeg' || object.type === 'image/webp')) {
             changeExifData(object, shortcode)
                 .then(newBlob => triggerDownload(newBlob, downloadName))
                 .catch(err => {
@@ -3684,6 +3685,7 @@
                 "DIRECT_DOWNLOAD_VISIBLE_RESOURCE": "Directly Download the Visible Resources in the Post",
                 "DIRECT_DOWNLOAD_ALL": "Directly Download All Resources in the Post",
                 "MODIFY_VIDEO_VOLUME": "Modify Video Volume (Right-Click to Set)",
+                "MODIFY_RESOURCE_EXIF": "Modify Resource EXIF ​​Properties",
                 "SCROLL_BUTTON": "Enable Scroll Buttons for Reels Page",
                 "FORCE_RESOURCE_VIA_MEDIA": "Force Fetch Resource via Media API",
                 "USE_BLOB_FETCH_WHEN_MEDIA_RATE_LIMIT": "Use Alternative Methods to Download When the Media API is Not Accessible",
@@ -3704,7 +3706,8 @@
                 "USE_BLOB_FETCH_WHEN_MEDIA_RATE_LIMIT_INTRO": "When the Media API reaches its rate limit or cannot be used for other reasons, the Forced Fetch API will be used to download resources (the resource quality may be slightly lower).",
                 "NEW_TAB_ALWAYS_FORCE_MEDIA_IN_POST_INTRO": "The [Open in New Tab] button in posts will always use the Media API to obtain high-resolution resources.",
                 "SKIP_VIEW_STORY_CONFIRM": "Skip the Confirmation Page for Viewing a Story/Highlight",
-                "SKIP_VIEW_STORY_CONFIRM_INTRO": "Automatically skip when confirmation page is shown in story or highlight."
+                "SKIP_VIEW_STORY_CONFIRM_INTRO": "Automatically skip when confirmation page is shown in story or highlight.",
+                "MODIFY_RESOURCE_EXIF_INTRO": "Modify the EXIF ​​properties of the image resource to place the post link in it."
             }
         };
 
