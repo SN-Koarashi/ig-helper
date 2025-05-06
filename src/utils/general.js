@@ -831,12 +831,18 @@ export function openImageViewer(imageUrl) {
 		<div id="iv_close">${SVG.CLOSE}</div>
 	</div>
     <section>
-        <img id="iv_image" src="" />
+        <div id="iv_transform">
+            <div id="iv_rotate">
+                <img id="iv_image" src="" />
+            </div>
+        </div>
     </section>
 </div>`);
 
     const $container = $('#imageViewer');
     const $section = $('#imageViewer > section');
+    const $wrapT = $('#iv_transform');
+    const $wrapR = $('#iv_rotate');
     const $header = $('#iv_header');
     const $closeIcon = $('#iv_close');
     const $image = $('#iv_image');
@@ -845,6 +851,12 @@ export function openImageViewer(imageUrl) {
 
     $image.attr('src', imageUrl);
     $container.css('display', 'flex');
+    $wrapT.css('transform-origin', '0 0');
+    $wrapT.css('transition', `transform 0.15s ease`);
+    $wrapR.css('transform-origin', 'center');
+    $wrapR.css('transition', `transform 0.15s ease`);
+    $wrapT.css('will-change', 'transform');
+    $wrapR.css('will-change', 'transform');
 
     let rotate = 0;
     let scale = 1;
@@ -875,7 +887,6 @@ export function openImageViewer(imageUrl) {
         posX = 0;
         posY = 0;
         updateImageStyle();
-        $image.css('transform-origin', '0 0');
     });
 
     $image.on('dragstart drop', (e) => {
@@ -960,9 +971,9 @@ export function openImageViewer(imageUrl) {
     });
 
     function updateImageStyle() {
-        $image.css('transition', isMovingPhoto ? "none" : `transform 0.15s ease`);
-        $image.css('transform', `translate(${posX}px, ${posY}px) scale(${scale}) rotate(${rotate}deg)`);
-        $image.css('will-change', 'transform');
+        $wrapT.css('transition', isMovingPhoto ? "none" : `transform 0.15s ease`);
+        $wrapT.css('transform', `translate(${posX}px, ${posY}px) scale(${scale})`);
+        $wrapR.css('transform', `rotate(${rotate}deg)`);
 
         if (scale == 1) {
             $image.css('cursor', 'zoom-in');
