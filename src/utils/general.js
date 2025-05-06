@@ -830,10 +830,13 @@ export function openImageViewer(imageUrl) {
         </div>
 		<div id="iv_close">${SVG.CLOSE}</div>
 	</div>
-    <img id="iv_image" src="" />
+    <section>
+        <img id="iv_image" src="" />
+    </section>
 </div>`);
 
     const $container = $('#imageViewer');
+    const $section = $('#imageViewer > section');
     const $header = $('#iv_header');
     const $closeIcon = $('#iv_close');
     const $image = $('#iv_image');
@@ -844,16 +847,22 @@ export function openImageViewer(imageUrl) {
     $container.css('display', 'flex');
 
     let rotate = 0;
-    let scale = 0.75;
+    let scale = 1;
     let posX = 0, posY = 0;
     let isDragging = false;
     let isMovingPhoto = false;
     let startX, startY;
-    var previousPosition = $image.position();
+    var previousPosition = {
+        x: 0,
+        y: 0
+    };
 
     detectMovingViewerTimer = setInterval(() => {
-        const currentPosition = $image.position();
-        if (currentPosition.left !== previousPosition.left || currentPosition.top !== previousPosition.top) {
+        const currentPosition = {
+            x: posX,
+            y: posY
+        };
+        if (currentPosition.x !== previousPosition.x || currentPosition.y !== previousPosition.y) {
             isMovingPhoto = true;
         } else {
             isMovingPhoto = false;
@@ -863,9 +872,10 @@ export function openImageViewer(imageUrl) {
 
 
     $image.on('load', () => {
-        posX = (window.innerWidth - $image[0].width) / 2;
-        posY = (window.innerHeight - $image[0].height) / 2;
+        posX = 0;
+        posY = 0;
         updateImageStyle();
+        $image.css('transform-origin', '0 0');
     });
 
     $image.on('dragstart drop', (e) => {
@@ -877,34 +887,41 @@ export function openImageViewer(imageUrl) {
         e.stopPropagation();
 
         if (!isMovingPhoto) {
-            if (scale <= 0.8) {
-                scale += 1.25;
-                scale = Math.min(Math.max(0.75, scale), 5);
+            if (scale <= 1) {
+                makeZoomAction(e, Math.min(Math.max(1, scale + 1.25), 5));
             }
             else {
-                scale = 0.75;
-                posX = (window.innerWidth - $image[0].width) / 2;
-                posY = (window.innerHeight - $image[0].height) / 2;
+                scale = 1;
+                posX = 0;
+                posY = 0;
             }
+
             updateImageStyle();
         }
     });
 
-    $image.on('wheel', (e) => {
+    $section.on('wheel', (e) => {
         e.preventDefault();
-        scale += e.originalEvent.deltaY > 0 ? -0.15 : 0.15;
-        scale = Math.min(Math.max(0.75, scale), 5);
-        updateImageStyle();
+        makeZoomAction(e);
+    });
+
+    $container.on('wheel', (e) => {
+        e.preventDefault();
     });
 
     $image.on('mousedown', (e) => {
+        if (scale == 1) return;
+
         isDragging = true;
+
         startX = e.pageX - posX;
         startY = e.pageY - posY;
         $image.css('cursor', 'grabbing');
     });
 
     $image.on('mouseup', () => {
+        if (scale == 1) return;
+
         isDragging = false;
         $image.css('cursor', 'grab');
     });
@@ -943,10 +960,46 @@ export function openImageViewer(imageUrl) {
     });
 
     function updateImageStyle() {
-        $image.css('transition', `transform 0.15s`);
-        $image.css('transform', `scale(${scale}) rotate(${rotate}deg)`);
-        $image.css('left', `${posX}px`);
-        $image.css('top', `${posY}px`);
+        $image.css('transition', isMovingPhoto ? "none" : `transform 0.15s ease`);
+        $image.css('transform', `translate(${posX}px, ${posY}px) scale(${scale}) rotate(${rotate}deg)`);
+        $image.css('will-change', 'transform');
+
+        if (scale == 1) {
+            $image.css('cursor', 'zoom-in');
+        }
+        else {
+            $image.css('cursor', 'grabbing');
+        }
+    }
+
+
+    function makeZoomAction(e, newScale) {
+        e.preventDefault();
+
+        let prevScale = scale;
+
+        // newScale should be null when passing by wheel event
+        if (newScale == null) {
+            let factor = 0.1;
+            let delta = e.originalEvent.deltaY < 0 ? 1 : -1;
+            scale = Math.min(5, Math.max(1, scale + delta * factor * scale));
+        }
+        else {
+            scale = newScale;
+        }
+
+
+        let rect = $section[0].getBoundingClientRect();
+        let mx = e.clientX - rect.left;
+        let my = e.clientY - rect.top;
+
+        let zoomTargetX = (mx - posX) / prevScale;
+        let zoomTargetY = (my - posY) / prevScale;
+
+        posX = -zoomTargetX * scale + mx;
+        posY = -zoomTargetY * scale + my;
+
+        updateImageStyle();
     }
 }
 

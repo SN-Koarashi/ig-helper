@@ -670,10 +670,14 @@ div[class]:hover+.volume_slider>div,
     cursor: pointer;
 }
 
+#imageViewer>section {
+    width: auto;
+    height: auto;
+}
+
 #iv_image {
-    position: absolute;
     max-width: none;
-    max-height: none;
+    max-height: 80svh;
     width: auto;
     height: 100%;
     user-select: none;
