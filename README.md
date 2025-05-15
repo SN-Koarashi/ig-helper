@@ -50,11 +50,11 @@
 This guide provides comprehensive documentation for developers who want to understand, modify, or contribute to the IG Helper codebase. It covers the build system, development environment setup, and contribution workflow.
 
 ### Development Environment Setup
-1. Prerequisites
+#### Prerequisites
 - Node.js (v20 or newer)
 - A userscript manager (Tampermonkey, Greasemonkey, or Violentmonkey)
 
-### Setup Steps
+#### Setup Steps
 1. Clone the repository:
 ```
 git clone https://github.com/SN-Koarashi/ig-helper.git
