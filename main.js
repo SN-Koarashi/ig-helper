@@ -3118,6 +3118,30 @@
                     });
 
                     resource_url = result.items[0].image_versions2.candidates[0].url;
+
+                    const getWidthFromURL = function (obj) {
+                        if (obj.width != null) {
+                            return obj.width;
+                        }
+
+                        const url = new URL(obj.url);
+                        const stp = url.searchParams.get('stp');
+
+                        if (stp != null) {
+                            return parseInt(stp.match(/_p([0-9]+)x([0-9]+)_/i)?.at(1) || -1);
+                        }
+                        else {
+                            return 0;
+                        }
+                    }
+
+                    const resourceWidth = getWidthFromURL(result.items[0].image_versions2.candidates[0]);
+                    if (
+                        result.items[0].original_width !== resourceWidth &&
+                        resourceWidth !== -1
+                    ) {
+                        // alert();
+                    }
                 }
 
                 if (isPreview) {
