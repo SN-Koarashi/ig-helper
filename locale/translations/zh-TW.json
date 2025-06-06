@@ -62,5 +62,7 @@
     "USE_BLOB_FETCH_WHEN_MEDIA_RATE_LIMIT_INTRO": "當 Media API 到達速率限制或因為其他原因而無法下載時，則使用強制提取API下載資源 (資源品質略低)。",
     "NEW_TAB_ALWAYS_FORCE_MEDIA_IN_POST_INTRO": "在貼文中的「在新分頁中開啟」功能將一律使用 Media API 取得高解析度資源",
     "SKIP_VIEW_STORY_CONFIRM": "自動跳過在限時動態/精選動態中顯示的確認頁面",
-    "SKIP_VIEW_STORY_CONFIRM_INTRO": "在檢視限時動態/精選動態時，若有確認頁面時將自動跳過"
+    "SKIP_VIEW_STORY_CONFIRM_INTRO": "在檢視限時動態/精選動態時，若有確認頁面時將自動跳過",
+    "MODIFY_RESOURCE_EXIF": "修改資源EXIF屬性",
+    "MODIFY_RESOURCE_EXIF_INTRO": "修改圖片資源的EXIF屬性，以便將貼文連結放置於其中。"
 }

@@ -62,5 +62,7 @@
     "USE_BLOB_FETCH_WHEN_MEDIA_RATE_LIMIT_INTRO": "Cuando la API de Media alcanza su límite de tasa o no se puede usar por otras razones, se utilizará la API de obtención forzada para descargar recursos (la calidad del recurso puede ser ligeramente inferior).",
     "NEW_TAB_ALWAYS_FORCE_MEDIA_IN_POST_INTRO": "El botón [Abrir en una pestaña nueva] en las publicaciones siempre usará la API de Media para obtener recursos de alta resolución.",
     "SKIP_VIEW_STORY_CONFIRM": "Omitir la página de confirmación al ver una historia o un contenido destacado",
-    "SKIP_VIEW_STORY_CONFIRM_INTRO": "Omitir automáticamente cuando se muestra la página de confirmación en la historia o el contenido destacado."
+    "SKIP_VIEW_STORY_CONFIRM_INTRO": "Omitir automáticamente cuando se muestra la página de confirmación en la historia o el contenido destacado.",
+    "MODIFY_RESOURCE_EXIF": "Modificar los atributos EXIF del recurso",
+    "MODIFY_RESOURCE_EXIF_INTRO": "Modificar los atributos EXIF del recurso de imagen para colocar el enlace de la publicación en él."
 }

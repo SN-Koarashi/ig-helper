@@ -62,5 +62,7 @@
     "USE_BLOB_FETCH_WHEN_MEDIA_RATE_LIMIT_INTRO": "Quando a API de Mídia atingir seu limite de taxa ou não puder ser usada por outros motivos, a API de Busca Forçada será usada para baixar recursos (a qualidade do recurso pode ser um pouco menor).",
     "NEW_TAB_ALWAYS_FORCE_MEDIA_IN_POST_INTRO": "O botão [Abrir em nova aba] nas publicações sempre usará a API de Mídia para obter recursos de alta resolução.",
     "SKIP_VIEW_STORY_CONFIRM": "Pular a página de confirmação ao visualizar uma story ou um destaque",
-    "SKIP_VIEW_STORY_CONFIRM_INTRO": "Pular automaticamente quando a página de confirmação for exibida na story ou no destaque."
+    "SKIP_VIEW_STORY_CONFIRM_INTRO": "Pular automaticamente quando a página de confirmação for exibida na story ou no destaque.",
+    "MODIFY_RESOURCE_EXIF": "Modificar atributos EXIF do recurso",
+    "MODIFY_RESOURCE_EXIF_INTRO": "Modificar os atributos EXIF do recurso de imagem para colocar o link do post nele."
 }
