@@ -64,5 +64,7 @@
     "SKIP_VIEW_STORY_CONFIRM": "Ignorer la page de confirmation lors de la visualisation d'une story ou d'un contenu à la une",
     "SKIP_VIEW_STORY_CONFIRM_INTRO": "Ignorer automatiquement lorsque la page de confirmation est affichée dans la story ou le contenu à la une.",
     "MODIFY_RESOURCE_EXIF": "Modifier les attributs EXIF de la ressource",
-    "MODIFY_RESOURCE_EXIF_INTRO": "Modifier les attributs EXIF de la ressource image afin de placer le lien du post à l'intérieur."
+    "MODIFY_RESOURCE_EXIF_INTRO": "Modifier les attributs EXIF de la ressource image afin de placer le lien du post à l'intérieur.",
+    "DIRECT_DOWNLOAD_STORY": "Télécharger directement toutes les ressources de l’histoire/mise en avant",
+    "DIRECT_DOWNLOAD_STORY_INTRO": "Lorsque vous cliquez sur « Télécharger toutes les ressources », souhaitez-vous télécharger directement toutes les ressources des histoires/mises en avant?"
 }

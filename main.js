@@ -5,7 +5,7 @@
 // @name:ja            IG助手
 // @name:ko            IG조수
 // @namespace          https://github.snkms.com/
-// @version            3.5.5
+// @version            3.6.1
 // @description        Downloading is possible for both photos and videos from posts, as well as for stories, reels or profile picture.
 // @description:zh-TW  一鍵下載對方 Instagram 貼文中的相片、影片甚至是他們的限時動態、連續短片及大頭貼圖片！
 // @description:zh-CN  一键下载对方 Instagram 帖子中的相片、视频甚至是他们的快拍、Reels及头像图片！
@@ -58,6 +58,7 @@
         'FORCE_FETCH_ALL_RESOURCES': false,
         'DIRECT_DOWNLOAD_VISIBLE_RESOURCE': false,
         'DIRECT_DOWNLOAD_ALL': false,
+        'DIRECT_DOWNLOAD_STORY': false,
         'MODIFY_VIDEO_VOLUME': false,
         'MODIFY_RESOURCE_EXIF': false,
         'SCROLL_BUTTON': true,
@@ -338,33 +339,40 @@
         let highStories = await getHighlightStories(highlightId);
         let username = highStories.data.reels_media[0].owner.username;
 
-        let complete = 0;
-        setDownloadProgress(complete, highStories.data.reels_media[0].items.length);
+        if (USER_SETTING.DIRECT_DOWNLOAD_STORY) {
 
-        highStories.data.reels_media[0].items.forEach((item, idx) => {
-            setTimeout(() => {
-                if (USER_SETTING.RENAME_PUBLISH_DATE) {
-                    timestamp = item.taken_at_timestamp;
-                }
+            let complete = 0;
+            setDownloadProgress(complete, highStories.data.reels_media[0].items.length);
 
-                item.display_resources.sort(function (a, b) {
-                    if (a.config_width < b.config_width) return 1;
-                    if (a.config_width > b.config_width) return -1;
-                    return 0;
-                });
+            highStories.data.reels_media[0].items.forEach((item, idx) => {
+                setTimeout(() => {
+                    if (USER_SETTING.RENAME_PUBLISH_DATE) {
+                        timestamp = item.taken_at_timestamp;
+                    }
 
-                if (item.is_video) {
-                    saveFiles(item.video_resources[0].src, username, "stories", timestamp, 'mp4', item.id).then(() => {
-                        setDownloadProgress(++complete, highStories.data.reels_media[0].items.length);
+                    item.display_resources.sort(function (a, b) {
+                        if (a.config_width < b.config_width) return 1;
+                        if (a.config_width > b.config_width) return -1;
+                        return 0;
                     });
-                }
-                else {
-                    saveFiles(item.display_resources[0].src, username, "stories", timestamp, 'jpg', item.id).then(() => {
-                        setDownloadProgress(++complete, highStories.data.reels_media[0].items.length);
-                    });
-                }
-            }, 100 * idx);
-        });
+
+                    if (item.is_video) {
+                        saveFiles(item.video_resources[0].src, username, "highlights", timestamp, 'mp4', item.id).then(() => {
+                            setDownloadProgress(++complete, highStories.data.reels_media[0].items.length);
+                        });
+                    }
+                    else {
+                        saveFiles(item.display_resources[0].src, username, "highlights", timestamp, 'jpg', item.id).then(() => {
+                            setDownloadProgress(++complete, highStories.data.reels_media[0].items.length);
+                        });
+                    }
+                }, 100 * idx);
+            });
+        }
+        else {
+            IG_createDM(false, true);
+            createStoryListDOM(highStories, 'highlights');
+        }
     }
 
     /**
@@ -1669,6 +1677,57 @@
     }
 
     /**
+     * createStoryListDOM
+     * @description ??
+     *
+     * @return {void}
+     */
+    async function createStoryListDOM(obj, type) {
+        try {
+            $('.IG_POPUP_DIG #post_info').text(`${type} ID: ${obj.data.reels_media[0].id}`);
+            const selector = '.IG_POPUP_DIG .IG_POPUP_DIG_MAIN .IG_POPUP_DIG_BODY';
+
+            obj.data.reels_media[0].items.forEach((item, idx) => {
+                let date = new Date().getTime();
+                let timestamp = Math.floor(date / 1000);
+                let username = obj.data.reels_media[0]?.user?.username || obj.data.reels_media[0]?.owner?.username;
+
+                if (USER_SETTING.RENAME_PUBLISH_DATE) {
+                    timestamp = item.taken_at_timestamp;
+                }
+
+                item.display_resources.sort(function (a, b) {
+                    if (a.config_width < b.config_width) return 1;
+                    if (a.config_width > b.config_width) return -1;
+                    return 0;
+                });
+
+                if (item.is_video) {
+                    $(selector).append(`<a media-id="${item.id}" datetime="${timestamp}" data-blob="true" data-needed="direct" data-name="${type}" data-type="mp4" data-username="${username}" data-path="${item.id}" data-globalIndex="${idx + 1}" href="javascript:;" data-href="${item.video_resources[0].src}"><img width="100" src="${item.display_resources[0].src}" /><br/>- <span data-ih-locale-title="VID">${_i18n("VID")}</span> ${idx} -</a>`);
+                }
+                else {
+                    $(selector).append(`<a media-id="${item.id}" datetime="${timestamp}" data-blob="true" data-needed="direct" data-name="${type}" data-type="jpg" data-username="${username}" data-path="${item.id}" data-globalIndex="${idx + 1}" href="javascript:;" data-href="${item.display_resources[0].src}"><img width="100" src="${item.display_resources[0].src}" /><br/>- <span data-ih-locale-title="IMG">${_i18n("IMG")}</span> ${idx} -</a>`);
+                }
+            });
+
+            $('.IG_POPUP_DIG .IG_POPUP_DIG_MAIN .IG_POPUP_DIG_BODY a').each(function () {
+                $(this).wrap('<div></div>');
+                $(this).before('<label class="inner_box_wrapper"><input class="inner_box" type="checkbox"><span></span></label>');
+                $(this).after(`<div data-ih-locale-title="NEW_TAB" title="${_i18n("NEW_TAB")}" class="newTab">${SVG.NEW_TAB}</div>`);
+
+                if ($(this).attr('data-type') == 'mp4') {
+                    $(this).after(`<div data-ih-locale-title="THUMBNAIL_INTRO" title="${_i18n("THUMBNAIL_INTRO")}" class="videoThumbnail">${SVG.THUMBNAIL}</div>`);
+                }
+            });
+
+            updateLoadingBar(false);
+        }
+        catch (err) {
+            console.error('createStoryListDOM()', err);
+        }
+    }
+
+    /**
      * onStoryAll
      * @description Trigger user's story all download event.
      *
@@ -1685,33 +1744,39 @@
         let userId = userInfo.user.pk;
         let stories = await getStories(userId);
 
-        let complete = 0;
-        setDownloadProgress(complete, stories.data.reels_media[0].items.length);
+        if (USER_SETTING.DIRECT_DOWNLOAD_STORY) {
+            let complete = 0;
+            setDownloadProgress(complete, stories.data.reels_media[0].items.length);
 
-        stories.data.reels_media[0].items.forEach((item, idx) => {
-            setTimeout(() => {
-                if (USER_SETTING.RENAME_PUBLISH_DATE) {
-                    timestamp = item.taken_at_timestamp;
-                }
+            stories.data.reels_media[0].items.forEach((item, idx) => {
+                setTimeout(() => {
+                    if (USER_SETTING.RENAME_PUBLISH_DATE) {
+                        timestamp = item.taken_at_timestamp;
+                    }
 
-                item.display_resources.sort(function (a, b) {
-                    if (a.config_width < b.config_width) return 1;
-                    if (a.config_width > b.config_width) return -1;
-                    return 0;
-                });
-
-                if (item.is_video) {
-                    saveFiles(item.video_resources[0].src, username, "stories", timestamp, 'mp4', item.id).then(() => {
-                        setDownloadProgress(++complete, stories.data.reels_media[0].items.length);
+                    item.display_resources.sort(function (a, b) {
+                        if (a.config_width < b.config_width) return 1;
+                        if (a.config_width > b.config_width) return -1;
+                        return 0;
                     });
-                }
-                else {
-                    saveFiles(item.display_resources[0].src, username, "stories", timestamp, 'jpg', item.id).then(() => {
-                        setDownloadProgress(++complete, stories.data.reels_media[0].items.length);
-                    });
-                }
-            }, 100 * idx);
-        });
+
+                    if (item.is_video) {
+                        saveFiles(item.video_resources[0].src, username, "stories", timestamp, 'mp4', item.id).then(() => {
+                            setDownloadProgress(++complete, stories.data.reels_media[0].items.length);
+                        });
+                    }
+                    else {
+                        saveFiles(item.display_resources[0].src, username, "stories", timestamp, 'jpg', item.id).then(() => {
+                            setDownloadProgress(++complete, stories.data.reels_media[0].items.length);
+                        });
+                    }
+                }, 100 * idx);
+            });
+        }
+        else {
+            IG_createDM(false, true);
+            createStoryListDOM(stories, 'stories');
+        }
     }
 
     /**
@@ -3118,6 +3183,30 @@
                     });
 
                     resource_url = result.items[0].image_versions2.candidates[0].url;
+
+                    const getWidthFromURL = function (obj) {
+                        if (obj.width != null) {
+                            return obj.width;
+                        }
+
+                        const url = new URL(obj.url);
+                        const stp = url.searchParams.get('stp');
+
+                        if (stp != null) {
+                            return parseInt(stp.match(/_p([0-9]+)x([0-9]+)_/i)?.at(1) || -1);
+                        }
+                        else {
+                            return 0;
+                        }
+                    }
+
+                    const resourceWidth = getWidthFromURL(result.items[0].image_versions2.candidates[0]);
+                    if (
+                        result.items[0].original_width !== resourceWidth &&
+                        resourceWidth !== -1
+                    ) {
+                        // alert();
+                    }
                 }
 
                 if (isPreview) {
@@ -3771,7 +3860,9 @@
                 "NEW_TAB_ALWAYS_FORCE_MEDIA_IN_POST_INTRO": "The [Open in New Tab] button in posts will always use the Media API to obtain high-resolution resources.",
                 "SKIP_VIEW_STORY_CONFIRM": "Skip the Confirmation Page for Viewing a Story/Highlight",
                 "SKIP_VIEW_STORY_CONFIRM_INTRO": "Automatically skip when confirmation page is shown in story or highlight.",
-                "MODIFY_RESOURCE_EXIF_INTRO": "Modify the EXIF ​​properties of the image resource to place the post link in it."
+                "MODIFY_RESOURCE_EXIF_INTRO": "Modify the EXIF ​​properties of the image resource to place the post link in it.",
+                "DIRECT_DOWNLOAD_STORY": "Directly Download All Resources in the Story/Highlight",
+                "DIRECT_DOWNLOAD_STORY_INTRO": "When you click Download All Resources, whether you want to download all stories/highlights resources directly.",
             }
         };
 

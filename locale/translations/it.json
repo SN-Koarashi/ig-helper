@@ -64,5 +64,7 @@
     "SKIP_VIEW_STORY_CONFIRM": "Salta la pagina di conferma per la visualizzazione di una storia o di un contenuto in evidenza",
     "SKIP_VIEW_STORY_CONFIRM_INTRO": "Salta automaticamente quando la pagina di conferma viene visualizzata nella storia o nel contenuto in evidenza.",
     "MODIFY_RESOURCE_EXIF": "Modifica le proprietà EXIF della risorsa",
-    "MODIFY_RESOURCE_EXIF_INTRO": "Modifica le proprietà EXIF della risorsa immagine per posizionare il link del post al suo interno."
+    "MODIFY_RESOURCE_EXIF_INTRO": "Modifica le proprietà EXIF della risorsa immagine per posizionare il link del post al suo interno.",
+    "DIRECT_DOWNLOAD_STORY": "Scarica direttamente tutte le risorse della storia/in evidenza",
+    "DIRECT_DOWNLOAD_STORY_INTRO": "Quando fai clic su 'Scarica tutte le risorse', vuoi scaricare direttamente tutte le risorse delle storie/in evidenza?"
 }

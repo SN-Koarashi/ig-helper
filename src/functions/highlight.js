@@ -1,10 +1,12 @@
 import { USER_SETTING, SVG, state } from "../settings";
 import {
     updateLoadingBar, openNewTab, logger,
-    setDownloadProgress, saveFiles, getStoryProgress
+    setDownloadProgress, saveFiles, getStoryProgress,
+    IG_createDM
 } from "../utils/general";
 import { _i18n } from "../utils/i18n";
 import { getHighlightStories, getMediaInfo } from "../utils/api";
+import { createStoryListDOM } from "./story";
 /*! ESLINT IMPORT END !*/
 
 /**
@@ -22,33 +24,40 @@ export async function onHighlightsStoryAll() {
     let highStories = await getHighlightStories(highlightId);
     let username = highStories.data.reels_media[0].owner.username;
 
-    let complete = 0;
-    setDownloadProgress(complete, highStories.data.reels_media[0].items.length);
+    if (USER_SETTING.DIRECT_DOWNLOAD_STORY) {
 
-    highStories.data.reels_media[0].items.forEach((item, idx) => {
-        setTimeout(() => {
-            if (USER_SETTING.RENAME_PUBLISH_DATE) {
-                timestamp = item.taken_at_timestamp;
-            }
+        let complete = 0;
+        setDownloadProgress(complete, highStories.data.reels_media[0].items.length);
 
-            item.display_resources.sort(function (a, b) {
-                if (a.config_width < b.config_width) return 1;
-                if (a.config_width > b.config_width) return -1;
-                return 0;
-            });
+        highStories.data.reels_media[0].items.forEach((item, idx) => {
+            setTimeout(() => {
+                if (USER_SETTING.RENAME_PUBLISH_DATE) {
+                    timestamp = item.taken_at_timestamp;
+                }
 
-            if (item.is_video) {
-                saveFiles(item.video_resources[0].src, username, "stories", timestamp, 'mp4', item.id).then(() => {
-                    setDownloadProgress(++complete, highStories.data.reels_media[0].items.length);
+                item.display_resources.sort(function (a, b) {
+                    if (a.config_width < b.config_width) return 1;
+                    if (a.config_width > b.config_width) return -1;
+                    return 0;
                 });
-            }
-            else {
-                saveFiles(item.display_resources[0].src, username, "stories", timestamp, 'jpg', item.id).then(() => {
-                    setDownloadProgress(++complete, highStories.data.reels_media[0].items.length);
-                });
-            }
-        }, 100 * idx);
-    });
+
+                if (item.is_video) {
+                    saveFiles(item.video_resources[0].src, username, "highlights", timestamp, 'mp4', item.id).then(() => {
+                        setDownloadProgress(++complete, highStories.data.reels_media[0].items.length);
+                    });
+                }
+                else {
+                    saveFiles(item.display_resources[0].src, username, "highlights", timestamp, 'jpg', item.id).then(() => {
+                        setDownloadProgress(++complete, highStories.data.reels_media[0].items.length);
+                    });
+                }
+            }, 100 * idx);
+        });
+    }
+    else {
+        IG_createDM(false, true);
+        createStoryListDOM(highStories, 'highlights');
+    }
 }
 
 /**

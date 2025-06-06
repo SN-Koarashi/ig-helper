@@ -64,5 +64,7 @@
     "SKIP_VIEW_STORY_CONFIRM": "自動跳過在限時動態/精選動態中顯示的確認頁面",
     "SKIP_VIEW_STORY_CONFIRM_INTRO": "在檢視限時動態/精選動態時，若有確認頁面時將自動跳過",
     "MODIFY_RESOURCE_EXIF": "修改資源EXIF屬性",
-    "MODIFY_RESOURCE_EXIF_INTRO": "修改圖片資源的EXIF屬性，以便將貼文連結放置於其中。"
+    "MODIFY_RESOURCE_EXIF_INTRO": "修改圖片資源的EXIF屬性，以便將貼文連結放置於其中。",
+    "DIRECT_DOWNLOAD_STORY": "直接下載所有限時動態／精選動態資源",
+    "DIRECT_DOWNLOAD_STORY_INTRO": "當你點選「下載所有資源」時，是否要直接下載所有限時動態/精選動態資源。"
 }

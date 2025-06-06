@@ -64,5 +64,7 @@
     "SKIP_VIEW_STORY_CONFIRM": "Omite pagina de confirmare la vizualizarea unui story/highlight",
     "SKIP_VIEW_STORY_CONFIRM_INTRO": "Omite automat când pagina de confirmare este afișată în story sau highlight.",
     "MODIFY_RESOURCE_EXIF": "Modifică atributele EXIF ale resursei",
-    "MODIFY_RESOURCE_EXIF_INTRO": "Modifică atributele EXIF ale resursei imaginii pentru a plasa linkul postării în acesta."
+    "MODIFY_RESOURCE_EXIF_INTRO": "Modifică atributele EXIF ale resursei imaginii pentru a plasa linkul postării în acesta.",
+    "DIRECT_DOWNLOAD_STORY": "Descarcă direct toate resursele din poveste/evidențieri",
+    "DIRECT_DOWNLOAD_STORY_INTRO": "Când faci clic pe 'Descarcă toate resursele', dorești să descarci direct toate resursele din povești/evidențieri?"
 }

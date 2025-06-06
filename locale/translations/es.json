@@ -64,5 +64,7 @@
     "SKIP_VIEW_STORY_CONFIRM": "Omitir la página de confirmación al ver una historia o un contenido destacado",
     "SKIP_VIEW_STORY_CONFIRM_INTRO": "Omitir automáticamente cuando se muestra la página de confirmación en la historia o el contenido destacado.",
     "MODIFY_RESOURCE_EXIF": "Modificar los atributos EXIF del recurso",
-    "MODIFY_RESOURCE_EXIF_INTRO": "Modificar los atributos EXIF del recurso de imagen para colocar el enlace de la publicación en él."
+    "MODIFY_RESOURCE_EXIF_INTRO": "Modificar los atributos EXIF del recurso de imagen para colocar el enlace de la publicación en él.",
+    "DIRECT_DOWNLOAD_STORY": "Descargar directamente todos los recursos de la historia/destacados",
+    "DIRECT_DOWNLOAD_STORY_INTRO": "Cuando haces clic en 'Descargar todos los recursos', ¿quieres descargar directamente todos los recursos de historias/destacados?"
 }

@@ -2,11 +2,63 @@ import { USER_SETTING, SVG, state } from "../settings";
 import {
     updateLoadingBar, setDownloadProgress,
     saveFiles, getStoryProgress, openNewTab, logger,
-    getStoryId
+    getStoryId,
+    IG_createDM
 } from "../utils/general";
 import { getUserId, getStories, getMediaInfo } from "../utils/api";
 import { _i18n } from "../utils/i18n";
 /*! ESLINT IMPORT END !*/
+
+/**
+ * createStoryListDOM
+ * @description ??
+ *
+ * @return {void}
+ */
+export async function createStoryListDOM(obj, type) {
+    try {
+        $('.IG_POPUP_DIG #post_info').text(`${type} ID: ${obj.data.reels_media[0].id}`);
+        const selector = '.IG_POPUP_DIG .IG_POPUP_DIG_MAIN .IG_POPUP_DIG_BODY';
+
+        obj.data.reels_media[0].items.forEach((item, idx) => {
+            let date = new Date().getTime();
+            let timestamp = Math.floor(date / 1000);
+            let username = obj.data.reels_media[0]?.user?.username || obj.data.reels_media[0]?.owner?.username;
+
+            if (USER_SETTING.RENAME_PUBLISH_DATE) {
+                timestamp = item.taken_at_timestamp;
+            }
+
+            item.display_resources.sort(function (a, b) {
+                if (a.config_width < b.config_width) return 1;
+                if (a.config_width > b.config_width) return -1;
+                return 0;
+            });
+
+            if (item.is_video) {
+                $(selector).append(`<a media-id="${item.id}" datetime="${timestamp}" data-blob="true" data-needed="direct" data-name="${type}" data-type="mp4" data-username="${username}" data-path="${item.id}" data-globalIndex="${idx + 1}" href="javascript:;" data-href="${item.video_resources[0].src}"><img width="100" src="${item.display_resources[0].src}" /><br/>- <span data-ih-locale-title="VID">${_i18n("VID")}</span> ${idx} -</a>`);
+            }
+            else {
+                $(selector).append(`<a media-id="${item.id}" datetime="${timestamp}" data-blob="true" data-needed="direct" data-name="${type}" data-type="jpg" data-username="${username}" data-path="${item.id}" data-globalIndex="${idx + 1}" href="javascript:;" data-href="${item.display_resources[0].src}"><img width="100" src="${item.display_resources[0].src}" /><br/>- <span data-ih-locale-title="IMG">${_i18n("IMG")}</span> ${idx} -</a>`);
+            }
+        });
+
+        $('.IG_POPUP_DIG .IG_POPUP_DIG_MAIN .IG_POPUP_DIG_BODY a').each(function () {
+            $(this).wrap('<div></div>');
+            $(this).before('<label class="inner_box_wrapper"><input class="inner_box" type="checkbox"><span></span></label>');
+            $(this).after(`<div data-ih-locale-title="NEW_TAB" title="${_i18n("NEW_TAB")}" class="newTab">${SVG.NEW_TAB}</div>`);
+
+            if ($(this).attr('data-type') == 'mp4') {
+                $(this).after(`<div data-ih-locale-title="THUMBNAIL_INTRO" title="${_i18n("THUMBNAIL_INTRO")}" class="videoThumbnail">${SVG.THUMBNAIL}</div>`);
+            }
+        });
+
+        updateLoadingBar(false);
+    }
+    catch (err) {
+        console.error('createStoryListDOM()', err);
+    }
+}
 
 /**
  * onStoryAll
@@ -25,33 +77,39 @@ export async function onStoryAll() {
     let userId = userInfo.user.pk;
     let stories = await getStories(userId);
 
-    let complete = 0;
-    setDownloadProgress(complete, stories.data.reels_media[0].items.length);
+    if (USER_SETTING.DIRECT_DOWNLOAD_STORY) {
+        let complete = 0;
+        setDownloadProgress(complete, stories.data.reels_media[0].items.length);
 
-    stories.data.reels_media[0].items.forEach((item, idx) => {
-        setTimeout(() => {
-            if (USER_SETTING.RENAME_PUBLISH_DATE) {
-                timestamp = item.taken_at_timestamp;
-            }
+        stories.data.reels_media[0].items.forEach((item, idx) => {
+            setTimeout(() => {
+                if (USER_SETTING.RENAME_PUBLISH_DATE) {
+                    timestamp = item.taken_at_timestamp;
+                }
 
-            item.display_resources.sort(function (a, b) {
-                if (a.config_width < b.config_width) return 1;
-                if (a.config_width > b.config_width) return -1;
-                return 0;
-            });
-
-            if (item.is_video) {
-                saveFiles(item.video_resources[0].src, username, "stories", timestamp, 'mp4', item.id).then(() => {
-                    setDownloadProgress(++complete, stories.data.reels_media[0].items.length);
+                item.display_resources.sort(function (a, b) {
+                    if (a.config_width < b.config_width) return 1;
+                    if (a.config_width > b.config_width) return -1;
+                    return 0;
                 });
-            }
-            else {
-                saveFiles(item.display_resources[0].src, username, "stories", timestamp, 'jpg', item.id).then(() => {
-                    setDownloadProgress(++complete, stories.data.reels_media[0].items.length);
-                });
-            }
-        }, 100 * idx);
-    });
+
+                if (item.is_video) {
+                    saveFiles(item.video_resources[0].src, username, "stories", timestamp, 'mp4', item.id).then(() => {
+                        setDownloadProgress(++complete, stories.data.reels_media[0].items.length);
+                    });
+                }
+                else {
+                    saveFiles(item.display_resources[0].src, username, "stories", timestamp, 'jpg', item.id).then(() => {
+                        setDownloadProgress(++complete, stories.data.reels_media[0].items.length);
+                    });
+                }
+            }, 100 * idx);
+        });
+    }
+    else {
+        IG_createDM(false, true);
+        createStoryListDOM(stories, 'stories');
+    }
 }
 
 /**

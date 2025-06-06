@@ -76,7 +76,9 @@ export function translateText() {
             "NEW_TAB_ALWAYS_FORCE_MEDIA_IN_POST_INTRO": "The [Open in New Tab] button in posts will always use the Media API to obtain high-resolution resources.",
             "SKIP_VIEW_STORY_CONFIRM": "Skip the Confirmation Page for Viewing a Story/Highlight",
             "SKIP_VIEW_STORY_CONFIRM_INTRO": "Automatically skip when confirmation page is shown in story or highlight.",
-            "MODIFY_RESOURCE_EXIF_INTRO": "Modify the EXIF ​​properties of the image resource to place the post link in it."
+            "MODIFY_RESOURCE_EXIF_INTRO": "Modify the EXIF ​​properties of the image resource to place the post link in it.",
+            "DIRECT_DOWNLOAD_STORY": "Directly Download All Resources in the Story/Highlight",
+            "DIRECT_DOWNLOAD_STORY_INTRO": "When you click Download All Resources, whether you want to download all stories/highlights resources directly.",
         }
     };
 

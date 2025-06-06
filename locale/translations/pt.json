@@ -64,5 +64,7 @@
     "SKIP_VIEW_STORY_CONFIRM": "Pular a página de confirmação ao visualizar uma story ou um destaque",
     "SKIP_VIEW_STORY_CONFIRM_INTRO": "Pular automaticamente quando a página de confirmação for exibida na story ou no destaque.",
     "MODIFY_RESOURCE_EXIF": "Modificar atributos EXIF do recurso",
-    "MODIFY_RESOURCE_EXIF_INTRO": "Modificar os atributos EXIF do recurso de imagem para colocar o link do post nele."
+    "MODIFY_RESOURCE_EXIF_INTRO": "Modificar os atributos EXIF do recurso de imagem para colocar o link do post nele.",
+    "DIRECT_DOWNLOAD_STORY": "Baixar diretamente todos os recursos da história/destaques",
+    "DIRECT_DOWNLOAD_STORY_INTRO": "Ao clicar em 'Baixar todos os recursos', você deseja baixar diretamente todos os recursos das histórias/destaques?"
 }
