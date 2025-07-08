@@ -86,6 +86,9 @@
     const style = GM_getResourceText("INTERNAL_CSS");
     const locale_manifest = JSON.parse(GM_getResourceText("LOCALE_MANIFEST"));
 
+    const IMAGE_CACHE_KEY = 'ZZ_IMG_CACHE';
+    const IMAGE_CACHE_MAX_AGE = 24 * 60 * 60 * 1000; // 24h in ms
+
     var state = {
         videoVolume: (GM_getValue('G_VIDEO_VOLUME')) ? GM_getValue('G_VIDEO_VOLUME') : 1,
         tempFetchRateLimit: false,
@@ -108,7 +111,8 @@
         },
         GL_observer: new MutationObserver(function () {
             onReadyMyDW();
-        })
+        }),
+        GL_imageCache: GM_getValue(IMAGE_CACHE_KEY, {})
     };
     /*******************************/
 
@@ -132,6 +136,7 @@
     });
 
     logger('Script Loaded', GM_info.script.name, 'version:', GM_info.script.version);
+    purgeCache();
     /*******************************/
 
     // Main Timer
@@ -420,6 +425,17 @@
 
             if (USER_SETTING.RENAME_PUBLISH_DATE) {
                 timestamp = target.taken_at_timestamp;
+            }
+
+            const cached = getImageFromCache(target.id);
+            if (cached) {
+                if (isPreview) {
+                    openNewTab(cached);
+                }
+                else {
+                    saveFiles(cached, username, "stories", timestamp, 'jpg', target.id);
+                }
+                return;
             }
 
             if (USER_SETTING.FORCE_RESOURCE_VIA_MEDIA && !state.tempFetchRateLimit) {
@@ -1799,6 +1815,20 @@
             let date = new Date().getTime();
             let timestamp = Math.floor(date / 1000);
 
+            let media = location.pathname.split('/').filter(s => s.length > 0 && s.match(/^([0-9]{10,})$/)).at(-1);
+            let time = new Date($('body > div section:visible time[datetime][class]').first().attr('datetime')).getTime();
+            const cached = getImageFromCache(media);
+
+            if (cached) {
+                if (isPreview) {
+                    openNewTab(cached);
+                }
+                else {
+                    saveFiles(cached, username, "stories", time, 'jpg', media);
+                }
+                return;
+            }
+
             updateLoadingBar(true);
             if (USER_SETTING.FORCE_RESOURCE_VIA_MEDIA && !state.tempFetchRateLimit) {
                 let mediaId = null;
@@ -3160,6 +3190,18 @@
             timestamp = parseInt($(element).attr('datetime'));
         }
 
+        let mediaId = $(element).attr('media-id');
+        const cached = getImageFromCache(mediaId);
+
+        if (cached) {
+            if (isPreview) {
+                openNewTab(cached);
+            } else {
+                saveFiles(cached, username, $(element).data('name'), timestamp, $(element).data('type') || 'jpg', $(element).data('path'));
+            }
+            return;
+        }
+
         if (USER_SETTING.FORCE_RESOURCE_VIA_MEDIA) {
             updateLoadingBar(true);
             let result = await getMediaInfo($(element).attr('media-id'));
@@ -3791,6 +3833,57 @@
         $(document).off('mousemove.igHelper');
     }
 
+    /* purge entries older than 24 h */
+    function purgeCache() {
+        const now = Date.now();
+        for (const id in state.GL_imageCache) {
+            if ((now - state.GL_imageCache[id].ts) > IMAGE_CACHE_MAX_AGE) delete state.GL_imageCache[id];
+        }
+        GM_setValue(IMAGE_CACHE_KEY, state.GL_imageCache);
+    }
+
+    /* Decode mediaId from ig_cache_key parameter that Instagram includes in the URL */
+    function mediaIdFromURL(url) {
+        try {
+            const u = new URL(url);
+            const key = u.searchParams.get('ig_cache_key');
+            if (!key) return null;
+            const b64 = key.split('.')[0];          // Part before “.3-ccb7…”
+            return atob(b64);                       // e.g., “3670776772828545770”
+        } catch { return null; }
+    }
+
+    /* Save to cache */
+    function putInCache(mediaId, url) {
+        if (!mediaId) return;
+        state.GL_imageCache[mediaId] = { url, ts: Date.now() };
+        GM_setValue(IMAGE_CACHE_KEY, state.GL_imageCache);
+    }
+
+    /* Read from cache; returns null if not found or expired */
+    function getImageFromCache(mediaId) {
+        if (!mediaId) return null;
+        const entry = state.GL_imageCache[mediaId];
+        if (!entry) return null;
+        if ((Date.now() - entry.ts) > IMAGE_CACHE_MAX_AGE) { delete state.GL_imageCache[mediaId]; return null; }
+        return entry.url;
+    }
+
+    /* ── NETWORK SNIFFER – captures any loaded <img> resource ── */
+    function registerPerformanceObserver() {
+        const perfObs = new PerformanceObserver(list => {
+            list.getEntries().forEach(entry => {
+                if (entry.initiatorType === 'img') {
+                    const u = entry.name;
+                    if (!(u.includes('_e35') || u.includes('.webp?efg=')) || u.includes('_e35_p') || u.includes('_e35_s')) return;
+                    const id = mediaIdFromURL(u);
+                    if (id && !state.GL_imageCache[id]) putInCache(id, u);
+                }
+            });
+        });
+        perfObs.observe({ entryTypes: ['resource'] });
+    }
+
     /**
      * translateText
      * @description i18n translation text
@@ -4280,6 +4373,8 @@
                 $(this).trigger("click");
             });
         });
+
+        registerPerformanceObserver();
 
         const element_observer = new MutationObserver((mutationsList) => {
             for (const mutation of mutationsList) {

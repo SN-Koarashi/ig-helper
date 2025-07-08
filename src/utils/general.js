@@ -1,6 +1,7 @@
 import { SVG, USER_SETTING, state, locale_manifest, CHILD_NODES } from "../settings";
 import { _i18n } from "./i18n";
 import { getPostOwner, getMediaInfo } from "./api";
+import { getImageFromCache } from "./image_cache";
 /*! ESLINT IMPORT END !*/
 
 /**
@@ -1055,61 +1056,3 @@ export function removeImageViewer() {
     $('#imageViewer').remove();
     $(document).off('mousemove.igHelper');
 }
-
-/*  ──────────────────────────────────────────────────────────────
-    📦  IMAGE CACHE (24h) + NETWORK SNIFFER
-    ────────────────────────────────────────────────────────────── */
-const CACHE_KEY = 'ZZ_IMG_CACHE';
-const CACHE_MAX_AGE = 24 * 60 * 60 * 1000;         // 24h in ms
-let imgCache = GM_getValue(CACHE_KEY, {});
-
-/* purge entries older than 24 h */
-function purgeCache () {
-  const now = Date.now();
-  for (const id in imgCache) {
-    if ((now - imgCache[id].ts) > CACHE_MAX_AGE) delete imgCache[id];
-  }
-  GM_setValue(CACHE_KEY, imgCache);
-}
-purgeCache();
-
-/* Decode mediaId from ig_cache_key parameter that Instagram includes in the URL */
-function mediaIdFromURL (url) {
-  try {
-    const u = new URL(url);
-    const key = u.searchParams.get('ig_cache_key');
-    if (!key) return null;
-    const b64 = key.split('.')[0];          // Part before “.3-ccb7…”
-    return atob(b64);                       // e.g., “3670776772828545770”
-  } catch { return null; }
-}
-
-/* Save to cache */
-function putInCache (mediaId, url) {
-  if (!mediaId) return;
-  imgCache[mediaId] = { url, ts: Date.now() };
-  GM_setValue(CACHE_KEY, imgCache);
-}
-
-/* Read from cache; returns null if not found or expired */
-function getImageFromCache (mediaId) {
-  if (!mediaId) return null;
-  const entry = imgCache[mediaId];
-  if (!entry) return null;
-  if ((Date.now() - entry.ts) > CACHE_MAX_AGE) { delete imgCache[mediaId]; return null; }
-  return entry.url;
-}
-
-/* ── NETWORK SNIFFER – captures any loaded <img> resource ── */
-try {
-  const perfObs = new PerformanceObserver(list => {
-    list.getEntries().forEach(entry => {
-      const u = entry.name;
-      if (!(u.includes('_e35') || u.includes('.webp?efg=')) || u.includes('_e35_p') || u.includes('_e35_s')) return;
-      const id = mediaIdFromURL(u);
-      if (id && !imgCache[id]) putInCache(id, u);
-    });
-  });
-  perfObs.observe({ entryTypes: ['resource'] });
-} catch { /* PerformanceObserver not supported */ }
-/* ────────────────────────────────────────────────────────────── */
