@@ -7,7 +7,12 @@
 import { IMAGE_CACHE_KEY, IMAGE_CACHE_MAX_AGE, state } from "../settings";
 /*! ESLINT IMPORT END !*/
 
-/* purge entries older than 24 h */
+/**
+ * purgeCache
+ * @description purge image cache entries older than 24 hours.
+ *
+ * @return {void}
+ */
 export function purgeCache() {
     const now = Date.now();
     for (const id in state.GL_imageCache) {
@@ -16,7 +21,14 @@ export function purgeCache() {
     GM_setValue(IMAGE_CACHE_KEY, state.GL_imageCache);
 }
 
-/* Decode mediaId from ig_cache_key parameter that Instagram includes in the URL */
+
+/**
+ * mediaIdFromURL
+ * @description Decode mediaId from ig_cache_key parameter that Instagram includes in the URL.
+ *
+ * @param  {string}  url
+ * @return {?string}
+ */
 export function mediaIdFromURL(url) {
     try {
         const u = new URL(url);
@@ -27,14 +39,27 @@ export function mediaIdFromURL(url) {
     } catch { return null; }
 }
 
-/* Save to cache */
+/**
+ * putInCache
+ * @description Save url to image cache.
+ *
+ * @param  {string}  mediaId
+ * @param  {string}  url
+ * @return {void}
+ */
 export function putInCache(mediaId, url) {
     if (!mediaId) return;
     state.GL_imageCache[mediaId] = { url, ts: Date.now() };
     GM_setValue(IMAGE_CACHE_KEY, state.GL_imageCache);
 }
 
-/* Read from cache; returns null if not found or expired */
+/**
+ * getImageFromCache
+ * @description Read image url from cache; returns null if not found or expired
+ *
+ * @param  {string}  mediaId
+ * @return {?string}
+ */
 export function getImageFromCache(mediaId) {
     if (!mediaId) return null;
     const entry = state.GL_imageCache[mediaId];
@@ -43,12 +68,18 @@ export function getImageFromCache(mediaId) {
     return entry.url;
 }
 
-/* ── NETWORK SNIFFER – captures any loaded <img> resource ── */
+/**
+ * registerPerformanceObserver
+ * @description Register performance observer to document, captures any loaded image resource.
+ *
+ * @return {void}
+ */
 export function registerPerformanceObserver() {
     const perfObs = new PerformanceObserver(list => {
         list.getEntries().forEach(entry => {
             if (entry.initiatorType === 'img') {
                 const u = entry.name;
+
                 if (!(u.includes('_e35') || u.includes('.webp?efg=')) || u.includes('_e35_p') || u.includes('_e35_s')) return;
                 const id = mediaIdFromURL(u);
                 if (id && !state.GL_imageCache[id]) putInCache(id, u);
