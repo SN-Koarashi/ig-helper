@@ -19,6 +19,7 @@ FS_IMPORT('./metadata.js');
     /* untils */
     FS_IMPORT('./utils/api.js');
     FS_IMPORT('./utils/general.js');
+    FS_IMPORT('./utils/image_cache.js');
     FS_IMPORT('./utils/i18n.js');
 
     /* register all events */

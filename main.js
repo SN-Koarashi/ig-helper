@@ -5,7 +5,7 @@
 // @name:ja            IG助手
 // @name:ko            IG조수
 // @namespace          https://github.snkms.com/
-// @version            3.6.2
+// @version            3.7.0
 // @description        Downloading is possible for both photos and videos from posts, as well as for stories, reels or profile picture.
 // @description:zh-TW  一鍵下載對方 Instagram 貼文中的相片、影片甚至是他們的限時動態、連續短片及大頭貼圖片！
 // @description:zh-CN  一键下载对方 Instagram 帖子中的相片、视频甚至是他们的快拍、Reels及头像图片！
@@ -86,6 +86,9 @@
     const style = GM_getResourceText("INTERNAL_CSS");
     const locale_manifest = JSON.parse(GM_getResourceText("LOCALE_MANIFEST"));
 
+    const IMAGE_CACHE_KEY = 'URLS_OF_IMAGES_TEMPORARILY_STORED';
+    const IMAGE_CACHE_MAX_AGE = 24 * 60 * 60 * 1000; // 24h in ms
+
     var state = {
         videoVolume: (GM_getValue('G_VIDEO_VOLUME')) ? GM_getValue('G_VIDEO_VOLUME') : 1,
         tempFetchRateLimit: false,
@@ -108,7 +111,8 @@
         },
         GL_observer: new MutationObserver(function () {
             onReadyMyDW();
-        })
+        }),
+        GL_imageCache: GM_getValue(IMAGE_CACHE_KEY, {})
     };
     /*******************************/
 
@@ -132,6 +136,7 @@
     });
 
     logger('Script Loaded', GM_info.script.name, 'version:', GM_info.script.version);
+    purgeCache();
     /*******************************/
 
     // Main Timer
@@ -140,7 +145,7 @@
         // page loading or unnecessary route
         if ($('div#splash-screen').length > 0 && !$('div#splash-screen').is(':hidden') ||
             location.pathname.match(/^\/(explore(\/.*)?|challenge\/?.*|direct\/?.*|qr\/?|accounts\/.*|emails\/.*|language\/?.*?|your_activity\/?.*|settings\/help(\/.*)?$)$/ig) ||
-            !location.hostname.startsWith('www.') ||
+            !location.hostname.startsWith('www.') || location.pathname.startsWith('/auth_platform/codeentry/') || location.pathname.startsWith('/challenge/action/') ||
             ((location.pathname.endsWith('/followers/') || location.pathname.endsWith('/following/')) && ($(`body > div[class]:not([id^="mount"]) div div[role="dialog"]`).length > 0))
         ) {
             state.pageLoaded = false;
@@ -420,6 +425,17 @@
 
             if (USER_SETTING.RENAME_PUBLISH_DATE) {
                 timestamp = target.taken_at_timestamp;
+            }
+
+            const cached = getImageFromCache(target.id);
+            if (cached) {
+                if (isPreview) {
+                    openNewTab(cached);
+                }
+                else {
+                    saveFiles(cached, username, "stories", timestamp, 'jpg', target.id);
+                }
+                return;
             }
 
             if (USER_SETTING.FORCE_RESOURCE_VIA_MEDIA && !state.tempFetchRateLimit) {
@@ -1866,6 +1882,17 @@
                     mediaId = location.pathname.split('/').filter(s => s.length > 0 && s.match(/^([0-9]{10,})$/)).at(-1);
                 }
 
+                const cached = getImageFromCache(mediaId);
+                if (cached) {
+                    if (isPreview) {
+                        openNewTab(cached);
+                    }
+                    else {
+                        saveFiles(cached, username, "stories", timestamp, 'jpg', mediaId);
+                    }
+                    return;
+                }
+
                 let result = await getMediaInfo(mediaId);
 
                 if (USER_SETTING.RENAME_PUBLISH_DATE) {
@@ -3160,6 +3187,18 @@
             timestamp = parseInt($(element).attr('datetime'));
         }
 
+        let mediaId = $(element).attr('media-id');
+        const cached = getImageFromCache(mediaId);
+
+        if (cached) {
+            if (isPreview) {
+                openNewTab(cached);
+            } else {
+                saveFiles(cached, username, $(element).data('name'), timestamp, $(element).data('type') || 'jpg', $(element).data('path'));
+            }
+            return;
+        }
+
         if (USER_SETTING.FORCE_RESOURCE_VIA_MEDIA) {
             updateLoadingBar(true);
             let result = await getMediaInfo($(element).attr('media-id'));
@@ -3792,6 +3831,88 @@
     }
 
     /**
+     * purgeCache
+     * @description purge image cache entries older than 24 hours.
+     *
+     * @return {void}
+     */
+    function purgeCache() {
+        const now = Date.now();
+        for (const id in state.GL_imageCache) {
+            if ((now - state.GL_imageCache[id].ts) > IMAGE_CACHE_MAX_AGE) delete state.GL_imageCache[id];
+        }
+        GM_setValue(IMAGE_CACHE_KEY, state.GL_imageCache);
+    }
+
+
+    /**
+     * mediaIdFromURL
+     * @description Decode mediaId from ig_cache_key parameter that Instagram includes in the URL.
+     *
+     * @param  {string}  url
+     * @return {?string}
+     */
+    function mediaIdFromURL(url) {
+        try {
+            const u = new URL(url);
+            const key = u.searchParams.get('ig_cache_key');
+            if (!key) return null;
+            const b64 = key.split('.')[0];          // Part before “.3-ccb7…”
+            return atob(b64);                       // e.g., “3670776772828545770”
+        } catch { return null; }
+    }
+
+    /**
+     * putInCache
+     * @description Save url to image cache.
+     *
+     * @param  {string}  mediaId
+     * @param  {string}  url
+     * @return {void}
+     */
+    function putInCache(mediaId, url) {
+        if (!mediaId) return;
+        state.GL_imageCache[mediaId] = { url, ts: Date.now() };
+        GM_setValue(IMAGE_CACHE_KEY, state.GL_imageCache);
+    }
+
+    /**
+     * getImageFromCache
+     * @description Read image url from cache; returns null if not found or expired
+     *
+     * @param  {string}  mediaId
+     * @return {?string}
+     */
+    function getImageFromCache(mediaId) {
+        if (!mediaId) return null;
+        const entry = state.GL_imageCache[mediaId];
+        if (!entry) return null;
+        if ((Date.now() - entry.ts) > IMAGE_CACHE_MAX_AGE) { delete state.GL_imageCache[mediaId]; return null; }
+        return entry.url;
+    }
+
+    /**
+     * registerPerformanceObserver
+     * @description Register performance observer to document, captures any loaded image resource.
+     *
+     * @return {void}
+     */
+    function registerPerformanceObserver() {
+        const perfObs = new PerformanceObserver(list => {
+            list.getEntries().forEach(entry => {
+                if (entry.initiatorType === 'img') {
+                    const u = entry.name;
+
+                    if (!(u.includes('_e35') || u.includes('.webp?efg=')) || u.includes('_e35_p') || u.includes('_e35_s')) return;
+                    const id = mediaIdFromURL(u);
+                    if (id && !state.GL_imageCache[id]) putInCache(id, u);
+                }
+            });
+        });
+        perfObs.observe({ entryTypes: ['resource'] });
+    }
+
+    /**
      * translateText
      * @description i18n translation text
      *
@@ -4280,6 +4401,8 @@
                 $(this).trigger("click");
             });
         });
+
+        registerPerformanceObserver();
 
         const element_observer = new MutationObserver((mutationsList) => {
             for (const mutation of mutationsList) {
