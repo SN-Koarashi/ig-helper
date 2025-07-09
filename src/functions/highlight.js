@@ -7,6 +7,7 @@ import {
 import { _i18n } from "../utils/i18n";
 import { getHighlightStories, getMediaInfo } from "../utils/api";
 import { createStoryListDOM } from "./story";
+import { getImageFromCache } from "../utils/image_cache";
 /*! ESLINT IMPORT END !*/
 
 /**
@@ -107,19 +108,16 @@ export async function onHighlightsStory(isDownload, isPreview) {
             timestamp = target.taken_at_timestamp;
         }
 
-        let media = location.pathname.split('/').filter(s => s.length > 0 && s.match(/^([0-9]{10,})$/)).at(-1);
-        let time = new Date($('body > div section:visible time[datetime][class]').first().attr('datetime')).getTime();
-        const cached = getImageFromCache(media);
-
+        const cached = getImageFromCache(target.id);
         if (cached) {
             if (isPreview) {
                 openNewTab(cached);
             }
             else {
-                saveFiles(cached, username, "stories", timestamp, 'jpg', media);
+                saveFiles(cached, username, "stories", timestamp, 'jpg', target.id);
             }
             return;
-            }
+        }
 
         if (USER_SETTING.FORCE_RESOURCE_VIA_MEDIA && !state.tempFetchRateLimit) {
             let result = await getMediaInfo(target.id);

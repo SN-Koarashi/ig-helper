@@ -7,6 +7,7 @@ import {
 } from "../utils/general";
 import { getUserId, getStories, getMediaInfo } from "../utils/api";
 import { _i18n } from "../utils/i18n";
+import { getImageFromCache } from "../utils/image_cache";
 /*! ESLINT IMPORT END !*/
 
 /**
@@ -127,20 +128,6 @@ export async function onStory(isDownload, isForce, isPreview) {
         let date = new Date().getTime();
         let timestamp = Math.floor(date / 1000);
 
-        let media = location.pathname.split('/').filter(s => s.length > 0 && s.match(/^([0-9]{10,})$/)).at(-1);
-        let time = new Date($('body > div section:visible time[datetime][class]').first().attr('datetime')).getTime();
-        const cached = getImageFromCache(media);
-
-        if (cached) {
-            if (isPreview) {
-                openNewTab(cached);
-            }
-            else {
-                saveFiles(cached, username, "stories", time, 'jpg', media);
-            }
-            return;
-        }
-
         updateLoadingBar(true);
         if (USER_SETTING.FORCE_RESOURCE_VIA_MEDIA && !state.tempFetchRateLimit) {
             let mediaId = null;
@@ -206,6 +193,17 @@ export async function onStory(isDownload, isForce, isPreview) {
 
             if (mediaId == null) {
                 mediaId = location.pathname.split('/').filter(s => s.length > 0 && s.match(/^([0-9]{10,})$/)).at(-1);
+            }
+
+            const cached = getImageFromCache(mediaId);
+            if (cached) {
+                if (isPreview) {
+                    openNewTab(cached);
+                }
+                else {
+                    saveFiles(cached, username, "stories", timestamp, 'jpg', mediaId);
+                }
+                return;
             }
 
             let result = await getMediaInfo(mediaId);

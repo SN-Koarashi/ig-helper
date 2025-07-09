@@ -8,6 +8,7 @@ import { onProfileAvatar } from "./functions/profile";
 import { onHighlightsStory, onHighlightsStoryAll, onHighlightsStoryThumbnail } from "./functions/highlight";
 import { onReels } from "./functions/reel";
 import { _i18n, getTranslationText, repaintingTranslations, registerMenuCommand } from "./utils/i18n";
+import { registerPerformanceObserver } from "./utils/image_cache";
 /*! ESLINT IMPORT END !*/
 
 // Running if document is ready
@@ -344,6 +345,8 @@ $(function () {
             $(this).trigger("click");
         });
     });
+
+    registerPerformanceObserver();
 
     const element_observer = new MutationObserver((mutationsList) => {
         for (const mutation of mutationsList) {
