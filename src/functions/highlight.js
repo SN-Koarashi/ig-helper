@@ -107,6 +107,20 @@ export async function onHighlightsStory(isDownload, isPreview) {
             timestamp = target.taken_at_timestamp;
         }
 
+        let media = location.pathname.split('/').filter(s => s.length > 0 && s.match(/^([0-9]{10,})$/)).at(-1);
+        let time = new Date($('body > div section:visible time[datetime][class]').first().attr('datetime')).getTime();
+        const cached = getImageFromCache(media);
+
+        if (cached) {
+            if (isPreview) {
+                openNewTab(cached);
+            }
+            else {
+                saveFiles(cached, username, "stories", timestamp, 'jpg', media);
+            }
+            return;
+            }
+
         if (USER_SETTING.FORCE_RESOURCE_VIA_MEDIA && !state.tempFetchRateLimit) {
             let result = await getMediaInfo(target.id);
 
