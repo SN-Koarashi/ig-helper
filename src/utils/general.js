@@ -1,6 +1,7 @@
 import { SVG, USER_SETTING, state, locale_manifest, CHILD_NODES } from "../settings";
 import { _i18n } from "./i18n";
 import { getPostOwner, getMediaInfo } from "./api";
+import { getImageFromCache } from "./image_cache";
 /*! ESLINT IMPORT END !*/
 
 /**
@@ -411,6 +412,18 @@ export async function triggerLinkElement(element, isPreview) {
 
     if (USER_SETTING.RENAME_PUBLISH_DATE && $(element).attr('datetime')) {
         timestamp = parseInt($(element).attr('datetime'));
+    }
+
+    let mediaId = $(element).attr('media-id');
+    const cached = getImageFromCache(mediaId);
+
+    if (cached) {
+        if (isPreview) {
+            openNewTab(cached);
+        } else {
+            saveFiles(cached, username, $(element).data('name'), timestamp, $(element).data('type') || 'jpg', $(element).data('path'));
+        }
+        return;
     }
 
     if (USER_SETTING.FORCE_RESOURCE_VIA_MEDIA) {

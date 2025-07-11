@@ -7,6 +7,7 @@ import {
 } from "../utils/general";
 import { getUserId, getStories, getMediaInfo } from "../utils/api";
 import { _i18n } from "../utils/i18n";
+import { getImageFromCache } from "../utils/image_cache";
 /*! ESLINT IMPORT END !*/
 
 /**
@@ -192,6 +193,17 @@ export async function onStory(isDownload, isForce, isPreview) {
 
             if (mediaId == null) {
                 mediaId = location.pathname.split('/').filter(s => s.length > 0 && s.match(/^([0-9]{10,})$/)).at(-1);
+            }
+
+            const cached = getImageFromCache(mediaId);
+            if (cached) {
+                if (isPreview) {
+                    openNewTab(cached);
+                }
+                else {
+                    saveFiles(cached, username, "stories", timestamp, 'jpg', mediaId);
+                }
+                return;
             }
 
             let result = await getMediaInfo(mediaId);

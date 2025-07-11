@@ -7,6 +7,7 @@ import {
 import { _i18n } from "../utils/i18n";
 import { getHighlightStories, getMediaInfo } from "../utils/api";
 import { createStoryListDOM } from "./story";
+import { getImageFromCache } from "../utils/image_cache";
 /*! ESLINT IMPORT END !*/
 
 /**
@@ -105,6 +106,17 @@ export async function onHighlightsStory(isDownload, isPreview) {
 
         if (USER_SETTING.RENAME_PUBLISH_DATE) {
             timestamp = target.taken_at_timestamp;
+        }
+
+        const cached = getImageFromCache(target.id);
+        if (cached) {
+            if (isPreview) {
+                openNewTab(cached);
+            }
+            else {
+                saveFiles(cached, username, "stories", timestamp, 'jpg', target.id);
+            }
+            return;
         }
 
         if (USER_SETTING.FORCE_RESOURCE_VIA_MEDIA && !state.tempFetchRateLimit) {

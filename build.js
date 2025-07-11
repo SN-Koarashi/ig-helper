@@ -17,6 +17,8 @@ const rl = readline.createInterface({
 
 const processImportedFile = (full_path) => {
     return new Promise((resolve) => {
+        console.log("[Read File]", full_path);
+
         const importedStream = fs.createReadStream(full_path);
         const importedRl = readline.createInterface({
             input: importedStream,
