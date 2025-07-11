@@ -68,7 +68,7 @@ export function getStories(userId) {
 
 /**
  * getUserId
- * @description Get user's id with username
+ * @description Get user's id with username.
  *
  * @param  {String}  username
  * @return {Integer}
@@ -99,7 +99,7 @@ export function getUserId(username) {
                         resolve(result);
                         // eslint-disable-next-line no-unused-vars
                     }).catch((err) => {
-                        alert("Can not find user info from getUserId()");
+                        alert("Cannot find user info from getUserId()");
                     });
                 }
             },
@@ -113,7 +113,7 @@ export function getUserId(username) {
 
 /**
  * getUserIdWithAgent
- * @description Get user's id with username
+ * @description Get user's id with username.
  *
  * @param  {String}  username
  * @return {Integer}
@@ -201,7 +201,7 @@ export function getUserHighSizeProfile(userId) {
 
 /**
  * getPostOwner
- * @description Get post's author with post shortcode
+ * @description Get post's author with post shortcode.
  *
  * @param  {String}  postPath
  * @return {String}
@@ -236,7 +236,7 @@ export function getPostOwner(postPath) {
 
 /**
  * getBlobMedia
- * @description Get list of all media files in post with post shortcode
+ * @description Get list of all media files in post with post shortcode.
  *
  * @param  {String}  postPath
  * @return {Object}
@@ -286,7 +286,7 @@ export function getBlobMedia(postPath) {
 
 /**
  * getBlobMediaWithQueryID
- * @description Get list of all media files in post with post shortcode
+ * @description Get list of all media files in post with post shortcode.
  *
  * @param  {String}  postPath
  * @return {Object}
@@ -334,7 +334,7 @@ export function getBlobMediaWithQueryID(postPath) {
 
 /**
  * getMediaInfo
- * @description Get Instagram Media object
+ * @description Get Instagram Media object.
  *
  * @param  {String}  mediaId
  * @return {Object}
@@ -344,16 +344,16 @@ export function getMediaInfo(mediaId) {
         let getURL = `https://i.instagram.com/api/v1/media/${mediaId}/info/`;
 
         if (mediaId == null) {
-            alert("Can not call Media API because of the media id is invalid.");
-            logger('getMediaInfo()', 'reject', 'Can not call Media API because of the media id is invalid.');
+            alert("Cannot call Media API because of the media id is invalid.");
+            logger('getMediaInfo()', 'reject', 'Cannot call Media API because of the media id is invalid.');
 
             updateLoadingBar(false);
             reject(-1);
             return;
         }
         if (getAppID() == null) {
-            alert("Can not call Media API because of the app id is invalid.");
-            logger('getMediaInfo()', 'reject', 'Can not call Media API because of the app id is invalid.');
+            alert("Cannot call Media API because of the app id is invalid.");
+            logger('getMediaInfo()', 'reject', 'Cannot call Media API because of the app id is invalid.');
             updateLoadingBar(false);
             reject(-1);
             return;

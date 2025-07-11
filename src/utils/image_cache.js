@@ -41,7 +41,7 @@ export function mediaIdFromURL(url) {
 
 /**
  * putInCache
- * @description Save url to image cache.
+ * @description Save URL to image cache.
  *
  * @param  {string}  mediaId
  * @param  {string}  url
@@ -55,7 +55,7 @@ export function putInCache(mediaId, url) {
 
 /**
  * getImageFromCache
- * @description Read image url from cache; returns null if not found or expired
+ * @description Read image URL from cache; returns null if not found or expired.
  *
  * @param  {string}  mediaId
  * @return {?string}

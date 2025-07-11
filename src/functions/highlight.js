@@ -141,7 +141,7 @@ export async function onHighlightsStory(isDownload, isPreview) {
                 }
             }
             else {
-                if (USER_SETTING.USE_BLOB_FETCH_WHEN_MEDIA_RATE_LIMIT) {
+                if (USER_SETTING.FALLBACK_TO_BLOB_FETCH_IF_MEDIA_API_THROTTLED) {
                     delete state.GL_dataCache.highlights[highlightId];
                     state.tempFetchRateLimit = true;
 
@@ -319,7 +319,7 @@ export async function onHighlightsStoryThumbnail(isDownload) {
                 saveFiles(result.items[0].image_versions2.candidates[0].url, username, "highlights", timestamp, 'jpg', highlightId);
             }
             else {
-                if (USER_SETTING.USE_BLOB_FETCH_WHEN_MEDIA_RATE_LIMIT) {
+                if (USER_SETTING.FALLBACK_TO_BLOB_FETCH_IF_MEDIA_API_THROTTLED) {
                     delete state.GL_dataCache.highlights[highlightId];
                     state.tempFetchRateLimit = true;
 
