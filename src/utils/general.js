@@ -24,7 +24,7 @@ export function getStoryId(url) {
 
 /**
  * getAppID
- * @description Get Instagram App ID
+ * @description Get Instagram App ID.
  *
  * @return {?integer}
  */
@@ -44,7 +44,7 @@ export function getAppID() {
 
 /**
  * updateLoadingBar
- * @description Update loading state
+ * @description Update loading state.
  *
  * @param  {Boolean}  isLoading - Check if loading state
  * @return {void}
@@ -62,7 +62,7 @@ export function updateLoadingBar(isLoading) {
 
 /**
  * getStoryProgress
- * @description Get the story progress of the username (post several stories)
+ * @description Get the story progress of the username (post several stories).
  *
  * @param  {String}  username - Get progress of username
  * @return {Object}
@@ -93,7 +93,7 @@ export function getStoryProgress(username) {
 
 /**
  * setDownloadProgress
- * @description Show and set download circle progress
+ * @description Show and set download circle progress.
  *
  * @param  {Integer}  now
  * @param  {Integer}  total
@@ -117,7 +117,7 @@ export function setDownloadProgress(now, total) {
 
 /**
  * IG_createDM
- * @description A dialog showing a list of all media files in the post
+ * @description A dialog showing a list of all media files in the post.
  *
  * @param  {Boolean}  hasHidden
  * @param  {Boolean}  hasCheckbox
@@ -138,7 +138,7 @@ export function IG_createDM(hasHidden, hasCheckbox) {
 
 /**
  * IG_setDM
- * @description Set a dialog status
+ * @description Set a dialog status.
  *
  * @param  {Boolean}  hasHidden
  * @return {void}
@@ -156,7 +156,7 @@ export function IG_setDM(hasHidden) {
 
 /**
  * saveFiles
- * @description Download the specified media URL to the computer
+ * @description Download the specified media URL to the computer.
  *
  * @param  {String}  downloadLink
  * @param  {String}  username
@@ -183,7 +183,7 @@ export function saveFiles(downloadLink, username, sourceType, timestamp, filetyp
 }
 
 /**
- * @description Trigger download from Blob with filename
+ * @description Trigger download from Blob with filename.
  * 
  * @param {Blob} blob
  * @param {string} filename
@@ -198,7 +198,7 @@ function triggerDownload(blob, filename) {
 
 /**
  * createSaveFileElement
- * @description Download the specified media with link element
+ * @description Download the specified media with link element.
  *
  * @param  {String}  downloadLink
  * @param  {Object}  object
@@ -264,7 +264,7 @@ export function createSaveFileElement(downloadLink, object, username, sourceType
 
 /**
  * changeExifData
- * @description Strips EXIF metadata and attaches post URLs to the EXIF of downloaded image resources
+ * @description Strips EXIF metadata and attaches post URLs to the EXIF of downloaded image resources.
  *
  * @param  {Object}  blob
  * @param  {string}  shortcode
@@ -389,7 +389,7 @@ async function changeExifData(blob, shortcode) {
 
 /**
  * triggerLinkElement
- * @description Trigger the link element to start downloading the resource
+ * @description Trigger the link element to start downloading the resource.
  *
  * @param  {Object}  element
  * @return {void}
@@ -491,7 +491,7 @@ export async function triggerLinkElement(element, isPreview) {
             }
         }
         else {
-            if (USER_SETTING.USE_BLOB_FETCH_WHEN_MEDIA_RATE_LIMIT) {
+            if (USER_SETTING.FALLBACK_TO_BLOB_FETCH_IF_MEDIA_API_THROTTLED) {
                 if (isPreview) {
                     let urlObj = new URL($(element).attr('data-href'));
                     urlObj.host = 'scontent.cdninstagram.com';
@@ -516,7 +516,7 @@ export async function triggerLinkElement(element, isPreview) {
 
 /**
  * registerMenuCommand
- * @description register script menu command
+ * @description Register script menu command.
  *
  * @return {void}
  */
@@ -565,7 +565,7 @@ export function registerMenuCommand() {
 
 /**
  * checkingScriptUpdate
- * @description Check if there is a new version of the script and push notification
+ * @description Check if there is a new version of the script and push notification.
  *
  * @param  {Integer}  interval
  * @return {void}
@@ -584,7 +584,7 @@ export function checkingScriptUpdate(interval) {
 
 /**
  * callNotification
- * @description call desktop notification by browser
+ * @description Call desktop notification by browser.
  *
  * @return {void}
  */
@@ -632,7 +632,7 @@ export function callNotification() {
 
 /**
  * showSetting
- * @description Show script settings window
+ * @description Show script settings window.
  *
  * @return {void}
  */
@@ -678,7 +678,7 @@ export function showSetting() {
 
 /**
  * showDebugDOM
- * @description Show full DOM tree
+ * @description Show full DOM tree.
  *
  * @return {void}
  */
@@ -698,7 +698,7 @@ export function showDebugDOM() {
 
 /**
  * showFeedbackDOM
- * @description Show feedback options
+ * @description Show feedback options.
  *
  * @return {void}
  */
@@ -715,7 +715,7 @@ export function showFeedbackDOM() {
 
 /**
  * openNewTab
- * @description Open url in new tab
+ * @description Open URL in new tab.
  *
  * @param  {String}  link
  * @return {void}
@@ -732,7 +732,7 @@ export function openNewTab(link) {
 
 /**
  * reloadScript
- * @description Re-register main timer
+ * @description Re-register main timer.
  *
  * @return {void}
  */
@@ -761,7 +761,7 @@ export function reloadScript() {
 
 /**
  * logger
- * @description event record
+ * @description Event record.
  *
  * @return {void}
  */
@@ -784,7 +784,7 @@ export function logger(...messages) {
 
 /**
  * initSettings
- * @description Initialize preferences
+ * @description Initialize preferences.
  *
  * @return {void}
  */
