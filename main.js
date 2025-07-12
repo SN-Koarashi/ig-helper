@@ -5,7 +5,7 @@
 // @name:ja            IG助手
 // @name:ko            IG조수
 // @namespace          https://github.snkms.com/
-// @version            3.7.0
+// @version            3.7.1
 // @description        Downloading is possible for both photos and videos from posts, as well as for stories, reels or profile picture.
 // @description:zh-TW  一鍵下載對方 Instagram 貼文中的相片、影片甚至是他們的限時動態、連續短片及大頭貼圖片！
 // @description:zh-CN  一键下载对方 Instagram 帖子中的相片、视频甚至是他们的快拍、Reels及头像图片！
@@ -49,25 +49,26 @@
     // !!! DO NOT CHANGE THIS AREA !!!
     // ??? PLEASE CHANGE SETTING WITH MENU ???
     const USER_SETTING = {
-        'CHECK_UPDATE': true,
         'AUTO_RENAME': true,
-        'RENAME_PUBLISH_DATE': true,
-        'DISABLE_VIDEO_LOOPING': false,
-        'HTML5_VIDEO_CONTROL': false,
-        'REDIRECT_CLICK_USER_STORY_PICTURE': false,
-        'FORCE_FETCH_ALL_RESOURCES': false,
-        'DIRECT_DOWNLOAD_VISIBLE_RESOURCE': false,
+        'CHECK_UPDATE': true,
         'DIRECT_DOWNLOAD_ALL': false,
         'DIRECT_DOWNLOAD_STORY': false,
-        'MODIFY_VIDEO_VOLUME': false,
-        'MODIFY_RESOURCE_EXIF': false,
-        'SCROLL_BUTTON': true,
+        'DIRECT_DOWNLOAD_VISIBLE_RESOURCE': false,
+        'DISABLE_VIDEO_LOOPING': false,
+        'FALLBACK_TO_BLOB_FETCH_IF_MEDIA_API_THROTTLED': false,
+        'FORCE_FETCH_ALL_RESOURCES': false,
         'FORCE_RESOURCE_VIA_MEDIA': false,
-        'USE_BLOB_FETCH_WHEN_MEDIA_RATE_LIMIT': false,
+        'HTML5_VIDEO_CONTROL': false,
+        'MODIFY_RESOURCE_EXIF': false,
+        'MODIFY_VIDEO_VOLUME': false,
         'NEW_TAB_ALWAYS_FORCE_MEDIA_IN_POST': false,
+        'REDIRECT_CLICK_USER_STORY_PICTURE': false,
+        'RENAME_PUBLISH_DATE': true,
+        'RENAME_SHORTCODE': false,
+        'SCROLL_BUTTON': true,
         'SKIP_VIEW_STORY_CONFIRM': false
     };
-    const CHILD_NODES = ['RENAME_PUBLISH_DATE', 'USE_BLOB_FETCH_WHEN_MEDIA_RATE_LIMIT', 'NEW_TAB_ALWAYS_FORCE_MEDIA_IN_POST'];
+    const CHILD_NODES = ['RENAME_PUBLISH_DATE', 'FALLBACK_TO_BLOB_FETCH_IF_MEDIA_API_THROTTLED', 'NEW_TAB_ALWAYS_FORCE_MEDIA_IN_POST'];
     /*******************************/
 
     // Icon download by Google Fonts Material Icon
@@ -95,7 +96,7 @@
         fileRenameFormat: (GM_getValue('G_RENAME_FORMAT')) ? GM_getValue('G_RENAME_FORMAT') : '%USERNAME%-%SOURCE_TYPE%-%SHORTCODE%-%YEAR%%MONTH%%DAY%_%HOUR%%MINUTE%%SECOND%_%ORIGINAL_NAME_FIRST%',
         registerMenuIds: [],
         locale: {},
-        lang: GM_getValue('lang') || navigator.language || navigator.userLanguage,
+        lang: GM_getValue('UI_LANGUAGE') || navigator.language || navigator.userLanguage,
         currentURL: location.href,
         firstStarted: false,
         pageLoaded: false,
@@ -145,7 +146,7 @@
         // page loading or unnecessary route
         if ($('div#splash-screen').length > 0 && !$('div#splash-screen').is(':hidden') ||
             location.pathname.match(/^\/(explore(\/.*)?|challenge\/?.*|direct\/?.*|qr\/?|accounts\/.*|emails\/.*|language\/?.*?|your_activity\/?.*|settings\/help(\/.*)?$)$/ig) ||
-            !location.hostname.startsWith('www.') || location.pathname.startsWith('/auth_platform/codeentry/') || location.pathname.startsWith('/challenge/action/') ||
+            !location.hostname.startsWith('www.') || location.pathname.startsWith('/auth_platform/codeentry/') || location.pathname.startsWith('/challenge/') ||
             ((location.pathname.endsWith('/followers/') || location.pathname.endsWith('/following/')) && ($(`body > div[class]:not([id^="mount"]) div div[role="dialog"]`).length > 0))
         ) {
             state.pageLoaded = false;
@@ -460,7 +461,7 @@
                     }
                 }
                 else {
-                    if (USER_SETTING.USE_BLOB_FETCH_WHEN_MEDIA_RATE_LIMIT) {
+                    if (USER_SETTING.FALLBACK_TO_BLOB_FETCH_IF_MEDIA_API_THROTTLED) {
                         delete state.GL_dataCache.highlights[highlightId];
                         state.tempFetchRateLimit = true;
 
@@ -638,7 +639,7 @@
                     saveFiles(result.items[0].image_versions2.candidates[0].url, username, "highlights", timestamp, 'jpg', highlightId);
                 }
                 else {
-                    if (USER_SETTING.USE_BLOB_FETCH_WHEN_MEDIA_RATE_LIMIT) {
+                    if (USER_SETTING.FALLBACK_TO_BLOB_FETCH_IF_MEDIA_API_THROTTLED) {
                         delete state.GL_dataCache.highlights[highlightId];
                         state.tempFetchRateLimit = true;
 
@@ -699,7 +700,7 @@
 
     /**
      * onReadyMyDW
-     * @description Create an event entry point for the download button for the post
+     * @description Create an event entry point for the download button for the post.
      *
      * @param  {Boolean}  NoDialog    - Check if it not showing the dialog
      * @param  {?Boolean}  hasReferrer - Check if the source of the previous page is a story page
@@ -743,7 +744,7 @@
 
     /**
      * initPostVideoFunction
-     * @description Initialize settings related to the video resources in the post
+     * @description Initialize settings related to the video resources in the post.
      *
      * @param  {Object}  $mainElement
      * @return {Void}
@@ -843,7 +844,7 @@
 
     /**
      * createDownloadButton
-     * @description Create a download button in the upper right corner of each post
+     * @description Create a download button in the upper right corner of each post.
      *
      * @return {void}
      */
@@ -1036,7 +1037,7 @@
                                         $videoThumbnail.trigger("click");
                                     }
                                     else {
-                                        alert('Can not find thumbnail url.');
+                                        alert('Cannot find thumbnail URL.');
                                     }
 
                                     updateLoadingBar(false);
@@ -1075,7 +1076,7 @@
                                             openNewTab(urlObj.href);
                                         }
                                         else {
-                                            alert('Can not find open tab url.');
+                                            alert('Cannot find open tab URL.');
                                         }
                                     }
 
@@ -1148,7 +1149,7 @@
                                             $('.IG_POPUP_DIG .IG_POPUP_DIG_BODY a[data-globalindex="' + (index + 1) + '"]')?.trigger("click");
                                         }
                                         else {
-                                            alert('Can not find download url.');
+                                            alert('Cannot find download URL.');
                                         }
 
                                         $('.IG_POPUP_DIG').remove();
@@ -1267,7 +1268,7 @@
 
     /**
      * filterResourceData
-     * @description Standardized resource object format
+     * @description Standardized resource object format.
      *
      * @param  {Object}  data
      * @return {Object}
@@ -1289,7 +1290,7 @@
 
     /**
      * createMediaListDOM
-     * @description Create a list of media elements from post URLs
+     * @description Create a list of media elements from post URLs.
      *
      * @param  {String}  postURL
      * @param  {String}  selector - Use CSS element selectors to choose where it appears.
@@ -1410,7 +1411,7 @@
 
     /**
      * getVisibleNodeIndex
-     * @description Get element visible node
+     * @description Get element visible node.
      *
      * @param  {Object}  $main
      * @return {Integer}
@@ -1699,7 +1700,7 @@
 
     /**
      * createStoryListDOM
-     * @description ??
+     * @description Create a list of story items in the popup dialog.
      *
      * @return {void}
      */
@@ -1918,7 +1919,7 @@
                     }
                 }
                 else {
-                    if (USER_SETTING.USE_BLOB_FETCH_WHEN_MEDIA_RATE_LIMIT) {
+                    if (USER_SETTING.FALLBACK_TO_BLOB_FETCH_IF_MEDIA_API_THROTTLED) {
                         state.tempFetchRateLimit = true;
                         onStory(isDownload, isForce, isPreview);
                     }
@@ -2240,7 +2241,7 @@
 
                 }
                 else {
-                    if (USER_SETTING.USE_BLOB_FETCH_WHEN_MEDIA_RATE_LIMIT) {
+                    if (USER_SETTING.FALLBACK_TO_BLOB_FETCH_IF_MEDIA_API_THROTTLED) {
                         state.tempFetchRateLimit = true;
                         onStoryThumbnail(true, isForce);
                     }
@@ -2450,7 +2451,7 @@
 
     /**
      * getUserId
-     * @description Get user's id with username
+     * @description Get user's id with username.
      *
      * @param  {String}  username
      * @return {Integer}
@@ -2481,7 +2482,7 @@
                             resolve(result);
                             // eslint-disable-next-line no-unused-vars
                         }).catch((err) => {
-                            alert("Can not find user info from getUserId()");
+                            alert("Cannot find user info from getUserId()");
                         });
                     }
                 },
@@ -2495,7 +2496,7 @@
 
     /**
      * getUserIdWithAgent
-     * @description Get user's id with username
+     * @description Get user's id with username.
      *
      * @param  {String}  username
      * @return {Integer}
@@ -2583,7 +2584,7 @@
 
     /**
      * getPostOwner
-     * @description Get post's author with post shortcode
+     * @description Get post's author with post shortcode.
      *
      * @param  {String}  postPath
      * @return {String}
@@ -2618,7 +2619,7 @@
 
     /**
      * getBlobMedia
-     * @description Get list of all media files in post with post shortcode
+     * @description Get list of all media files in post with post shortcode.
      *
      * @param  {String}  postPath
      * @return {Object}
@@ -2668,7 +2669,7 @@
 
     /**
      * getBlobMediaWithQueryID
-     * @description Get list of all media files in post with post shortcode
+     * @description Get list of all media files in post with post shortcode.
      *
      * @param  {String}  postPath
      * @return {Object}
@@ -2716,7 +2717,7 @@
 
     /**
      * getMediaInfo
-     * @description Get Instagram Media object
+     * @description Get Instagram Media object.
      *
      * @param  {String}  mediaId
      * @return {Object}
@@ -2726,16 +2727,16 @@
             let getURL = `https://i.instagram.com/api/v1/media/${mediaId}/info/`;
 
             if (mediaId == null) {
-                alert("Can not call Media API because of the media id is invalid.");
-                logger('getMediaInfo()', 'reject', 'Can not call Media API because of the media id is invalid.');
+                alert("Cannot call Media API because of the media id is invalid.");
+                logger('getMediaInfo()', 'reject', 'Cannot call Media API because of the media id is invalid.');
 
                 updateLoadingBar(false);
                 reject(-1);
                 return;
             }
             if (getAppID() == null) {
-                alert("Can not call Media API because of the app id is invalid.");
-                logger('getMediaInfo()', 'reject', 'Can not call Media API because of the app id is invalid.');
+                alert("Cannot call Media API because of the app id is invalid.");
+                logger('getMediaInfo()', 'reject', 'Cannot call Media API because of the app id is invalid.');
                 updateLoadingBar(false);
                 reject(-1);
                 return;
@@ -2797,7 +2798,7 @@
 
     /**
      * getAppID
-     * @description Get Instagram App ID
+     * @description Get Instagram App ID.
      *
      * @return {?integer}
      */
@@ -2817,7 +2818,7 @@
 
     /**
      * updateLoadingBar
-     * @description Update loading state
+     * @description Update loading state.
      *
      * @param  {Boolean}  isLoading - Check if loading state
      * @return {void}
@@ -2835,7 +2836,7 @@
 
     /**
      * getStoryProgress
-     * @description Get the story progress of the username (post several stories)
+     * @description Get the story progress of the username (post several stories).
      *
      * @param  {String}  username - Get progress of username
      * @return {Object}
@@ -2866,7 +2867,7 @@
 
     /**
      * setDownloadProgress
-     * @description Show and set download circle progress
+     * @description Show and set download circle progress.
      *
      * @param  {Integer}  now
      * @param  {Integer}  total
@@ -2890,7 +2891,7 @@
 
     /**
      * IG_createDM
-     * @description A dialog showing a list of all media files in the post
+     * @description A dialog showing a list of all media files in the post.
      *
      * @param  {Boolean}  hasHidden
      * @param  {Boolean}  hasCheckbox
@@ -2911,7 +2912,7 @@
 
     /**
      * IG_setDM
-     * @description Set a dialog status
+     * @description Set a dialog status.
      *
      * @param  {Boolean}  hasHidden
      * @return {void}
@@ -2929,7 +2930,7 @@
 
     /**
      * saveFiles
-     * @description Download the specified media URL to the computer
+     * @description Download the specified media URL to the computer.
      *
      * @param  {String}  downloadLink
      * @param  {String}  username
@@ -2956,7 +2957,7 @@
     }
 
     /**
-     * @description Trigger download from Blob with filename
+     * @description Trigger download from Blob with filename.
      * 
      * @param {Blob} blob
      * @param {string} filename
@@ -2971,7 +2972,7 @@
 
     /**
      * createSaveFileElement
-     * @description Download the specified media with link element
+     * @description Download the specified media with link element.
      *
      * @param  {String}  downloadLink
      * @param  {Object}  object
@@ -3037,7 +3038,7 @@
 
     /**
      * changeExifData
-     * @description Strips EXIF metadata and attaches post URLs to the EXIF of downloaded image resources
+     * @description Strips EXIF metadata and attaches post URLs to the EXIF of downloaded image resources.
      *
      * @param  {Object}  blob
      * @param  {string}  shortcode
@@ -3162,7 +3163,7 @@
 
     /**
      * triggerLinkElement
-     * @description Trigger the link element to start downloading the resource
+     * @description Trigger the link element to start downloading the resource.
      *
      * @param  {Object}  element
      * @return {void}
@@ -3264,7 +3265,7 @@
                 }
             }
             else {
-                if (USER_SETTING.USE_BLOB_FETCH_WHEN_MEDIA_RATE_LIMIT) {
+                if (USER_SETTING.FALLBACK_TO_BLOB_FETCH_IF_MEDIA_API_THROTTLED) {
                     if (isPreview) {
                         let urlObj = new URL($(element).attr('data-href'));
                         urlObj.host = 'scontent.cdninstagram.com';
@@ -3289,7 +3290,7 @@
 
     /**
      * registerMenuCommand
-     * @description register script menu command
+     * @description Register script menu command.
      *
      * @return {void}
      */
@@ -3338,7 +3339,7 @@
 
     /**
      * checkingScriptUpdate
-     * @description Check if there is a new version of the script and push notification
+     * @description Check if there is a new version of the script and push notification.
      *
      * @param  {Integer}  interval
      * @return {void}
@@ -3357,7 +3358,7 @@
 
     /**
      * callNotification
-     * @description call desktop notification by browser
+     * @description Call desktop notification by browser.
      *
      * @return {void}
      */
@@ -3405,7 +3406,7 @@
 
     /**
      * showSetting
-     * @description Show script settings window
+     * @description Show script settings window.
      *
      * @return {void}
      */
@@ -3451,7 +3452,7 @@
 
     /**
      * showDebugDOM
-     * @description Show full DOM tree
+     * @description Show full DOM tree.
      *
      * @return {void}
      */
@@ -3471,7 +3472,7 @@
 
     /**
      * showFeedbackDOM
-     * @description Show feedback options
+     * @description Show feedback options.
      *
      * @return {void}
      */
@@ -3488,7 +3489,7 @@
 
     /**
      * openNewTab
-     * @description Open url in new tab
+     * @description Open URL in new tab.
      *
      * @param  {String}  link
      * @return {void}
@@ -3505,7 +3506,7 @@
 
     /**
      * reloadScript
-     * @description Re-register main timer
+     * @description Re-register main timer.
      *
      * @return {void}
      */
@@ -3534,7 +3535,7 @@
 
     /**
      * logger
-     * @description event record
+     * @description Event record.
      *
      * @return {void}
      */
@@ -3557,7 +3558,7 @@
 
     /**
      * initSettings
-     * @description Initialize preferences
+     * @description Initialize preferences.
      *
      * @return {void}
      */
@@ -3864,7 +3865,7 @@
 
     /**
      * putInCache
-     * @description Save url to image cache.
+     * @description Save URL to image cache.
      *
      * @param  {string}  mediaId
      * @param  {string}  url
@@ -3878,7 +3879,7 @@
 
     /**
      * getImageFromCache
-     * @description Read image url from cache; returns null if not found or expired
+     * @description Read image URL from cache; returns null if not found or expired.
      *
      * @param  {string}  mediaId
      * @return {?string}
@@ -3903,7 +3904,7 @@
                 if (entry.initiatorType === 'img') {
                     const u = entry.name;
 
-                    if (!(u.includes('_e35') || u.includes('.webp?efg=')) || u.includes('_e35_p') || u.includes('_e35_s')) return;
+                    if (!(u.includes('_e35') || u.includes('.webp?efg=') || u.includes('_e15')) || u.includes('_e35_p') || u.includes('_e35_s')) return;
                     const id = mediaIdFromURL(u);
                     if (id && !state.GL_imageCache[id]) putInCache(id, u);
                 }
@@ -3914,7 +3915,7 @@
 
     /**
      * translateText
-     * @description i18n translation text
+     * @description i18n translation text.
      *
      * @return {void}
      */
@@ -3963,12 +3964,14 @@
                 "FORCE_FETCH_ALL_RESOURCES": "Force Fetch All Resources in the Post",
                 "DIRECT_DOWNLOAD_VISIBLE_RESOURCE": "Directly Download the Visible Resources in the Post",
                 "DIRECT_DOWNLOAD_ALL": "Directly Download All Resources in the Post",
+                "DIRECT_DOWNLOAD_STORY": "Directly Download All Resources in the Story/Highlight",
                 "MODIFY_VIDEO_VOLUME": "Modify Video Volume (Right-Click to Set)",
-                "MODIFY_RESOURCE_EXIF": "Modify Resource EXIF ​​Properties",
+                "MODIFY_RESOURCE_EXIF": "Modify Resource EXIF Properties",
                 "SCROLL_BUTTON": "Enable Scroll Buttons for Reels Page",
                 "FORCE_RESOURCE_VIA_MEDIA": "Force Fetch Resource via Media API",
-                "USE_BLOB_FETCH_WHEN_MEDIA_RATE_LIMIT": "Use Alternative Methods to Download When the Media API is Not Accessible",
+                "FALLBACK_TO_BLOB_FETCH_IF_MEDIA_API_THROTTLED": "Use Alternative Methods to Download When the Media API is Not Accessible",
                 "NEW_TAB_ALWAYS_FORCE_MEDIA_IN_POST": "Always Use Media API for 'Open in New Tab' in Posts",
+                "SKIP_VIEW_STORY_CONFIRM": "Skip the Confirmation Page for Viewing a Story/Highlight",
                 "AUTO_RENAME_INTRO": "Auto rename file to custom format:\nCustom Format List: \n%USERNAME% - Username\n%SOURCE_TYPE% - Download Source\n%SHORTCODE% - Post Shortcode\n%YEAR% - Year when downloaded/published\n%2-YEAR% - Year (last two digits) when downloaded/published\n%MONTH% - Month when downloaded/published\n%DAY% - Day when downloaded/published\n%HOUR% - Hour when downloaded/published\n%MINUTE% - Minute when downloaded/published\n%SECOND% - Second when downloaded/published\n%ORIGINAL_NAME% - Original name of downloaded file\n%ORIGINAL_NAME_FIRST% - Original name of downloaded file (first part of name)\n\nIf set to false, the file name will remain unchanged.\nExample: instagram_321565527_679025940443063_4318007696887450953_n.jpg",
                 "RENAME_SHORTCODE_INTRO": "Auto rename file to the following format:\nUSERNAME-TYPE-SHORTCODE-TIMESTAMP.FILETYPE\nExample: instagram-photo-CwkxyiVynpW-1670350000.jpg\n\nThis will ONLY work if [Automatically Rename Files] is set to TRUE.",
                 "RENAME_PUBLISH_DATE_INTRO": "Sets the timestamp in the file rename format to the resource publish date (browser time zone).\n\nThis feature only works when [Automatically Rename Files] is set to TRUE.",
@@ -3982,13 +3985,11 @@
                 "MODIFY_VIDEO_VOLUME_INTRO": "Modify the video playback volume in Reels and posts (right-click to open the volume setting slider).",
                 "SCROLL_BUTTON_INTRO": "Enable scroll buttons for the lower right corner of the Reels page.",
                 "FORCE_RESOURCE_VIA_MEDIA_INTRO": "The Media API will try to get the highest quality photo or video possible, but it may take longer to load.",
-                "USE_BLOB_FETCH_WHEN_MEDIA_RATE_LIMIT_INTRO": "When the Media API reaches its rate limit or cannot be used for other reasons, the Forced Fetch API will be used to download resources (the resource quality may be slightly lower).",
+                "FALLBACK_TO_BLOB_FETCH_IF_MEDIA_API_THROTTLED_INTRO": "When the Media API reaches its rate limit or cannot be used for other reasons, the Forced Fetch API will be used to download resources (the resource quality may be slightly lower).",
                 "NEW_TAB_ALWAYS_FORCE_MEDIA_IN_POST_INTRO": "The [Open in New Tab] button in posts will always use the Media API to obtain high-resolution resources.",
-                "SKIP_VIEW_STORY_CONFIRM": "Skip the Confirmation Page for Viewing a Story/Highlight",
                 "SKIP_VIEW_STORY_CONFIRM_INTRO": "Automatically skip when confirmation page is shown in story or highlight.",
-                "MODIFY_RESOURCE_EXIF_INTRO": "Modify the EXIF ​​properties of the image resource to place the post link in it.",
-                "DIRECT_DOWNLOAD_STORY": "Directly Download All Resources in the Story/Highlight",
-                "DIRECT_DOWNLOAD_STORY_INTRO": "When you click Download All Resources, whether you want to download all stories/highlights resources directly.",
+                "MODIFY_RESOURCE_EXIF_INTRO": "Modify the EXIF properties of the image resource to place the post link in it.",
+                "DIRECT_DOWNLOAD_STORY_INTRO": "When you click Download All Resources, all stories/highlights are downloaded directly, without showing the image selection dialog.",
             }
         };
 
@@ -4005,7 +4006,7 @@
 
     /**
      * getTranslationText
-     * @description i18n translation text
+     * @description i18n translation text.
      *
      * @param  {String}  lang
      * @return {Object}
@@ -4034,7 +4035,7 @@
 
     /**
      * _i18n
-     * @description Perform i18n translation
+     * @description Perform i18n translation.
      *
      * @param  {String}  text
      * @return {void}
@@ -4052,7 +4053,7 @@
 
     /**
      * repaintingTranslations
-     * @description Perform i18n translation
+     * @description Perform i18n translation.
      *
      * @return {void}
      */
@@ -4378,7 +4379,7 @@
         });
 
         $('body').on('change', '.IG_POPUP_DIG_TITLE #langSelect', function () {
-            GM_setValue('lang', $(this).val());
+            GM_setValue('UI_LANGUAGE', $(this).val());
             state.lang = $(this).val();
 
             if (state.lang?.startsWith('en') || state.locale[state.lang] != null) {
