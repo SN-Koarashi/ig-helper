@@ -25,6 +25,16 @@ export const USER_SETTING = {
     'SKIP_VIEW_STORY_CONFIRM': false
 };
 export const CHILD_NODES = ['RENAME_PUBLISH_DATE', 'FALLBACK_TO_BLOB_FETCH_IF_MEDIA_API_THROTTLED', 'NEW_TAB_ALWAYS_FORCE_MEDIA_IN_POST'];
+
+export const PARENT_CHILD_MAP = {
+    'AUTO_RENAME': [
+        'RENAME_PUBLISH_DATE'
+    ],
+    'FORCE_RESOURCE_VIA_MEDIA': [
+        'FALLBACK_TO_BLOB_FETCH_IF_MEDIA_API_THROTTLED',
+        'NEW_TAB_ALWAYS_FORCE_MEDIA_IN_POST'
+    ]
+};
 /*******************************/
 
 // Icon download by Google Fonts Material Icon
