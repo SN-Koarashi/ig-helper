@@ -322,7 +322,7 @@ $(function () {
     });
 
     $('body').on('change', '.IG_POPUP_DIG_TITLE #langSelect', function () {
-        GM_setValue('lang', $(this).val());
+        GM_setValue('UI_LANGUAGE', $(this).val());
         state.lang = $(this).val();
 
         if (state.lang?.startsWith('en') || state.locale[state.lang] != null) {

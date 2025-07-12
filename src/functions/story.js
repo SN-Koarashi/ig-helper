@@ -12,7 +12,7 @@ import { getImageFromCache } from "../utils/image_cache";
 
 /**
  * createStoryListDOM
- * @description ??
+ * @description Create a list of story items in the popup dialog.
  *
  * @return {void}
  */
@@ -231,7 +231,7 @@ export async function onStory(isDownload, isForce, isPreview) {
                 }
             }
             else {
-                if (USER_SETTING.USE_BLOB_FETCH_WHEN_MEDIA_RATE_LIMIT) {
+                if (USER_SETTING.FALLBACK_TO_BLOB_FETCH_IF_MEDIA_API_THROTTLED) {
                     state.tempFetchRateLimit = true;
                     onStory(isDownload, isForce, isPreview);
                 }
@@ -553,7 +553,7 @@ export async function onStoryThumbnail(isDownload, isForce) {
 
             }
             else {
-                if (USER_SETTING.USE_BLOB_FETCH_WHEN_MEDIA_RATE_LIMIT) {
+                if (USER_SETTING.FALLBACK_TO_BLOB_FETCH_IF_MEDIA_API_THROTTLED) {
                     state.tempFetchRateLimit = true;
                     onStoryThumbnail(true, isForce);
                 }

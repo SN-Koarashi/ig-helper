@@ -4,7 +4,7 @@ import { logger } from "./general";
 
 /**
  * translateText
- * @description i18n translation text
+ * @description i18n translation text.
  *
  * @return {void}
  */
@@ -53,12 +53,14 @@ export function translateText() {
             "FORCE_FETCH_ALL_RESOURCES": "Force Fetch All Resources in the Post",
             "DIRECT_DOWNLOAD_VISIBLE_RESOURCE": "Directly Download the Visible Resources in the Post",
             "DIRECT_DOWNLOAD_ALL": "Directly Download All Resources in the Post",
+            "DIRECT_DOWNLOAD_STORY": "Directly Download All Resources in the Story/Highlight",
             "MODIFY_VIDEO_VOLUME": "Modify Video Volume (Right-Click to Set)",
-            "MODIFY_RESOURCE_EXIF": "Modify Resource EXIF ​​Properties",
+            "MODIFY_RESOURCE_EXIF": "Modify Resource EXIF Properties",
             "SCROLL_BUTTON": "Enable Scroll Buttons for Reels Page",
             "FORCE_RESOURCE_VIA_MEDIA": "Force Fetch Resource via Media API",
-            "USE_BLOB_FETCH_WHEN_MEDIA_RATE_LIMIT": "Use Alternative Methods to Download When the Media API is Not Accessible",
+            "FALLBACK_TO_BLOB_FETCH_IF_MEDIA_API_THROTTLED": "Use Alternative Methods to Download When the Media API is Not Accessible",
             "NEW_TAB_ALWAYS_FORCE_MEDIA_IN_POST": "Always Use Media API for 'Open in New Tab' in Posts",
+            "SKIP_VIEW_STORY_CONFIRM": "Skip the Confirmation Page for Viewing a Story/Highlight",
             "AUTO_RENAME_INTRO": "Auto rename file to custom format:\nCustom Format List: \n%USERNAME% - Username\n%SOURCE_TYPE% - Download Source\n%SHORTCODE% - Post Shortcode\n%YEAR% - Year when downloaded/published\n%2-YEAR% - Year (last two digits) when downloaded/published\n%MONTH% - Month when downloaded/published\n%DAY% - Day when downloaded/published\n%HOUR% - Hour when downloaded/published\n%MINUTE% - Minute when downloaded/published\n%SECOND% - Second when downloaded/published\n%ORIGINAL_NAME% - Original name of downloaded file\n%ORIGINAL_NAME_FIRST% - Original name of downloaded file (first part of name)\n\nIf set to false, the file name will remain unchanged.\nExample: instagram_321565527_679025940443063_4318007696887450953_n.jpg",
             "RENAME_SHORTCODE_INTRO": "Auto rename file to the following format:\nUSERNAME-TYPE-SHORTCODE-TIMESTAMP.FILETYPE\nExample: instagram-photo-CwkxyiVynpW-1670350000.jpg\n\nThis will ONLY work if [Automatically Rename Files] is set to TRUE.",
             "RENAME_PUBLISH_DATE_INTRO": "Sets the timestamp in the file rename format to the resource publish date (browser time zone).\n\nThis feature only works when [Automatically Rename Files] is set to TRUE.",
@@ -72,13 +74,11 @@ export function translateText() {
             "MODIFY_VIDEO_VOLUME_INTRO": "Modify the video playback volume in Reels and posts (right-click to open the volume setting slider).",
             "SCROLL_BUTTON_INTRO": "Enable scroll buttons for the lower right corner of the Reels page.",
             "FORCE_RESOURCE_VIA_MEDIA_INTRO": "The Media API will try to get the highest quality photo or video possible, but it may take longer to load.",
-            "USE_BLOB_FETCH_WHEN_MEDIA_RATE_LIMIT_INTRO": "When the Media API reaches its rate limit or cannot be used for other reasons, the Forced Fetch API will be used to download resources (the resource quality may be slightly lower).",
+            "FALLBACK_TO_BLOB_FETCH_IF_MEDIA_API_THROTTLED_INTRO": "When the Media API reaches its rate limit or cannot be used for other reasons, the Forced Fetch API will be used to download resources (the resource quality may be slightly lower).",
             "NEW_TAB_ALWAYS_FORCE_MEDIA_IN_POST_INTRO": "The [Open in New Tab] button in posts will always use the Media API to obtain high-resolution resources.",
-            "SKIP_VIEW_STORY_CONFIRM": "Skip the Confirmation Page for Viewing a Story/Highlight",
             "SKIP_VIEW_STORY_CONFIRM_INTRO": "Automatically skip when confirmation page is shown in story or highlight.",
-            "MODIFY_RESOURCE_EXIF_INTRO": "Modify the EXIF ​​properties of the image resource to place the post link in it.",
-            "DIRECT_DOWNLOAD_STORY": "Directly Download All Resources in the Story/Highlight",
-            "DIRECT_DOWNLOAD_STORY_INTRO": "When you click Download All Resources, whether you want to download all stories/highlights resources directly.",
+            "MODIFY_RESOURCE_EXIF_INTRO": "Modify the EXIF properties of the image resource to place the post link in it.",
+            "DIRECT_DOWNLOAD_STORY_INTRO": "When you click Download All Resources, all stories/highlights are downloaded directly, without showing the image selection dialog.",
         }
     };
 
@@ -95,7 +95,7 @@ export function translateText() {
 
 /**
  * getTranslationText
- * @description i18n translation text
+ * @description i18n translation text.
  *
  * @param  {String}  lang
  * @return {Object}
@@ -124,7 +124,7 @@ export async function getTranslationText(lang) {
 
 /**
  * _i18n
- * @description Perform i18n translation
+ * @description Perform i18n translation.
  *
  * @param  {String}  text
  * @return {void}
@@ -142,7 +142,7 @@ export function _i18n(text) {
 
 /**
  * repaintingTranslations
- * @description Perform i18n translation
+ * @description Perform i18n translation.
  *
  * @return {void}
  */

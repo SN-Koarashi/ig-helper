@@ -10,7 +10,7 @@ import { _i18n } from "../utils/i18n";
 
 /**
  * onReadyMyDW
- * @description Create an event entry point for the download button for the post
+ * @description Create an event entry point for the download button for the post.
  *
  * @param  {Boolean}  NoDialog    - Check if it not showing the dialog
  * @param  {?Boolean}  hasReferrer - Check if the source of the previous page is a story page
@@ -54,7 +54,7 @@ export function onReadyMyDW(NoDialog, hasReferrer) {
 
 /**
  * initPostVideoFunction
- * @description Initialize settings related to the video resources in the post
+ * @description Initialize settings related to the video resources in the post.
  *
  * @param  {Object}  $mainElement
  * @return {Void}
@@ -154,7 +154,7 @@ export function initPostVideoFunction($mainElement) {
 
 /**
  * createDownloadButton
- * @description Create a download button in the upper right corner of each post
+ * @description Create a download button in the upper right corner of each post.
  *
  * @return {void}
  */
@@ -347,7 +347,7 @@ export function createDownloadButton() {
                                     $videoThumbnail.trigger("click");
                                 }
                                 else {
-                                    alert('Can not find thumbnail url.');
+                                    alert('Cannot find thumbnail URL.');
                                 }
 
                                 updateLoadingBar(false);
@@ -386,7 +386,7 @@ export function createDownloadButton() {
                                         openNewTab(urlObj.href);
                                     }
                                     else {
-                                        alert('Can not find open tab url.');
+                                        alert('Cannot find open tab URL.');
                                     }
                                 }
 
@@ -459,7 +459,7 @@ export function createDownloadButton() {
                                         $('.IG_POPUP_DIG .IG_POPUP_DIG_BODY a[data-globalindex="' + (index + 1) + '"]')?.trigger("click");
                                     }
                                     else {
-                                        alert('Can not find download url.');
+                                        alert('Cannot find download URL.');
                                     }
 
                                     $('.IG_POPUP_DIG').remove();
@@ -578,7 +578,7 @@ export function createDownloadButton() {
 
 /**
  * filterResourceData
- * @description Standardized resource object format
+ * @description Standardized resource object format.
  *
  * @param  {Object}  data
  * @return {Object}
@@ -600,7 +600,7 @@ export function filterResourceData(data) {
 
 /**
  * createMediaListDOM
- * @description Create a list of media elements from post URLs
+ * @description Create a list of media elements from post URLs.
  *
  * @param  {String}  postURL
  * @param  {String}  selector - Use CSS element selectors to choose where it appears.
@@ -721,7 +721,7 @@ export async function createMediaListDOM(postURL, selector, message) {
 
 /**
  * getVisibleNodeIndex
- * @description Get element visible node
+ * @description Get element visible node.
  *
  * @param  {Object}  $main
  * @return {Integer}

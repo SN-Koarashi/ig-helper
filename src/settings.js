@@ -5,25 +5,26 @@ import { onReadyMyDW } from "./functions/post";
 // !!! DO NOT CHANGE THIS AREA !!!
 // ??? PLEASE CHANGE SETTING WITH MENU ???
 export const USER_SETTING = {
-    'CHECK_UPDATE': true,
     'AUTO_RENAME': true,
-    'RENAME_PUBLISH_DATE': true,
-    'DISABLE_VIDEO_LOOPING': false,
-    'HTML5_VIDEO_CONTROL': false,
-    'REDIRECT_CLICK_USER_STORY_PICTURE': false,
-    'FORCE_FETCH_ALL_RESOURCES': false,
-    'DIRECT_DOWNLOAD_VISIBLE_RESOURCE': false,
+    'CHECK_UPDATE': true,
     'DIRECT_DOWNLOAD_ALL': false,
     'DIRECT_DOWNLOAD_STORY': false,
-    'MODIFY_VIDEO_VOLUME': false,
-    'MODIFY_RESOURCE_EXIF': false,
-    'SCROLL_BUTTON': true,
+    'DIRECT_DOWNLOAD_VISIBLE_RESOURCE': false,
+    'DISABLE_VIDEO_LOOPING': false,
+    'FALLBACK_TO_BLOB_FETCH_IF_MEDIA_API_THROTTLED': false,
+    'FORCE_FETCH_ALL_RESOURCES': false,
     'FORCE_RESOURCE_VIA_MEDIA': false,
-    'USE_BLOB_FETCH_WHEN_MEDIA_RATE_LIMIT': false,
+    'HTML5_VIDEO_CONTROL': false,
+    'MODIFY_RESOURCE_EXIF': false,
+    'MODIFY_VIDEO_VOLUME': false,
     'NEW_TAB_ALWAYS_FORCE_MEDIA_IN_POST': false,
+    'REDIRECT_CLICK_USER_STORY_PICTURE': false,
+    'RENAME_PUBLISH_DATE': true,
+    'RENAME_SHORTCODE': false,
+    'SCROLL_BUTTON': true,
     'SKIP_VIEW_STORY_CONFIRM': false
 };
-export const CHILD_NODES = ['RENAME_PUBLISH_DATE', 'USE_BLOB_FETCH_WHEN_MEDIA_RATE_LIMIT', 'NEW_TAB_ALWAYS_FORCE_MEDIA_IN_POST'];
+export const CHILD_NODES = ['RENAME_PUBLISH_DATE', 'FALLBACK_TO_BLOB_FETCH_IF_MEDIA_API_THROTTLED', 'NEW_TAB_ALWAYS_FORCE_MEDIA_IN_POST'];
 /*******************************/
 
 // Icon download by Google Fonts Material Icon
@@ -51,7 +52,7 @@ export var state = {
     fileRenameFormat: (GM_getValue('G_RENAME_FORMAT')) ? GM_getValue('G_RENAME_FORMAT') : '%USERNAME%-%SOURCE_TYPE%-%SHORTCODE%-%YEAR%%MONTH%%DAY%_%HOUR%%MINUTE%%SECOND%_%ORIGINAL_NAME_FIRST%',
     registerMenuIds: [],
     locale: {},
-    lang: GM_getValue('lang') || navigator.language || navigator.userLanguage,
+    lang: GM_getValue('UI_LANGUAGE') || navigator.language || navigator.userLanguage,
     currentURL: location.href,
     firstStarted: false,
     pageLoaded: false,
