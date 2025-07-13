@@ -5,7 +5,7 @@
 // @name:ja            IG助手
 // @name:ko            IG조수
 // @namespace          https://github.snkms.com/
-// @version            3.7.1
+// @version            3.7.2
 // @description        Downloading is possible for both photos and videos from posts, as well as for stories, reels or profile picture.
 // @description:zh-TW  一鍵下載對方 Instagram 貼文中的相片、影片甚至是他們的限時動態、連續短片及大頭貼圖片！
 // @description:zh-CN  一键下载对方 Instagram 帖子中的相片、视频甚至是他们的快拍、Reels及头像图片！
@@ -64,7 +64,6 @@
         'NEW_TAB_ALWAYS_FORCE_MEDIA_IN_POST': false,
         'REDIRECT_CLICK_USER_STORY_PICTURE': false,
         'RENAME_PUBLISH_DATE': true,
-        'RENAME_SHORTCODE': false,
         'SCROLL_BUTTON': true,
         'SKIP_VIEW_STORY_CONFIRM': false
     };
@@ -4008,7 +4007,6 @@
                 "NO_VID_URL": "Cannot find video URL.",
                 "SETTING": "Settings",
                 "AUTO_RENAME": "Automatically Rename Files (Right-Click to Set)",
-                "RENAME_SHORTCODE": "Rename the File and Include Shortcode",
                 "RENAME_PUBLISH_DATE": "Set Renamed File Timestamp to Resource Publish Date",
                 "RENAME_LOCATE_DATE": "Modify Renamed File Timestamp Date Format (Right-Click to Set)",
                 "DISABLE_VIDEO_LOOPING": "Disable Video Auto-looping",
@@ -4026,7 +4024,6 @@
                 "NEW_TAB_ALWAYS_FORCE_MEDIA_IN_POST": "Always Use Media API for 'Open in New Tab' in Posts",
                 "SKIP_VIEW_STORY_CONFIRM": "Skip the Confirmation Page for Viewing a Story/Highlight",
                 "AUTO_RENAME_INTRO": "Auto rename file to custom format:\nCustom Format List: \n%USERNAME% - Username\n%SOURCE_TYPE% - Download Source\n%SHORTCODE% - Post Shortcode\n%YEAR% - Year when downloaded/published\n%2-YEAR% - Year (last two digits) when downloaded/published\n%MONTH% - Month when downloaded/published\n%DAY% - Day when downloaded/published\n%HOUR% - Hour when downloaded/published\n%MINUTE% - Minute when downloaded/published\n%SECOND% - Second when downloaded/published\n%ORIGINAL_NAME% - Original name of downloaded file\n%ORIGINAL_NAME_FIRST% - Original name of downloaded file (first part of name)\n\nIf set to false, the file name will remain unchanged.\nExample: instagram_321565527_679025940443063_4318007696887450953_n.jpg",
-                "RENAME_SHORTCODE_INTRO": "Auto rename file to the following format:\nUSERNAME-TYPE-SHORTCODE-TIMESTAMP.FILETYPE\nExample: instagram-photo-CwkxyiVynpW-1670350000.jpg\n\nThis will ONLY work if [Automatically Rename Files] is set to TRUE.",
                 "RENAME_PUBLISH_DATE_INTRO": "Sets the timestamp in the file rename format to the resource publish date (browser time zone).\n\nThis feature only works when [Automatically Rename Files] is set to TRUE.",
                 "RENAME_LOCATE_DATE_INTRO": "Modify the renamed file timestamp date format to the browser's local time, and format it to your preferred regional date format.\n\nThis feature only works when [Automatically Rename Files] is set to TRUE.",
                 "DISABLE_VIDEO_LOOPING_INTRO": "Disable video auto-looping in Reels and posts.",
