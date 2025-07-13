@@ -1,4 +1,4 @@
-import { SVG, USER_SETTING, state, locale_manifest, CHILD_NODES } from "../settings";
+import { SVG, USER_SETTING, state, locale_manifest, PARENT_CHILD_MAPPING } from "../settings";
 import { _i18n } from "./i18n";
 import { getPostOwner, getMediaInfo } from "./api";
 import { getImageFromCache } from "./image_cache";
@@ -659,7 +659,7 @@ export function showSetting() {
 
     for (const name in USER_SETTING) {
         $body.append(`
-            <label class="globalSettings${CHILD_NODES.includes(name) ? ' child' : ''}"
+            <label class="globalSettings"
                    title="${_i18n(name + '_INTRO')}"
                    data-ih-locale-title="${name + '_INTRO'}">
 
@@ -675,10 +675,10 @@ export function showSetting() {
                 e.preventDefault();
                 if (!$(this).find('#tempWrapper').length) {
                     $(this).append('<div id="tempWrapper"></div>')
-                           .children('#tempWrapper')
-                           .append(`<input value="${state.videoVolume}" type="range" min="0" max="1" step="0.05" />`)
-                           .append(`<input value="${state.videoVolume}" step="0.05" type="number" />`)
-                           .append(`<div class="IG_POPUP_DIG_BTN">${SVG.CLOSE}</div>`);
+                        .children('#tempWrapper')
+                        .append(`<input value="${state.videoVolume}" type="range" min="0" max="1" step="0.05" />`)
+                        .append(`<input value="${state.videoVolume}" step="0.05" type="number" />`)
+                        .append(`<div class="IG_POPUP_DIG_BTN">${SVG.CLOSE}</div>`);
                 }
             });
         }
@@ -688,14 +688,14 @@ export function showSetting() {
                 e.preventDefault();
                 if (!$(this).find('#tempWrapper').length) {
                     $(this).append('<div id="tempWrapper"></div>')
-                           .children('#tempWrapper')
-                           .append(`<input id="date_format" value="${state.fileRenameFormat}" />`)
-                           .append(`<div class="IG_POPUP_DIG_BTN">${SVG.CLOSE}</div>`);
+                        .children('#tempWrapper')
+                        .append(`<input id="date_format" value="${state.fileRenameFormat}" />`)
+                        .append(`<div class="IG_POPUP_DIG_BTN">${SVG.CLOSE}</div>`);
                 }
             });
         }
     }
-	
+
     $('.IG_POPUP_DIG .IG_POPUP_DIG_BODY input#CHECK_UPDATE').closest('label').prependTo('.IG_POPUP_DIG .IG_POPUP_DIG_BODY');
 
     arrangeSettingHierarchy();
@@ -708,12 +708,13 @@ export function showSetting() {
  * @return {void}
  */
 export function arrangeSettingHierarchy() {
-    Object.entries(PARENT_CHILD_MAP).forEach(([parent, children]) => {
+    Object.entries(PARENT_CHILD_MAPPING).forEach(([parent, children]) => {
 
         let $prev = $(`.IG_POPUP_DIG .IG_POPUP_DIG_BODY input#${parent}`).closest('label');
 
         children.forEach(child => {
             const $childLbl = $(`.IG_POPUP_DIG .IG_POPUP_DIG_BODY input#${child}`).closest('label').detach();
+            $childLbl.addClass("child");
             $prev.after($childLbl);
             $prev = $childLbl;
         });

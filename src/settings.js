@@ -24,9 +24,8 @@ export const USER_SETTING = {
     'SCROLL_BUTTON': true,
     'SKIP_VIEW_STORY_CONFIRM': false
 };
-export const CHILD_NODES = ['RENAME_PUBLISH_DATE', 'FALLBACK_TO_BLOB_FETCH_IF_MEDIA_API_THROTTLED', 'NEW_TAB_ALWAYS_FORCE_MEDIA_IN_POST'];
 
-export const PARENT_CHILD_MAP = {
+export const PARENT_CHILD_MAPPING = {
     'AUTO_RENAME': [
         'RENAME_PUBLISH_DATE'
     ],
@@ -35,6 +34,8 @@ export const PARENT_CHILD_MAP = {
         'NEW_TAB_ALWAYS_FORCE_MEDIA_IN_POST'
     ]
 };
+export const IMAGE_CACHE_KEY = 'URLS_OF_IMAGES_TEMPORARILY_STORED';
+export const IMAGE_CACHE_MAX_AGE = 24 * 60 * 60 * 1000; // 24h in ms
 /*******************************/
 
 // Icon download by Google Fonts Material Icon
@@ -52,9 +53,6 @@ export const SVG = {
 export const checkInterval = 250;
 export const style = GM_getResourceText("INTERNAL_CSS");
 export const locale_manifest = JSON.parse(GM_getResourceText("LOCALE_MANIFEST"));
-
-export const IMAGE_CACHE_KEY = 'URLS_OF_IMAGES_TEMPORARILY_STORED';
-export const IMAGE_CACHE_MAX_AGE = 24 * 60 * 60 * 1000; // 24h in ms
 
 export var state = {
     videoVolume: (GM_getValue('G_VIDEO_VOLUME')) ? GM_getValue('G_VIDEO_VOLUME') : 1,
