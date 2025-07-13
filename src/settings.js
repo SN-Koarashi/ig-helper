@@ -20,7 +20,6 @@ export const USER_SETTING = {
     'NEW_TAB_ALWAYS_FORCE_MEDIA_IN_POST': false,
     'REDIRECT_CLICK_USER_STORY_PICTURE': false,
     'RENAME_PUBLISH_DATE': true,
-    'RENAME_SHORTCODE': false,
     'SCROLL_BUTTON': true,
     'SKIP_VIEW_STORY_CONFIRM': false
 };
