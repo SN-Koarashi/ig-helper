@@ -3956,7 +3956,7 @@
                 if (entry.initiatorType === 'img') {
                     const u = entry.name;
 
-                    if (!(u.includes('_e35') || u.includes('.webp?efg=') || u.includes('_e15')) || u.includes('_e35_p') || u.includes('_e35_s')) return;
+                    if (!(u.includes('_e35') || u.includes('_e15') || u.includes('.webp?efg=')) || u.includes('1080x1080') || u.includes('720x720') || u.includes('640x640') || u.includes('480x480') || u.includes('360x360') || u.includes('240x240')) return;
                     const id = mediaIdFromURL(u);
                     if (id && !state.GL_imageCache[id]) putInCache(id, u);
                 }
