@@ -1,4 +1,4 @@
-import { SVG, USER_SETTING, state, locale_manifest, CHILD_NODES } from "../settings";
+import { SVG, USER_SETTING, state, locale_manifest, PARENT_CHILD_MAPPING } from "../settings";
 import { _i18n } from "./i18n";
 import { getPostOwner, getMediaInfo } from "./api";
 import { getImageFromCache } from "./image_cache";
@@ -639,41 +639,86 @@ export function callNotification() {
 export function showSetting() {
     $('.IG_POPUP_DIG').remove();
     IG_createDM();
+
     $('.IG_POPUP_DIG #post_info').text('Preference Settings');
+    $('.IG_POPUP_DIG .IG_POPUP_DIG_TITLE > div')
+        .append(`
+            <select id="langSelect"></select>
+            <div style="font-size: 12px;">
+                Some texts are machine-translated and may be inaccurate; translation contributions are welcome on GitHub.
+            </div>
+        `);
 
-    $('.IG_POPUP_DIG .IG_POPUP_DIG_TITLE > div').append('<select id="langSelect"></select><div style="font-size: 12px;">Some texts are machine-translated and may be inaccurate; translation contributions are welcome on GitHub.</div>');
-
-    for (let o in locale_manifest) {
-        $('.IG_POPUP_DIG .IG_POPUP_DIG_TITLE > div #langSelect').append(`<option value="${o}" ${(state.lang == o) ? 'selected' : ''}>${locale_manifest[o]}</option>`);
+    for (const o in locale_manifest) {
+        $('#langSelect').append(
+            `<option value="${o}" ${(state.lang === o) ? 'selected' : ''}>${locale_manifest[o]}</option>`
+        );
     }
 
-    for (let name in USER_SETTING) {
-        $('.IG_POPUP_DIG .IG_POPUP_DIG_BODY').append(`<label class="globalSettings${(CHILD_NODES.includes(name)) ? ' child' : ''}" title="${_i18n(name + '_INTRO')}" data-ih-locale-title="${name + '_INTRO'}"><span data-ih-locale="${name}">${_i18n(name)}</span> <input id="${name}" value="box" type="checkbox" ${(USER_SETTING[name] === true) ? 'checked' : ''}><div class="chbtn"><div class="rounds"></div></div></label>`);
+    const $body = $('.IG_POPUP_DIG .IG_POPUP_DIG_BODY');
+
+    for (const name in USER_SETTING) {
+        $body.append(`
+            <label class="globalSettings"
+                   title="${_i18n(name + '_INTRO')}"
+                   data-ih-locale-title="${name + '_INTRO'}">
+
+                <span data-ih-locale="${name}">${_i18n(name)}</span>
+                <input id="${name}" value="box" type="checkbox"
+                       ${USER_SETTING[name] === true ? 'checked' : ''}>
+                <div class="chbtn"><div class="rounds"></div></div>
+            </label>`
+        );
 
         if (name === 'MODIFY_VIDEO_VOLUME') {
-            $('.IG_POPUP_DIG .IG_POPUP_DIG_BODY input[id="' + name + '"]').parent('label').on('contextmenu', function (e) {
+            $body.find(`input[id="${name}"]`).parent('label').on('contextmenu', function (e) {
                 e.preventDefault();
-                if ($(this).find('#tempWrapper').length === 0) {
-                    $(this).append('<div id="tempWrapper"></div>');
-                    $(this).children('#tempWrapper').append('<input value="' + state.videoVolume + '" type="range" min="0" max="1" step="0.05" />');
-                    $(this).children('#tempWrapper').append('<input value="' + state.videoVolume + '" step="0.05" type="number" />');
-                    $(this).children('#tempWrapper').append(`<div class="IG_POPUP_DIG_BTN">${SVG.CLOSE}</div>`);
+                if (!$(this).find('#tempWrapper').length) {
+                    $(this).append('<div id="tempWrapper"></div>')
+                        .children('#tempWrapper')
+                        .append(`<input value="${state.videoVolume}" type="range" min="0" max="1" step="0.05" />`)
+                        .append(`<input value="${state.videoVolume}" step="0.05" type="number" />`)
+                        .append(`<div class="IG_POPUP_DIG_BTN">${SVG.CLOSE}</div>`);
                 }
             });
         }
 
         if (name === 'AUTO_RENAME') {
-            $('.IG_POPUP_DIG .IG_POPUP_DIG_BODY input[id="' + name + '"]').parent('label').on('contextmenu', function (e) {
+            $body.find(`input[id="${name}"]`).parent('label').on('contextmenu', function (e) {
                 e.preventDefault();
-                if ($(this).find('#tempWrapper').length === 0) {
-                    $(this).append('<div id="tempWrapper"></div>');
-
-                    $(this).children('#tempWrapper').append('<input id="date_format" value="' + state.fileRenameFormat + '" />');
-                    $(this).children('#tempWrapper').append(`<div class="IG_POPUP_DIG_BTN">${SVG.CLOSE}</div>`);
+                if (!$(this).find('#tempWrapper').length) {
+                    $(this).append('<div id="tempWrapper"></div>')
+                        .children('#tempWrapper')
+                        .append(`<input id="date_format" value="${state.fileRenameFormat}" />`)
+                        .append(`<div class="IG_POPUP_DIG_BTN">${SVG.CLOSE}</div>`);
                 }
             });
         }
     }
+
+    $('.IG_POPUP_DIG .IG_POPUP_DIG_BODY input#CHECK_UPDATE').closest('label').prependTo('.IG_POPUP_DIG .IG_POPUP_DIG_BODY');
+
+    arrangeSettingHierarchy();
+}
+
+/**
+ * arrangeSettingHierarchy
+ * @description Arrange specific settings under the corresponding setting. 
+ *
+ * @return {void}
+ */
+export function arrangeSettingHierarchy() {
+    Object.entries(PARENT_CHILD_MAPPING).forEach(([parent, children]) => {
+
+        let $prev = $(`.IG_POPUP_DIG .IG_POPUP_DIG_BODY input#${parent}`).closest('label');
+
+        children.forEach(child => {
+            const $childLbl = $(`.IG_POPUP_DIG .IG_POPUP_DIG_BODY input#${child}`).closest('label').detach();
+            $childLbl.addClass("child");
+            $prev.after($childLbl);
+            $prev = $childLbl;
+        });
+    });
 }
 
 /**
