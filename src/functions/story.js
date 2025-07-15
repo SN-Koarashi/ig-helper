@@ -50,7 +50,7 @@ export async function createStoryListDOM(obj, type) {
             $(this).after(`<div data-ih-locale-title="NEW_TAB" title="${_i18n("NEW_TAB")}" class="newTab">${SVG.NEW_TAB}</div>`);
 
             if ($(this).attr('data-type') == 'mp4') {
-                $(this).after(`<div data-ih-locale-title="THUMBNAIL_INTRO" title="${_i18n("THUMBNAIL_INTRO")}" class="videoThumbnail">${SVG.THUMBNAIL}</div>`);
+                $(this).after(`<div data-ih-locale-title="VIDEO_THUMBNAIL" title="${_i18n("VIDEO_THUMBNAIL")}" class="videoThumbnail">${SVG.THUMBNAIL}</div>`);
             }
         });
 
@@ -706,7 +706,7 @@ export async function onStoryThumbnail(isDownload, isForce) {
 
             if ($element != null) {
                 $element.first().css('position', 'relative');
-                $element.first().append(`<div data-ih-locale-title="THUMBNAIL_INTRO" title="${_i18n("THUMBNAIL_INTRO")}" class="IG_DWSTORY_THUMBNAIL">${SVG.THUMBNAIL}</div>`);
+                $element.first().append(`<div data-ih-locale-title="VIDEO_THUMBNAIL" title="${_i18n("VIDEO_THUMBNAIL")}" class="IG_DWSTORY_THUMBNAIL">${SVG.THUMBNAIL}</div>`);
             }
 
         }

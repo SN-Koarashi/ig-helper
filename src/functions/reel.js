@@ -107,7 +107,7 @@ export async function onReels(isDownload, isVideo, isPreview) {
 
                                 $(this).children().append(`<div data-ih-locale-title="DW" title="${_i18n("DW")}" class="IG_REELS">${SVG.DOWNLOAD}</div>`);
                                 $(this).children().append(`<div data-ih-locale-title="NEW_TAB" title="${_i18n("NEW_TAB")}" class="IG_REELS_NEWTAB">${SVG.NEW_TAB}</div>`);
-                                $(this).children().append(`<div data-ih-locale-title="THUMBNAIL_INTRO" title="${_i18n("THUMBNAIL_INTRO")}" class="IG_REELS_THUMBNAIL">${SVG.THUMBNAIL}</div>`);
+                                $(this).children().append(`<div data-ih-locale-title="VIDEO_THUMBNAIL" title="${_i18n("VIDEO_THUMBNAIL")}" class="IG_REELS_THUMBNAIL">${SVG.THUMBNAIL}</div>`);
 
                                 // Disable video autoplay
                                 if (USER_SETTING.DISABLE_VIDEO_LOOPING) {

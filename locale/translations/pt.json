@@ -1,9 +1,7 @@
 {
     "NOTICE_UPDATE_TITLE": "Wololo! Nova versão lançada.",
     "NOTICE_UPDATE_CONTENT": "IG-Helper lançou uma nova versão, clique aqui para atualizar.",
-    "CHECK_UPDATE": "Verificar atualizações do script",
-    "CHECK_UPDATE_MENU": "Verificar atualizações",
-    "CHECK_UPDATE_INTRO": "Verificar atualizações quando o script é acionado (verificar a cada 300 segundos).\nAs notificações de atualização serão enviadas como notificações de desktop através do navegador.",
+    "CHECK_FOR_UPDATE": "Verificar atualizações do script",
     "RELOAD_SCRIPT": "Recarregar script",
     "DONATE": "Doar",
     "FEEDBACK": "Feedback",
@@ -24,7 +22,7 @@
     "VID": "Vídeo",
     "DW": "Baixar",
     "DW_ALL": "Baixar todos os recursos",
-    "THUMBNAIL_INTRO": "Baixar miniatura do vídeo",
+    "VIDEO_THUMBNAIL": "Baixar miniatura do vídeo",
     "LOAD_BLOB_ONE": "Carregando a mídia Blob...",
     "LOAD_BLOB_MULTIPLE": "Carregando a mídia Blob e outros...",
     "LOAD_BLOB_RELOAD": "Detectando a mídia Blob, recarregando...",
@@ -48,6 +46,7 @@
     "FALLBACK_TO_BLOB_FETCH_IF_MEDIA_API_THROTTLED": "Usar métodos alternativos para baixar quando a API de Mídia não estiver acessível",
     "NEW_TAB_ALWAYS_FORCE_MEDIA_IN_POST": "\"Abrir em nova aba\" nas publicações sempre usa a API de Mídia",
     "SKIP_VIEW_STORY_CONFIRM": "Pular a página de confirmação ao visualizar uma story ou um destaque",
+    "CAPTURE_IMAGE_VIA_MEDIA_CACHE": "Capturar recurso de imagem usando o cache de mídia",
     "AUTO_RENAME_INTRO": "Renomear automaticamente os arquivos para um formato personalizado\nLista de formatos personalizados: \n%USERNAME% - Nome de usuário\n%SOURCE_TYPE% - Tipo de fonte\n%SHORTCODE% - Código curto da publicação\n%YEAR% - Ano de download/publicação\n%2-YEAR% - Ano (dois últimos dígitos) de download/publicação\n%MONTH% - Mês de download/publicação\n%DAY% - Dia de download/publicação\n%HOUR% - Hora de download/publicação\n%MINUTE% - Minuto de download/publicação\n%SECOND% - Segundo de download/publicação\n%ORIGINAL_NAME% - Nome original do arquivo baixado\n%ORIGINAL_NAME_FIRST% - Nome original do arquivo baixado (primeira parte do nome)\n\nSe definido como falso, o nome do arquivo permanecerá inalterado.\nExemplo: instagram_321565527_679025940443063_4318007696887450953_n.jpg",
     "RENAME_PUBLISH_DATE_INTRO": "Define o carimbo de data/hora no formato de renomeação de arquivo para a data de publicação do recurso (fuso horário do navegador).\n\nEsse recurso só funciona quando [Renomear arquivos automaticamente] está definido como VERDADEIRO.",
     "RENAME_LOCATE_DATE_INTRO": "Modificar o formato da data do carimbo de data/hora do arquivo renomeado para a hora local do navegador e formatá-lo para o formato de data regional de sua preferência.\n\nEsse recurso só funciona quando [Renomear arquivos automaticamente] está definido como VERDADEIRO.",
@@ -62,7 +61,9 @@
     "FORCE_RESOURCE_VIA_MEDIA_INTRO": "A API de Mídia tentará obter a foto ou o vídeo da mais alta qualidade possível, mas pode demorar mais para carregar.",
     "FALLBACK_TO_BLOB_FETCH_IF_MEDIA_API_THROTTLED_INTRO": "Quando a API de Mídia atingir seu limite de taxa ou não puder ser usada por outros motivos, a API de Busca Forçada será usada para baixar recursos (a qualidade do recurso pode ser um pouco menor).",
     "NEW_TAB_ALWAYS_FORCE_MEDIA_IN_POST_INTRO": "O botão [Abrir em nova aba] nas publicações sempre usará a API de Mídia para obter recursos de alta resolução.",
+    "CHECK_FOR_UPDATE_INTRO": "Verificar atualizações quando o script é acionado (verificar a cada 300 segundos).\nAs notificações de atualização serão enviadas como notificações de desktop através do navegador.",
     "SKIP_VIEW_STORY_CONFIRM_INTRO": "Pular automaticamente quando a página de confirmação for exibida na story ou no destaque.",
     "MODIFY_RESOURCE_EXIF_INTRO": "Modificar os atributos EXIF do recurso de imagem para colocar o link do post nele.",
-    "DIRECT_DOWNLOAD_STORY_INTRO": "Ao clicar em 'Baixar todos os recursos', todas as histórias/destaques são baixadas diretamente, sem exibir a caixa de diálogo de seleção de imagens."
+    "DIRECT_DOWNLOAD_STORY_INTRO": "Ao clicar em 'Baixar todos os recursos', todas as histórias/destaques são baixadas diretamente, sem exibir a caixa de diálogo de seleção de imagens.",
+    "CAPTURE_IMAGE_VIA_MEDIA_CACHE_INTRO": "Use um observador para capturar quaisquer URLs de imagens de alta qualidade na árvore DOM para o armazenamento do script, de modo que possam ser extraídos quando estiverem disponíveis e a pedido do usuário."
 }

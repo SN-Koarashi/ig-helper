@@ -13,9 +13,7 @@ export function translateText() {
         "en-US": {
             "NOTICE_UPDATE_TITLE": "Wololo! New version released.",
             "NOTICE_UPDATE_CONTENT": "IG-Helper has released a new version, click here to update.",
-            "CHECK_UPDATE": "Checking for Script Updates",
-            "CHECK_UPDATE_MENU": "Checking for Updates",
-            "CHECK_UPDATE_INTRO": "Check for updates when the script is triggered (check every 300 seconds).\nUpdate notifications will be sent as desktop notifications through the browser.",
+            "CHECK_FOR_UPDATE": "Check for Script Updates",
             "RELOAD_SCRIPT": "Reload Script",
             "DONATE": "Donate",
             "FEEDBACK": "Feedback",
@@ -36,7 +34,7 @@ export function translateText() {
             "VID": "Video",
             "DW": "Download",
             "DW_ALL": "Download All Resources",
-            "THUMBNAIL_INTRO": "Download Video Thumbnail",
+            "VIDEO_THUMBNAIL": "Download Video Thumbnail",
             "LOAD_BLOB_ONE": "Loading Blob Media...",
             "LOAD_BLOB_MULTIPLE": "Loading Blob Media and Others...",
             "LOAD_BLOB_RELOAD": "Detecting Blob Media, reloading...",
@@ -60,6 +58,7 @@ export function translateText() {
             "FALLBACK_TO_BLOB_FETCH_IF_MEDIA_API_THROTTLED": "Use Alternative Methods to Download When the Media API is Not Accessible",
             "NEW_TAB_ALWAYS_FORCE_MEDIA_IN_POST": "Always Use Media API for 'Open in New Tab' in Posts",
             "SKIP_VIEW_STORY_CONFIRM": "Skip the Confirmation Page for Viewing a Story/Highlight",
+            "CAPTURE_IMAGE_VIA_MEDIA_CACHE": "Capture Image Resource Using Media Cache",
             "AUTO_RENAME_INTRO": "Auto rename file to custom format:\nCustom Format List: \n%USERNAME% - Username\n%SOURCE_TYPE% - Download Source\n%SHORTCODE% - Post Shortcode\n%YEAR% - Year when downloaded/published\n%2-YEAR% - Year (last two digits) when downloaded/published\n%MONTH% - Month when downloaded/published\n%DAY% - Day when downloaded/published\n%HOUR% - Hour when downloaded/published\n%MINUTE% - Minute when downloaded/published\n%SECOND% - Second when downloaded/published\n%ORIGINAL_NAME% - Original name of downloaded file\n%ORIGINAL_NAME_FIRST% - Original name of downloaded file (first part of name)\n\nIf set to false, the file name will remain unchanged.\nExample: instagram_321565527_679025940443063_4318007696887450953_n.jpg",
             "RENAME_PUBLISH_DATE_INTRO": "Sets the timestamp in the file rename format to the resource publish date (browser time zone).\n\nThis feature only works when [Automatically Rename Files] is set to TRUE.",
             "RENAME_LOCATE_DATE_INTRO": "Modify the renamed file timestamp date format to the browser's local time, and format it to your preferred regional date format.\n\nThis feature only works when [Automatically Rename Files] is set to TRUE.",
@@ -74,11 +73,11 @@ export function translateText() {
             "FORCE_RESOURCE_VIA_MEDIA_INTRO": "The Media API will try to get the highest quality photo or video possible, but it may take longer to load.",
             "FALLBACK_TO_BLOB_FETCH_IF_MEDIA_API_THROTTLED_INTRO": "When the Media API reaches its rate limit or cannot be used for other reasons, the Forced Fetch API will be used to download resources (the resource quality may be slightly lower).",
             "NEW_TAB_ALWAYS_FORCE_MEDIA_IN_POST_INTRO": "The [Open in New Tab] button in posts will always use the Media API to obtain high-resolution resources.",
+            "CHECK_FOR_UPDATE_INTRO": "Check for updates when the script is triggered (check every 300 seconds).\nUpdate notifications will be sent as desktop notifications through the browser.",
             "SKIP_VIEW_STORY_CONFIRM_INTRO": "Automatically skip when confirmation page is shown in story or highlight.",
             "MODIFY_RESOURCE_EXIF_INTRO": "Modify the EXIF properties of the image resource to place the post link in it.",
             "DIRECT_DOWNLOAD_STORY_INTRO": "When you click Download All Resources, all stories/highlights are downloaded directly, without showing the image selection dialog.",
-            "CAPTURE_IMAGE_VIA_MEDIA_CACHE": "Capturing Image Resource Using Media Cache",
-            "CAPTURE_IMAGE_VIA_MEDIA_CACHE_INTRO": "Use a watcher to capture any high-quality image URLs in the DOM tree into the script storage so that they can be extracted when available.",
+            "CAPTURE_IMAGE_VIA_MEDIA_CACHE_INTRO": "Use a watcher to capture any high-quality image URLs in the DOM tree into the script’s storage so that they can be extracted when available and upon user input.",
         }
     };
 
