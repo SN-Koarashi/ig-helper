@@ -21,7 +21,8 @@ export const USER_SETTING = {
     'REDIRECT_CLICK_USER_STORY_PICTURE': false,
     'RENAME_PUBLISH_DATE': true,
     'SCROLL_BUTTON': true,
-    'SKIP_VIEW_STORY_CONFIRM': false
+    'SKIP_VIEW_STORY_CONFIRM': false,
+    'CAPTURE_IMAGE_VIA_MEDIA_CACHE': true
 };
 
 export const PARENT_CHILD_MAPPING = {

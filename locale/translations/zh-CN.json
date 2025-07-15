@@ -64,5 +64,7 @@
     "NEW_TAB_ALWAYS_FORCE_MEDIA_IN_POST_INTRO": "在帖子中的「在新选项卡中打开」功能将一律使用 Media API 取得高分辨率资源",
     "SKIP_VIEW_STORY_CONFIRM_INTRO": "在查看快拍/快拍精选时，如果有确认页面时会自动跳过。",
     "MODIFY_RESOURCE_EXIF_INTRO": "修改图片资源的EXIF属性，以便将帖子链结放置于其中。",
-    "DIRECT_DOWNLOAD_STORY_INTRO": "当你点击“下载所有资源”时，所有快拍/精选集会直接下载，不会显示资源选择对话框。"
+    "DIRECT_DOWNLOAD_STORY_INTRO": "当你点击“下载所有资源”时，所有快拍/精选集会直接下载，不会显示资源选择对话框。",
+    "CAPTURE_IMAGE_VIA_MEDIA_CACHE": "使用 Media Cache 捕获图像资源",
+    "CAPTURE_IMAGE_VIA_MEDIA_CACHE_INTRO": "使用观察者捕获DOM树中的任何高质量图像网址到脚本储存中，以便可用时提取。"
 }

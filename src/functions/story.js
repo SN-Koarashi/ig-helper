@@ -195,17 +195,19 @@ export async function onStory(isDownload, isForce, isPreview) {
                 mediaId = location.pathname.split('/').filter(s => s.length > 0 && s.match(/^([0-9]{10,})$/)).at(-1);
             }
 
-            const cached = getImageFromCache(mediaId);
-            // Trigger when resource is not video and trigger type is not preview mode.
-            if (cached && !(!isPreview && stories.data.reels_media[0].items.filter(item => item.id === mediaId).at(0).is_video)) {
-                logger("[Restore Cached onStory]", mediaId);
-                if (isPreview) {
-                    openNewTab(cached);
+            if (USER_SETTING.CAPTURE_IMAGE_VIA_MEDIA_CACHE) {
+                const cached = getImageFromCache(mediaId);
+                // Trigger when resource is not video and trigger type is not preview mode.
+                if (cached && !(!isPreview && stories.data.reels_media[0].items.filter(item => item.id === mediaId).at(0).is_video)) {
+                    logger("[Restore Cached onStory]", mediaId);
+                    if (isPreview) {
+                        openNewTab(cached);
+                    }
+                    else {
+                        saveFiles(cached, username, "stories", timestamp, 'jpg', mediaId);
+                    }
+                    return;
                 }
-                else {
-                    saveFiles(cached, username, "stories", timestamp, 'jpg', mediaId);
-                }
-                return;
             }
 
             let result = await getMediaInfo(mediaId);
@@ -366,15 +368,18 @@ export async function onStory(isDownload, isForce, isPreview) {
             let type = 'jpg';
 
             const mediaId = getImageFromCache(getStoryId(downloadLink) ?? "-");
-            const cached = getImageFromCache(mediaId);
-            if (cached) {
-                if (isPreview) {
-                    openNewTab(cached);
+
+            if (USER_SETTING.CAPTURE_IMAGE_VIA_MEDIA_CACHE) {
+                const cached = getImageFromCache(mediaId);
+                if (cached) {
+                    if (isPreview) {
+                        openNewTab(cached);
+                    }
+                    else {
+                        saveFiles(cached, username, "stories", timestamp, 'jpg', mediaId);
+                    }
+                    return;
                 }
-                else {
-                    saveFiles(cached, username, "stories", timestamp, 'jpg', mediaId);
-                }
-                return;
             }
 
             if (isPreview) {

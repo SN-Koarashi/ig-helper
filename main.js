@@ -5,7 +5,7 @@
 // @name:ja            IG助手
 // @name:ko            IG조수
 // @namespace          https://github.snkms.com/
-// @version            3.7.2
+// @version            3.8.1
 // @description        Downloading is possible for both photos and videos from posts, as well as for stories, reels or profile picture.
 // @description:zh-TW  一鍵下載對方 Instagram 貼文中的相片、影片甚至是他們的限時動態、連續短片及大頭貼圖片！
 // @description:zh-CN  一键下载对方 Instagram 帖子中的相片、视频甚至是他们的快拍、Reels及头像图片！
@@ -65,7 +65,8 @@
         'REDIRECT_CLICK_USER_STORY_PICTURE': false,
         'RENAME_PUBLISH_DATE': true,
         'SCROLL_BUTTON': true,
-        'SKIP_VIEW_STORY_CONFIRM': false
+        'SKIP_VIEW_STORY_CONFIRM': false,
+        'CAPTURE_IMAGE_VIA_MEDIA_CACHE': true
     };
 
     const PARENT_CHILD_MAPPING = {
@@ -435,15 +436,19 @@
                 timestamp = target.taken_at_timestamp;
             }
 
-            const cached = getImageFromCache(target.id);
-            if (cached) {
-                if (isPreview) {
-                    openNewTab(cached);
+            if (USER_SETTING.CAPTURE_IMAGE_VIA_MEDIA_CACHE) {
+                const cached = getImageFromCache(target.id);
+                // Trigger when resource is not video and trigger type is not preview mode.
+                if (cached && !(!isPreview && state.GL_dataCache.highlights[highlightId].data.reels_media[0].items.filter(item => item.id === target.id).at(0).is_video)) {
+                    logger("[Restore Cached onHighlight]", target.id);
+                    if (isPreview) {
+                        openNewTab(cached);
+                    }
+                    else {
+                        saveFiles(cached, username, "stories", timestamp, 'jpg', target.id);
+                    }
+                    return;
                 }
-                else {
-                    saveFiles(cached, username, "stories", timestamp, 'jpg', target.id);
-                }
-                return;
             }
 
             if (USER_SETTING.FORCE_RESOURCE_VIA_MEDIA && !state.tempFetchRateLimit) {
@@ -1890,15 +1895,19 @@
                     mediaId = location.pathname.split('/').filter(s => s.length > 0 && s.match(/^([0-9]{10,})$/)).at(-1);
                 }
 
-                const cached = getImageFromCache(mediaId);
-                if (cached) {
-                    if (isPreview) {
-                        openNewTab(cached);
+                if (USER_SETTING.CAPTURE_IMAGE_VIA_MEDIA_CACHE) {
+                    const cached = getImageFromCache(mediaId);
+                    // Trigger when resource is not video and trigger type is not preview mode.
+                    if (cached && !(!isPreview && stories.data.reels_media[0].items.filter(item => item.id === mediaId).at(0).is_video)) {
+                        logger("[Restore Cached onStory]", mediaId);
+                        if (isPreview) {
+                            openNewTab(cached);
+                        }
+                        else {
+                            saveFiles(cached, username, "stories", timestamp, 'jpg', mediaId);
+                        }
+                        return;
                     }
-                    else {
-                        saveFiles(cached, username, "stories", timestamp, 'jpg', mediaId);
-                    }
-                    return;
                 }
 
                 let result = await getMediaInfo(mediaId);
@@ -2058,11 +2067,26 @@
                 let downloadLink = link;
                 let type = 'jpg';
 
+                const mediaId = getImageFromCache(getStoryId(downloadLink) ?? "-");
+
+                if (USER_SETTING.CAPTURE_IMAGE_VIA_MEDIA_CACHE) {
+                    const cached = getImageFromCache(mediaId);
+                    if (cached) {
+                        if (isPreview) {
+                            openNewTab(cached);
+                        }
+                        else {
+                            saveFiles(cached, username, "stories", timestamp, 'jpg', mediaId);
+                        }
+                        return;
+                    }
+                }
+
                 if (isPreview) {
                     openNewTab(downloadLink);
                 }
                 else {
-                    saveFiles(downloadLink, username, "stories", timestamp, type, getStoryId(downloadLink) ?? "");
+                    saveFiles(downloadLink, username, "stories", timestamp, type, mediaId);
                 }
             }
 
@@ -3196,15 +3220,18 @@
         }
 
         let mediaId = $(element).attr('media-id');
-        const cached = getImageFromCache(mediaId);
 
-        if (cached) {
-            if (isPreview) {
-                openNewTab(cached);
-            } else {
-                saveFiles(cached, username, $(element).data('name'), timestamp, $(element).data('type') || 'jpg', $(element).data('path'));
+        if (USER_SETTING.CAPTURE_IMAGE_VIA_MEDIA_CACHE) {
+            const cached = getImageFromCache(mediaId);
+            // Trigger when resource is not video and trigger type is not preview mode.
+            if (cached && !(!isPreview && $(element).data('type') == "mp4")) {
+                if (isPreview) {
+                    openNewTab(cached);
+                } else {
+                    saveFiles(cached, username, $(element).data('name'), timestamp, $(element).data('type') || 'jpg', $(element).data('path'));
+                }
+                return;
             }
-            return;
         }
 
         if (USER_SETTING.FORCE_RESOURCE_VIA_MEDIA) {
@@ -3554,6 +3581,8 @@
         document.body.appendChild(a);
         a.click();
         a.remove();
+
+        setTimeout(() => { updateLoadingBar(false); }, 125);
     }
 
     /**
@@ -3956,7 +3985,7 @@
                 if (entry.initiatorType === 'img') {
                     const u = entry.name;
 
-                    if (!(u.includes('_e35') || u.includes('.webp?efg=') || u.includes('_e15')) || u.includes('_e35_p') || u.includes('_e35_s')) return;
+                    if (!(u.includes('_e35') || u.includes('_e15') || u.includes('.webp?efg=')) || u.includes('1080x1080') || u.includes('720x720') || u.includes('640x640') || u.includes('480x480') || u.includes('360x360') || u.includes('240x240')) return;
                     const id = mediaIdFromURL(u);
                     if (id && !state.GL_imageCache[id]) putInCache(id, u);
                 }
@@ -4040,6 +4069,8 @@
                 "SKIP_VIEW_STORY_CONFIRM_INTRO": "Automatically skip when confirmation page is shown in story or highlight.",
                 "MODIFY_RESOURCE_EXIF_INTRO": "Modify the EXIF properties of the image resource to place the post link in it.",
                 "DIRECT_DOWNLOAD_STORY_INTRO": "When you click Download All Resources, all stories/highlights are downloaded directly, without showing the image selection dialog.",
+                "CAPTURE_IMAGE_VIA_MEDIA_CACHE": "Capturing Image Resource Using Media Cache",
+                "CAPTURE_IMAGE_VIA_MEDIA_CACHE_INTRO": "Use a watcher to capture any high-quality image URLs in the DOM tree into the script storage so that they can be extracted when available.",
             }
         };
 

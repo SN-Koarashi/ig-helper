@@ -77,6 +77,8 @@ export function translateText() {
             "SKIP_VIEW_STORY_CONFIRM_INTRO": "Automatically skip when confirmation page is shown in story or highlight.",
             "MODIFY_RESOURCE_EXIF_INTRO": "Modify the EXIF properties of the image resource to place the post link in it.",
             "DIRECT_DOWNLOAD_STORY_INTRO": "When you click Download All Resources, all stories/highlights are downloaded directly, without showing the image selection dialog.",
+            "CAPTURE_IMAGE_VIA_MEDIA_CACHE": "Capturing Image Resource Using Media Cache",
+            "CAPTURE_IMAGE_VIA_MEDIA_CACHE_INTRO": "Use a watcher to capture any high-quality image URLs in the DOM tree into the script storage so that they can be extracted when available.",
         }
     };
 

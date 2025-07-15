@@ -64,5 +64,7 @@
     "NEW_TAB_ALWAYS_FORCE_MEDIA_IN_POST_INTRO": "在貼文中的「在新分頁中開啟」功能將一律使用 Media API 取得高解析度資源",
     "SKIP_VIEW_STORY_CONFIRM_INTRO": "在檢視限時動態/精選動態時，若有確認頁面時將自動跳過",
     "MODIFY_RESOURCE_EXIF_INTRO": "修改圖片資源的EXIF屬性，以便將貼文連結放置於其中。",
-    "DIRECT_DOWNLOAD_STORY_INTRO": "當你點擊「下載所有資源」時，所有限時動態及精選動態會直接下載，不會顯示資源選擇視窗。"
+    "DIRECT_DOWNLOAD_STORY_INTRO": "當你點擊「下載所有資源」時，所有限時動態及精選動態會直接下載，不會顯示資源選擇視窗。",
+    "CAPTURE_IMAGE_VIA_MEDIA_CACHE": "使用 Media Cache 捕獲圖像資源",
+    "CAPTURE_IMAGE_VIA_MEDIA_CACHE_INTRO": "使用觀察者捕獲DOM樹中的任何高品質圖像網址到腳本儲存空間中，以便可用時提取。"
 }

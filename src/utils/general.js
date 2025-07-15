@@ -415,16 +415,18 @@ export async function triggerLinkElement(element, isPreview) {
     }
 
     let mediaId = $(element).attr('media-id');
-    const cached = getImageFromCache(mediaId);
 
-    // Trigger when resource is not video and trigger type is not preview mode.
-    if (cached && !(!isPreview && $(element).data('type') == "mp4")) {
-        if (isPreview) {
-            openNewTab(cached);
-        } else {
-            saveFiles(cached, username, $(element).data('name'), timestamp, $(element).data('type') || 'jpg', $(element).data('path'));
+    if (USER_SETTING.CAPTURE_IMAGE_VIA_MEDIA_CACHE) {
+        const cached = getImageFromCache(mediaId);
+        // Trigger when resource is not video and trigger type is not preview mode.
+        if (cached && !(!isPreview && $(element).data('type') == "mp4")) {
+            if (isPreview) {
+                openNewTab(cached);
+            } else {
+                saveFiles(cached, username, $(element).data('name'), timestamp, $(element).data('type') || 'jpg', $(element).data('path'));
+            }
+            return;
         }
-        return;
     }
 
     if (USER_SETTING.FORCE_RESOURCE_VIA_MEDIA) {
