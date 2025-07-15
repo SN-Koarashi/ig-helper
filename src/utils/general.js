@@ -419,7 +419,7 @@ export async function triggerLinkElement(element, isPreview) {
     if (USER_SETTING.CAPTURE_IMAGE_VIA_MEDIA_CACHE) {
         const cached = getImageFromCache(mediaId);
         // Trigger when resource is not video and trigger type is not preview mode.
-        if (cached && !(!isPreview && $(element).data('type') == "mp4")) {
+        if (cached && $(element).data('type') != "mp4") {
             if (isPreview) {
                 openNewTab(cached);
             } else {
