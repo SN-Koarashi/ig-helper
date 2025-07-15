@@ -196,7 +196,9 @@ export async function onStory(isDownload, isForce, isPreview) {
             }
 
             const cached = getImageFromCache(mediaId);
-            if (cached) {
+            // Trigger when resource is not video and trigger type is not preview mode.
+            if (cached && !(!isPreview && stories.data.reels_media[0].items.filter(item => item.id === mediaId).at(0).is_video)) {
+                logger("[Restore Cached onStory]", mediaId);
                 if (isPreview) {
                     openNewTab(cached);
                 }

@@ -109,7 +109,8 @@ export async function onHighlightsStory(isDownload, isPreview) {
         }
 
         const cached = getImageFromCache(target.id);
-        if (cached) {
+        if (cached && !(!isPreview && state.GL_dataCache.highlights[highlightId].data.reels_media[0].items.filter(item => item.id === target.id).at(0).is_video)) {
+            logger("[Restore Cached onHighlight]", target.id);
             if (isPreview) {
                 openNewTab(cached);
             }
