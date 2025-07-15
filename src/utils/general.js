@@ -553,7 +553,7 @@ export function registerMenuCommand() {
         accessKey: "f"
     }));
 
-    state.registerMenuIds.push(GM_registerMenuCommand(_i18n('CHECK_UPDATE_MENU'), () => {
+    state.registerMenuIds.push(GM_registerMenuCommand(_i18n('CHECK_FOR_UPDATE'), () => {
         callNotification();
     }, {
         accessKey: "c"
@@ -574,7 +574,7 @@ export function registerMenuCommand() {
  * @return {void}
  */
 export function checkingScriptUpdate(interval) {
-    if (!USER_SETTING.CHECK_UPDATE) return;
+    if (!USER_SETTING.CHECK_FOR_UPDATE) return;
 
     const check_timestamp = GM_getValue('G_CHECK_TIMESTAMP') ?? new Date().getTime();
     const now_time = new Date().getTime();
@@ -699,7 +699,7 @@ export function showSetting() {
         }
     }
 
-    $('.IG_POPUP_DIG .IG_POPUP_DIG_BODY input#CHECK_UPDATE').closest('label').prependTo('.IG_POPUP_DIG .IG_POPUP_DIG_BODY');
+    $('.IG_POPUP_DIG .IG_POPUP_DIG_BODY input#CHECK_FOR_UPDATE').closest('label').prependTo('.IG_POPUP_DIG .IG_POPUP_DIG_BODY');
 
     arrangeSettingHierarchy();
 }

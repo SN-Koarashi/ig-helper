@@ -1,9 +1,7 @@
 {
     "NOTICE_UPDATE_TITLE": "Wololo! O nouă versiune a fost lansată.",
     "NOTICE_UPDATE_CONTENT": "IG-Helper a lansat o nouă versiune, dă click aici pentru a actualiza.",
-    "CHECK_UPDATE": "Caută actualizări pentru script",
-    "CHECK_UPDATE_MENU": "Caută actualizări",
-    "CHECK_UPDATE_INTRO": "Caută actualizări atunci când scriptul este activat (verifică la fiecare 300 de secunde).\nNotificările pentru actualizare vor fi trimise ca notificări desktop prin intermediul browserului.",
+    "CHECK_FOR_UPDATE": "Caută actualizări pentru script",
     "RELOAD_SCRIPT": "Reîncarcă scriptul",
     "DONATE": "Donează",
     "FEEDBACK": "Feedback",
@@ -24,7 +22,7 @@
     "VID": "Videoclip",
     "DW": "Descarcă",
     "DW_ALL": "Descarcă toate resursele",
-    "THUMBNAIL_INTRO": "Descarcă miniatura videoclipului",
+    "VIDEO_THUMBNAIL": "Descarcă miniatura videoclipului",
     "LOAD_BLOB_ONE": "Se încarcă conținutul media în format Blob...",
     "LOAD_BLOB_MULTIPLE": "Se încarcă conținutul media în format Blob și celelalte...",
     "LOAD_BLOB_RELOAD": "Se detectează conținutul media în format Blob, se reîncarcă acum...",
@@ -48,6 +46,7 @@
     "FALLBACK_TO_BLOB_FETCH_IF_MEDIA_API_THROTTLED": "Folosește metode alternative pentru a descărca atunci când Media API nu este accesibil",
     "NEW_TAB_ALWAYS_FORCE_MEDIA_IN_POST": "„Deschide într-o filă nouă” în postări folosește întotdeauna Media API",
     "SKIP_VIEW_STORY_CONFIRM": "Omite pagina de confirmare la vizualizarea unui story/highlight",
+    "CAPTURE_IMAGE_VIA_MEDIA_CACHE": "Capturează resursele de tip imagine folosind cache-ul de imagini",
     "AUTO_RENAME_INTRO": "Redenumește automat fișierele într-un format personalizat\nListă de formaturi personalizate: \n%USERNAME% - Numele de utilizator\n%SOURCE_TYPE% - Tipul sursei\n%SHORTCODE% - Codul scurt al postării\n%YEAR% - Anul descărcării/publicării\n%2-YEAR% - Anul (ultimele două cifre) descărcării/publicării\n%MONTH% - Luna descărcării/publicării\n%DAY% - Ziua descărcării/publicării\n%HOUR% - Ora descărcării/publicării\n%MINUTE% - Minutul descărcării/publicării\n%SECOND% - Secunda descărcării/publicării\n%ORIGINAL_NAME% - Numele original al fișierului descărcat\n%ORIGINAL_NAME_FIRST% - Numele original al fișierului descărcat (prima parte a numelui)\n\nDacă este setat pe fals, numele fișierului va rămâne neschimbat.\nExemplu: instagram_321565527_679025940443063_4318007696887450953_n.jpg",
     "RENAME_PUBLISH_DATE_INTRO": "Setează marcajul de timp în formatul de redenumire a fișierelor la data publicării resurselor (fusul orar al browserului)\n\nFuncționează DOAR dacă setarea [Redenumește automat fișierele] este pe ADEVĂRAT.",
     "RENAME_LOCATE_DATE_INTRO": "Modifică formatul de dată al marcajului de timp pentru redenumirea fișierelor la ora locală a browserului și formatează-l la formatul regional de dată dorit.\n\nFuncționează DOAR dacă setarea [Redenumește automat fișierele] este pe ADEVĂRAT.",
@@ -62,7 +61,9 @@
     "FORCE_RESOURCE_VIA_MEDIA_INTRO": "Media API va încerca să obțină cea mai înaltă calitate posibilă pentru fotografii sau videoclipuri, dar încărcarea va dura mai mult.",
     "FALLBACK_TO_BLOB_FETCH_IF_MEDIA_API_THROTTLED_INTRO": "Când Media API atinge limita de rată sau nu poate fi folosit din alte motive, Forced Fetch API este folosit pentru a descărca resursele (calitatea resurselor este puțin mai scăzută).",
     "NEW_TAB_ALWAYS_FORCE_MEDIA_IN_POST_INTRO": "Butonul [Deschide într-o filă nouă] în postări va folosi întotdeauna Media API pentru a obține resursele la rezoluție înaltă.",
+    "CHECK_FOR_UPDATE_INTRO": "Caută actualizări atunci când scriptul este activat (verifică la fiecare 300 de secunde).\nNotificările pentru actualizare vor fi trimise ca notificări desktop prin intermediul browserului.",
     "SKIP_VIEW_STORY_CONFIRM_INTRO": "Omite automat când pagina de confirmare este afișată în story sau highlight.",
     "MODIFY_RESOURCE_EXIF_INTRO": "Modifică proprietățile EXIF ale resurselor de tip imagine pentru a plasa linkul postării în acesta.",
-    "DIRECT_DOWNLOAD_STORY_INTRO": "Când dai click pe „Descarcă toate resursele”, toate storyurile/highlighturile sunt descărcate direct, fără a afișa caseta de dialog de selectare a resurselor."
+    "DIRECT_DOWNLOAD_STORY_INTRO": "Când dai click pe „Descarcă toate resursele”, toate storyurile/highlighturile sunt descărcate direct, fără a afișa caseta de dialog de selectare a resurselor.",
+    "CAPTURE_IMAGE_VIA_MEDIA_CACHE_INTRO": "Folosește un observator pentru a captura orice URL-uri de imagini de înaltă calitate din arborele DOM în stocarea scriptului, astfel încât acestea să poată fi extrase atunci când sunt disponibile și la intervenția utilizatorului."
 }

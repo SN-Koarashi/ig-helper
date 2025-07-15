@@ -1,9 +1,7 @@
 {
     "NOTICE_UPDATE_TITLE": "Wololo! Nuova versione rilasciata.",
     "NOTICE_UPDATE_CONTENT": "IG-Helper ha rilasciato una nuova versione, clicca qui per aggiornare.",
-    "CHECK_UPDATE": "Controllo aggiornamenti per lo script",
-    "CHECK_UPDATE_MENU": "Controllo aggiornamenti",
-    "CHECK_UPDATE_INTRO": "Controlla gli aggiornamenti quando lo script viene attivato (controlla ogni 300 secondi).\nLe notifiche di aggiornamento saranno inviate come notifiche desktop tramite il browser.",
+    "CHECK_FOR_UPDATE": "Controllo aggiornamenti per lo script",
     "RELOAD_SCRIPT": "Ricarica lo script",
     "DONATE": "Dona",
     "FEEDBACK": "Feedback",
@@ -24,7 +22,7 @@
     "VID": "Video",
     "DW": "Scarica",
     "DW_ALL": "Scarica tutte le risorse",
-    "THUMBNAIL_INTRO": "Scarica la miniatura del video",
+    "VIDEO_THUMBNAIL": "Scarica la miniatura del video",
     "LOAD_BLOB_ONE": "Caricamento del contenuto multimediale in formato Blob...",
     "LOAD_BLOB_MULTIPLE": "Caricamento dei contenuti multimediali in formato Blob e altri...",
     "LOAD_BLOB_RELOAD": "Rilevamento del contenuto multimediale in formato Blob, ricaricamento...",
@@ -48,6 +46,7 @@
     "FALLBACK_TO_BLOB_FETCH_IF_MEDIA_API_THROTTLED": "Utilizza metodi alternativi per scaricare quando l'API Media non è accessibile",
     "NEW_TAB_ALWAYS_FORCE_MEDIA_IN_POST": "\"Apri in una nuova scheda\" nei post utilizza sempre l'API Media",
     "SKIP_VIEW_STORY_CONFIRM": "Salta la pagina di conferma per la visualizzazione di una storia o di un contenuto in evidenza",
+    "CAPTURE_IMAGE_VIA_MEDIA_CACHE": "Cattura risorsa immagine utilizzando la cache multimediale",
     "AUTO_RENAME_INTRO": "Rinomina automaticamente i file in un formato personalizzato\nElenco dei formati personalizzati: \n%USERNAME% - Nome utente\n%SOURCE_TYPE% - Tipo di sorgente\n%SHORTCODE% - Codice breve del post\n%YEAR% - Anno di download/pubblicazione\n%2-YEAR% - Anno (ultime due cifre) di download/pubblicazione\n%MONTH% - Mese di download/pubblicazione\n%DAY% - Giorno di download/pubblicazione\n%HOUR% - Ora di download/pubblicazione\n%MINUTE% - Minuto di download/pubblicazione\n%SECOND% - Secondo di download/pubblicazione\n%ORIGINAL_NAME% - Nome originale del file scaricato\n%ORIGINAL_NAME_FIRST% - Nome originale del file scaricato (prima parte del nome)\n\nSe impostato su falso, il nome del file rimarrà invariato.\nEsempio: instagram_321565527_679025940443063_4318007696887450953_n.jpg",
     "RENAME_PUBLISH_DATE_INTRO": "Imposta il timestamp nel formato di ridenominazione del file alla data di pubblicazione della risorsa (fuso orario del browser).\n\nFunziona SOLO se [Rinomina automaticamente i file] è impostato su VERO.",
     "RENAME_LOCATE_DATE_INTRO": "Modifica il formato della data del timestamp di ridenominazione del file all'ora locale del browser e formattalo nel formato data regionale desiderato.\n\nFunziona SOLO se [Rinomina automaticamente i file] è impostato su VERO.",
@@ -62,7 +61,9 @@
     "FORCE_RESOURCE_VIA_MEDIA_INTRO": "L'API Media proverà a ottenere la massima qualità possibile per foto o video, ma il caricamento richiederà più tempo.",
     "FALLBACK_TO_BLOB_FETCH_IF_MEDIA_API_THROTTLED_INTRO": "Quando l'API Media raggiunge il limite di richieste o non può essere utilizzata per altri motivi, l'API di recupero forzato verrà utilizzata per scaricare le risorse (la qualità delle risorse potrebbe essere leggermente inferiore).",
     "NEW_TAB_ALWAYS_FORCE_MEDIA_IN_POST_INTRO": "Il pulsante [Apri in una nuova scheda] nei post utilizzerà sempre l'API Media per ottenere risorse ad alta risoluzione.",
+    "CHECK_FOR_UPDATE_INTRO": "Controlla gli aggiornamenti quando lo script viene attivato (controlla ogni 300 secondi).\nLe notifiche di aggiornamento saranno inviate come notifiche desktop tramite il browser.",
     "SKIP_VIEW_STORY_CONFIRM_INTRO": "Salta automaticamente quando la pagina di conferma viene visualizzata nella storia o nel contenuto in evidenza.",
     "MODIFY_RESOURCE_EXIF_INTRO": "Modifica le proprietà EXIF della risorsa immagine per posizionare il link del post al suo interno.",
-    "DIRECT_DOWNLOAD_STORY_INTRO": "Quando fai clic su 'Scarica tutte le risorse', tutte le storie e gli elementi in evidenza vengono scaricati direttamente, senza mostrare la finestra di dialogo di selezione delle immagini."
+    "DIRECT_DOWNLOAD_STORY_INTRO": "Quando fai clic su 'Scarica tutte le risorse', tutte le storie e gli elementi in evidenza vengono scaricati direttamente, senza mostrare la finestra di dialogo di selezione delle immagini.",
+    "CAPTURE_IMAGE_VIA_MEDIA_CACHE_INTRO": "Utilizza un watcher per catturare nella memoria dello script tutti gli URL di immagini ad alta qualità presenti nell’albero DOM, in modo che possano essere estratti quando disponibili e su richiesta dell’utente."
 }
