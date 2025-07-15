@@ -363,11 +363,23 @@ export async function onStory(isDownload, isForce, isPreview) {
             let downloadLink = link;
             let type = 'jpg';
 
+            const mediaId = getImageFromCache(getStoryId(downloadLink) ?? "-");
+            const cached = getImageFromCache(mediaId);
+            if (cached) {
+                if (isPreview) {
+                    openNewTab(cached);
+                }
+                else {
+                    saveFiles(cached, username, "stories", timestamp, 'jpg', mediaId);
+                }
+                return;
+            }
+
             if (isPreview) {
                 openNewTab(downloadLink);
             }
             else {
-                saveFiles(downloadLink, username, "stories", timestamp, type, getStoryId(downloadLink) ?? "");
+                saveFiles(downloadLink, username, "stories", timestamp, type, mediaId);
             }
         }
 
