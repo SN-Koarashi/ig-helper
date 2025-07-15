@@ -774,6 +774,8 @@ export function openNewTab(link) {
     document.body.appendChild(a);
     a.click();
     a.remove();
+
+    setTimeout(() => { updateLoadingBar(false); }, 125);
 }
 
 /**
