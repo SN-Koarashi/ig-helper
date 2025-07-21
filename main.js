@@ -5,7 +5,7 @@
 // @name:ja            IG助手
 // @name:ko            IG조수
 // @namespace          https://github.snkms.com/
-// @version            3.8.3
+// @version            3.8.4
 // @description        Downloading is possible for both photos and videos from posts, as well as for stories, reels or profile picture.
 // @description:zh-TW  一鍵下載對方 Instagram 貼文中的相片、影片甚至是他們的限時動態、連續短片及大頭貼圖片！
 // @description:zh-CN  一键下载对方 Instagram 帖子中的相片、视频甚至是他们的快拍、Reels及头像图片！
@@ -79,7 +79,7 @@
         ]
     };
     const IMAGE_CACHE_KEY = 'URLS_OF_IMAGES_TEMPORARILY_STORED';
-    const IMAGE_CACHE_MAX_AGE = 24 * 60 * 60 * 1000; // 24h in ms
+    const IMAGE_CACHE_MAX_AGE = 12 * 60 * 60 * 1000; // 12h in ms
     /*******************************/
 
     // Icon download by Google Fonts Material Icon
@@ -3911,7 +3911,7 @@
 
     /**
      * purgeCache
-     * @description purge image cache entries older than 24 hours.
+     * @description Purge image cache entries older than 12 hours.
      *
      * @return {void}
      */
@@ -3978,11 +3978,13 @@
      */
     function registerPerformanceObserver() {
         const perfObs = new PerformanceObserver(list => {
+            if (!USER_SETTING.CAPTURE_IMAGE_VIA_MEDIA_CACHE) return;
+
             list.getEntries().forEach(entry => {
                 if (entry.initiatorType === 'img') {
                     const u = entry.name;
 
-                    if (!(u.includes('_e35') || u.includes('_e15') || u.includes('.webp?efg=')) || u.includes('1080x1080') || u.includes('720x720') || u.includes('640x640') || u.includes('480x480') || u.includes('360x360') || u.includes('240x240')) return;
+                    if (!(u.includes('_e35') || u.includes('_e15') || u.includes('.webp?efg=')) || u.match(/_[sp](\d+)x\1(?!\d)/)) return;
                     const id = mediaIdFromURL(u);
                     if (id && !state.GL_imageCache[id]) putInCache(id, u);
                 }
