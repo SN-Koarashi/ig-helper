@@ -5,7 +5,7 @@
 // @name:ja            IG助手
 // @name:ko            IG조수
 // @namespace          https://github.snkms.com/
-// @version            3.8.4
+// @version            3.8.5
 // @description        Downloading is possible for both photos and videos from posts, as well as for stories, reels or profile picture.
 // @description:zh-TW  一鍵下載對方 Instagram 貼文中的相片、影片甚至是他們的限時動態、連續短片及大頭貼圖片！
 // @description:zh-CN  一键下载对方 Instagram 帖子中的相片、视频甚至是他们的快拍、Reels及头像图片！
@@ -80,6 +80,7 @@
     };
     const IMAGE_CACHE_KEY = 'URLS_OF_IMAGES_TEMPORARILY_STORED';
     const IMAGE_CACHE_MAX_AGE = 12 * 60 * 60 * 1000; // 12h in ms
+    const IMAGE_MAX_CACHE_ITEMS = 300;
     /*******************************/
 
     // Icon download by Google Fonts Material Icon
@@ -3909,6 +3910,9 @@
         $(document).off('mousemove.igHelper');
     }
 
+    let mediaCacheDirty = false;
+    let mediaCacheSaveTimer = null;
+
     /**
      * purgeCache
      * @description Purge image cache entries older than 12 hours.
@@ -3951,8 +3955,25 @@
      */
     function putInCache(mediaId, url) {
         if (!mediaId) return;
+
+        const keys = Object.keys(state.GL_imageCache);
+        if (keys.length >= IMAGE_MAX_CACHE_ITEMS) {
+            keys.sort((a, b) => state.GL_imageCache[a].ts - state.GL_imageCache[b].ts);
+            delete state.GL_imageCache[keys[0]];
+        }
+
+        mediaCacheDirty = true;
         state.GL_imageCache[mediaId] = { url, ts: Date.now() };
-        GM_setValue(IMAGE_CACHE_KEY, state.GL_imageCache);
+
+        if (!mediaCacheSaveTimer) {
+            mediaCacheSaveTimer = setTimeout(() => {
+                if (mediaCacheDirty) {
+                    GM_setValue(IMAGE_CACHE_KEY, state.GL_imageCache);
+                    mediaCacheDirty = false;
+                }
+                mediaCacheSaveTimer = null;
+            }, 500); // write in script storage per 500 ms
+        }
     }
 
     /**
