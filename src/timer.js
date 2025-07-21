@@ -29,7 +29,7 @@ export var timer = setInterval(function () {
         state.currentURL = location.href;
         state.GL_observer.disconnect();
 
-        if (location.href.startsWith("https://www.instagram.com/p/") || location.pathname.match(/^\/(.*?)\/(p|reel)\//ig) || location.href.startsWith("https://www.instagram.com/reel/")) {
+        if (location.pathname.startsWith("/p/") || location.pathname.match(/^\/(.*?)\/(p|reel)\//ig) || location.pathname.startsWith("/reel/")) {
             state.GL_dataCache.stories = {};
             state.GL_dataCache.highlights = {};
 
@@ -59,15 +59,15 @@ export var timer = setInterval(function () {
             state.pageLoaded = true;
         }
 
-        if (location.href.startsWith("https://www.instagram.com/reels/")) {
-            logger('isReels');
+        if (location.pathname.startsWith("/reels/")) {
+            logger('isReelsPage');
             setTimeout(() => {
                 onReels(false);
             }, 150);
             state.pageLoaded = true;
         }
 
-        if (location.href.split("?")[0] == "https://www.instagram.com/") {
+        if (location.pathname === "/") {
             state.GL_dataCache.stories = {};
             state.GL_dataCache.highlights = {};
 
@@ -87,8 +87,13 @@ export var timer = setInterval(function () {
 
             state.pageLoaded = true;
         }
-        // eslint-disable-next-line no-useless-escape
-        if ($('header > *[class]:first-child img[alt]').length && location.pathname.match(/^(\/)([0-9A-Za-z\.\-_]+)\/?(tagged|reels|saved)?\/?$/ig) && !location.pathname.match(/^(\/explore\/?$|\/stories(\/.*)?$|\/p\/)/ig)) {
+
+        if (
+            $('header > *[class]:first-child img[alt]').length &&
+            // eslint-disable-next-line no-useless-escape
+            location.pathname.match(/^(\/)([0-9A-Za-z\.\-_]+)\/?(tagged|reels|saved)?\/?$/ig) &&
+            !location.pathname.match(/^(\/explore\/?$|\/stories(\/.*)?$|\/p\/)/ig)
+        ) {
             logger('isProfile');
             setTimeout(() => {
                 onProfileAvatar(false);
@@ -98,7 +103,7 @@ export var timer = setInterval(function () {
 
         if (!state.pageLoaded) {
             // Call Instagram stories function
-            if (location.href.match(/^(https:\/\/www\.instagram\.com\/stories\/highlights\/)/ig)) {
+            if (location.pathname.startsWith("/stories/highlights/")) {
                 state.GL_dataCache.highlights = {};
 
                 logger('isHighlightsStory');
@@ -121,7 +126,7 @@ export var timer = setInterval(function () {
                     }, 150);
                 }
             }
-            else if (location.href.match(/^(https:\/\/www\.instagram\.com\/stories\/)/ig)) {
+            else if (location.pathname.startsWith("/stories/")) {
                 logger('isStory');
 
                 /*
@@ -152,7 +157,7 @@ export var timer = setInterval(function () {
                             var $viewStoryButton = $('div[id^="mount"] section:last-child > div > div div[role="button"]').filter(function () {
                                 return $(this).children().length === 0 && this.textContent.trim() !== "";
                             });
-                            $viewStoryButton?.click();
+                            $viewStoryButton?.trigger("click");
                         }
 
                         state.pageLoaded = true;
