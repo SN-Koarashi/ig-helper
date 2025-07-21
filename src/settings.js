@@ -35,7 +35,7 @@ export const PARENT_CHILD_MAPPING = {
     ]
 };
 export const IMAGE_CACHE_KEY = 'URLS_OF_IMAGES_TEMPORARILY_STORED';
-export const IMAGE_CACHE_MAX_AGE = 24 * 60 * 60 * 1000; // 24h in ms
+export const IMAGE_CACHE_MAX_AGE = 12 * 60 * 60 * 1000; // 12h in ms
 /*******************************/
 
 // Icon download by Google Fonts Material Icon
