@@ -4,7 +4,7 @@
 ────────────────────────────────────────────────────────────── 
 */
 
-import { IMAGE_CACHE_KEY, IMAGE_CACHE_MAX_AGE, state } from "../settings";
+import { IMAGE_CACHE_KEY, IMAGE_CACHE_MAX_AGE, state, USER_SETTING } from "../settings";
 /*! ESLINT IMPORT END !*/
 
 /**
@@ -76,6 +76,8 @@ export function getImageFromCache(mediaId) {
  */
 export function registerPerformanceObserver() {
     const perfObs = new PerformanceObserver(list => {
+        if (!USER_SETTING.CAPTURE_IMAGE_VIA_MEDIA_CACHE) return;
+
         list.getEntries().forEach(entry => {
             if (entry.initiatorType === 'img') {
                 const u = entry.name;
