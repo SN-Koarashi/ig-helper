@@ -4,8 +4,11 @@
 ────────────────────────────────────────────────────────────── 
 */
 
-import { IMAGE_CACHE_KEY, IMAGE_CACHE_MAX_AGE, state, USER_SETTING } from "../settings";
+import { IMAGE_CACHE_KEY, IMAGE_CACHE_MAX_AGE, IMAGE_MAX_CACHE_ITEMS, state, USER_SETTING } from "../settings";
 /*! ESLINT IMPORT END !*/
+
+let mediaCacheDirty = false;
+let mediaCacheSaveTimer = null;
 
 /**
  * purgeCache
@@ -49,8 +52,25 @@ export function mediaIdFromURL(url) {
  */
 export function putInCache(mediaId, url) {
     if (!mediaId) return;
+
+    const keys = Object.keys(state.GL_imageCache);
+    if (keys.length >= IMAGE_MAX_CACHE_ITEMS) {
+        keys.sort((a, b) => state.GL_imageCache[a].ts - state.GL_imageCache[b].ts);
+        delete state.GL_imageCache[keys[0]];
+    }
+
+    mediaCacheDirty = true;
     state.GL_imageCache[mediaId] = { url, ts: Date.now() };
-    GM_setValue(IMAGE_CACHE_KEY, state.GL_imageCache);
+
+    if (!mediaCacheSaveTimer) {
+        mediaCacheSaveTimer = setTimeout(() => {
+            if (mediaCacheDirty) {
+                GM_setValue(IMAGE_CACHE_KEY, state.GL_imageCache);
+                mediaCacheDirty = false;
+            }
+            mediaCacheSaveTimer = null;
+        }, 500); // write in script storage per 500 ms
+    }
 }
 
 /**
