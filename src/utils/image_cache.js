@@ -1,6 +1,6 @@
 /*  
 ──────────────────────────────────────────────────────────────
-    📦  IMAGE CACHE (24h) + NETWORK SNIFFER
+    📦  IMAGE CACHE (12h) + NETWORK SNIFFER
 ────────────────────────────────────────────────────────────── 
 */
 
@@ -9,7 +9,7 @@ import { IMAGE_CACHE_KEY, IMAGE_CACHE_MAX_AGE, state } from "../settings";
 
 /**
  * purgeCache
- * @description purge image cache entries older than 24 hours.
+ * @description Purge image cache entries older than 12 hours.
  *
  * @return {void}
  */
@@ -80,7 +80,7 @@ export function registerPerformanceObserver() {
             if (entry.initiatorType === 'img') {
                 const u = entry.name;
 
-                if (!(u.includes('_e35') || u.includes('_e15') || u.includes('.webp?efg=')) || u.includes('1080x1080') || u.includes('720x720') || u.includes('640x640') || u.includes('480x480') || u.includes('360x360') || u.includes('240x240')) return;
+                if (!(u.includes('_e35') || u.includes('_e15') || u.includes('.webp?efg=')) || u.match(/_[sp](\d+)x\1(?!\d)/)) return;
                 const id = mediaIdFromURL(u);
                 if (id && !state.GL_imageCache[id]) putInCache(id, u);
             }
