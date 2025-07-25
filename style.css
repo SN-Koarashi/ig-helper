@@ -460,7 +460,8 @@ kbd {
 }
 
 .IG_POPUP_DIG_BODY .newTab svg,
-.IG_POPUP_DIG_BODY .videoThumbnail svg {
+.IG_POPUP_DIG_BODY .videoThumbnail svg,
+.IG_POPUP_DIG_BTN>svg {
     fill: rgb(var(--ig-primary-text));
 }
 
@@ -469,7 +470,6 @@ kbd {
     position: absolute;
     right: 0px;
     top: 0px;
-    fill: rgb(var(--ig-primary-text));
     line-height: 0;
 }
 
