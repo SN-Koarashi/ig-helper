@@ -5,7 +5,7 @@
 // @name:ja            IG助手
 // @name:ko            IG조수
 // @namespace          https://github.snkms.com/
-// @version            3.8.3
+// @version            3.8.6
 // @description        Downloading is possible for both photos and videos from posts, as well as for stories, reels or profile picture.
 // @description:zh-TW  一鍵下載對方 Instagram 貼文中的相片、影片甚至是他們的限時動態、連續短片及大頭貼圖片！
 // @description:zh-CN  一键下载对方 Instagram 帖子中的相片、视频甚至是他们的快拍、Reels及头像图片！
@@ -80,6 +80,7 @@
     };
     const IMAGE_CACHE_KEY = 'URLS_OF_IMAGES_TEMPORARILY_STORED';
     const IMAGE_CACHE_MAX_AGE = 12 * 60 * 60 * 1000; // 12h in ms
+    const IMAGE_MAX_CACHE_ITEMS = 300;
     /*******************************/
 
     // Icon download by Google Fonts Material Icon
@@ -170,7 +171,7 @@
             state.currentURL = location.href;
             state.GL_observer.disconnect();
 
-            if (location.href.startsWith("https://www.instagram.com/p/") || location.pathname.match(/^\/(.*?)\/(p|reel)\//ig) || location.href.startsWith("https://www.instagram.com/reel/")) {
+            if (location.pathname.startsWith("/p/") || location.pathname.match(/^\/(.*?)\/(p|reel)\//ig) || location.pathname.startsWith("/reel/")) {
                 state.GL_dataCache.stories = {};
                 state.GL_dataCache.highlights = {};
 
@@ -200,15 +201,15 @@
                 state.pageLoaded = true;
             }
 
-            if (location.href.startsWith("https://www.instagram.com/reels/")) {
-                logger('isReels');
+            if (location.pathname.startsWith("/reels/")) {
+                logger('isReelsPage');
                 setTimeout(() => {
                     onReels(false);
                 }, 150);
                 state.pageLoaded = true;
             }
 
-            if (location.href.split("?")[0] == "https://www.instagram.com/") {
+            if (location.pathname === "/") {
                 state.GL_dataCache.stories = {};
                 state.GL_dataCache.highlights = {};
 
@@ -228,8 +229,13 @@
 
                 state.pageLoaded = true;
             }
-            // eslint-disable-next-line no-useless-escape
-            if ($('header > *[class]:first-child img[alt]').length && location.pathname.match(/^(\/)([0-9A-Za-z\.\-_]+)\/?(tagged|reels|saved)?\/?$/ig) && !location.pathname.match(/^(\/explore\/?$|\/stories(\/.*)?$|\/p\/)/ig)) {
+
+            if (
+                $('header > *[class]:first-child img[alt]').length &&
+                // eslint-disable-next-line no-useless-escape
+                location.pathname.match(/^(\/)([0-9A-Za-z\.\-_]+)\/?(tagged|reels|saved)?\/?$/ig) &&
+                !location.pathname.match(/^(\/explore\/?$|\/stories(\/.*)?$|\/p\/)/ig)
+            ) {
                 logger('isProfile');
                 setTimeout(() => {
                     onProfileAvatar(false);
@@ -239,7 +245,7 @@
 
             if (!state.pageLoaded) {
                 // Call Instagram stories function
-                if (location.href.match(/^(https:\/\/www\.instagram\.com\/stories\/highlights\/)/ig)) {
+                if (location.pathname.startsWith("/stories/highlights/")) {
                     state.GL_dataCache.highlights = {};
 
                     logger('isHighlightsStory');
@@ -262,7 +268,7 @@
                         }, 150);
                     }
                 }
-                else if (location.href.match(/^(https:\/\/www\.instagram\.com\/stories\/)/ig)) {
+                else if (location.pathname.startsWith("/stories/")) {
                     logger('isStory');
 
                     /*
@@ -293,7 +299,7 @@
                                 var $viewStoryButton = $('div[id^="mount"] section:last-child > div > div div[role="button"]').filter(function () {
                                     return $(this).children().length === 0 && this.textContent.trim() !== "";
                                 });
-                                $viewStoryButton?.click();
+                                $viewStoryButton?.trigger("click");
                             }
 
                             state.pageLoaded = true;
@@ -3909,6 +3915,9 @@
         $(document).off('mousemove.igHelper');
     }
 
+    let mediaCacheDirty = false;
+    let mediaCacheSaveTimer = null;
+
     /**
      * purgeCache
      * @description Purge image cache entries older than 12 hours.
@@ -3951,8 +3960,25 @@
      */
     function putInCache(mediaId, url) {
         if (!mediaId) return;
+
+        const keys = Object.keys(state.GL_imageCache);
+        if (keys.length >= IMAGE_MAX_CACHE_ITEMS) {
+            keys.sort((a, b) => state.GL_imageCache[a].ts - state.GL_imageCache[b].ts);
+            delete state.GL_imageCache[keys[0]];
+        }
+
+        mediaCacheDirty = true;
         state.GL_imageCache[mediaId] = { url, ts: Date.now() };
-        GM_setValue(IMAGE_CACHE_KEY, state.GL_imageCache);
+
+        if (!mediaCacheSaveTimer) {
+            mediaCacheSaveTimer = setTimeout(() => {
+                if (mediaCacheDirty) {
+                    GM_setValue(IMAGE_CACHE_KEY, state.GL_imageCache);
+                    mediaCacheDirty = false;
+                }
+                mediaCacheSaveTimer = null;
+            }, 500); // write in script storage per 500 ms
+        }
     }
 
     /**
