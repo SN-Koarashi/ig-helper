@@ -137,7 +137,8 @@ export var timer = setInterval(function () {
                  *  $('body div[id^="mount"] > div > div > div[class]').last().find('svg > polyline + line').length > 0
                  *
                  */
-                if ($('div[id^="mount"] section > div > a[href="/"]').length > 0) {
+                // ? detect logo element in left-top corner
+                if ($('div[id^="mount"] section > div > a[href="/"]').length > 0 || $('div[id^="mount"] section > div > a[href^="/?hl="]').length > 0) {
                     $('.IG_DWSTORY').remove();
                     $('.IG_DWNEWTAB').remove();
                     if ($('.IG_DWSTORY_THUMBNAIL').length) {
