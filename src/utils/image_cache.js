@@ -102,7 +102,7 @@ export function registerPerformanceObserver() {
             if (entry.initiatorType === 'img') {
                 const u = entry.name;
 
-                if (!(u.includes('_e35') || u.includes('_e15') || u.includes('.webp?efg=')) || u.match(/_[sp](\d+)x\1(?!\d)/)) return;
+                if (!(u.includes('_e35') || u.includes('_e15') || u.includes('.webp?')) || u.match(/_[sp](\d+)x\1(?!\d)/)) return;
                 const id = mediaIdFromURL(u);
                 if (id && !state.GL_imageCache[id]) putInCache(id, u);
             }
