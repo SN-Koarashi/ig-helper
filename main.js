@@ -1490,10 +1490,10 @@
                         return;
                     }
 
-                    $('header > *[class]:first-child img[alt][draggable]').parent().parent().append(`<div data-ih-locale-title="DW" title="${_i18n("DW")}" class="IG_DWPROFILE">${SVG.DOWNLOAD}</div>`);
-                    $('header > *[class]:first-child img[alt][draggable]').parent().parent().css('position', 'relative');
-                    $('header > *[class]:first-child img[alt]:not([draggable])').parent().parent().parent().append(`<div data-ih-locale-title="DW" title="${_i18n("DW")}" class="IG_DWPROFILE">${SVG.DOWNLOAD}</div>`);
-                    $('header > *[class]:first-child img[alt]:not([draggable])').parent().parent().parent().css('position', 'relative');
+                    $('header > *[class]:first-child > *[class] img[alt][draggable]').parent().parent().append(`<div data-ih-locale-title="DW" title="${_i18n("DW")}" class="IG_DWPROFILE">${SVG.DOWNLOAD}</div>`);
+                    $('header > *[class]:first-child > *[class] img[alt][draggable]').parent().parent().css('position', 'relative');
+                    $('header > *[class]:first-child > *[class] img[alt]:not([draggable])').parent().parent().parent().append(`<div data-ih-locale-title="DW" title="${_i18n("DW")}" class="IG_DWPROFILE">${SVG.DOWNLOAD}</div>`);
+                    $('header > *[class]:first-child > *[class] img[alt]:not([draggable])').parent().parent().parent().css('position', 'relative');
                 }, 150);
             }
         }
@@ -4012,7 +4012,7 @@
                 if (entry.initiatorType === 'img') {
                     const u = entry.name;
 
-                    if (!(u.includes('_e35') || u.includes('_e15') || u.includes('.webp?efg=')) || u.match(/_[sp](\d+)x\1(?!\d)/)) return;
+                    if (!(u.includes('_e35') || u.includes('_e15') || u.includes('.webp?')) || u.match(/_[sp](\d+)x\1(?!\d)/)) return;
                     const id = mediaIdFromURL(u);
                     if (id && !state.GL_imageCache[id]) putInCache(id, u);
                 }
