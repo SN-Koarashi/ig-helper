@@ -117,7 +117,7 @@ export var timer = setInterval(function () {
                 if ($(".IG_DWHISTORY").length) {
                     setTimeout(() => {
                         if (USER_SETTING.SKIP_VIEW_STORY_CONFIRM) {
-                            var $viewStoryButton = $('div[id^="mount"] section:last-child > div > div div[role="button"]').filter(function () {
+                            var $viewStoryButton = $('div[id^="mount"] section:last-child > div > div:not([class]) div:last-child > div[role="button"]').filter(function () {
                                 return $(this).children().length === 0 && this.textContent.trim() !== "";
                             });
                             $viewStoryButton?.trigger("click");
@@ -156,7 +156,7 @@ export var timer = setInterval(function () {
                 if ($(".IG_DWSTORY").length) {
                     setTimeout(() => {
                         if (USER_SETTING.SKIP_VIEW_STORY_CONFIRM) {
-                            var $viewStoryButton = $('div[id^="mount"] section:last-child > div > div div[role="button"]').filter(function () {
+                            var $viewStoryButton = $('div[id^="mount"] section:last-child > div > div:not([class]) div:last-child > div[role="button"]').filter(function () {
                                 return $(this).children().length === 0 && this.textContent.trim() !== "";
                             });
                             $viewStoryButton?.trigger("click");
