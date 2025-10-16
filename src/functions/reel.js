@@ -200,7 +200,7 @@ export async function onReels(isDownload, isVideo, isPreview) {
                                                 }
                                             });
 
-                                            $(this).css('position', 'absolute');
+                                            $(this).css('position', 'relative');
                                             $(this).css('z-index', '2');
                                             $(this).attr('data-controls', true);
                                             $(this).attr('controls', true);

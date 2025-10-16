@@ -5,7 +5,7 @@
 // @name:ja            IG助手
 // @name:ko            IG조수
 // @namespace          https://github.snkms.com/
-// @version            3.8.8
+// @version            3.8.9
 // @description        Downloading is possible for both photos and videos from posts, as well as for stories, reels or profile picture.
 // @description:zh-TW  一鍵下載對方 Instagram 貼文中的相片、影片甚至是他們的限時動態、連續短片及大頭貼圖片！
 // @description:zh-CN  一键下载对方 Instagram 帖子中的相片、视频甚至是他们的快拍、Reels及头像图片！
@@ -259,7 +259,7 @@
                     if ($(".IG_DWHISTORY").length) {
                         setTimeout(() => {
                             if (USER_SETTING.SKIP_VIEW_STORY_CONFIRM) {
-                                var $viewStoryButton = $('div[id^="mount"] section:last-child > div > div div[role="button"]').filter(function () {
+                                var $viewStoryButton = $('div[id^="mount"] section:last-child > div > div:not([class]) div:last-child > div[role="button"]').filter(function () {
                                     return $(this).children().length === 0 && this.textContent.trim() !== "";
                                 });
                                 $viewStoryButton?.trigger("click");
@@ -298,7 +298,7 @@
                     if ($(".IG_DWSTORY").length) {
                         setTimeout(() => {
                             if (USER_SETTING.SKIP_VIEW_STORY_CONFIRM) {
-                                var $viewStoryButton = $('div[id^="mount"] section:last-child > div > div div[role="button"]').filter(function () {
+                                var $viewStoryButton = $('div[id^="mount"] section:last-child > div > div:not([class]) div:last-child > div[role="button"]').filter(function () {
                                     return $(this).children().length === 0 && this.textContent.trim() !== "";
                                 });
                                 $viewStoryButton?.trigger("click");
@@ -1490,10 +1490,10 @@
                         return;
                     }
 
-                    $('header > *[class]:first-child img[alt][draggable]').parent().parent().append(`<div data-ih-locale-title="DW" title="${_i18n("DW")}" class="IG_DWPROFILE">${SVG.DOWNLOAD}</div>`);
-                    $('header > *[class]:first-child img[alt][draggable]').parent().parent().css('position', 'relative');
-                    $('header > *[class]:first-child img[alt]:not([draggable])').parent().parent().parent().append(`<div data-ih-locale-title="DW" title="${_i18n("DW")}" class="IG_DWPROFILE">${SVG.DOWNLOAD}</div>`);
-                    $('header > *[class]:first-child img[alt]:not([draggable])').parent().parent().parent().css('position', 'relative');
+                    $('header > *[class]:first-child > *[class] img[alt][draggable]').parent().parent().append(`<div data-ih-locale-title="DW" title="${_i18n("DW")}" class="IG_DWPROFILE">${SVG.DOWNLOAD}</div>`);
+                    $('header > *[class]:first-child > *[class] img[alt][draggable]').parent().parent().css('position', 'relative');
+                    $('header > *[class]:first-child > *[class] img[alt]:not([draggable])').parent().parent().parent().append(`<div data-ih-locale-title="DW" title="${_i18n("DW")}" class="IG_DWPROFILE">${SVG.DOWNLOAD}</div>`);
+                    $('header > *[class]:first-child > *[class] img[alt]:not([draggable])').parent().parent().parent().css('position', 'relative');
                 }, 150);
             }
         }
@@ -1694,7 +1694,7 @@
                                                     }
                                                 });
 
-                                                $(this).css('position', 'absolute');
+                                                $(this).css('position', 'relative');
                                                 $(this).css('z-index', '2');
                                                 $(this).attr('data-controls', true);
                                                 $(this).attr('controls', true);
@@ -4012,7 +4012,7 @@
                 if (entry.initiatorType === 'img') {
                     const u = entry.name;
 
-                    if (!(u.includes('_e35') || u.includes('_e15') || u.includes('.webp?efg=')) || u.match(/_[sp](\d+)x\1(?!\d)/)) return;
+                    if (!(u.includes('_e35') || u.includes('_e15') || u.includes('.webp?')) || u.match(/_[sp](\d+)x\1(?!\d)/)) return;
                     const id = mediaIdFromURL(u);
                     if (id && !state.GL_imageCache[id]) putInCache(id, u);
                 }
