@@ -99,7 +99,7 @@ export function registerPerformanceObserver() {
         if (!USER_SETTING.CAPTURE_IMAGE_VIA_MEDIA_CACHE) return;
 
         list.getEntries().forEach(entry => {
-            if (entry.initiatorType === 'img') {
+            if (entry.initiatorType === 'img' || entry.initiatorType === 'fetch') {
                 const u = entry.name;
 
                 if (!(u.includes('_e35') || u.includes('_e15') || u.includes('.webp?')) || u.match(/_[sp](\d+)x\1(?!\d)/)) return;
