@@ -315,6 +315,15 @@ export async function onHighlightsStoryThumbnail(isDownload) {
             timestamp = target.taken_at_timestamp;
         }
 
+        if (USER_SETTING.CAPTURE_IMAGE_VIA_MEDIA_CACHE) {
+            const cached = getImageFromCache(highlightId);
+            if (cached) {
+                logger("[Restore Cached onHighlightsStoryThumbnail]", highlightId);
+                saveFiles(cached, username, "stories", timestamp, 'jpg', highlightId);
+                return;
+            }
+        }
+
         if (USER_SETTING.FORCE_RESOURCE_VIA_MEDIA && !state.tempFetchRateLimit) {
             let result = await getMediaInfo(target.id);
 

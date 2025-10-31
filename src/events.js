@@ -206,6 +206,16 @@ $(function () {
         }
 
         let postPath = $(this).parent().children('a').attr('data-path') ?? $('#article-id').text();
+		
+        if (USER_SETTING.CAPTURE_IMAGE_VIA_MEDIA_CACHE) {
+            let mediaId = $(element).attr('media-id');
+            const cached = getImageFromCache(mediaId);
+            if (cached) {
+                logger("[Restore Cached postThumbnail]", postPath);
+                saveFiles(cached, $(this).parent().children('a').attr('data-username'), 'thumbnail', timestamp, 'jpg', postPath);
+                return;
+            }
+        }
 
         saveFiles($(this).parent().children('a').find('img').first().attr('src'), $(this).parent().children('a').attr('data-username'), 'thumbnail', timestamp, 'jpg', postPath);
     });
