@@ -5,7 +5,7 @@
 // @name:ja            IG助手
 // @name:ko            IG조수
 // @namespace          https://github.snkms.com/
-// @version            3.8.9
+// @version            3.8.9.1
 // @description        Downloading is possible for both photos and videos from posts, as well as for stories, reels or profile picture.
 // @description:zh-TW  一鍵下載對方 Instagram 貼文中的相片、影片甚至是他們的限時動態、連續短片及大頭貼圖片！
 // @description:zh-CN  一键下载对方 Instagram 帖子中的相片、视频甚至是他们的快拍、Reels及头像图片！
@@ -1436,21 +1436,58 @@
      * @return {Integer}
      */
     function getVisibleNodeIndex($main) {
-        var index = 0;
-        // homepage classList
-        var $dot = $main.find('.x1iyjqo2 > div > div:last-child > div');
+        // 1. 优先使用最高效的规则：检查“返回”按钮是否存在。
+        const hasBackButton = $main.find('button._afxv._al46._al47').length > 0;
 
-        // dialog classList, main top classList
-        if ($dot == null || !$dot.hasClass('_acnb')) {
-            $dot = $main.find('._aatk > div > div:last-child').eq(0).children('div');
+        // 2. 如果“返回”按钮不存在，则确定是第一张图，立即返回结果。
+        if (!hasBackButton) {
+            return 0;
         }
+        var index = 0;
 
-        $dot.filter('._acnb').each(function (sIndex) {
-            if ($(this).hasClass('_acnf')) {
-                index = sIndex;
+        // 3. 如果代码执行到这里，说明不是第一张图，启用最终的几何算法。
+
+        // a. 定位“视窗”元素：它是 ul._acay 的祖父级元素
+        const $viewport = $main.find('ul._acay').parent().parent();
+
+        if ($viewport.length > 0) {
+            const viewportRect = $viewport.get(0).getBoundingClientRect();
+            // b. 获取 itemWidth：直接使用视窗的宽度，此方法通用性最强
+            const itemWidth = viewportRect.width;
+
+            // 必须成功获取到宽度才能继续，防止除以0的错误
+            if (itemWidth > 0) {
+                // STAGE 1: 视觉定位，找到当前显示的 <li> 元素
+                const viewportRight = viewportRect.right;
+                let closestSlideElement = null;
+                let minDistance = Infinity;
+
+                $main.find('li._acaz').each(function () {
+                    if (this.getBoundingClientRect().width === 0) return;
+
+                    const slideRect = this.getBoundingClientRect();
+                    const distance = Math.abs(slideRect.right - viewportRight);
+
+                    if (distance < minDistance) {
+                        minDistance = distance;
+                        closestSlideElement = this;
+                    }
+                });
+
+                // STAGE 2: 索引计算，利用找到的 <li> 和 itemWidth 计算全局索引
+                if (closestSlideElement) {
+                    const style = $(closestSlideElement).attr('style');
+                    if (style && style.includes('translateX')) {
+                        const offsetMatch = style.match(/translateX\(([^p]+)px\)/);
+                        if (offsetMatch && offsetMatch[1]) {
+                            const totalOffset = parseFloat(offsetMatch[1]);
+                            // c. 执行最终的计算公式
+                            index = Math.round(totalOffset / itemWidth);
+                        }
+                    }
+                }
             }
-        });
-
+        }
         return index;
     }
 
