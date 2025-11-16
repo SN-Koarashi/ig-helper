@@ -2,7 +2,7 @@ import { state, checkInterval, USER_SETTING } from "./settings";
 import { logger, checkingScriptUpdate } from "./utils/general";
 import { onReadyMyDW } from "./functions/post";
 import { onReels } from "./functions/reel";
-import { onProfileAvatar } from "./functions/profile";
+import { onProfileAvatar, skipSharedWithYouDialog } from "./functions/profile";
 import { onHighlightsStory, onHighlightsStoryThumbnail } from "./functions/highlight";
 import { onStory } from "./functions/story";
 /*! ESLINT IMPORT END !*/
@@ -98,6 +98,25 @@ export var timer = setInterval(function () {
             logger('isProfile');
             setTimeout(() => {
                 onProfileAvatar(false);
+
+                // auto-skip for "X shared this with you" dialog
+                if (USER_SETTING.SKIP_SHARED_WITH_YOU_DIALOG) {
+                    let tries = 0;
+                    const skipTimer = setInterval(() => {
+                        tries += 1;
+                        // stop early if URL no longer has ?igsh (navigation changed)
+                        if (!window.location.search.includes("igsh")) {
+                            clearInterval(skipTimer);
+                            return;
+                        }
+                        skipSharedWithYouDialog();
+                        
+                        if (tries >= 20) {
+                            clearInterval(skipTimer);
+                        }
+                    }, 200);
+                }
+
             }, 150);
             state.pageLoaded = true;
         }
