@@ -52,7 +52,7 @@ export async function onProfileAvatar(isDownload) {
 
 /**
  * skipSharedWithYouDialog
- * @description Auto-skip the "X shared this with you" dialog for ?igsh= profile links.
+ * @description Auto-skip the "X shared this with you" dialog for ?igsh= links.
  *
  * @return {void}
  */
@@ -69,11 +69,6 @@ export function skipSharedWithYouDialog() {
 
     // only for shared links with the tracking param ?igsh=...
     if (!url.searchParams || !url.searchParams.has("igsh")) return;
-
-    // eslint-disable-next-line no-useless-escape
-    if (!location.pathname.match(/^(\/)([0-9A-Za-z\.\-_]+)\/?$/ig)) {
-        return;
-    }
 
     const $dialogs = $("div[role=\"dialog\"]");
     if (!$dialogs || !$dialogs.length) {

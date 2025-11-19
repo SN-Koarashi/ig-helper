@@ -30,6 +30,26 @@ export var timer = setInterval(function () {
         state.currentURL = location.href;
         state.GL_observer.disconnect();
 
+        // Auto-skip "X shared this with you" dialog on any ?igsh= link
+        if (USER_SETTING.SKIP_SHARED_WITH_YOU_DIALOG && window.location.search.includes("igsh")) {
+            let tries = 0;
+            const skipTimer = setInterval(() => {
+                tries += 1;
+
+                // stop early if URL no longer has ?igsh (navigation changed)
+                if (!window.location.search.includes("igsh")) {
+                    clearInterval(skipTimer);
+                    return;
+                }
+
+                skipSharedWithYouDialog();
+
+                if (tries >= 20) {
+                    clearInterval(skipTimer);
+                }
+            }, 200);
+        }
+
         if (location.pathname.startsWith("/p/") || location.pathname.match(/^\/(.*?)\/(p|reel)\//ig) || location.pathname.startsWith("/reel/")) {
             state.GL_dataCache.stories = {};
             state.GL_dataCache.highlights = {};
@@ -98,25 +118,6 @@ export var timer = setInterval(function () {
             logger('isProfile');
             setTimeout(() => {
                 onProfileAvatar(false);
-
-                // auto-skip for "X shared this with you" dialog
-                if (USER_SETTING.SKIP_SHARED_WITH_YOU_DIALOG) {
-                    let tries = 0;
-                    const skipTimer = setInterval(() => {
-                        tries += 1;
-                        // stop early if URL no longer has ?igsh (navigation changed)
-                        if (!window.location.search.includes("igsh")) {
-                            clearInterval(skipTimer);
-                            return;
-                        }
-                        skipSharedWithYouDialog();
-                        
-                        if (tries >= 20) {
-                            clearInterval(skipTimer);
-                        }
-                    }, 200);
-                }
-
             }, 150);
             state.pageLoaded = true;
         }
