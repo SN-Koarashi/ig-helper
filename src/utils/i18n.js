@@ -28,6 +28,8 @@ export function translateText() {
             "DEBUG": "Debug Window",
             "CLOSE": "Close",
             "ALL_CHECK": "Select All",
+            "ITEM_COUNT_SINGULAR": "%COUNT% item",
+            "ITEM_COUNT_PLURAL": "%COUNT% items",
             "BATCH_DOWNLOAD_SELECTED": "Download Selected Resources",
             "BATCH_DOWNLOAD_DIRECT": "Download All Resources",
             "IMG": "Image",
