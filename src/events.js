@@ -279,6 +279,16 @@ $(function () {
         if (e.which === 3 || e.which === 2) {
             if (location.href === 'https://www.instagram.com/' && USER_SETTING.REDIRECT_CLICK_USER_STORY_PICTURE) {
                 e.preventDefault();
+
+                $(this).find('img').each(function () {
+                    if (!$(this).data('contextmenu')) {
+                        $(this).data('contextmenu', true);
+                        $(this).on('contextmenu', function (e) {
+                            e.preventDefault();
+                        });
+                    }
+                });
+
                 if ($(this).find('canvas._aarh, canvas + span > img').length > 0) {
                     const targetUrl = 'https://www.instagram.com/' + $(this).children('div').last().text();
                     if (e.which === 2) {
