@@ -82,7 +82,7 @@ Install the generated main.js file in your userscript manager.
 
 #### Code Standards
 - Follow the existing code style
-- Use ESLint to ensure code quality: npx eslint `main.js`
+- Use ESLint to ensure code quality: `npx eslint main.js`
 - Document new functions and features
 
 ## Contributiner
