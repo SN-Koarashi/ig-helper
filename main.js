@@ -151,6 +151,7 @@
     /*******************************/
 
     // Main Timer
+    // eslint-disable-next-line no-unused-vars
     var timer = setInterval(function () {
         // page loading or unnecessary route
         if ($('div#splash-screen').length > 0 && !$('div#splash-screen').is(':hidden') ||
