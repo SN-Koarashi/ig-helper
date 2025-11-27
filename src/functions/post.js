@@ -727,28 +727,28 @@ export async function createMediaListDOM(postURL, selector, message) {
  * @return {Integer}
  */
 export function getVisibleNodeIndex($main) {
-    // 1. 优先使用最高效的规则：检查“返回”按钮是否存在。
+    // 1. Prioritize the most efficient rule: check if the "back" button exists.
     const hasBackButton = $main.find('button._afxv._al46._al47').length > 0;
 
-    // 2. 如果“返回”按钮不存在，则确定是第一张图，立即返回结果。
+    // 2. If the "back" button does not exist, it is determined to be the first image, and the result is returned immediately.
     if (!hasBackButton) {
         return 0;
     }
     var index = 0;
 
-    // 3. 如果代码执行到这里，说明不是第一张图，启用最终的几何算法。
+    // 3. If the code execution reaches here, it means it is not the first image, and the final geometric algorithm is enabled.
 
-    // a. 定位“视窗”元素：它是 ul._acay 的祖父级元素
+    // a. Locate the "viewport" element: it is the grandparent of ul._acay
     const $viewport = $main.find('ul._acay').parent().parent();
 
     if ($viewport.length > 0) {
         const viewportRect = $viewport.get(0).getBoundingClientRect();
-        // b. 获取 itemWidth：直接使用视窗的宽度，此方法通用性最强
+        // b. Get itemWidth: directly use the width of the viewport, this method is the most generalizable
         const itemWidth = viewportRect.width;
 
-        // 必须成功获取到宽度才能继续，防止除以0的错误
+        // Must successfully obtain the width to continue, to prevent division by zero errors
         if (itemWidth > 0) {
-            // STAGE 1: 视觉定位，找到当前显示的 <li> 元素
+            // STAGE 1: Visual positioning, find the currently displayed <li> element
             const viewportRight = viewportRect.right;
             let closestSlideElement = null;
             let minDistance = Infinity;
@@ -765,14 +765,14 @@ export function getVisibleNodeIndex($main) {
                 }
             });
 
-            // STAGE 2: 索引计算，利用找到的 <li> 和 itemWidth 计算全局索引
+            // STAGE 2: Index calculation, use the found <li> and itemWidth to calculate the global index
             if (closestSlideElement) {
                 const style = $(closestSlideElement).attr('style');
                 if (style && style.includes('translateX')) {
                     const offsetMatch = style.match(/translateX\(([^p]+)px\)/);
                     if (offsetMatch && offsetMatch[1]) {
                         const totalOffset = parseFloat(offsetMatch[1]);
-                        // c. 执行最终的计算公式
+                        // c. Execute the final calculation formula
                         index = Math.round(totalOffset / itemWidth);
                     }
                 }

@@ -64,6 +64,7 @@ export function skipSharedWithYouDialog() {
         url = new URL(window.location.href);
     }
     catch (e) {
+        logger("[skipSharedWithYouDialog] invalid URL", e);
         return;
     }
 
