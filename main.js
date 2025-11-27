@@ -5,7 +5,7 @@
 // @name:ja            IG助手
 // @name:ko            IG조수
 // @namespace          https://github.snkms.com/
-// @version            3.8.9.1
+// @version            3.9.1
 // @description        Downloading is possible for both photos and videos from posts, as well as for stories, reels or profile picture.
 // @description:zh-TW  一鍵下載對方 Instagram 貼文中的相片、影片甚至是他們的限時動態、連續短片及大頭貼圖片！
 // @description:zh-CN  一键下载对方 Instagram 帖子中的相片、视频甚至是他们的快拍、Reels及头像图片！
@@ -66,7 +66,8 @@
         'REDIRECT_CLICK_USER_STORY_PICTURE': false,
         'RENAME_PUBLISH_DATE': true,
         'SCROLL_BUTTON': true,
-        'SKIP_VIEW_STORY_CONFIRM': false
+        'SKIP_VIEW_STORY_CONFIRM': false,
+        'SKIP_SHARED_WITH_YOU_DIALOG': false,
     };
 
     const PARENT_CHILD_MAPPING = {
@@ -171,6 +172,26 @@
             state.firstStarted = true;
             state.currentURL = location.href;
             state.GL_observer.disconnect();
+
+            // Auto-skip "X shared this with you" dialog on any ?igsh= link
+            if (USER_SETTING.SKIP_SHARED_WITH_YOU_DIALOG && window.location.search.includes("igsh")) {
+                let tries = 0;
+                const skipTimer = setInterval(() => {
+                    tries += 1;
+
+                    // stop early if URL no longer has ?igsh (navigation changed)
+                    if (!window.location.search.includes("igsh")) {
+                        clearInterval(skipTimer);
+                        return;
+                    }
+
+                    skipSharedWithYouDialog();
+
+                    if (tries >= 20) {
+                        clearInterval(skipTimer);
+                    }
+                }, 200);
+            }
 
             if (location.pathname.startsWith("/p/") || location.pathname.match(/^\/(.*?)\/(p|reel)\//ig) || location.pathname.startsWith("/reel/")) {
                 state.GL_dataCache.stories = {};
@@ -1436,28 +1457,28 @@
      * @return {Integer}
      */
     function getVisibleNodeIndex($main) {
-        // 1. 优先使用最高效的规则：检查“返回”按钮是否存在。
+        // 1. Prioritize the most efficient rule: check if the "back" button exists.
         const hasBackButton = $main.find('button._afxv._al46._al47').length > 0;
 
-        // 2. 如果“返回”按钮不存在，则确定是第一张图，立即返回结果。
+        // 2. If the "back" button does not exist, it is determined to be the first image, and the result is returned immediately.
         if (!hasBackButton) {
             return 0;
         }
         var index = 0;
 
-        // 3. 如果代码执行到这里，说明不是第一张图，启用最终的几何算法。
+        // 3. If the code execution reaches here, it means it is not the first image, and the final geometric algorithm is enabled.
 
-        // a. 定位“视窗”元素：它是 ul._acay 的祖父级元素
+        // a. Locate the "viewport" element: it is the grandparent of ul._acay
         const $viewport = $main.find('ul._acay').parent().parent();
 
         if ($viewport.length > 0) {
             const viewportRect = $viewport.get(0).getBoundingClientRect();
-            // b. 获取 itemWidth：直接使用视窗的宽度，此方法通用性最强
+            // b. Get itemWidth: directly use the width of the viewport, this method is the most generalizable
             const itemWidth = viewportRect.width;
 
-            // 必须成功获取到宽度才能继续，防止除以0的错误
+            // Must successfully obtain the width to continue, to prevent division by zero errors
             if (itemWidth > 0) {
-                // STAGE 1: 视觉定位，找到当前显示的 <li> 元素
+                // STAGE 1: Visual positioning, find the currently displayed <li> element
                 const viewportRight = viewportRect.right;
                 let closestSlideElement = null;
                 let minDistance = Infinity;
@@ -1474,14 +1495,14 @@
                     }
                 });
 
-                // STAGE 2: 索引计算，利用找到的 <li> 和 itemWidth 计算全局索引
+                // STAGE 2: Index calculation, use the found <li> and itemWidth to calculate the global index
                 if (closestSlideElement) {
                     const style = $(closestSlideElement).attr('style');
                     if (style && style.includes('translateX')) {
                         const offsetMatch = style.match(/translateX\(([^p]+)px\)/);
                         if (offsetMatch && offsetMatch[1]) {
                             const totalOffset = parseFloat(offsetMatch[1]);
-                            // c. 执行最终的计算公式
+                            // c. Execute the final calculation formula
                             index = Math.round(totalOffset / itemWidth);
                         }
                     }
@@ -1527,13 +1548,114 @@
                         return;
                     }
 
-                    $('header > *[class]:first-child > *[class] img[alt][draggable]').parent().parent().append(`<div data-ih-locale-title="DW" title="${_i18n("DW")}" class="IG_DWPROFILE">${SVG.DOWNLOAD}</div>`);
-                    $('header > *[class]:first-child > *[class] img[alt][draggable]').parent().parent().css('position', 'relative');
-                    $('header > *[class]:first-child > *[class] img[alt]:not([draggable])').parent().parent().parent().append(`<div data-ih-locale-title="DW" title="${_i18n("DW")}" class="IG_DWPROFILE">${SVG.DOWNLOAD}</div>`);
-                    $('header > *[class]:first-child > *[class] img[alt]:not([draggable])').parent().parent().parent().css('position', 'relative');
+                    $('header > *[class]:first-child > *[class]:first-child img[alt][draggable]').parent().parent().append(`<div data-ih-locale-title="DW" title="${_i18n("DW")}" class="IG_DWPROFILE">${SVG.DOWNLOAD}</div>`);
+                    $('header > *[class]:first-child > *[class]:first-child img[alt][draggable]').parent().parent().css('position', 'relative');
+                    $('header > *[class]:first-child > *[class]:first-child img[alt]:not([draggable])').parent().parent().parent().append(`<div data-ih-locale-title="DW" title="${_i18n("DW")}" class="IG_DWPROFILE">${SVG.DOWNLOAD}</div>`);
+                    $('header > *[class]:first-child > *[class]:first-child img[alt]:not([draggable])').parent().parent().parent().css('position', 'relative');
                 }, 150);
             }
         }
+    }
+
+
+    /**
+     * skipSharedWithYouDialog
+     * @description Auto-skip the "X shared this with you" dialog for ?igsh= links.
+     *
+     * @return {void}
+     */
+    function skipSharedWithYouDialog() {
+        if (!USER_SETTING.SKIP_SHARED_WITH_YOU_DIALOG) return;
+
+        let url;
+        try {
+            url = new URL(window.location.href);
+        }
+        catch (e) {
+            logger("[skipSharedWithYouDialog] invalid URL", e);
+            return;
+        }
+
+        // only for shared links with the tracking param ?igsh=...
+        if (!url.searchParams || !url.searchParams.has("igsh")) return;
+
+        const $dialogs = $("div[role=\"dialog\"]");
+        if (!$dialogs || !$dialogs.length) {
+            return;
+        }
+
+        const profileUsername = location.pathname
+            .split("/")
+            .filter(s => s.length > 0)
+            .at(0)?.toLowerCase();
+
+        $dialogs.each(function () {
+            const $dialog = $(this);
+
+            if (!$dialog.is(":visible")) {
+                return;
+            }
+
+            const $headers = $dialog.find("h2");
+            if (!$headers.length) {
+                return;
+            }
+
+            // Heuristic: header text that looks like "profile_name shared this with you"
+            const isSharedHeader = $headers.filter(function () {
+                const rawText = (this.textContent || "").trim().toLowerCase();
+                if (!rawText) return false;
+
+                // Typical case
+                if (rawText.includes("shared this with you")) return true;
+                if (rawText.includes("shared with you")) return true;
+
+                // Fallback: contains username + "shared"
+                if (profileUsername &&
+                    rawText.includes(profileUsername) &&
+                    rawText.includes("shared")) {
+                    return true;
+                }
+
+                return false;
+            }).length > 0;
+
+            if (!isSharedHeader) {
+                return;
+            }
+
+            const $buttons = $dialog.find("div[role=\"button\"]");
+            if (!$buttons.length) {
+                logger("[skipSharedWithYouDialog] dialog has no buttons");
+                return;
+            }
+
+            let $notNow = null;
+
+            // Prefer a button whose text is exactly "Not now" (case-insensitive)
+            $buttons.each(function () {
+                const text = (this.textContent || "").trim().toLowerCase();
+                if (!text) return;
+
+                if (text === "not now") {
+                    $notNow = $(this);
+                    return false;
+                }
+            });
+
+            // Fallback: if there are exactly 2 buttons, assume the second is "Not now"
+            if ((!$notNow || !$notNow.length) && $buttons.length === 2) {
+                $notNow = $buttons.last();
+            }
+
+            if (!$notNow || !$notNow.length) {
+                logger("[skipSharedWithYouDialog] could not find \"Not now\" button");
+                return;
+            }
+
+            logger("[skipSharedWithYouDialog] clicking \"Not now\" button");
+            $notNow.trigger("click");
+        });
     }
 
     /**
@@ -1797,6 +1919,18 @@
                     $(this).after(`<div data-ih-locale-title="VIDEO_THUMBNAIL" title="${_i18n("VIDEO_THUMBNAIL")}" class="videoThumbnail">${SVG.THUMBNAIL}</div>`);
                 }
             });
+
+            // Update "Select All" label with total items count
+            const items = obj.data.reels_media[0].items;
+            const total = items.length;
+            const $countSpan = $('.IG_POPUP_DIG .IG_POPUP_DIG_TITLE .checkbox .item-count');
+
+            if ($countSpan.length) {
+                const key = total === 1 ? 'ITEM_COUNT_SINGULAR' : 'ITEM_COUNT_PLURAL';
+                const template = _i18n(key);
+                const label = template.replace('%COUNT%', total);
+                $countSpan.text(` (${label})`);
+            }
 
             updateLoadingBar(false);
         }
@@ -2980,7 +3114,7 @@
             $('.IG_POPUP_DIG .IG_POPUP_DIG_MAIN .IG_POPUP_DIG_TITLE').append(`<div style="text-align: center;" id="button_group"></div>`);
             $('.IG_POPUP_DIG .IG_POPUP_DIG_MAIN .IG_POPUP_DIG_TITLE > div#button_group').append(`<button id="batch_download_selected" data-ih-locale="BATCH_DOWNLOAD_SELECTED">${_i18n('BATCH_DOWNLOAD_SELECTED')}</button>`);
             $('.IG_POPUP_DIG .IG_POPUP_DIG_MAIN .IG_POPUP_DIG_TITLE > div#button_group').append(`<button id="batch_download_direct" data-ih-locale="BATCH_DOWNLOAD_DIRECT">${_i18n('BATCH_DOWNLOAD_DIRECT')}</button>`);
-            $('.IG_POPUP_DIG .IG_POPUP_DIG_MAIN .IG_POPUP_DIG_TITLE').append(`<label class="checkbox"><input value="yes" type="checkbox" /><span data-ih-locale="ALL_CHECK">${_i18n('ALL_CHECK')}</span></label>`);
+            $('.IG_POPUP_DIG .IG_POPUP_DIG_MAIN .IG_POPUP_DIG_TITLE').append(`<label class="checkbox"><input value="yes" type="checkbox" /><span data-ih-locale="ALL_CHECK">${_i18n('ALL_CHECK')}</span><span class="item-count"></span></label>`);
         }
     }
 
@@ -4084,6 +4218,8 @@
                 "DEBUG": "Debug Window",
                 "CLOSE": "Close",
                 "ALL_CHECK": "Select All",
+                "ITEM_COUNT_SINGULAR": "%COUNT% item",
+                "ITEM_COUNT_PLURAL": "%COUNT% items",
                 "BATCH_DOWNLOAD_SELECTED": "Download Selected Resources",
                 "BATCH_DOWNLOAD_DIRECT": "Download All Resources",
                 "IMG": "Image",
@@ -4114,6 +4250,7 @@
                 "FALLBACK_TO_BLOB_FETCH_IF_MEDIA_API_THROTTLED": "Use Alternative Methods to Download When the Media API is Not Accessible",
                 "NEW_TAB_ALWAYS_FORCE_MEDIA_IN_POST": "Always Use Media API for 'Open in New Tab' in Posts",
                 "SKIP_VIEW_STORY_CONFIRM": "Skip the Confirmation Page for Viewing a Story/Highlight",
+                "SKIP_SHARED_WITH_YOU_DIALOG": "Skip \"shared this with you\" dialog on shared profile links",
                 "CAPTURE_IMAGE_VIA_MEDIA_CACHE": "Capture Image Resource Using Media Cache",
                 "AUTO_RENAME_INTRO": "Auto rename file to custom format:\nCustom Format List: \n%USERNAME% - Username\n%SOURCE_TYPE% - Download Source\n%SHORTCODE% - Post Shortcode\n%YEAR% - Year when downloaded/published\n%2-YEAR% - Year (last two digits) when downloaded/published\n%MONTH% - Month when downloaded/published\n%DAY% - Day when downloaded/published\n%HOUR% - Hour when downloaded/published\n%MINUTE% - Minute when downloaded/published\n%SECOND% - Second when downloaded/published\n%ORIGINAL_NAME% - Original name of downloaded file\n%ORIGINAL_NAME_FIRST% - Original name of downloaded file (first part of name)\n\nIf set to false, the file name will remain unchanged.\nExample: instagram_321565527_679025940443063_4318007696887450953_n.jpg",
                 "RENAME_PUBLISH_DATE_INTRO": "Sets the timestamp in the file rename format to the resource publish date (browser time zone).\n\nThis feature only works when [Automatically Rename Files] is set to TRUE.",
@@ -4131,6 +4268,7 @@
                 "NEW_TAB_ALWAYS_FORCE_MEDIA_IN_POST_INTRO": "The [Open in New Tab] button in posts will always use the Media API to obtain high-resolution resources.",
                 "CHECK_FOR_UPDATE_INTRO": "Check for updates when the script is triggered (check every 300 seconds).\nUpdate notifications will be sent as desktop notifications through the browser.",
                 "SKIP_VIEW_STORY_CONFIRM_INTRO": "Automatically skip when confirmation page is shown in story or highlight.",
+                "SKIP_SHARED_WITH_YOU_DIALOG_INTRO": "Automatically click \"Not now\" on the \"X shared this with you\" dialog when opening any ?igsh= links.",
                 "MODIFY_RESOURCE_EXIF_INTRO": "Modify the EXIF properties of the image resource to place the post link in it.",
                 "DIRECT_DOWNLOAD_STORY_INTRO": "When you click Download All Resources, all stories/highlights are downloaded directly, without showing the image selection dialog.",
                 "CAPTURE_IMAGE_VIA_MEDIA_CACHE_INTRO": "Use a watcher to capture any high-quality image URLs in the DOM tree into the script’s storage so that they can be extracted when available and upon user input.",
