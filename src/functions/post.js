@@ -139,10 +139,16 @@ export function initPostVideoFunction($mainElement) {
                     }
                 });
 
+                if (USER_SETTING.SET_INSTAGRAM_LAYOUT_AS_DEFAULT) {
+                    $(this).css('z-index', '-1');
+                }
+                else {
+                    $(this).css('z-index', '2');
+                    $(this).attr('controls', true);
+                }
+
                 $(this).css('position', 'absolute');
-                $(this).css('z-index', '2');
                 $(this).attr('data-controls', true);
-                $(this).attr('controls', true);
             }
         });
     }

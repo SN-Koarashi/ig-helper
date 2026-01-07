@@ -501,10 +501,18 @@ $(function () {
                                             }
                                         });
 
+
+
+                                        if (USER_SETTING.SET_INSTAGRAM_LAYOUT_AS_DEFAULT) {
+                                            $video.css('z-index', '-1');
+                                        }
+                                        else {
+                                            $video.css('z-index', '2');
+                                            $video.attr('controls', true);
+                                        }
+
                                         $video.css('position', 'absolute');
-                                        $video.css('z-index', '2');
                                         $video.attr('data-controls', true);
-                                        $video.attr('controls', true);
                                     }
                                 }
                                 else {

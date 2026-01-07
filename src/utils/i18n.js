@@ -82,6 +82,8 @@ export function translateText() {
             "MODIFY_RESOURCE_EXIF_INTRO": "Modify the EXIF properties of the image resource to place the post link in it.",
             "DIRECT_DOWNLOAD_STORY_INTRO": "When you click Download All Resources, all stories/highlights are downloaded directly, without showing the image selection dialog.",
             "CAPTURE_IMAGE_VIA_MEDIA_CACHE_INTRO": "Use a watcher to capture any high-quality image URLs in the DOM tree into the script’s storage so that they can be extracted when available and upon user input.",
+            "SET_INSTAGRAM_LAYOUT_AS_DEFAULT": "Set Instagram Layout as Default",
+            "SET_INSTAGRAM_LAYOUT_AS_DEFAULT_INTRO": "Set the Instagram web layout as the default layout instead of the HTML5 player layout.",
         }
     };
 
