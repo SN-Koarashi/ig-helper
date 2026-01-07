@@ -226,7 +226,10 @@ export function createSaveFileElement(downloadLink, object, username, sourceType
     const minute = date.getMinutes().toString().padStart(2, '0');
     const second = date.getSeconds().toString().padStart(2, '0');
 
-    var filename = state.fileRenameFormat.toUpperCase();
+    var filename = state.fileRenameFormat.replace(/%([^%]+)%/g, (match, content) => {
+        return `%${content.toUpperCase()}%`;
+    });
+
     var format_shortcode = shortcode ?? "";
     var replacements = {
         '%USERNAME%': username,
