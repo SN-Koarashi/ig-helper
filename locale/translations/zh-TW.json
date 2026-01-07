@@ -47,6 +47,8 @@
     "NEW_TAB_ALWAYS_FORCE_MEDIA_IN_POST": "在貼文中的「在新分頁中開啟」永遠使用 Media API",
     "SKIP_VIEW_STORY_CONFIRM": "自動跳過在限時動態/精選動態中顯示的確認頁面",
     "CAPTURE_IMAGE_VIA_MEDIA_CACHE": "使用 Media Cache 捕獲圖像資源",
+    "SKIP_SHARED_WITH_YOU_DIALOG": "自動跳過共享個人資料連結上的「已與您分享此內容」對話框",
+    "SET_INSTAGRAM_LAYOUT_AS_DEFAULT": "將 Instagram 佈局設定為預設佈局",
     "AUTO_RENAME_INTRO": "自動將檔案重新命名為自訂格式\n自訂格式清單:\n%USERNAME% - 使用者名稱\n%SOURCE_TYPE% - 下載來源\n%SHORTCODE% - 貼文 Shortcode\n%YEAR% - 下載/發布年份\n%2-YEAR% - 下載/發布年份（後兩位數）\n%MONTH% - 下載/發佈時的月份\n%DAY% - 下載/發佈時的日期\n%HOUR% - 下載/發佈時的小時\n%MINUTE% - 下載/發佈時的分鐘\n%SECOND% - 下載/發佈時的秒\n%ORIGINAL_NAME% - 下載檔案的原始名稱\n%ORIGINAL_NAME_FIRST% - 下載檔案的原始名稱(第一部分)\n\n若設為 false，則檔案名稱將保持原始樣貌。 \n例如：instagram_321565527_679025940443063_4318007696887450953_n.jpg",
     "RENAME_PUBLISH_DATE_INTRO": "將檔案重新命名格式中的時間戳設定為資源發佈日期 (瀏覽器時區)\n\n此功能僅在[自動重新命名檔案]設定為 TRUE 時有效。",
     "RENAME_LOCATE_DATE_INTRO": "修改重新命名檔案時間戳日期格式為瀏覽器當地時間，並且格式化為您所選擇的地區日期格式。\n\n此功能僅在[自動重新命名檔案]設定為 TRUE 時有效。",
@@ -63,7 +65,9 @@
     "NEW_TAB_ALWAYS_FORCE_MEDIA_IN_POST_INTRO": "在貼文中的「在新分頁中開啟」功能將一律使用 Media API 取得高解析度資源",
     "CHECK_FOR_UPDATE_INTRO": "腳本觸發時檢查更新 (每300秒執行一次檢查)。\n更新通知將透過瀏覽器傳送桌面通知。",
     "SKIP_VIEW_STORY_CONFIRM_INTRO": "在檢視限時動態/精選動態時，若有確認頁面時將自動跳過",
+    "SKIP_SHARED_WITH_YOU_DIALOG_INTRO": "開啟任何 ?igsh= 連結時，在「X 與您分享此內容」對話方塊中自動點選「現在不要」。",
     "MODIFY_RESOURCE_EXIF_INTRO": "修改圖片資源的EXIF屬性，以便將貼文連結放置於其中。",
     "DIRECT_DOWNLOAD_STORY_INTRO": "當你點擊「下載所有資源」時，所有限時動態及精選動態會直接下載，不會顯示資源選擇視窗。",
-    "CAPTURE_IMAGE_VIA_MEDIA_CACHE_INTRO": "使用觀察者捕獲DOM樹中的任何高品質圖像網址到腳本儲存空間中，以便在可用時以及使用者輸入時進行擷取。"
+    "CAPTURE_IMAGE_VIA_MEDIA_CACHE_INTRO": "使用觀察者捕獲DOM樹中的任何高品質圖像網址到腳本儲存空間中，以便在可用時以及使用者輸入時進行擷取。",
+    "SET_INSTAGRAM_LAYOUT_AS_DEFAULT_INTRO": "將 Instagram 網頁佈局設定為預設佈局，而不是 HTML5 播放器佈局。"
 }

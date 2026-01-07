@@ -47,6 +47,8 @@
     "NEW_TAB_ALWAYS_FORCE_MEDIA_IN_POST": "在帖子中的「在新选项卡中打开」永远使用 Media API",
     "SKIP_VIEW_STORY_CONFIRM": "自动跳过在快拍/快拍精选中显示的确认页面",
     "CAPTURE_IMAGE_VIA_MEDIA_CACHE": "使用 Media Cache 捕获图像资源",
+    "SKIP_SHARED_WITH_YOU_DIALOG": "跳过共享个人资料链接上的“已与您共享此内容”对话框",
+    "SET_INSTAGRAM_LAYOUT_AS_DEFAULT": "将 Instagram 布局设置为默认布局",
     "AUTO_RENAME_INTRO": "自动将文件重命名为自定义格式\n自定义格式列表：\n%USERNAME% - 用户名\n%SOURCE_TYPE% - 下载源\n%SHORTCODE% - 帖子短码\n%YEAR% - 下载/发布的年份\n%2-YEAR% - 下载/发布的年份（后两位数）\n%MONTH% - 下载/发布的月份\n%DAY% - 下载/发布的日期\n%HOUR% - 下载/发布的小时\n%MINUTE% - 下载/发布的分钟\n%SECOND% - 下载/发布的秒\n%ORIGINAL_NAME% - 下载文件的原始名称\n%ORIGINAL_NAME_FIRST% - 下载文件的原始名称(第一部分)\n\n若设为false，则文件名将保持原样。 \n例如：instagram_321565527_679025940443063_4318007696887450953_n.jpg",
     "RENAME_PUBLISH_DATE_INTRO": "将文件重命名格式中的时间戳设置为资源发布日期 (浏览器时区)\n\n此功能仅在[自动重命名文件]设置为 TRUE 时有效。",
     "RENAME_LOCATE_DATE_INTRO": "修改重命名档案时间戳日期格式为浏览器当地时间，并且格式化为您所选择的地区日期格式。\n\n此功能仅在[自动重命名文件]设置为 TRUE 时有效。",
@@ -63,7 +65,9 @@
     "NEW_TAB_ALWAYS_FORCE_MEDIA_IN_POST_INTRO": "在帖子中的「在新选项卡中打开」功能将一律使用 Media API 取得高分辨率资源",
     "CHECK_FOR_UPDATE_INTRO": "脚本触发时检查更新 (每300秒执行一次检查)。\n更新通知将透过浏览器传送桌面通知。",
     "SKIP_VIEW_STORY_CONFIRM_INTRO": "在查看快拍/快拍精选时，如果有确认页面时会自动跳过。",
+    "SKIP_SHARED_WITH_YOU_DIALOG_INTRO": "打开任何 ?igsh= 链接时，在“X 与您分享此内容”对话框中自动点击“暂時不要”。",
     "MODIFY_RESOURCE_EXIF_INTRO": "修改图片资源的EXIF属性，以便将帖子链结放置于其中。",
     "DIRECT_DOWNLOAD_STORY_INTRO": "当你点击“下载所有资源”时，所有快拍/精选集会直接下载，不会显示资源选择对话框。",
-    "CAPTURE_IMAGE_VIA_MEDIA_CACHE_INTRO": "使用观察者捕获DOM树中的任何高质量图像网址到脚本储存中，以便在可用时和用户输入时提取。"
+    "CAPTURE_IMAGE_VIA_MEDIA_CACHE_INTRO": "使用观察者捕获DOM树中的任何高质量图像网址到脚本储存中，以便在可用时和用户输入时提取。",
+    "SET_INSTAGRAM_LAYOUT_AS_DEFAULT_INTRO": "将 Instagram 网页布局设置为默认布局，而不是 HTML5 播放器布局。"
 }
