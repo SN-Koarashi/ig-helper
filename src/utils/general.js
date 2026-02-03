@@ -1108,3 +1108,38 @@ export function removeImageViewer() {
     $('#imageViewer').remove();
     $(document).off('mousemove.igHelper');
 }
+
+/**
+ * updatePopupSelectionSummary
+ * @description Update selection summary in popup dialog.
+ *
+ * @param {string|JQuery} root
+ * @return {void}
+ */
+export function updatePopupSelectionSummary(root = '.IG_POPUP_DIG') {
+    const $root = (typeof root === 'string') ? $(root) : root;
+    if (!$root || $root.length === 0) return;
+
+    const $titleCheckbox = $root.find('.IG_POPUP_DIG_TITLE .checkbox');
+    const $countSpan = $titleCheckbox.find('.item-count');
+    if ($titleCheckbox.length === 0 || $countSpan.length === 0) return;
+
+    const $items = $root.find('.IG_POPUP_DIG_BODY .inner_box');
+    const total = $items.length;
+    const selected = $items.filter(':checked').length;
+
+    $titleCheckbox.find('input').prop('checked', total > 0 && selected === total);
+
+    const formatCount = (count, singularKey, pluralKey) => {
+        const key = count === 1 ? singularKey : pluralKey;
+        const template = _i18n(key);
+        return (typeof template === 'string')
+            ? template.replace('%COUNT%', count)
+            : String(count);
+    };
+
+    const totalLabel = formatCount(total, 'ITEM_COUNT_SINGULAR', 'ITEM_COUNT_PLURAL');
+    const selectedLabel = formatCount(selected, 'SELECTED_COUNT_SINGULAR', 'SELECTED_COUNT_PLURAL');
+
+    $countSpan.text(` (${selectedLabel} / ${totalLabel})`);
+}

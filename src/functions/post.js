@@ -2,7 +2,8 @@ import { USER_SETTING, SVG, state } from "../settings";
 import {
     updateLoadingBar, openNewTab, logger,
     toggleVolumeSilder, IG_createDM, IG_setDM, triggerLinkElement,
-    openImageViewer
+    openImageViewer,
+    updatePopupSelectionSummary
 } from "../utils/general";
 import { getBlobMedia } from "../utils/api";
 import { _i18n } from "../utils/i18n";
@@ -718,6 +719,7 @@ export async function createMediaListDOM(postURL, selector, message) {
                 $(this).after(`<div data-ih-locale-title="VIDEO_THUMBNAIL" title="${_i18n("VIDEO_THUMBNAIL")}" class="videoThumbnail">${SVG.THUMBNAIL}</div>`);
             }
         });
+        updatePopupSelectionSummary();
     }
     catch (err) {
         logger('createMediaListDOM', err);
