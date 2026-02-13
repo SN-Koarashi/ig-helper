@@ -744,8 +744,10 @@ export function getVisibleNodeIndex($main) {
 
     // 3. If the code execution reaches here, it means it is not the first image, and the final geometric algorithm is enabled.
 
-    // a. Locate the "viewport" element: it is the grandparent of ul._acay
-    const $viewport = $main.find('ul._acay').parent().parent();
+    // a. Locate the "viewport" element: it is the grandparent of ul
+    // "_acay" class of <ul> has been removed by Instagram; [class] added to <ul> to get much lesser matches in page
+    // The parent of the parent of ul[class] always has the attribute "role"
+    const $viewport = $main.find('ul[class]').parent().parent('[role]');
 
     if ($viewport.length > 0) {
         const viewportRect = $viewport.get(0).getBoundingClientRect();
@@ -755,11 +757,12 @@ export function getVisibleNodeIndex($main) {
         // Must successfully obtain the width to continue, to prevent division by zero errors
         if (itemWidth > 0) {
             // STAGE 1: Visual positioning, find the currently displayed <li> element
+            // "_acaz" class of <li> has been removed by Instagram; [class] added to <li> to get much lesser matches in page
             const viewportRight = viewportRect.right;
             let closestSlideElement = null;
             let minDistance = Infinity;
 
-            $main.find('li._acaz').each(function () {
+            $main.find('li[class]').each(function () {
                 if (this.getBoundingClientRect().width === 0) return;
 
                 const slideRect = this.getBoundingClientRect();
