@@ -1452,6 +1452,7 @@
                     $(this).after(`<div data-ih-locale-title="VIDEO_THUMBNAIL" title="${_i18n("VIDEO_THUMBNAIL")}" class="videoThumbnail">${SVG.THUMBNAIL}</div>`);
                 }
             });
+            updatePopupSelectionSummary();
         }
         catch (err) {
             logger('createMediaListDOM', err);
@@ -1478,8 +1479,10 @@
 
         // 3. If the code execution reaches here, it means it is not the first image, and the final geometric algorithm is enabled.
 
-        // a. Locate the "viewport" element: it is the grandparent of ul._acay
-        const $viewport = $main.find('ul._acay').parent().parent();
+        // a. Locate the "viewport" element: it is the grandparent of ul
+        // "_acay" class of <ul> has been removed by Instagram; [class] added to <ul> to get much lesser matches in page
+        // The parent of the parent of ul[class] always has the attribute "role"
+        const $viewport = $main.find('ul[class]').parent().parent('[role]');
 
         if ($viewport.length > 0) {
             const viewportRect = $viewport.get(0).getBoundingClientRect();
@@ -1489,11 +1492,12 @@
             // Must successfully obtain the width to continue, to prevent division by zero errors
             if (itemWidth > 0) {
                 // STAGE 1: Visual positioning, find the currently displayed <li> element
+                // "_acaz" class of <li> has been removed by Instagram; [class] added to <li> to get much lesser matches in page
                 const viewportRight = viewportRect.right;
                 let closestSlideElement = null;
                 let minDistance = Infinity;
 
-                $main.find('li._acaz').each(function () {
+                $main.find('li[class]').each(function () {
                     if (this.getBoundingClientRect().width === 0) return;
 
                     const slideRect = this.getBoundingClientRect();
@@ -1936,18 +1940,7 @@
                 }
             });
 
-            // Update "Select All" label with total items count
-            const items = obj.data.reels_media[0].items;
-            const total = items.length;
-            const $countSpan = $('.IG_POPUP_DIG .IG_POPUP_DIG_TITLE .checkbox .item-count');
-
-            if ($countSpan.length) {
-                const key = total === 1 ? 'ITEM_COUNT_SINGULAR' : 'ITEM_COUNT_PLURAL';
-                const template = _i18n(key);
-                const label = template.replace('%COUNT%', total);
-                $countSpan.text(` (${label})`);
-            }
-
+            updatePopupSelectionSummary();
             updateLoadingBar(false);
         }
         catch (err) {
@@ -4107,6 +4100,41 @@
         $(document).off('mousemove.igHelper');
     }
 
+    /**
+     * updatePopupSelectionSummary
+     * @description Update selection summary in popup dialog.
+     *
+     * @param {string|JQuery} root
+     * @return {void}
+     */
+    function updatePopupSelectionSummary(root = '.IG_POPUP_DIG') {
+        const $root = (typeof root === 'string') ? $(root) : root;
+        if (!$root || $root.length === 0) return;
+
+        const $titleCheckbox = $root.find('.IG_POPUP_DIG_TITLE .checkbox');
+        const $countSpan = $titleCheckbox.find('.item-count');
+        if ($titleCheckbox.length === 0 || $countSpan.length === 0) return;
+
+        const $items = $root.find('.IG_POPUP_DIG_BODY .inner_box');
+        const total = $items.length;
+        const selected = $items.filter(':checked').length;
+
+        $titleCheckbox.find('input').prop('checked', total > 0 && selected === total);
+
+        const formatCount = (count, singularKey, pluralKey) => {
+            const key = count === 1 ? singularKey : pluralKey;
+            const template = _i18n(key);
+            return (typeof template === 'string')
+                ? template.replace('%COUNT%', count)
+                : String(count);
+        };
+
+        const totalLabel = formatCount(total, 'ITEM_COUNT_SINGULAR', 'ITEM_COUNT_PLURAL');
+        const selectedLabel = formatCount(selected, 'SELECTED_COUNT_SINGULAR', 'SELECTED_COUNT_PLURAL');
+
+        $countSpan.text(` (${selectedLabel} / ${totalLabel})`);
+    }
+
     let mediaCacheDirty = false;
     let mediaCacheSaveTimer = null;
 
@@ -4239,6 +4267,8 @@
                 "ALL_CHECK": "Select All",
                 "ITEM_COUNT_SINGULAR": "%COUNT% item",
                 "ITEM_COUNT_PLURAL": "%COUNT% items",
+                "SELECTED_COUNT_SINGULAR": "%COUNT% selected",
+                "SELECTED_COUNT_PLURAL": "%COUNT% selected",
                 "BATCH_DOWNLOAD_SELECTED": "Download Selected Resources",
                 "BATCH_DOWNLOAD_DIRECT": "Download All Resources",
                 "IMG": "Image",
@@ -4663,18 +4693,15 @@
         });
 
         $('body').on('change', '.IG_POPUP_DIG_TITLE .checkbox', function () {
-            var isChecked = $(this).find('input').prop('checked');
+            const isChecked = $(this).find('input').prop('checked');
             $('.IG_POPUP_DIG_BODY .inner_box').each(function () {
                 $(this).prop('checked', isChecked);
             });
+            updatePopupSelectionSummary();
         });
 
         $('body').on('change', '.IG_POPUP_DIG_BODY .inner_box', function () {
-            var checked = $('.IG_POPUP_DIG_BODY .inner_box:checked').length;
-            var total = $('.IG_POPUP_DIG_BODY .inner_box').length;
-
-
-            $('.IG_POPUP_DIG_TITLE .checkbox').find('input').prop('checked', checked == total);
+            updatePopupSelectionSummary();
         });
 
         $('body').on('click', '.IG_POPUP_DIG_TITLE #batch_download_selected', function () {
