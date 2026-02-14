@@ -3,7 +3,8 @@ import {
     updateLoadingBar, setDownloadProgress,
     saveFiles, getStoryProgress, openNewTab, logger,
     getStoryId,
-    IG_createDM
+    IG_createDM,
+    updatePopupSelectionSummary
 } from "../utils/general";
 import { getUserId, getStories, getMediaInfo } from "../utils/api";
 import { _i18n } from "../utils/i18n";
@@ -54,18 +55,7 @@ export async function createStoryListDOM(obj, type) {
             }
         });
 
-        // Update "Select All" label with total items count
-        const items = obj.data.reels_media[0].items;
-        const total = items.length;
-        const $countSpan = $('.IG_POPUP_DIG .IG_POPUP_DIG_TITLE .checkbox .item-count');
-
-        if ($countSpan.length) {
-            const key = total === 1 ? 'ITEM_COUNT_SINGULAR' : 'ITEM_COUNT_PLURAL';
-            const template = _i18n(key);
-            const label = template.replace('%COUNT%', total);
-            $countSpan.text(` (${label})`);
-        }
-
+        updatePopupSelectionSummary();
         updateLoadingBar(false);
     }
     catch (err) {

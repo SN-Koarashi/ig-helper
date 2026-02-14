@@ -1,7 +1,7 @@
 import { state, USER_SETTING } from "./settings";
 import {
     showSetting, showDebugDOM, reloadScript,
-    triggerLinkElement, openNewTab, saveFiles, logger, toggleVolumeSilder
+    triggerLinkElement, openNewTab, saveFiles, logger, toggleVolumeSilder, updatePopupSelectionSummary
 } from "./utils/general";
 import { onStory, onStoryAll, onStoryThumbnail } from "./functions/story";
 import { onProfileAvatar } from "./functions/profile";
@@ -303,18 +303,15 @@ $(function () {
     });
 
     $('body').on('change', '.IG_POPUP_DIG_TITLE .checkbox', function () {
-        var isChecked = $(this).find('input').prop('checked');
+        const isChecked = $(this).find('input').prop('checked');
         $('.IG_POPUP_DIG_BODY .inner_box').each(function () {
             $(this).prop('checked', isChecked);
         });
+        updatePopupSelectionSummary();
     });
 
     $('body').on('change', '.IG_POPUP_DIG_BODY .inner_box', function () {
-        var checked = $('.IG_POPUP_DIG_BODY .inner_box:checked').length;
-        var total = $('.IG_POPUP_DIG_BODY .inner_box').length;
-
-
-        $('.IG_POPUP_DIG_TITLE .checkbox').find('input').prop('checked', checked == total);
+        updatePopupSelectionSummary();
     });
 
     $('body').on('click', '.IG_POPUP_DIG_TITLE #batch_download_selected', function () {
