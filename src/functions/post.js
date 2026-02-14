@@ -181,7 +181,7 @@ export function createDownloadButton() {
 
                 const $mainElement = $(this);
                 const tagName = this.tagName;
-                const resourceCountSelector = '._acay ._acaz';
+                const resourceCountSelector = '._acay ._acaz, ul[class] li[class][tabindex][style]';
                 var displayResourceURL;
 
                 // not loop each in single top post
