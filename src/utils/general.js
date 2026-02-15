@@ -1143,3 +1143,42 @@ export function updatePopupSelectionSummary(root = '.IG_POPUP_DIG') {
 
     $countSpan.text(` (${selectedLabel} / ${totalLabel})`);
 }
+
+export function getXmlMediaDashManifest(manifest) {
+    let parser = new DOMParser();
+    let xmlDoc = parser.parseFromString(manifest, 'application/xml');
+
+    let adaptationSets = xmlDoc.getElementsByTagName('AdaptationSet')
+
+    let video = null;
+    let audio = null;
+
+    Array.from(adaptationSets).forEach(element => {
+        if (element.getAttribute('contentType') === 'video') {
+            video = element;
+        } else if (element.getAttribute('contentType') === 'audio') {
+            audio = element;
+        }
+    });
+
+    let videoBestQualityElement = null;
+
+    Array.from(video.getElementsByTagName('Representation')).forEach(rep => {
+        let bandwidth = parseInt(rep.getAttribute('bandwidth'));
+        if (bandwidth > (videoBestQualityElement ? parseInt(videoBestQualityElement.getAttribute('bandwidth')) : 0)) {
+            videoBestQualityElement = rep;
+        }
+    });
+
+    return {
+        video: {
+            element: video,
+            url: decodeURIComponent(Array.from(videoBestQualityElement.getElementsByTagName('BaseURL')).at(0).textContent),
+            qualityLabel: videoBestQualityElement.getAttribute('FBQualityLabel')
+        },
+        audio: {
+            element: audio,
+            url: decodeURIComponent(Array.from(audio.getElementsByTagName('BaseURL')).at(0).textContent)
+        }
+    };
+}
