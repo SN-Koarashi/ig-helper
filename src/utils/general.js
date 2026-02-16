@@ -183,6 +183,131 @@ export function saveFiles(downloadLink, username, sourceType, timestamp, filetyp
 }
 
 /**
+ * parseDashManifest
+ * @description Parse Media API video_dash_manifest (MPD XML).
+ *              Returns best video/audio representation URLs.
+ *
+ * @param  {string} mpdXml
+ * @return {{ video: any|null, audio: any|null }}
+ */
+function parseDashManifest(mpdXml) {
+    try {
+        if (!mpdXml || typeof mpdXml !== 'string') return { video: null, audio: null };
+
+        const xml = new DOMParser().parseFromString(mpdXml, 'application/xml');
+        if (xml.querySelector('parsererror')) return { video: null, audio: null };
+
+        const reps = Array.from(xml.querySelectorAll('Representation'));
+        const candidates = reps.map((rep) => {
+            const base = rep.querySelector('BaseURL')?.textContent?.trim();
+            if (!base) return null;
+
+            const set = rep.closest('AdaptationSet');
+            const mimeType = rep.getAttribute('mimeType') || set?.getAttribute('mimeType') || '';
+            const contentType = set?.getAttribute('contentType') || '';
+            const codecs = rep.getAttribute('codecs') || set?.getAttribute('codecs') || '';
+            const bandwidth = parseInt(rep.getAttribute('bandwidth') || '0', 10) || 0;
+            const width = parseInt(rep.getAttribute('width') || '0', 10) || 0;
+            const height = parseInt(rep.getAttribute('height') || '0', 10) || 0;
+            const id = rep.getAttribute('id') || '';
+
+            return { id, url: base, mimeType, contentType, codecs, bandwidth, width, height };
+        }).filter(Boolean);
+
+        const isVideo = (c) => ((c.contentType || '').includes('video') || (c.mimeType || '').startsWith('video'));
+        const isAudio = (c) => ((c.contentType || '').includes('audio') || (c.mimeType || '').startsWith('audio'));
+
+        const bestVideo = candidates
+            .filter(isVideo)
+            .sort((a, b) => (b.height - a.height) || (b.bandwidth - a.bandwidth) || (b.width - a.width))[0] || null;
+
+        const bestAudio = candidates
+            .filter(isAudio)
+            .sort((a, b) => (b.bandwidth - a.bandwidth))[0] || null;
+
+        return { video: bestVideo, audio: bestAudio };
+    } catch (e) {
+        return { video: null, audio: null };
+    }
+}
+
+async function downloadDashStreams(videoUrl, audioUrl, username, sourceType, timestamp, shortcode) {
+    logger('[DASH]', 'downloadDashStreams()', {
+        videoUrl: videoUrl,
+        audioUrl: audioUrl || null,
+        sourceType,
+        shortcode
+    });
+
+    await saveFiles(videoUrl, username, sourceType, timestamp, 'mp4', shortcode);
+
+    if (audioUrl) {
+        await saveFiles(audioUrl, username, sourceType, timestamp, 'm4a', shortcode);
+        logger('[DASH]', 'Downloaded DASH video+audio separately. Merge locally with: ffmpeg -i video.mp4 -i audio.m4a -c copy output.mp4');
+    } else {
+        logger('[DASH]', 'Downloaded DASH video only (no audio rep / has_audio=false).');
+    }
+
+    return true;
+}
+
+/**
+ * tryHandleDashFromMediaItem
+ * @description Centralized DASH handling for Media API items.
+ *              Uses video_dash_manifest when present.
+ *              Picks best video by resolution (height/width), then bandwidth.
+ *              Audio is optional.
+ *
+ * @return {Promise<boolean>} true if DASH path handled it, false to let caller fallback.
+ */
+export async function tryHandleDashFromMediaItem({
+    mediaItem,
+    username,
+    sourceType,
+    timestamp,
+    shortcode,
+    isPreview,
+}) {
+    try {
+        if (!USER_SETTING.PREFER_DASH_MANIFEST) return false;
+        if (!USER_SETTING.FORCE_RESOURCE_VIA_MEDIA) return false;
+        if (!mediaItem?.video_dash_manifest) return false;
+        if (!mediaItem?.video_versions) return false;
+
+        const best = parseDashManifest(mediaItem.video_dash_manifest);
+        const vUrl = best?.video?.url || '';
+        const aUrl = best?.audio?.url || '';
+
+        if (!vUrl) {
+            return false;
+        }
+
+        logger('[DASH]', 'best reps selected', {
+            video: best.video ? { height: best.video.height, width: best.video.width, bandwidth: best.video.bandwidth, codecs: best.video.codecs } : null,
+            audio: best.audio ? { bandwidth: best.audio.bandwidth, codecs: best.audio.codecs } : '(none)'
+        });
+
+        if (isPreview) {
+            openNewTab(vUrl);
+            return true;
+        }
+
+        if (!aUrl) {
+            logger('[DASH]', 'download mode -> VIDEO-ONLY DASH (no audio rep)');
+            await saveFiles(vUrl, username, sourceType, timestamp, 'mp4', shortcode);
+            return true;
+        }
+
+        logger('[DASH]', 'download mode -> DASH video+audio');
+        await downloadDashStreams(vUrl, aUrl, username, sourceType, timestamp, shortcode);
+        return true;
+    } catch (e) {
+        logger('[DASH]', 'tryHandleDashFromMediaItem failed -> fallback', e?.message || e);
+        return false;
+    }
+}
+
+/**
  * @description Trigger download from Blob with filename.
  * 
  * @param {Blob} blob
@@ -439,6 +564,16 @@ export async function triggerLinkElement(element, isPreview) {
         if (result.status === 'ok') {
             var resource_url = null;
             if (result.items[0].video_versions) {
+                const handled = await tryHandleDashFromMediaItem({
+                    mediaItem: result.items[0],
+                    username,
+                    sourceType: $(element).attr('data-name'),
+                    timestamp,
+                    shortcode: $(element).attr('data-path'),
+                    isPreview,
+                });
+                if (handled) return;
+
                 resource_url = result.items[0].video_versions[0].url;
             }
             else {
@@ -1142,43 +1277,4 @@ export function updatePopupSelectionSummary(root = '.IG_POPUP_DIG') {
     const selectedLabel = formatCount(selected, 'SELECTED_COUNT_SINGULAR', 'SELECTED_COUNT_PLURAL');
 
     $countSpan.text(` (${selectedLabel} / ${totalLabel})`);
-}
-
-export function getXmlMediaDashManifest(manifest) {
-    let parser = new DOMParser();
-    let xmlDoc = parser.parseFromString(manifest, 'application/xml');
-
-    let adaptationSets = xmlDoc.getElementsByTagName('AdaptationSet')
-
-    let video = null;
-    let audio = null;
-
-    Array.from(adaptationSets).forEach(element => {
-        if (element.getAttribute('contentType') === 'video') {
-            video = element;
-        } else if (element.getAttribute('contentType') === 'audio') {
-            audio = element;
-        }
-    });
-
-    let videoBestQualityElement = null;
-
-    Array.from(video.getElementsByTagName('Representation')).forEach(rep => {
-        let bandwidth = parseInt(rep.getAttribute('bandwidth'));
-        if (bandwidth > (videoBestQualityElement ? parseInt(videoBestQualityElement.getAttribute('bandwidth')) : 0)) {
-            videoBestQualityElement = rep;
-        }
-    });
-
-    return {
-        video: {
-            element: video,
-            url: decodeURIComponent(Array.from(videoBestQualityElement.getElementsByTagName('BaseURL')).at(0).textContent),
-            qualityLabel: videoBestQualityElement.getAttribute('FBQualityLabel')
-        },
-        audio: {
-            element: audio,
-            url: decodeURIComponent(Array.from(audio.getElementsByTagName('BaseURL')).at(0).textContent)
-        }
-    };
 }
