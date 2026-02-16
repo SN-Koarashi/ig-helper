@@ -3,6 +3,7 @@ import {
     updateLoadingBar, setDownloadProgress,
     saveFiles, getStoryProgress, openNewTab, logger,
     getStoryId,
+    tryHandleDashFromMediaItem,
     IG_createDM,
     updatePopupSelectionSummary
 } from "../utils/general";
@@ -219,6 +220,19 @@ export async function onStory(isDownload, isForce, isPreview) {
 
             if (result.status === 'ok') {
                 if (result.items[0].video_versions) {
+                    const handled = await tryHandleDashFromMediaItem({
+                        mediaItem: result.items[0],
+                        username,
+                        sourceType: "stories",
+                        timestamp,
+                        shortcode: mediaId,
+                        isPreview,
+                    });
+                    if (handled) {
+                        updateLoadingBar(false);
+                        return;
+                    }
+
                     if (isPreview) {
                         openNewTab(result.items[0].video_versions[0].url);
                     }
