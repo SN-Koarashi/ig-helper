@@ -24,9 +24,15 @@
 // @grant              GM_getResourceText
 // @grant              GM_notification
 // @grant              GM_openInTab
+// @grant              GM_getResourceURL
 // @connect            i.instagram.com
 // @connect            raw.githubusercontent.com
+// @connect            cdn.jsdelivr.net
 // @require            https://code.jquery.com/jquery-3.7.1.min.js#sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=
+// @require            https://cdn.jsdelivr.net/npm/@ffmpeg/ffmpeg@0.12.6/dist/umd/ffmpeg.min.js
+// @resource           FFMPEG_WORKER https://cdn.jsdelivr.net/npm/@ffmpeg/ffmpeg@0.12.6/dist/esm/worker.min.js
+// @resource           FFMPEG_WORKER_MT https://cdn.jsdelivr.net/npm/@ffmpeg/core-mt@0.12.6/dist/umd/ffmpeg-core.worker.js
+// @resource           FFMPEG_CORE https://cdn.jsdelivr.net/npm/@ffmpeg/core@0.12.6/dist/umd/ffmpeg-core.js
 // @resource           INTERNAL_CSS https://raw.githubusercontent.com/SN-Koarashi/ig-helper/master/style.css
 // @resource           LOCALE_MANIFEST https://raw.githubusercontent.com/SN-Koarashi/ig-helper/master/locale/manifest.json
 // @supportURL         https://github.com/SN-Koarashi/ig-helper/
@@ -40,7 +46,7 @@
 // ==/UserScript==
 
 // eslint-disable-next-line no-unused-vars
-(function ($) {
+(function ($, FFmpegWASM) {
     'use strict';
 
     /* initial */
@@ -127,7 +133,8 @@
         GL_observer: new MutationObserver(function () {
             onReadyMyDW();
         }),
-        GL_imageCache: GM_getValue(IMAGE_CACHE_KEY, {})
+        GL_imageCache: GM_getValue(IMAGE_CACHE_KEY, {}),
+        GL_videoDashCache: {},
     };
     /*******************************/
 
@@ -1361,6 +1368,10 @@
                 if (resource.__typename == "GraphVideo" && resource.video_url) {
                     $(selector).append(`<a media-id="${resource.id}" datetime="${resource.taken_at_timestamp}" data-blob="true" data-needed="direct" data-path="${resource.shortcode}" data-name="video" data-type="mp4" data-username="${resource.owner.username}" data-globalIndex="${idx}" href="javascript:;" data-href="${resource.video_url}"><img width="100" src="${resource.display_resources[1].src}" /><br/>- <span data-ih-locale="VID">${_i18n("VID")}</span> ${idx} -</a>`);
                     idx++;
+
+                    if (resource.video_dash_manifest) {
+                        state.GL_videoDashCache[resource.id] = resource.video_dash_manifest;
+                    }
                 }
                 // GraphImage
                 if (resource.__typename == "GraphImage") {
@@ -1372,6 +1383,9 @@
                     for (let e of resource.edge_sidecar_to_children.edges) {
                         if (e.node.__typename == "GraphVideo") {
                             $(selector).append(`<a media-id="${e.node.id}" datetime="${resource.taken_at_timestamp}" data-blob="true" data-needed="direct" data-path="${resource.shortcode}" data-name="video" data-type="mp4" data-username="${resource.owner.username}" data-globalIndex="${idx}" href="javascript:;" data-href="${e.node.video_url}"><img width="100" src="${e.node.display_resources[1].src}" /><br/>- <span data-ih-locale-title="VID">${_i18n("VID")}</span> ${idx} -</a>`);
+                            if (e.node.video_dash_manifest) {
+                                state.GL_videoDashCache[e.node.id] = e.node.video_dash_manifest;
+                            }
                         }
 
                         if (e.node.__typename == "GraphImage") {
@@ -1410,6 +1424,9 @@
                         // Video
                         else {
                             $(selector).append(`<a media-id="${mda.pk}" datetime="${mda.taken_at}" data-blob="true" data-needed="direct" data-path="${resource.code}" data-name="video" data-type="mp4" data-username="${resource.owner.username}" data-globalIndex="${idx}" href="javascript:;" data-href="${mda.video_versions[0].url}"><img width="100" src="${mda.image_versions2.candidates[0].url}" /><br/>- <span data-ih-locale="VID">${_i18n("VID")}</span> ${idx} -</a>`);
+                            if (mda.video_dash_manifest) {
+                                state.GL_videoDashCache[mda.pk] = mda.video_dash_manifest;
+                            }
                         }
                     });
                 }
@@ -1437,6 +1454,9 @@
                     }
                     // Video
                     else {
+                        if (resource.video_dash_manifest) {
+                            state.GL_videoDashCache[resource.pk] = resource.video_dash_manifest;
+                        }
                         $(selector).append(`<a media-id="${resource.pk}" datetime="${resource.taken_at}" data-blob="true" data-needed="direct" data-path="${resource.code}" data-name="video" data-type="mp4" data-username="${resource.owner.username}" data-globalIndex="${idx}" href="javascript:;" data-href="${resource.video_versions[0].url}"><img width="100" src="${resource.image_versions2.candidates[0].url}" /><br/>- <span data-ih-locale="VID">${_i18n("VID")}</span> ${idx} -</a>`);
                     }
                 }
@@ -3389,123 +3409,181 @@
      * @return {void}
      */
     async function triggerLinkElement(element, isPreview) {
-        let date = new Date().getTime();
-        let timestamp = Math.floor(date / 1000);
-        let username = ($(element).attr('data-username')) ? $(element).attr('data-username') : state.GL_username;
+        try {
+            let date = new Date().getTime();
+            let timestamp = Math.floor(date / 1000);
+            let username = ($(element).attr('data-username')) ? $(element).attr('data-username') : state.GL_username;
 
-        if (!username && $(element).attr('data-path')) {
-            logger('catching owner name from shortcode:', $(element).attr('data-href'));
-            username = await getPostOwner($(element).attr('data-path')).catch(err => {
-                logger('get username failed, replace with default string, error message:', err.message);
-            });
+            if (!username && $(element).attr('data-path')) {
+                logger('catching owner name from shortcode:', $(element).attr('data-href'));
+                username = await getPostOwner($(element).attr('data-path')).catch(err => {
+                    logger('get username failed, replace with default string, error message:', err.message);
+                });
 
-            if (username == null) {
-                username = "NONE";
-            }
-        }
-
-        if (USER_SETTING.RENAME_PUBLISH_DATE && $(element).attr('datetime')) {
-            timestamp = parseInt($(element).attr('datetime'));
-        }
-
-        let mediaId = $(element).attr('media-id');
-
-        if (USER_SETTING.CAPTURE_IMAGE_VIA_MEDIA_CACHE) {
-            const cached = getImageFromCache(mediaId);
-            if (cached && $(element).data('type') != "mp4") {
-                if (isPreview) {
-                    openNewTab(cached);
-                } else {
-                    saveFiles(cached, username, $(element).data('name'), timestamp, $(element).data('type') || 'jpg', $(element).data('path'));
-                }
-                return;
-            }
-        }
-
-        if (USER_SETTING.FORCE_RESOURCE_VIA_MEDIA) {
-            updateLoadingBar(true);
-            let result = await getMediaInfo($(element).attr('media-id'));
-            updateLoadingBar(false);
-
-            if (result.status === 'ok') {
-                var resource_url = null;
-                if (result.items[0].video_versions) {
-                    resource_url = result.items[0].video_versions[0].url;
-                }
-                else {
-                    result.items[0].image_versions2.candidates.sort(function (a, b) {
-                        let aSTP = new URL(a.url).searchParams.get('stp');
-                        let bSTP = new URL(b.url).searchParams.get('stp');
-
-                        if (aSTP && bSTP) {
-                            if (aSTP.length > bSTP.length) return 1;
-                            if (aSTP.length < bSTP.length) return -1;
-                        }
-                        else {
-                            if (a.width < b.width) return 1;
-                            if (a.width > b.width) return -1;
-                        }
-
-                        return 0;
-                    });
-
-                    resource_url = result.items[0].image_versions2.candidates[0].url;
-
-                    const getWidthFromURL = function (obj) {
-                        if (obj.width != null) {
-                            return obj.width;
-                        }
-
-                        const url = new URL(obj.url);
-                        const stp = url.searchParams.get('stp');
-
-                        if (stp != null) {
-                            return parseInt(stp.match(/_p([0-9]+)x([0-9]+)_/i)?.at(1) || -1);
-                        }
-                        else {
-                            return 0;
-                        }
-                    }
-
-                    const resourceWidth = getWidthFromURL(result.items[0].image_versions2.candidates[0]);
-                    if (
-                        result.items[0].original_width !== resourceWidth &&
-                        resourceWidth !== -1
-                    ) {
-                        // alert();
-                    }
-                }
-
-                if (isPreview) {
-                    let urlObj = new URL(resource_url);
-                    urlObj.host = 'scontent.cdninstagram.com';
-
-                    openNewTab(urlObj.href);
-                }
-                else {
-                    saveFiles(resource_url, username, $(element).attr('data-name'), timestamp, $(element).attr('data-type'), $(element).attr('data-path'));
+                if (username == null) {
+                    username = "NONE";
                 }
             }
-            else {
-                if (USER_SETTING.FALLBACK_TO_BLOB_FETCH_IF_MEDIA_API_THROTTLED) {
+
+            if (USER_SETTING.RENAME_PUBLISH_DATE && $(element).attr('datetime')) {
+                timestamp = parseInt($(element).attr('datetime'));
+            }
+
+            let mediaId = $(element).attr('media-id');
+
+            if (state.GL_videoDashCache[mediaId]) {
+                logger('[DASH]', 'Processing video with DASH manifest, mediaId:', mediaId);
+                let dashManifest = state.GL_videoDashCache[mediaId];
+                let { video, audio } = getXmlMediaDashManifest(dashManifest);
+
+                // const { fetchFile } = FFmpegUtil;
+                const { FFmpeg } = FFmpegWASM;
+
+                const ffmpeg = new FFmpeg();
+
+                ffmpeg.on("log", ({ message }) => {
+                    console.log(message);
+                })
+                ffmpeg.on("progress", ({ progress, time }) => {
+                    console.log(`${progress * 100} %, time: ${time / 1000000} s`);
+                });
+
+                const worker_url = URL.createObjectURL(new Blob([GM_getResourceText("FFMPEG_WORKER")], { type: 'application/javascript' }));
+                const worker_mt_url = URL.createObjectURL(new Blob([GM_getResourceText("FFMPEG_WORKER_MT")], { type: 'application/javascript' }));
+                const core_url = URL.createObjectURL(new Blob([GM_getResourceText("FFMPEG_CORE")], { type: 'application/javascript' }));
+                // const wasm_url = URL.createObjectURL(new Blob([GM_getResourceURL("FFMPEG_WASM")], { type: 'application/wasm' }));
+                console.log(worker_url, worker_mt_url, core_url);
+                await ffmpeg.load({
+                    coreURL: core_url,
+                    wasmURL: "https://cdn.jsdelivr.net/npm/@ffmpeg/core@0.12.6/dist/umd/ffmpeg-core.wasm",
+                    classWorkerURL: worker_url,
+                    workerURL: worker_mt_url,
+                });
+
+
+
+                // ffmpeg.FS('writeFile', 'video.mp4', await fetchFile(video.url));
+                // ffmpeg.FS('writeFile', 'audio.mp3', await fetchFile(audio.url));
+
+                // await ffmpeg.run(
+                //     '-i', 'video.mp4',
+                //     '-i', 'audio.mp3',
+                //     '-c:v', 'copy',
+                //     '-c:a', 'aac',
+                //     '-shortest',
+                //     'output.mp4'
+                // );
+
+                // // 讀取輸出
+                // const data = ffmpeg.FS('readFile', 'output.mp4');
+
+                // const blob = new Blob([data.buffer], { type: 'video/mp4' });
+                // const url = URL.createObjectURL(blob);
+
+                // saveFiles(url, username, $(element).data('name'), timestamp, 'mp4', $(element).data('path'));
+            }
+
+            if (USER_SETTING.CAPTURE_IMAGE_VIA_MEDIA_CACHE) {
+                const cached = getImageFromCache(mediaId);
+                if (cached && $(element).data('type') != "mp4") {
                     if (isPreview) {
-                        let urlObj = new URL($(element).attr('data-href'));
+                        openNewTab(cached);
+                    } else {
+                        saveFiles(cached, username, $(element).data('name'), timestamp, $(element).data('type') || 'jpg', $(element).data('path'));
+                    }
+                    return;
+                }
+            }
+
+            if (USER_SETTING.FORCE_RESOURCE_VIA_MEDIA) {
+                updateLoadingBar(true);
+                let result = await getMediaInfo($(element).attr('media-id'));
+                updateLoadingBar(false);
+
+                if (result.status === 'ok') {
+                    var resource_url = null;
+                    if (result.items[0].video_versions) {
+                        resource_url = result.items[0].video_versions[0].url;
+                    }
+                    else {
+                        result.items[0].image_versions2.candidates.sort(function (a, b) {
+                            let aSTP = new URL(a.url).searchParams.get('stp');
+                            let bSTP = new URL(b.url).searchParams.get('stp');
+
+                            if (aSTP && bSTP) {
+                                if (aSTP.length > bSTP.length) return 1;
+                                if (aSTP.length < bSTP.length) return -1;
+                            }
+                            else {
+                                if (a.width < b.width) return 1;
+                                if (a.width > b.width) return -1;
+                            }
+
+                            return 0;
+                        });
+
+                        resource_url = result.items[0].image_versions2.candidates[0].url;
+
+                        const getWidthFromURL = function (obj) {
+                            if (obj.width != null) {
+                                return obj.width;
+                            }
+
+                            const url = new URL(obj.url);
+                            const stp = url.searchParams.get('stp');
+
+                            if (stp != null) {
+                                return parseInt(stp.match(/_p([0-9]+)x([0-9]+)_/i)?.at(1) || -1);
+                            }
+                            else {
+                                return 0;
+                            }
+                        }
+
+                        const resourceWidth = getWidthFromURL(result.items[0].image_versions2.candidates[0]);
+                        if (
+                            result.items[0].original_width !== resourceWidth &&
+                            resourceWidth !== -1
+                        ) {
+                            // alert();
+                        }
+                    }
+
+                    if (isPreview) {
+                        let urlObj = new URL(resource_url);
                         urlObj.host = 'scontent.cdninstagram.com';
 
                         openNewTab(urlObj.href);
                     }
                     else {
-                        saveFiles($(element).attr('data-href'), username, $(element).attr('data-name'), timestamp, $(element).attr('data-type'), $(element).attr('data-path'));
+                        saveFiles(resource_url, username, $(element).attr('data-name'), timestamp, $(element).attr('data-type'), $(element).attr('data-path'));
                     }
                 }
                 else {
-                    alert('Fetch failed from Media API. API response message: ' + result.message);
+                    if (USER_SETTING.FALLBACK_TO_BLOB_FETCH_IF_MEDIA_API_THROTTLED) {
+                        if (isPreview) {
+                            let urlObj = new URL($(element).attr('data-href'));
+                            urlObj.host = 'scontent.cdninstagram.com';
+
+                            openNewTab(urlObj.href);
+                        }
+                        else {
+                            saveFiles($(element).attr('data-href'), username, $(element).attr('data-name'), timestamp, $(element).attr('data-type'), $(element).attr('data-path'));
+                        }
+                    }
+                    else {
+                        alert('Fetch failed from Media API. API response message: ' + result.message);
+                    }
+                    logger(result);
                 }
-                logger(result);
+            }
+            else {
+                saveFiles($(element).attr('data-href'), username, $(element).attr('data-name'), timestamp, $(element).attr('data-type'), $(element).attr('data-path'));
             }
         }
-        else {
-            saveFiles($(element).attr('data-href'), username, $(element).attr('data-name'), timestamp, $(element).attr('data-type'), $(element).attr('data-path'));
+        catch (err) {
+            console.error('Occur error in triggerLinkElement:', err);
+            logger('Occur error in triggerLinkElement:', err);
         }
     }
 
@@ -4133,6 +4211,45 @@
         const selectedLabel = formatCount(selected, 'SELECTED_COUNT_SINGULAR', 'SELECTED_COUNT_PLURAL');
 
         $countSpan.text(` (${selectedLabel} / ${totalLabel})`);
+    }
+
+    function getXmlMediaDashManifest(manifest) {
+        let parser = new DOMParser();
+        let xmlDoc = parser.parseFromString(manifest, 'application/xml');
+
+        let adaptationSets = xmlDoc.getElementsByTagName('AdaptationSet')
+
+        let video = null;
+        let audio = null;
+
+        Array.from(adaptationSets).forEach(element => {
+            if (element.getAttribute('contentType') === 'video') {
+                video = element;
+            } else if (element.getAttribute('contentType') === 'audio') {
+                audio = element;
+            }
+        });
+
+        let videoBestQualityElement = null;
+
+        Array.from(video.getElementsByTagName('Representation')).forEach(rep => {
+            let bandwidth = parseInt(rep.getAttribute('bandwidth'));
+            if (bandwidth > (videoBestQualityElement ? parseInt(videoBestQualityElement.getAttribute('bandwidth')) : 0)) {
+                videoBestQualityElement = rep;
+            }
+        });
+
+        return {
+            video: {
+                element: video,
+                url: decodeURIComponent(Array.from(videoBestQualityElement.getElementsByTagName('BaseURL')).at(0).textContent),
+                qualityLabel: videoBestQualityElement.getAttribute('FBQualityLabel')
+            },
+            audio: {
+                element: audio,
+                url: decodeURIComponent(Array.from(audio.getElementsByTagName('BaseURL')).at(0).textContent)
+            }
+        };
     }
 
     let mediaCacheDirty = false;
@@ -4920,4 +5037,4 @@
             subtree: true,
         });
     });
-})(jQuery);
+})(jQuery, FFmpegWASM);

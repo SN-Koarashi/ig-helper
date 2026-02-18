@@ -12,6 +12,7 @@
     "globals": "^15.14.0"
   },
   "dependencies": {
+    "@ffmpeg/ffmpeg": "^0.12.15",
     "jquery": "^3.7.1"
   }
 }

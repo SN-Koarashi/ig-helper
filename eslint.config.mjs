@@ -22,6 +22,7 @@ export default [
         GM_getResourceText: 'readable',
         GM_notification: 'readable',
         GM_openInTab: 'readable',
+        GM_getResourceURL: 'readable',
         FS_IMPORT: 'readable'
       },
     },
