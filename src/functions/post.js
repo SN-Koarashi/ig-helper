@@ -3,7 +3,8 @@ import {
     updateLoadingBar, openNewTab, logger,
     toggleVolumeSilder, IG_createDM, IG_setDM, triggerLinkElement,
     openImageViewer,
-    updatePopupSelectionSummary
+    updatePopupSelectionSummary,
+    replaceSameOriginHost
 } from "../utils/general";
 import { getBlobMedia } from "../utils/api";
 import { _i18n } from "../utils/i18n";
@@ -386,11 +387,7 @@ export function createDownloadButton() {
                                 else {
                                     let href = $linkElement?.attr('data-href');
                                     if (href) {
-                                        // replace https://instagram.ftpe8-2.fna.fbcdn.net/ to https://scontent.cdninstagram.com/ becase of same origin policy (some video)
-                                        var urlObj = new URL(href);
-                                        urlObj.host = 'scontent.cdninstagram.com';
-
-                                        openNewTab(urlObj.href);
+                                        openNewTab(replaceSameOriginHost(href));
                                     }
                                     else {
                                         alert('Cannot find open tab URL.');

@@ -5,7 +5,7 @@
 // @name:ja            IG助手
 // @name:ko            IG조수
 // @namespace          https://github.snkms.com/
-// @version            3.12.3
+// @version            3.12.4
 // @description        Downloading is possible for both photos and videos from posts, as well as for stories, reels or profile picture.
 // @description:zh-TW  一鍵下載對方 Instagram 貼文中的相片、影片甚至是他們的限時動態、連續短片及大頭貼圖片！
 // @description:zh-CN  一键下载对方 Instagram 帖子中的相片、视频甚至是他们的快拍、Reels及头像图片！
@@ -1121,11 +1121,7 @@
                                     else {
                                         let href = $linkElement?.attr('data-href');
                                         if (href) {
-                                            // replace https://instagram.ftpe8-2.fna.fbcdn.net/ to https://scontent.cdninstagram.com/ becase of same origin policy (some video)
-                                            var urlObj = new URL(href);
-                                            urlObj.host = 'scontent.cdninstagram.com';
-
-                                            openNewTab(urlObj.href);
+                                            openNewTab(replaceSameOriginHost(href));
                                         }
                                         else {
                                             alert('Cannot find open tab URL.');
@@ -3450,9 +3446,13 @@
                 let dashManifest = state.GL_videoDashCache[mediaId];
                 let { video, audio } = getXmlMediaDashManifest(dashManifest);
 
-                let downloadName = getSaveFileName(video.url, username, $(element).attr('data-name'), timestamp, $(element).attr('data-type'), $(element).attr('data-path'));
 
-                GM_openInTab(`https://www.yuriko.cc/tools/ffmpeg?videoURL=${encodeURIComponent(video.url)}&audioURL=${encodeURIComponent(audio.url)}&filename=${encodeURIComponent(downloadName)}`, { active: true });
+                let videoURL = replaceSameOriginHost(video.url);
+                let audioURL = replaceSameOriginHost(audio.url);
+
+                let downloadName = getSaveFileName(videoURL, username, $(element).attr('data-name'), timestamp, $(element).attr('data-type'), $(element).attr('data-path'));
+
+                GM_openInTab(`https://www.yuriko.cc/tools/ffmpeg?videoURL=${encodeURIComponent(videoURL)}&audioURL=${encodeURIComponent(audioURL)}&filename=${encodeURIComponent(downloadName)}`, { active: true });
                 return;
             }
 
@@ -3523,10 +3523,7 @@
                     }
 
                     if (isPreview) {
-                        let urlObj = new URL(resource_url);
-                        urlObj.host = 'scontent.cdninstagram.com';
-
-                        openNewTab(urlObj.href);
+                        openNewTab(replaceSameOriginHost(resource_url));
                     }
                     else {
                         saveFiles(resource_url, username, $(element).attr('data-name'), timestamp, $(element).attr('data-type'), $(element).attr('data-path'));
@@ -3535,10 +3532,7 @@
                 else {
                     if (USER_SETTING.FALLBACK_TO_BLOB_FETCH_IF_MEDIA_API_THROTTLED) {
                         if (isPreview) {
-                            let urlObj = new URL($(element).attr('data-href'));
-                            urlObj.host = 'scontent.cdninstagram.com';
-
-                            openNewTab(urlObj.href);
+                            openNewTab(replaceSameOriginHost($(element).attr('data-href')));
                         }
                         else {
                             saveFiles($(element).attr('data-href'), username, $(element).attr('data-name'), timestamp, $(element).attr('data-type'), $(element).attr('data-path'));
@@ -3560,6 +3554,20 @@
         }
     }
 
+    /**
+     * replaceSameOriginHost
+     * @description Replace the host of the URL to bypass the same-origin policy for certain video resources that cannot be downloaded directly.
+     *
+     * @param  {string}  url
+     * @return {string}
+     */
+    function replaceSameOriginHost(url) {
+        // replace https://instagram.ftpe8-2.fna.fbcdn.net/ to https://scontent.cdninstagram.com/ becase of same origin policy (some video)
+        var urlObj = new URL(url);
+        urlObj.host = 'scontent.cdninstagram.com';
+
+        return urlObj.href;
+    }
 
     /**
      * registerMenuCommand
@@ -4667,16 +4675,11 @@
         });
 
         $('body').on('click', '.IG_POPUP_DIG_BODY .newTab', function () {
-            // replace https://instagram.ftpe8-2.fna.fbcdn.net/ to https://scontent.cdninstagram.com/ becase of same origin policy (some video)
-
             if (USER_SETTING.FORCE_RESOURCE_VIA_MEDIA && USER_SETTING.NEW_TAB_ALWAYS_FORCE_MEDIA_IN_POST) {
                 triggerLinkElement($(this).parent().children('a').first()[0], true);
             }
             else {
-                var urlObj = new URL($(this).parent().children('a').attr('data-href'));
-                urlObj.host = 'scontent.cdninstagram.com';
-
-                openNewTab(urlObj.href);
+                openNewTab(replaceSameOriginHost($(this).parent().children('a').attr('data-href')));
             }
         });
 

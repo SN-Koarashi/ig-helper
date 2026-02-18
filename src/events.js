@@ -1,7 +1,8 @@
 import { state, USER_SETTING } from "./settings";
 import {
     showSetting, showDebugDOM, reloadScript,
-    triggerLinkElement, openNewTab, saveFiles, logger, toggleVolumeSilder, updatePopupSelectionSummary
+    triggerLinkElement, openNewTab, saveFiles, logger, toggleVolumeSilder, updatePopupSelectionSummary,
+    replaceSameOriginHost
 } from "./utils/general";
 import { onStory, onStoryAll, onStoryThumbnail } from "./functions/story";
 import { onProfileAvatar } from "./functions/profile";
@@ -185,16 +186,11 @@ $(function () {
     });
 
     $('body').on('click', '.IG_POPUP_DIG_BODY .newTab', function () {
-        // replace https://instagram.ftpe8-2.fna.fbcdn.net/ to https://scontent.cdninstagram.com/ becase of same origin policy (some video)
-
         if (USER_SETTING.FORCE_RESOURCE_VIA_MEDIA && USER_SETTING.NEW_TAB_ALWAYS_FORCE_MEDIA_IN_POST) {
             triggerLinkElement($(this).parent().children('a').first()[0], true);
         }
         else {
-            var urlObj = new URL($(this).parent().children('a').attr('data-href'));
-            urlObj.host = 'scontent.cdninstagram.com';
-
-            openNewTab(urlObj.href);
+            openNewTab(replaceSameOriginHost($(this).parent().children('a').attr('data-href')));
         }
     });
 
