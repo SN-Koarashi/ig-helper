@@ -83,6 +83,7 @@ export var state = {
     GL_observer: new MutationObserver(function () {
         onReadyMyDW();
     }),
-    GL_imageCache: GM_getValue(IMAGE_CACHE_KEY, {})
+    GL_imageCache: GM_getValue(IMAGE_CACHE_KEY, {}),
+    GL_videoDashCache: {},
 };
 /*******************************/
