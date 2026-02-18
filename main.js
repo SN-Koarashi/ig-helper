@@ -5,7 +5,7 @@
 // @name:ja            IG助手
 // @name:ko            IG조수
 // @namespace          https://github.snkms.com/
-// @version            3.12.1
+// @version            3.12.2
 // @description        Downloading is possible for both photos and videos from posts, as well as for stories, reels or profile picture.
 // @description:zh-TW  一鍵下載對方 Instagram 貼文中的相片、影片甚至是他們的限時動態、連續短片及大頭貼圖片！
 // @description:zh-CN  一键下载对方 Instagram 帖子中的相片、视频甚至是他们的快拍、Reels及头像图片！
@@ -3444,8 +3444,8 @@
 
             let mediaId = $(element).attr('media-id');
 
-            if (state.GL_videoDashCache[mediaId]) {
-                logger('[DASH]', 'Processing video with DASH manifest, mediaId:', mediaId);
+            if (state.GL_videoDashCache[mediaId] && !isPreview) {
+                logger('[Video Dash Stream]', 'Processing video with DASH manifest, mediaId:', mediaId);
                 let dashManifest = state.GL_videoDashCache[mediaId];
                 let { video, audio } = getXmlMediaDashManifest(dashManifest);
 
