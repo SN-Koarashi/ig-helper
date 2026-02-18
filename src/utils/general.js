@@ -439,8 +439,8 @@ export async function triggerLinkElement(element, isPreview) {
 
         let mediaId = $(element).attr('media-id');
 
-        if (state.GL_videoDashCache[mediaId]) {
-            logger('[DASH]', 'Processing video with DASH manifest, mediaId:', mediaId);
+        if (state.GL_videoDashCache[mediaId] && !isPreview) {
+            logger('[Video Dash Stream]', 'Processing video with DASH manifest, mediaId:', mediaId);
             let dashManifest = state.GL_videoDashCache[mediaId];
             let { video, audio } = getXmlMediaDashManifest(dashManifest);
 
