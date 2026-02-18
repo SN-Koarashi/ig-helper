@@ -197,19 +197,18 @@ function triggerDownload(blob, filename) {
 }
 
 /**
- * createSaveFileElement
- * @description Download the specified media with link element.
+ * getSaveFileName
+ * @description Get the file name for downloaded media according to the user settings and resource information.
  *
  * @param  {String}  downloadLink
- * @param  {Object}  object
  * @param  {String}  username
  * @param  {String}  sourceType
  * @param  {Integer}  timestamp
  * @param  {String}  filetype
  * @param  {String}  shortcode
- * @return {void}
+ * @return {String}  The generated filename
  */
-export function createSaveFileElement(downloadLink, object, username, sourceType, timestamp, filetype, shortcode) {
+export function getSaveFileName(downloadLink, username, sourceType, timestamp, filetype, shortcode) {
     timestamp = parseInt(timestamp.toString().padEnd(13, '0'));
 
     if (USER_SETTING.RENAME_PUBLISH_DATE) {
@@ -253,6 +252,26 @@ export function createSaveFileElement(downloadLink, object, username, sourceType
 
     const originally = username + '_' + original_name + '.' + filetype;
     const downloadName = USER_SETTING.AUTO_RENAME ? filename + '.' + filetype : originally;
+
+    return downloadName;
+}
+
+
+/**
+ * createSaveFileElement
+ * @description Download the specified media with link element.
+ *
+ * @param  {String}  downloadLink
+ * @param  {Object}  object
+ * @param  {String}  username
+ * @param  {String}  sourceType
+ * @param  {Integer}  timestamp
+ * @param  {String}  filetype
+ * @param  {String}  shortcode
+ * @return {void}
+ */
+export function createSaveFileElement(downloadLink, object, username, sourceType, timestamp, filetype, shortcode) {
+    const downloadName = getSaveFileName(downloadLink, username, sourceType, timestamp, filetype, shortcode);
     if (USER_SETTING.MODIFY_RESOURCE_EXIF && filetype === 'jpg' && shortcode && sourceType === 'photo' && (object.type === 'image/jpeg' || object.type === 'image/webp')) {
         changeExifData(object, shortcode)
             .then(newBlob => triggerDownload(newBlob, downloadName))
@@ -425,38 +444,10 @@ export async function triggerLinkElement(element, isPreview) {
             let dashManifest = state.GL_videoDashCache[mediaId];
             let { video, audio } = getXmlMediaDashManifest(dashManifest);
 
-            createWorkerWindow(video.url, audio.url);
+            let downloadName = getSaveFileName(video.url, username, $(element).attr('data-name'), timestamp, $(element).attr('data-type'), $(element).attr('data-path'));
+
+            GM_openInTab(`https://www.yuriko.cc/tools/ffmpeg?videoURL=${encodeURIComponent(video.url)}&audioURL=${encodeURIComponent(audio.url)}&filename=${encodeURIComponent(downloadName)}`, { active: true });
             return;
-
-            // iframe.contentWindow.postMessage({
-            //     type: 'PROCESS_MEDIA',
-            //     payload: {
-            //         videoURL: video.url,
-            //         audioURL: audio.url
-            //     }
-            // }, '*');
-
-            return;
-
-            // ffmpeg.FS('writeFile', 'video.mp4', await fetchFile(video.url));
-            // ffmpeg.FS('writeFile', 'audio.mp3', await fetchFile(audio.url));
-
-            // await ffmpeg.run(
-            //     '-i', 'video.mp4',
-            //     '-i', 'audio.mp3',
-            //     '-c:v', 'copy',
-            //     '-c:a', 'aac',
-            //     '-shortest',
-            //     'output.mp4'
-            // );
-
-            // // 讀取輸出
-            // const data = ffmpeg.FS('readFile', 'output.mp4');
-
-            // const blob = new Blob([data.buffer], { type: 'video/mp4' });
-            // const url = URL.createObjectURL(blob);
-
-            // saveFiles(url, username, $(element).data('name'), timestamp, 'mp4', $(element).data('path'));
         }
 
         if (USER_SETTING.CAPTURE_IMAGE_VIA_MEDIA_CACHE) {
@@ -1226,62 +1217,4 @@ export function getXmlMediaDashManifest(manifest) {
             url: decodeURIComponent(Array.from(audio.getElementsByTagName('BaseURL')).at(0).textContent)
         }
     };
-}
-
-function createWorkerWindow(videoURL, audioURL) {
-    // // 開啟一個約定好的空白頁面
-    // let workerWindow = window.open('about:blank', 'ffmpeg_worker', 'noopener, noreferrer');
-
-    // const doc = workerWindow.document;
-    // doc.title = "FFmpeg 處理中...";
-
-    // doc.write(`
-    //         <script src="https://cdn.jsdelivr.net/npm/@ffmpeg/ffmpeg@0.12.6/dist/umd/ffmpeg.min.js" ></script>
-    //         <script>
-    //         const { FFmpeg } = FFmpegWASM;
-
-    //         const ffmpeg = new FFmpeg();
-
-    //         ffmpeg.on("log", ({ message }) => {
-    //             console.log(message);
-    //         })
-
-    //         async function fileProcessing(videoURL, audioURL){
-    //             await ffmpeg.load();
-    //         }
-
-    //         fileProcessing('a','b');
-    //         </script>
-    //     `);
-
-    const ffmpegCode = `
-    <!DOCTYPE html>
-    <html>
-    <head>
-        <title>FFmpeg 處理中...</title>
-        <script src="https://cdn.jsdelivr.net"></script>
-    </head>
-    <body>
-        <script>
-            const { FFmpeg } = FFmpegWASM;
-            const ffmpeg = new FFmpeg();
-            ffmpeg.on("log", ({ message }) => console.log(message));
-            
-            async function fileProcessing(){
-                await ffmpeg.load();
-                console.log("FFmpeg 已就緒");
-            }
-            fileProcessing();
-        </script>
-    </body>
-    </html>
-`;
-    // // 將字串轉為 Blob 並生成 URL
-    // const blob = new Blob([ffmpegCode], { type: 'text/html' });
-    // const blobUrl = URL.createObjectURL(blob);
-
-    // // 開啟新視窗，注意：若需避開父頁面限制，有時需要保持 noopener
-    // window.open(blobUrl, 'ffmpeg_worker', 'noopener, noreferrer');
-    const encodedUri = "data:text/html;base64," + btoa(unescape(encodeURIComponent(ffmpegCode)));
-    window.open(encodedUri, 'ffmpeg_worker');
 }

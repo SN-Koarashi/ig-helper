@@ -1,7 +1,7 @@
 FS_IMPORT('./metadata.js');
 
 // eslint-disable-next-line no-unused-vars
-(function ($, FFmpegWASM) {
+(function ($) {
     'use strict';
 
     /* initial */
@@ -24,4 +24,4 @@ FS_IMPORT('./metadata.js');
 
     /* register all events */
     FS_IMPORT('./events.js');
-})(jQuery, FFmpegWASM);
+})(jQuery);

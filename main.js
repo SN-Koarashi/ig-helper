@@ -5,7 +5,7 @@
 // @name:ja            IG助手
 // @name:ko            IG조수
 // @namespace          https://github.snkms.com/
-// @version            3.11.1
+// @version            3.12.1
 // @description        Downloading is possible for both photos and videos from posts, as well as for stories, reels or profile picture.
 // @description:zh-TW  一鍵下載對方 Instagram 貼文中的相片、影片甚至是他們的限時動態、連續短片及大頭貼圖片！
 // @description:zh-CN  一键下载对方 Instagram 帖子中的相片、视频甚至是他们的快拍、Reels及头像图片！
@@ -24,16 +24,9 @@
 // @grant              GM_getResourceText
 // @grant              GM_notification
 // @grant              GM_openInTab
-// @grant              GM_getResourceURL
 // @connect            i.instagram.com
 // @connect            raw.githubusercontent.com
-// @connect            cdn.jsdelivr.net
 // @require            https://code.jquery.com/jquery-3.7.1.min.js#sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=
-// @require            https://cdn.jsdelivr.net/npm/@ffmpeg/ffmpeg@0.12.6/dist/umd/ffmpeg.min.js
-// @resource           FFMPEG https://cdn.jsdelivr.net/npm/@ffmpeg/ffmpeg@0.12.6/dist/umd/ffmpeg.min.js
-// @resource           FFMPEG_WORKER https://cdn.jsdelivr.net/npm/@ffmpeg/ffmpeg@0.12.6/dist/esm/worker.min.js
-// @resource           FFMPEG_WORKER_MT https://cdn.jsdelivr.net/npm/@ffmpeg/core-mt@0.12.6/dist/umd/ffmpeg-core.worker.js
-// @resource           FFMPEG_CORE https://cdn.jsdelivr.net/npm/@ffmpeg/core@0.12.6/dist/umd/ffmpeg-core.js
 // @resource           INTERNAL_CSS https://raw.githubusercontent.com/SN-Koarashi/ig-helper/master/style.css
 // @resource           LOCALE_MANIFEST https://raw.githubusercontent.com/SN-Koarashi/ig-helper/master/locale/manifest.json
 // @supportURL         https://github.com/SN-Koarashi/ig-helper/
@@ -47,7 +40,7 @@
 // ==/UserScript==
 
 // eslint-disable-next-line no-unused-vars
-(function ($, FFmpegWASM) {
+(function ($) {
     'use strict';
 
     /* initial */
@@ -160,82 +153,6 @@
 
     logger('Script Loaded', GM_info.script.name, 'version:', GM_info.script.version);
     purgeCache();
-
-    const ffmpegCode = GM_getResourceText("FFMPEG");
-    const ffmpegURL = URL.createObjectURL(new Blob([ffmpegCode], { type: 'application/javascript' }));
-
-    // 2. 建立一個隔離的 iframe
-    const iframe = document.createElement('iframe');
-    iframe.style.display = 'none';
-    // iframe.setAttribute('sandbox', 'allow-scripts allow-same-origin');
-    iframe.setAttribute('csp', 'default-src *; script-src *; connect-src *; worker-src *;');
-    document.body.appendChild(iframe);
-
-    const doc = iframe.contentDocument;
-
-    // 依序注入程式碼
-    const script1 = doc.createElement('script');
-    script1.src = ffmpegURL;
-    doc.head.appendChild(script1);
-
-    // 4. 初始化隔離環境中的 FFmpeg
-    const scriptMain = doc.createElement('script');
-
-    const customScriptURL = URL.createObjectURL(new Blob([
-        `
-        const { FFmpeg } = FFmpegWASM;
-
-        const ffmpeg = new FFmpeg();
-
-        ffmpeg.on("log", ({ message }) => {
-            console.log(message);
-        })
-
-        async function fileProcessing(videoURL, audioURL){
-            await ffmpeg.load();
-            console.log('FFmpeg loaded');
-
-            const videoResponse = await fetch(videoURL);
-            const videoData = await videoResponse.arrayBuffer();
-            ffmpeg.FS('writeFile', 'input_video.mp4', new Uint8Array(videoData));
-
-            const audioResponse = await fetch(audioURL);
-            const audioData = await audioResponse.arrayBuffer();
-            ffmpeg.FS('writeFile', 'input_audio.mp4', new Uint8Array(audioData));
-
-            await ffmpeg.run('-i', 'input_video.mp4', '-i', 'input_audio.mp4', '-c:v', 'copy', '-c:a', 'aac', '-strict', 'experimental', 'output.mp4');
-
-            const outputData = ffmpeg.FS('readFile', 'output.mp4');
-            const outputBlob = new Blob([outputData.buffer], { type: 'video/mp4' });
-            const outputURL = URL.createObjectURL(outputBlob);
-
-            const a = document.createElement('a');
-            a.href = outputURL;
-            a.download = 'merged_video.mp4';
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(outputURL);
-        }
-
-        window.addEventListener('message', async (e) => {
-            console.log('Message received in worker:', e.data);
-            if (e.data && e.data.type === 'PROCESS_MEDIA') {
-                const { videoURL, audioURL } = e.data.payload;
-                try {
-                    await fileProcessing(videoURL, audioURL);
-                    window.parent.postMessage({ type: 'PROCESS_COMPLETE', payload: { success: true } }, '*');
-                } catch (error) {
-                    window.parent.postMessage({ type: 'PROCESS_COMPLETE', payload: { success: false, error: error.message } }, '*');
-                }
-            }
-        });
-        `
-    ], { type: 'application/javascript' }));
-
-    scriptMain.src = customScriptURL;
-    doc.head.appendChild(scriptMain);
-
     /*******************************/
 
     // Main Timer
@@ -3285,19 +3202,18 @@
     }
 
     /**
-     * createSaveFileElement
-     * @description Download the specified media with link element.
+     * getSaveFileName
+     * @description Get the file name for downloaded media according to the user settings and resource information.
      *
      * @param  {String}  downloadLink
-     * @param  {Object}  object
      * @param  {String}  username
      * @param  {String}  sourceType
      * @param  {Integer}  timestamp
      * @param  {String}  filetype
      * @param  {String}  shortcode
-     * @return {void}
+     * @return {String}  The generated filename
      */
-    function createSaveFileElement(downloadLink, object, username, sourceType, timestamp, filetype, shortcode) {
+    function getSaveFileName(downloadLink, username, sourceType, timestamp, filetype, shortcode) {
         timestamp = parseInt(timestamp.toString().padEnd(13, '0'));
 
         if (USER_SETTING.RENAME_PUBLISH_DATE) {
@@ -3341,6 +3257,26 @@
 
         const originally = username + '_' + original_name + '.' + filetype;
         const downloadName = USER_SETTING.AUTO_RENAME ? filename + '.' + filetype : originally;
+
+        return downloadName;
+    }
+
+
+    /**
+     * createSaveFileElement
+     * @description Download the specified media with link element.
+     *
+     * @param  {String}  downloadLink
+     * @param  {Object}  object
+     * @param  {String}  username
+     * @param  {String}  sourceType
+     * @param  {Integer}  timestamp
+     * @param  {String}  filetype
+     * @param  {String}  shortcode
+     * @return {void}
+     */
+    function createSaveFileElement(downloadLink, object, username, sourceType, timestamp, filetype, shortcode) {
+        const downloadName = getSaveFileName(downloadLink, username, sourceType, timestamp, filetype, shortcode);
         if (USER_SETTING.MODIFY_RESOURCE_EXIF && filetype === 'jpg' && shortcode && sourceType === 'photo' && (object.type === 'image/jpeg' || object.type === 'image/webp')) {
             changeExifData(object, shortcode)
                 .then(newBlob => triggerDownload(newBlob, downloadName))
@@ -3513,38 +3449,10 @@
                 let dashManifest = state.GL_videoDashCache[mediaId];
                 let { video, audio } = getXmlMediaDashManifest(dashManifest);
 
-                createWorkerWindow(video.url, audio.url);
+                let downloadName = getSaveFileName(video.url, username, $(element).attr('data-name'), timestamp, $(element).attr('data-type'), $(element).attr('data-path'));
+
+                GM_openInTab(`https://www.yuriko.cc/tools/ffmpeg?videoURL=${encodeURIComponent(video.url)}&audioURL=${encodeURIComponent(audio.url)}&filename=${encodeURIComponent(downloadName)}`, { active: true });
                 return;
-
-                // iframe.contentWindow.postMessage({
-                //     type: 'PROCESS_MEDIA',
-                //     payload: {
-                //         videoURL: video.url,
-                //         audioURL: audio.url
-                //     }
-                // }, '*');
-
-                return;
-
-                // ffmpeg.FS('writeFile', 'video.mp4', await fetchFile(video.url));
-                // ffmpeg.FS('writeFile', 'audio.mp3', await fetchFile(audio.url));
-
-                // await ffmpeg.run(
-                //     '-i', 'video.mp4',
-                //     '-i', 'audio.mp3',
-                //     '-c:v', 'copy',
-                //     '-c:a', 'aac',
-                //     '-shortest',
-                //     'output.mp4'
-                // );
-
-                // // 讀取輸出
-                // const data = ffmpeg.FS('readFile', 'output.mp4');
-
-                // const blob = new Blob([data.buffer], { type: 'video/mp4' });
-                // const url = URL.createObjectURL(blob);
-
-                // saveFiles(url, username, $(element).data('name'), timestamp, 'mp4', $(element).data('path'));
             }
 
             if (USER_SETTING.CAPTURE_IMAGE_VIA_MEDIA_CACHE) {
@@ -4314,64 +4222,6 @@
                 url: decodeURIComponent(Array.from(audio.getElementsByTagName('BaseURL')).at(0).textContent)
             }
         };
-    }
-
-    function createWorkerWindow(videoURL, audioURL) {
-        // // 開啟一個約定好的空白頁面
-        // let workerWindow = window.open('about:blank', 'ffmpeg_worker', 'noopener, noreferrer');
-
-        // const doc = workerWindow.document;
-        // doc.title = "FFmpeg 處理中...";
-
-        // doc.write(`
-        //         <script src="https://cdn.jsdelivr.net/npm/@ffmpeg/ffmpeg@0.12.6/dist/umd/ffmpeg.min.js" ></script>
-        //         <script>
-        //         const { FFmpeg } = FFmpegWASM;
-
-        //         const ffmpeg = new FFmpeg();
-
-        //         ffmpeg.on("log", ({ message }) => {
-        //             console.log(message);
-        //         })
-
-        //         async function fileProcessing(videoURL, audioURL){
-        //             await ffmpeg.load();
-        //         }
-
-        //         fileProcessing('a','b');
-        //         </script>
-        //     `);
-
-        const ffmpegCode = `
-        <!DOCTYPE html>
-        <html>
-        <head>
-            <title>FFmpeg 處理中...</title>
-            <script src="https://cdn.jsdelivr.net"></script>
-        </head>
-        <body>
-            <script>
-                const { FFmpeg } = FFmpegWASM;
-                const ffmpeg = new FFmpeg();
-                ffmpeg.on("log", ({ message }) => console.log(message));
-
-                async function fileProcessing(){
-                    await ffmpeg.load();
-                    console.log("FFmpeg 已就緒");
-                }
-                fileProcessing();
-            </script>
-        </body>
-        </html>
-    `;
-        // // 將字串轉為 Blob 並生成 URL
-        // const blob = new Blob([ffmpegCode], { type: 'text/html' });
-        // const blobUrl = URL.createObjectURL(blob);
-
-        // // 開啟新視窗，注意：若需避開父頁面限制，有時需要保持 noopener
-        // window.open(blobUrl, 'ffmpeg_worker', 'noopener, noreferrer');
-        const encodedUri = "data:text/html;base64," + btoa(unescape(encodeURIComponent(ffmpegCode)));
-        window.open(encodedUri, 'ffmpeg_worker');
     }
 
     let mediaCacheDirty = false;
@@ -5159,4 +5009,4 @@
             subtree: true,
         });
     });
-})(jQuery, FFmpegWASM);
+})(jQuery);
