@@ -5,7 +5,7 @@
 // @name:ja            IG助手
 // @name:ko            IG조수
 // @namespace          https://github.snkms.com/
-// @version            3.12.2
+// @version            3.12.3
 // @description        Downloading is possible for both photos and videos from posts, as well as for stories, reels or profile picture.
 // @description:zh-TW  一鍵下載對方 Instagram 貼文中的相片、影片甚至是他們的限時動態、連續短片及大頭貼圖片！
 // @description:zh-CN  一键下载对方 Instagram 帖子中的相片、视频甚至是他们的快拍、Reels及头像图片！
@@ -59,6 +59,7 @@
         'FALLBACK_TO_BLOB_FETCH_IF_MEDIA_API_THROTTLED': false,
         'FORCE_FETCH_ALL_RESOURCES': false,
         'FORCE_RESOURCE_VIA_MEDIA': false,
+        'DOWNLOAD_STREAM_VIDEO': false,
         'HTML5_VIDEO_CONTROL': false,
         'MODIFY_RESOURCE_EXIF': false,
         'MODIFY_VIDEO_VOLUME': false,
@@ -3444,7 +3445,7 @@
 
             let mediaId = $(element).attr('media-id');
 
-            if (state.GL_videoDashCache[mediaId] && !isPreview) {
+            if (USER_SETTING.DOWNLOAD_STREAM_VIDEO && state.GL_videoDashCache[mediaId] && !isPreview) {
                 logger('[Video Dash Stream]', 'Processing video with DASH manifest, mediaId:', mediaId);
                 let dashManifest = state.GL_videoDashCache[mediaId];
                 let { video, audio } = getXmlMediaDashManifest(dashManifest);
@@ -4385,6 +4386,7 @@
                 "MODIFY_RESOURCE_EXIF": "Modify Resource EXIF Properties",
                 "SCROLL_BUTTON": "Enable Scroll Buttons for Reels Page",
                 "FORCE_RESOURCE_VIA_MEDIA": "Force Fetch Resource via Media API",
+                "DOWNLOAD_STREAM_VIDEO": "Download High-quality Streaming Videos",
                 "FALLBACK_TO_BLOB_FETCH_IF_MEDIA_API_THROTTLED": "Use Alternative Methods to Download When the Media API is Not Accessible",
                 "NEW_TAB_ALWAYS_FORCE_MEDIA_IN_POST": "Always Use Media API for 'Open in New Tab' in Posts",
                 "SKIP_VIEW_STORY_CONFIRM": "Skip the Confirmation Page for Viewing a Story/Highlight",
@@ -4403,6 +4405,7 @@
                 "MODIFY_VIDEO_VOLUME_INTRO": "Modify the video playback volume in Reels and posts (right-click to open the volume setting slider).",
                 "SCROLL_BUTTON_INTRO": "Enable scroll buttons for the lower right corner of the Reels page.",
                 "FORCE_RESOURCE_VIA_MEDIA_INTRO": "The Media API will try to get the highest quality photo or video possible, but it may take longer to load.",
+                "DOWNLOAD_STREAM_VIDEO_INTRO": "Download high-quality streaming videos (if available) through external websites and ffmpeg Wasm.",
                 "FALLBACK_TO_BLOB_FETCH_IF_MEDIA_API_THROTTLED_INTRO": "When the Media API reaches its rate limit or cannot be used for other reasons, the Forced Fetch API will be used to download resources (the resource quality may be slightly lower).",
                 "NEW_TAB_ALWAYS_FORCE_MEDIA_IN_POST_INTRO": "The [Open in New Tab] button in posts will always use the Media API to obtain high-resolution resources.",
                 "CHECK_FOR_UPDATE_INTRO": "Check for updates when the script is triggered (check every 300 seconds).\nUpdate notifications will be sent as desktop notifications through the browser.",
