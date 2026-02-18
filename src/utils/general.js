@@ -425,31 +425,18 @@ export async function triggerLinkElement(element, isPreview) {
             let dashManifest = state.GL_videoDashCache[mediaId];
             let { video, audio } = getXmlMediaDashManifest(dashManifest);
 
-            // const { fetchFile } = FFmpegUtil;
-            const { FFmpeg } = FFmpegWASM;
+            createWorkerWindow(video.url, audio.url);
+            return;
 
-            const ffmpeg = new FFmpeg();
+            // iframe.contentWindow.postMessage({
+            //     type: 'PROCESS_MEDIA',
+            //     payload: {
+            //         videoURL: video.url,
+            //         audioURL: audio.url
+            //     }
+            // }, '*');
 
-            ffmpeg.on("log", ({ message }) => {
-                console.log(message);
-            })
-            ffmpeg.on("progress", ({ progress, time }) => {
-                console.log(`${progress * 100} %, time: ${time / 1000000} s`);
-            });
-
-            const worker_url = URL.createObjectURL(new Blob([GM_getResourceText("FFMPEG_WORKER")], { type: 'application/javascript' }));
-            const worker_mt_url = URL.createObjectURL(new Blob([GM_getResourceText("FFMPEG_WORKER_MT")], { type: 'application/javascript' }));
-            const core_url = URL.createObjectURL(new Blob([GM_getResourceText("FFMPEG_CORE")], { type: 'application/javascript' }));
-            // const wasm_url = URL.createObjectURL(new Blob([GM_getResourceURL("FFMPEG_WASM")], { type: 'application/wasm' }));
-            console.log(worker_url, worker_mt_url, core_url);
-            await ffmpeg.load({
-                coreURL: core_url,
-                wasmURL: "https://cdn.jsdelivr.net/npm/@ffmpeg/core@0.12.6/dist/umd/ffmpeg-core.wasm",
-                classWorkerURL: worker_url,
-                workerURL: worker_mt_url,
-            });
-
-
+            return;
 
             // ffmpeg.FS('writeFile', 'video.mp4', await fetchFile(video.url));
             // ffmpeg.FS('writeFile', 'audio.mp3', await fetchFile(audio.url));
@@ -1239,4 +1226,62 @@ export function getXmlMediaDashManifest(manifest) {
             url: decodeURIComponent(Array.from(audio.getElementsByTagName('BaseURL')).at(0).textContent)
         }
     };
+}
+
+function createWorkerWindow(videoURL, audioURL) {
+    // // 開啟一個約定好的空白頁面
+    // let workerWindow = window.open('about:blank', 'ffmpeg_worker', 'noopener, noreferrer');
+
+    // const doc = workerWindow.document;
+    // doc.title = "FFmpeg 處理中...";
+
+    // doc.write(`
+    //         <script src="https://cdn.jsdelivr.net/npm/@ffmpeg/ffmpeg@0.12.6/dist/umd/ffmpeg.min.js" ></script>
+    //         <script>
+    //         const { FFmpeg } = FFmpegWASM;
+
+    //         const ffmpeg = new FFmpeg();
+
+    //         ffmpeg.on("log", ({ message }) => {
+    //             console.log(message);
+    //         })
+
+    //         async function fileProcessing(videoURL, audioURL){
+    //             await ffmpeg.load();
+    //         }
+
+    //         fileProcessing('a','b');
+    //         </script>
+    //     `);
+
+    const ffmpegCode = `
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <title>FFmpeg 處理中...</title>
+        <script src="https://cdn.jsdelivr.net"></script>
+    </head>
+    <body>
+        <script>
+            const { FFmpeg } = FFmpegWASM;
+            const ffmpeg = new FFmpeg();
+            ffmpeg.on("log", ({ message }) => console.log(message));
+            
+            async function fileProcessing(){
+                await ffmpeg.load();
+                console.log("FFmpeg 已就緒");
+            }
+            fileProcessing();
+        </script>
+    </body>
+    </html>
+`;
+    // // 將字串轉為 Blob 並生成 URL
+    // const blob = new Blob([ffmpegCode], { type: 'text/html' });
+    // const blobUrl = URL.createObjectURL(blob);
+
+    // // 開啟新視窗，注意：若需避開父頁面限制，有時需要保持 noopener
+    // window.open(blobUrl, 'ffmpeg_worker', 'noopener, noreferrer');
+    const encodedUri = "data:text/html;base64," + btoa(unescape(encodeURIComponent(ffmpegCode)));
+    window.open(encodedUri, 'ffmpeg_worker');
 }

@@ -30,6 +30,7 @@
 // @connect            cdn.jsdelivr.net
 // @require            https://code.jquery.com/jquery-3.7.1.min.js#sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=
 // @require            https://cdn.jsdelivr.net/npm/@ffmpeg/ffmpeg@0.12.6/dist/umd/ffmpeg.min.js
+// @resource           FFMPEG https://cdn.jsdelivr.net/npm/@ffmpeg/ffmpeg@0.12.6/dist/umd/ffmpeg.min.js
 // @resource           FFMPEG_WORKER https://cdn.jsdelivr.net/npm/@ffmpeg/ffmpeg@0.12.6/dist/esm/worker.min.js
 // @resource           FFMPEG_WORKER_MT https://cdn.jsdelivr.net/npm/@ffmpeg/core-mt@0.12.6/dist/umd/ffmpeg-core.worker.js
 // @resource           FFMPEG_CORE https://cdn.jsdelivr.net/npm/@ffmpeg/core@0.12.6/dist/umd/ffmpeg-core.js
@@ -159,6 +160,82 @@
 
     logger('Script Loaded', GM_info.script.name, 'version:', GM_info.script.version);
     purgeCache();
+
+    const ffmpegCode = GM_getResourceText("FFMPEG");
+    const ffmpegURL = URL.createObjectURL(new Blob([ffmpegCode], { type: 'application/javascript' }));
+
+    // 2. 建立一個隔離的 iframe
+    const iframe = document.createElement('iframe');
+    iframe.style.display = 'none';
+    // iframe.setAttribute('sandbox', 'allow-scripts allow-same-origin');
+    iframe.setAttribute('csp', 'default-src *; script-src *; connect-src *; worker-src *;');
+    document.body.appendChild(iframe);
+
+    const doc = iframe.contentDocument;
+
+    // 依序注入程式碼
+    const script1 = doc.createElement('script');
+    script1.src = ffmpegURL;
+    doc.head.appendChild(script1);
+
+    // 4. 初始化隔離環境中的 FFmpeg
+    const scriptMain = doc.createElement('script');
+
+    const customScriptURL = URL.createObjectURL(new Blob([
+        `
+        const { FFmpeg } = FFmpegWASM;
+
+        const ffmpeg = new FFmpeg();
+
+        ffmpeg.on("log", ({ message }) => {
+            console.log(message);
+        })
+
+        async function fileProcessing(videoURL, audioURL){
+            await ffmpeg.load();
+            console.log('FFmpeg loaded');
+
+            const videoResponse = await fetch(videoURL);
+            const videoData = await videoResponse.arrayBuffer();
+            ffmpeg.FS('writeFile', 'input_video.mp4', new Uint8Array(videoData));
+
+            const audioResponse = await fetch(audioURL);
+            const audioData = await audioResponse.arrayBuffer();
+            ffmpeg.FS('writeFile', 'input_audio.mp4', new Uint8Array(audioData));
+
+            await ffmpeg.run('-i', 'input_video.mp4', '-i', 'input_audio.mp4', '-c:v', 'copy', '-c:a', 'aac', '-strict', 'experimental', 'output.mp4');
+
+            const outputData = ffmpeg.FS('readFile', 'output.mp4');
+            const outputBlob = new Blob([outputData.buffer], { type: 'video/mp4' });
+            const outputURL = URL.createObjectURL(outputBlob);
+
+            const a = document.createElement('a');
+            a.href = outputURL;
+            a.download = 'merged_video.mp4';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(outputURL);
+        }
+
+        window.addEventListener('message', async (e) => {
+            console.log('Message received in worker:', e.data);
+            if (e.data && e.data.type === 'PROCESS_MEDIA') {
+                const { videoURL, audioURL } = e.data.payload;
+                try {
+                    await fileProcessing(videoURL, audioURL);
+                    window.parent.postMessage({ type: 'PROCESS_COMPLETE', payload: { success: true } }, '*');
+                } catch (error) {
+                    window.parent.postMessage({ type: 'PROCESS_COMPLETE', payload: { success: false, error: error.message } }, '*');
+                }
+            }
+        });
+        `
+    ], { type: 'application/javascript' }));
+
+    scriptMain.src = customScriptURL;
+    doc.head.appendChild(scriptMain);
+
     /*******************************/
 
     // Main Timer
@@ -3436,31 +3513,18 @@
                 let dashManifest = state.GL_videoDashCache[mediaId];
                 let { video, audio } = getXmlMediaDashManifest(dashManifest);
 
-                // const { fetchFile } = FFmpegUtil;
-                const { FFmpeg } = FFmpegWASM;
+                createWorkerWindow(video.url, audio.url);
+                return;
 
-                const ffmpeg = new FFmpeg();
+                // iframe.contentWindow.postMessage({
+                //     type: 'PROCESS_MEDIA',
+                //     payload: {
+                //         videoURL: video.url,
+                //         audioURL: audio.url
+                //     }
+                // }, '*');
 
-                ffmpeg.on("log", ({ message }) => {
-                    console.log(message);
-                })
-                ffmpeg.on("progress", ({ progress, time }) => {
-                    console.log(`${progress * 100} %, time: ${time / 1000000} s`);
-                });
-
-                const worker_url = URL.createObjectURL(new Blob([GM_getResourceText("FFMPEG_WORKER")], { type: 'application/javascript' }));
-                const worker_mt_url = URL.createObjectURL(new Blob([GM_getResourceText("FFMPEG_WORKER_MT")], { type: 'application/javascript' }));
-                const core_url = URL.createObjectURL(new Blob([GM_getResourceText("FFMPEG_CORE")], { type: 'application/javascript' }));
-                // const wasm_url = URL.createObjectURL(new Blob([GM_getResourceURL("FFMPEG_WASM")], { type: 'application/wasm' }));
-                console.log(worker_url, worker_mt_url, core_url);
-                await ffmpeg.load({
-                    coreURL: core_url,
-                    wasmURL: "https://cdn.jsdelivr.net/npm/@ffmpeg/core@0.12.6/dist/umd/ffmpeg-core.wasm",
-                    classWorkerURL: worker_url,
-                    workerURL: worker_mt_url,
-                });
-
-
+                return;
 
                 // ffmpeg.FS('writeFile', 'video.mp4', await fetchFile(video.url));
                 // ffmpeg.FS('writeFile', 'audio.mp3', await fetchFile(audio.url));
@@ -4250,6 +4314,64 @@
                 url: decodeURIComponent(Array.from(audio.getElementsByTagName('BaseURL')).at(0).textContent)
             }
         };
+    }
+
+    function createWorkerWindow(videoURL, audioURL) {
+        // // 開啟一個約定好的空白頁面
+        // let workerWindow = window.open('about:blank', 'ffmpeg_worker', 'noopener, noreferrer');
+
+        // const doc = workerWindow.document;
+        // doc.title = "FFmpeg 處理中...";
+
+        // doc.write(`
+        //         <script src="https://cdn.jsdelivr.net/npm/@ffmpeg/ffmpeg@0.12.6/dist/umd/ffmpeg.min.js" ></script>
+        //         <script>
+        //         const { FFmpeg } = FFmpegWASM;
+
+        //         const ffmpeg = new FFmpeg();
+
+        //         ffmpeg.on("log", ({ message }) => {
+        //             console.log(message);
+        //         })
+
+        //         async function fileProcessing(videoURL, audioURL){
+        //             await ffmpeg.load();
+        //         }
+
+        //         fileProcessing('a','b');
+        //         </script>
+        //     `);
+
+        const ffmpegCode = `
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>FFmpeg 處理中...</title>
+            <script src="https://cdn.jsdelivr.net"></script>
+        </head>
+        <body>
+            <script>
+                const { FFmpeg } = FFmpegWASM;
+                const ffmpeg = new FFmpeg();
+                ffmpeg.on("log", ({ message }) => console.log(message));
+
+                async function fileProcessing(){
+                    await ffmpeg.load();
+                    console.log("FFmpeg 已就緒");
+                }
+                fileProcessing();
+            </script>
+        </body>
+        </html>
+    `;
+        // // 將字串轉為 Blob 並生成 URL
+        // const blob = new Blob([ffmpegCode], { type: 'text/html' });
+        // const blobUrl = URL.createObjectURL(blob);
+
+        // // 開啟新視窗，注意：若需避開父頁面限制，有時需要保持 noopener
+        // window.open(blobUrl, 'ffmpeg_worker', 'noopener, noreferrer');
+        const encodedUri = "data:text/html;base64," + btoa(unescape(encodeURIComponent(ffmpegCode)));
+        window.open(encodedUri, 'ffmpeg_worker');
     }
 
     let mediaCacheDirty = false;
