@@ -12,7 +12,6 @@ export default [
         $: 'readonly',
         jQuery: 'readonly',
         Mediabunny: 'readonly',
-        piexif: 'readonly',
         GM_info: 'readable',
         GM_addStyle: 'readable',
         GM_setValue: 'readable',

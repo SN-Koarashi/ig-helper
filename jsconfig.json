@@ -1,7 +1,11 @@
 {
     "compilerOptions": {
         "target": "es6",
-        "module": "es6"
+        "module": "es6",
+        "types": [
+            "jquery",
+            "tampermonkey"
+        ]
     },
     "include": [
         "src/**/*"
