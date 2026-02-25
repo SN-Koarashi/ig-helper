@@ -5,7 +5,7 @@
 // @name:ja            IG助手
 // @name:ko            IG조수
 // @namespace          https://github.snkms.com/
-// @version            3.13.1
+// @version            3.13.2
 // @description        Downloading is possible for both photos and videos from posts, as well as for stories, reels or profile picture.
 // @description:zh-TW  一鍵下載對方 Instagram 貼文中的相片、影片甚至是他們的限時動態、連續短片及大頭貼圖片！
 // @description:zh-CN  一键下载对方 Instagram 帖子中的相片、视频甚至是他们的快拍、Reels及头像图片！
@@ -999,82 +999,64 @@
                     $childElement.find(".button_wrapper").append(NewTabElement);
 
                     setTimeout(() => {
-                        // Check if visible post is video
-                        if ($childElement.eq((tagName === "DIV") ? 0 : $childElement.length - 2).find('div > ul li._acaz').length === 0) {
-                            if ($childElement.find('video').length > 0) {
-                                $childElement.find(".button_wrapper").append(ThumbnailElement);
-                            }
-                            else {
-                                displayResourceURL = $mainElement.find('img').filter(function () {
-                                    return $(this).width() > 200 && $(this).height() > 200
-                                }).attr('src');
-                                $childElement.find(".button_wrapper").append(ViewerElement);
-                            }
-                        }
-                        else {
-                            // eslint-disable-next-line no-unused-vars
-                            const checkVideoNodeCallback = (entries, observer) => {
-                                entries.forEach((entry) => {
-                                    //logger(entry);
-                                    if (entry.isIntersecting) {
-                                        var $targetNode = $(entry.target);
-                                        $childElement.find('.IG_THUMBNAIL_MAIN')?.remove();
-                                        $childElement.find('.IG_IMAGE_VIEWER')?.remove();
+                        // eslint-disable-next-line no-unused-vars
+                        const checkNodeCallback = (entries, observer) => {
+                            entries.forEach((entry) => {
+                                //logger(entry);
+                                if (entry.isIntersecting) {
+                                    var $targetNode = $(entry.target);
+                                    $childElement.find('.IG_THUMBNAIL_MAIN')?.remove();
+                                    $childElement.find('.IG_IMAGE_VIEWER')?.remove();
 
-                                        // Check if video?
-                                        if ($targetNode.find('video').length > 0) {
-                                            if ($childElement.find('.IG_THUMBNAIL_MAIN').length === 0) {
-                                                $childElement.find(".button_wrapper").append(ThumbnailElement);
-                                            }
+                                    // Check if video?
+                                    if ($targetNode.find('video').length > 0) {
+                                        if ($childElement.find('.IG_THUMBNAIL_MAIN').length === 0) {
+                                            $childElement.find(".button_wrapper").append(ThumbnailElement);
+                                        }
 
-                                            initPostVideoFunction($mainElement);
-                                        }
-                                        // is Image
-                                        else {
-                                            displayResourceURL = $targetNode.find('img').attr('src');
-                                            $childElement.find(".button_wrapper").append(ViewerElement);
-                                        }
+                                        initPostVideoFunction($mainElement);
                                     }
-                                });
-                            };
-
-                            const observer_i = new IntersectionObserver(checkVideoNodeCallback, {
-                                root: $mainElement.find('div > ul._acay').first().parent().parent().parent()[0],
-                                rootMargin: "0px",
-                                threshold: 0.1,
+                                    // is Image
+                                    else {
+                                        displayResourceURL = $targetNode.find('img').attr('src');
+                                        $childElement.find(".button_wrapper").append(ViewerElement);
+                                    }
+                                }
                             });
+                        };
 
-                            // trigger when switching resources
-                            // eslint-disable-next-line no-unused-vars
-                            const observer = new MutationObserver(function (mutation, owner) {
-                                var target = mutation.at(0)?.target;
+                        const observer_i = new IntersectionObserver(checkNodeCallback, {
+                            root: $childElement.find('.button_wrapper').parent()[0],
+                            rootMargin: "0px",
+                            threshold: 0.1,
+                        });
 
-                                $(target).find('li._acaz').each(function () {
+                        // trigger when switching resources
+                        // eslint-disable-next-line no-unused-vars
+                        const observer = new MutationObserver(function (mutation, owner) {
+                            var target = mutation.at(0)?.target;
+                            observer_i.disconnect();
+
+                            $(target).find('li').each(function () {
+                                if ($(target).find('video').length > 0 || $(target).find('img').length > 0) {
                                     observer_i.observe(this);
-                                });
+                                }
                             });
+                        });
 
-                            // first onload
-                            $mainElement.find('div > ul li._acaz').each(function () {
+                        // first onload
+                        $childElement.find('.button_wrapper').parent().find('ul li').each(function () {
+                            if ($(this).find('video').length > 0 || $(this).find('img').length > 0) {
                                 observer_i.observe(this);
-                            });
-
-
-                            const element = $childElement.eq((tagName === "DIV") ? 0 : $childElement.length - 2).find('div > ul li._acaz')?.parent()[0];
-                            const elementAttr = $childElement.eq((tagName === "DIV") ? 0 : $childElement.length - 2).find('div > ul li._acaz')?.parent().parent()[0];
-
-                            if (element) {
-                                observer.observe(element, {
-                                    childList: true
-                                });
                             }
+                        });
 
-                            if (elementAttr) {
-                                observer.observe(elementAttr, {
-                                    attributes: true
-                                });
-                            }
-                        }
+                        const listRoot = $childElement.find('.button_wrapper').parent().find('ul li').first().parent()[0];
+                        observer.observe(listRoot, {
+                            attributes: true,
+                            childList: true,
+                        });
+
                     }, 50);
 
 
