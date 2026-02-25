@@ -1588,10 +1588,13 @@
                         return;
                     }
 
-                    $('header > *[class]:first-child > *[class]:first-child img[alt][draggable]').parent().parent().append(`<div data-ih-locale-title="DW" title="${_i18n("DW")}" class="IG_DWPROFILE">${SVG.DOWNLOAD}</div>`);
-                    $('header > *[class]:first-child > *[class]:first-child img[alt][draggable]').parent().parent().css('position', 'relative');
-                    $('header > *[class]:first-child > *[class]:first-child img[alt]:not([draggable])').parent().parent().parent().append(`<div data-ih-locale-title="DW" title="${_i18n("DW")}" class="IG_DWPROFILE">${SVG.DOWNLOAD}</div>`);
-                    $('header > *[class]:first-child > *[class]:first-child img[alt]:not([draggable])').parent().parent().parent().css('position', 'relative');
+                    const selector = 'header > *[class]:first-child > *[class]:first-child img[alt]';
+                    const $draggableElements = $(`${selector}[draggable]`).parent().parent();
+                    const $nonDraggableElements = $(`${selector}:not([draggable])`).parent().parent().parent();
+                    $draggableElements.append(`<div data-ih-locale-title="DW" title="${_i18n("DW")}" class="IG_DWPROFILE">${SVG.DOWNLOAD}</div>`);
+                    $draggableElements.css('position', 'relative');
+                    $nonDraggableElements.append(`<div data-ih-locale-title="DW" title="${_i18n("DW")}" class="IG_DWPROFILE">${SVG.DOWNLOAD}</div>`);
+                    $nonDraggableElements.css('position', 'relative');
                 }, 150);
             }
         }
