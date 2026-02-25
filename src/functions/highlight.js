@@ -2,6 +2,7 @@ import { USER_SETTING, SVG, state } from "../settings";
 import {
     updateLoadingBar, openNewTab, logger,
     setDownloadProgress, saveFiles, getStoryProgress,
+    tryHandleDashFromMediaItem,
     IG_createDM
 } from "../utils/general";
 import { _i18n } from "../utils/i18n";
@@ -43,9 +44,30 @@ export async function onHighlightsStoryAll() {
                 });
 
                 if (item.is_video) {
-                    saveFiles(item.video_resources[0].src, username, "highlights", timestamp, 'mp4', item.id).then(() => {
+                    (async () => {
+                        if (USER_SETTING.FORCE_RESOURCE_VIA_MEDIA && USER_SETTING.PREFER_DASH_MANIFEST && !state.tempFetchRateLimit) {
+                            const mi = await getMediaInfo(item.id);
+                            if (mi?.status === 'ok') {
+                                const handled = await tryHandleDashFromMediaItem({
+                                    mediaItem: mi.items[0],
+                                    username,
+                                    sourceType: "highlights",
+                                    timestamp,
+                                    shortcode: mi.items[0].id,
+                                    isPreview: false,
+                                });
+                                if (handled) {
+                                    setDownloadProgress(++complete, highStories.data.reels_media[0].items.length);
+                                    return;
+                                }
+                            } else if (USER_SETTING.FALLBACK_TO_BLOB_FETCH_IF_MEDIA_API_THROTTLED) {
+                                state.tempFetchRateLimit = true;
+                            }
+                        }
+
+                        await saveFiles(item.video_resources[0].src, username, "highlights", timestamp, 'mp4', item.id);
                         setDownloadProgress(++complete, highStories.data.reels_media[0].items.length);
-                    });
+                    })();
                 }
                 else {
                     saveFiles(item.display_resources[0].src, username, "highlights", timestamp, 'jpg', item.id).then(() => {
@@ -127,6 +149,16 @@ export async function onHighlightsStory(isDownload, isPreview) {
 
             if (result.status === 'ok') {
                 if (result.items[0].video_versions) {
+                    const handled = await tryHandleDashFromMediaItem({
+                        mediaItem: result.items[0],
+                        username,
+                        sourceType: "highlights",
+                        timestamp,
+                        shortcode: result.items[0].id,
+                        isPreview,
+                    });
+                    if (handled) return;
+
                     if (isPreview) {
                         openNewTab(result.items[0].video_versions[0].url);
                     }

@@ -26,6 +26,7 @@
 // @grant              GM_openInTab
 // @connect            i.instagram.com
 // @connect            raw.githubusercontent.com
+// @require            https://cdn.jsdelivr.net/npm/mediabunny@1.34.5/dist/bundles/mediabunny.min.cjs#sha256-wUFR+x2bDvpqgMAVGy2CvGvULyjTGvGy4UUAm8rae5U=
 // @require            https://code.jquery.com/jquery-3.7.1.min.js#sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=
 // @resource           INTERNAL_CSS https://raw.githubusercontent.com/SN-Koarashi/ig-helper/master/style.css
 // @resource           LOCALE_MANIFEST https://raw.githubusercontent.com/SN-Koarashi/ig-helper/master/locale/manifest.json
@@ -40,7 +41,7 @@
 // ==/UserScript==
 
 // eslint-disable-next-line no-unused-vars
-(function ($) {
+(function ($, Mediabunny) {
     'use strict';
 
     /* initial */
@@ -59,11 +60,11 @@
         'FALLBACK_TO_BLOB_FETCH_IF_MEDIA_API_THROTTLED': false,
         'FORCE_FETCH_ALL_RESOURCES': false,
         'FORCE_RESOURCE_VIA_MEDIA': false,
-        'DOWNLOAD_STREAM_VIDEO': false,
         'HTML5_VIDEO_CONTROL': false,
         'MODIFY_RESOURCE_EXIF': false,
         'MODIFY_VIDEO_VOLUME': false,
         'NEW_TAB_ALWAYS_FORCE_MEDIA_IN_POST': false,
+        'PREFER_DASH_MANIFEST': false,
         'REDIRECT_CLICK_USER_STORY_PICTURE': false,
         'RENAME_PUBLISH_DATE': true,
         'SCROLL_BUTTON': true,
@@ -78,7 +79,8 @@
         ],
         'FORCE_RESOURCE_VIA_MEDIA': [
             'FALLBACK_TO_BLOB_FETCH_IF_MEDIA_API_THROTTLED',
-            'NEW_TAB_ALWAYS_FORCE_MEDIA_IN_POST'
+            'NEW_TAB_ALWAYS_FORCE_MEDIA_IN_POST',
+            'PREFER_DASH_MANIFEST'
         ],
         'HTML5_VIDEO_CONTROL': [
             'SET_INSTAGRAM_LAYOUT_AS_DEFAULT'
@@ -129,7 +131,7 @@
             onReadyMyDW();
         }),
         GL_imageCache: GM_getValue(IMAGE_CACHE_KEY, {}),
-        GL_videoDashCache: {},
+        GL_mediaDataCache: {},
     };
     /*******************************/
 
@@ -406,9 +408,30 @@
                     });
 
                     if (item.is_video) {
-                        saveFiles(item.video_resources[0].src, username, "highlights", timestamp, 'mp4', item.id).then(() => {
+                        (async () => {
+                            if (USER_SETTING.FORCE_RESOURCE_VIA_MEDIA && USER_SETTING.PREFER_DASH_MANIFEST && !state.tempFetchRateLimit) {
+                                const mi = await getMediaInfo(item.id);
+                                if (mi?.status === 'ok') {
+                                    const handled = await tryHandleDashFromMediaItem({
+                                        mediaItem: mi.items[0],
+                                        username,
+                                        sourceType: "highlights",
+                                        timestamp,
+                                        shortcode: mi.items[0].id,
+                                        isPreview: false,
+                                    });
+                                    if (handled) {
+                                        setDownloadProgress(++complete, highStories.data.reels_media[0].items.length);
+                                        return;
+                                    }
+                                } else if (USER_SETTING.FALLBACK_TO_BLOB_FETCH_IF_MEDIA_API_THROTTLED) {
+                                    state.tempFetchRateLimit = true;
+                                }
+                            }
+
+                            await saveFiles(item.video_resources[0].src, username, "highlights", timestamp, 'mp4', item.id);
                             setDownloadProgress(++complete, highStories.data.reels_media[0].items.length);
-                        });
+                        })();
                     }
                     else {
                         saveFiles(item.display_resources[0].src, username, "highlights", timestamp, 'jpg', item.id).then(() => {
@@ -490,6 +513,16 @@
 
                 if (result.status === 'ok') {
                     if (result.items[0].video_versions) {
+                        const handled = await tryHandleDashFromMediaItem({
+                            mediaItem: result.items[0],
+                            username,
+                            sourceType: "highlights",
+                            timestamp,
+                            shortcode: result.items[0].id,
+                            isPreview,
+                        });
+                        if (handled) return;
+
                         if (isPreview) {
                             openNewTab(result.items[0].video_versions[0].url);
                         }
@@ -1361,7 +1394,7 @@
                     idx++;
 
                     if (resource.video_dash_manifest) {
-                        state.GL_videoDashCache[resource.id] = resource.video_dash_manifest;
+                        state.GL_mediaDataCache[resource.id] = resource;
                     }
                 }
                 // GraphImage
@@ -1375,7 +1408,7 @@
                         if (e.node.__typename == "GraphVideo") {
                             $(selector).append(`<a media-id="${e.node.id}" datetime="${resource.taken_at_timestamp}" data-blob="true" data-needed="direct" data-path="${resource.shortcode}" data-name="video" data-type="mp4" data-username="${resource.owner.username}" data-globalIndex="${idx}" href="javascript:;" data-href="${e.node.video_url}"><img width="100" src="${e.node.display_resources[1].src}" /><br/>- <span data-ih-locale-title="VID">${_i18n("VID")}</span> ${idx} -</a>`);
                             if (e.node.video_dash_manifest) {
-                                state.GL_videoDashCache[e.node.id] = e.node.video_dash_manifest;
+                                state.GL_mediaDataCache[e.node.id] = e.node;
                             }
                         }
 
@@ -1416,7 +1449,7 @@
                         else {
                             $(selector).append(`<a media-id="${mda.pk}" datetime="${mda.taken_at}" data-blob="true" data-needed="direct" data-path="${resource.code}" data-name="video" data-type="mp4" data-username="${resource.owner.username}" data-globalIndex="${idx}" href="javascript:;" data-href="${mda.video_versions[0].url}"><img width="100" src="${mda.image_versions2.candidates[0].url}" /><br/>- <span data-ih-locale="VID">${_i18n("VID")}</span> ${idx} -</a>`);
                             if (mda.video_dash_manifest) {
-                                state.GL_videoDashCache[mda.pk] = mda.video_dash_manifest;
+                                state.GL_mediaDataCache[mda.pk] = mda;
                             }
                         }
                     });
@@ -1446,7 +1479,7 @@
                     // Video
                     else {
                         if (resource.video_dash_manifest) {
-                            state.GL_videoDashCache[resource.pk] = resource.video_dash_manifest;
+                            state.GL_mediaDataCache[resource.pk] = resource;
                         }
                         $(selector).append(`<a media-id="${resource.pk}" datetime="${resource.taken_at}" data-blob="true" data-needed="direct" data-path="${resource.code}" data-name="video" data-type="mp4" data-username="${resource.owner.username}" data-globalIndex="${idx}" href="javascript:;" data-href="${resource.video_versions[0].url}"><img width="100" src="${resource.image_versions2.candidates[0].url}" /><br/>- <span data-ih-locale="VID">${_i18n("VID")}</span> ${idx} -</a>`);
                     }
@@ -2115,6 +2148,19 @@
 
                 if (result.status === 'ok') {
                     if (result.items[0].video_versions) {
+                        const handled = await tryHandleDashFromMediaItem({
+                            mediaItem: result.items[0],
+                            username,
+                            sourceType: "stories",
+                            timestamp,
+                            shortcode: mediaId,
+                            isPreview,
+                        });
+                        if (handled) {
+                            updateLoadingBar(false);
+                            return;
+                        }
+
                         if (isPreview) {
                             openNewTab(result.items[0].video_versions[0].url);
                         }
@@ -3185,6 +3231,250 @@
     }
 
     /**
+     * fetchArrayBuffer
+     * @description Download URL as ArrayBuffer.
+     *
+     * @param {string} url
+     * @return {Promise<ArrayBuffer>}
+     */
+    async function fetchArrayBuffer(url) {
+        updateLoadingBar(true);
+        try {
+            const res = await fetch(url);
+            if (!res.ok) throw new Error(`HTTP ${res.status}`);
+            return await res.arrayBuffer();
+        } finally {
+            updateLoadingBar(false);
+        }
+    }
+
+    /**
+     * parseDashManifest
+     * @description Parse Media API video_dash_manifest (MPD XML).
+     *              Returns best video/audio representation URLs.
+     *
+     * @param  {string} mpdXml
+     * @return {{ video: any|null, audio: any|null }}
+     */
+    function parseDashManifest(mpdXml) {
+        try {
+            if (!mpdXml || typeof mpdXml !== 'string') return { video: null, audio: null };
+
+            const xml = new DOMParser().parseFromString(mpdXml, 'application/xml');
+            if (xml.querySelector('parsererror')) return { video: null, audio: null };
+
+            const reps = Array.from(xml.querySelectorAll('Representation'));
+            const candidates = reps.map((rep) => {
+                const base = rep.querySelector('BaseURL')?.textContent?.trim();
+                if (!base) return null;
+
+                const set = rep.closest('AdaptationSet');
+                const mimeType = rep.getAttribute('mimeType') || set?.getAttribute('mimeType') || '';
+                const contentType = set?.getAttribute('contentType') || '';
+                const codecs = rep.getAttribute('codecs') || set?.getAttribute('codecs') || '';
+                const bandwidth = parseInt(rep.getAttribute('bandwidth') || '0', 10) || 0;
+                const width = parseInt(rep.getAttribute('width') || '0', 10) || 0;
+                const height = parseInt(rep.getAttribute('height') || '0', 10) || 0;
+                const id = rep.getAttribute('id') || '';
+
+                return { id, url: base, mimeType, contentType, codecs, bandwidth, width, height };
+            }).filter(Boolean);
+
+            const isVideo = (c) => ((c.contentType || '').includes('video') || (c.mimeType || '').startsWith('video'));
+            const isAudio = (c) => ((c.contentType || '').includes('audio') || (c.mimeType || '').startsWith('audio'));
+
+            const bestVideo = candidates
+                .filter(isVideo)
+                .sort((a, b) => (b.height - a.height) || (b.bandwidth - a.bandwidth) || (b.width - a.width))[0] || null;
+
+            const bestAudio = candidates
+                .filter(isAudio)
+                .sort((a, b) => (b.bandwidth - a.bandwidth))[0] || null;
+
+            return { video: bestVideo, audio: bestAudio };
+        } catch (e) {
+            logger('[DASH]', 'parseDashManifest() error:', e);
+            return { video: null, audio: null };
+        }
+    }
+
+    /**
+     * muxDashVideoAudioToMp4
+     * @description Mux DASH video+audio into one MP4 using Mediabunny (demux + mux).
+     *
+     * @param {ArrayBuffer} videoBuf
+     * @param {ArrayBuffer} audioBuf
+     * @return {Promise<ArrayBuffer>}
+     */
+    async function muxDashVideoAudioToMp4(videoBuf, audioBuf) {
+        const MB = Mediabunny;
+
+        const videoInput = new MB.Input({
+            formats: [MB.MP4],
+            source: new MB.BufferSource(videoBuf),
+        });
+        const audioInput = new MB.Input({
+            formats: [MB.MP4],
+            source: new MB.BufferSource(audioBuf),
+        });
+
+        const vTrack = await videoInput.getPrimaryVideoTrack();
+        if (!vTrack || !vTrack.codec) throw new Error('No video track found');
+
+        const aTrack = await audioInput.getPrimaryAudioTrack();
+        if (!aTrack || !aTrack.codec) throw new Error('No audio track found');
+
+        const vSink = new MB.EncodedPacketSink(vTrack);
+        const aSink = new MB.EncodedPacketSink(aTrack);
+
+        const output = new MB.Output({
+            format: new MB.Mp4OutputFormat({ fastStart: 'in-memory' }),
+            target: new MB.BufferTarget(),
+        });
+
+        const vSource = new MB.EncodedVideoPacketSource(vTrack.codec);
+        const aSource = new MB.EncodedAudioPacketSource(aTrack.codec);
+
+        output.addVideoTrack(vSource, { rotation: vTrack.rotation || 0 });
+        output.addAudioTrack(aSource);
+
+        await output.start();
+
+        const vDecoderConfig = await vTrack.getDecoderConfig();
+        const aDecoderConfig = await aTrack.getDecoderConfig();
+
+        const vMeta = vDecoderConfig ? { decoderConfig: vDecoderConfig } : undefined;
+        const aMeta = aDecoderConfig ? { decoderConfig: aDecoderConfig } : undefined;
+
+        const vIter = vSink.packets();
+        const aIter = aSink.packets();
+
+        let vNext = await vIter.next();
+        let aNext = await aIter.next();
+        let vSentMeta = false;
+        let aSentMeta = false;
+
+        while (!vNext.done || !aNext.done) {
+            const takeVideo = (() => {
+                if (vNext.done) return false;
+                if (aNext.done) return true;
+                return vNext.value.timestamp <= aNext.value.timestamp;
+            })();
+
+            if (takeVideo) {
+                await vSource.add(vNext.value, vSentMeta ? undefined : vMeta);
+                vSentMeta = true;
+                vNext = await vIter.next();
+            } else {
+                await aSource.add(aNext.value, aSentMeta ? undefined : aMeta);
+                aSentMeta = true;
+                aNext = await aIter.next();
+            }
+        }
+
+        await output.finalize();
+
+        const outBuf = output.target.buffer;
+        if (outBuf instanceof ArrayBuffer) return outBuf;
+        if (outBuf && outBuf.buffer) {
+            return outBuf.buffer.slice(outBuf.byteOffset, outBuf.byteOffset + outBuf.byteLength);
+        }
+        throw new Error('Unexpected output buffer type');
+    }
+
+    async function downloadDashStreams(videoUrl, audioUrl, username, sourceType, timestamp, shortcode) {
+        logger('[DASH]', 'downloadDashStreams()', {
+            videoUrl: videoUrl,
+            audioUrl: audioUrl || null,
+            sourceType,
+            shortcode
+        });
+
+        if (!audioUrl) {
+            logger('[DASH]', 'Downloaded DASH video only (no audio rep / has_audio=false).');
+            await saveFiles(videoUrl, username, sourceType, timestamp, 'mp4', shortcode);
+            return true;
+        }
+
+        try {
+            logger('[DASH]', 'Fetching DASH streams for mux...');
+            const [vBuf, aBuf] = await Promise.all([
+                fetchArrayBuffer(videoUrl),
+                fetchArrayBuffer(audioUrl)
+            ]);
+
+            logger('[DASH]', 'Muxing DASH video+audio into one MP4 (mp4box main thread)...');
+            const mergedBuf = await muxDashVideoAudioToMp4(vBuf, aBuf);
+            const mergedBlob = new Blob([mergedBuf], { type: 'video/mp4' });
+
+            createSaveFileElement(videoUrl, mergedBlob, username, sourceType, timestamp, 'mp4', shortcode);
+            logger('[DASH]', 'Merged MP4 download triggered.');
+            return true;
+        } catch (e) {
+            logger('[DASH]', 'Mux failed -> fallback to separate downloads', e?.message || e);
+            await saveFiles(videoUrl, username, sourceType, timestamp, 'mp4', shortcode);
+            await saveFiles(audioUrl, username, sourceType, timestamp, 'm4a', shortcode);
+            return true;
+        }
+    }
+
+    /**
+     * tryHandleDashFromMediaItem
+     * @description Centralized DASH handling for Media API items.
+     *              Uses video_dash_manifest when present.
+     *              Picks best video by resolution (height/width), then bandwidth.
+     *              Audio is optional.
+     *
+     * @return {Promise<boolean>} true if DASH path handled it, false to let caller fallback.
+     */
+    async function tryHandleDashFromMediaItem({
+        mediaItem,
+        username,
+        sourceType,
+        timestamp,
+        shortcode,
+        isPreview,
+    }) {
+        try {
+            if (!USER_SETTING.PREFER_DASH_MANIFEST) return false;
+            if (!USER_SETTING.FORCE_RESOURCE_VIA_MEDIA) return false;
+            if (!mediaItem?.video_dash_manifest) return false;
+            if (!mediaItem?.video_versions) return false;
+
+            const best = parseDashManifest(mediaItem.video_dash_manifest);
+            const vUrl = best?.video?.url || '';
+            const aUrl = best?.audio?.url || '';
+
+            if (!vUrl) {
+                return false;
+            }
+
+            logger('[DASH]', 'best reps selected', {
+                video: best.video ? { height: best.video.height, width: best.video.width, bandwidth: best.video.bandwidth, codecs: best.video.codecs } : null,
+                audio: best.audio ? { bandwidth: best.audio.bandwidth, codecs: best.audio.codecs } : '(none)'
+            });
+
+            if (isPreview) {
+                openNewTab(vUrl);
+                return true;
+            }
+
+            if (!aUrl) {
+                logger('[DASH]', 'download mode -> VIDEO-ONLY DASH (no audio rep)');
+                await saveFiles(vUrl, username, sourceType, timestamp, 'mp4', shortcode);
+                return true;
+            }
+
+            logger('[DASH]', 'download mode -> DASH video+audio');
+            await downloadDashStreams(vUrl, aUrl, username, sourceType, timestamp, shortcode);
+            return true;
+        } catch (e) {
+            logger('[DASH]', 'tryHandleDashFromMediaItem failed -> fallback', e?.message || e);
+            return false;
+        }
+    }
+
+    /**
      * @description Trigger download from Blob with filename.
      * 
      * @param {Blob} blob
@@ -3441,19 +3731,19 @@
 
             let mediaId = $(element).attr('media-id');
 
-            if (USER_SETTING.DOWNLOAD_STREAM_VIDEO && state.GL_videoDashCache[mediaId] && !isPreview) {
+            if (USER_SETTING.PREFER_DASH_MANIFEST && state.GL_mediaDataCache[mediaId] && !isPreview) {
                 logger('[Video Dash Stream]', 'Processing video with DASH manifest, mediaId:', mediaId);
-                let dashManifest = state.GL_videoDashCache[mediaId];
-                let { video, audio } = getXmlMediaDashManifest(dashManifest);
-
-
-                let videoURL = replaceSameOriginHost(video.url);
-                let audioURL = replaceSameOriginHost(audio.url);
-
-                let downloadName = getSaveFileName(videoURL, username, $(element).attr('data-name'), timestamp, $(element).attr('data-type'), $(element).attr('data-path'));
-
-                GM_openInTab(`https://www.yuriko.cc/tools/ffmpeg?videoURL=${encodeURIComponent(videoURL)}&audioURL=${encodeURIComponent(audioURL)}&filename=${encodeURIComponent(downloadName)}`, { active: true });
-                return;
+                const handled = await tryHandleDashFromMediaItem({
+                    mediaItem: state.GL_mediaDataCache[mediaId],
+                    username,
+                    sourceType: $(element).data('name'),
+                    timestamp,
+                    shortcode: $(element).data('path'),
+                    isPreview: false,
+                });
+                if (handled) {
+                    return;
+                }
             }
 
             if (USER_SETTING.CAPTURE_IMAGE_VIA_MEDIA_CACHE) {
@@ -4194,45 +4484,6 @@
         $countSpan.text(` (${selectedLabel} / ${totalLabel})`);
     }
 
-    function getXmlMediaDashManifest(manifest) {
-        let parser = new DOMParser();
-        let xmlDoc = parser.parseFromString(manifest, 'application/xml');
-
-        let adaptationSets = xmlDoc.getElementsByTagName('AdaptationSet')
-
-        let video = null;
-        let audio = null;
-
-        Array.from(adaptationSets).forEach(element => {
-            if (element.getAttribute('contentType') === 'video') {
-                video = element;
-            } else if (element.getAttribute('contentType') === 'audio') {
-                audio = element;
-            }
-        });
-
-        let videoBestQualityElement = null;
-
-        Array.from(video.getElementsByTagName('Representation')).forEach(rep => {
-            let bandwidth = parseInt(rep.getAttribute('bandwidth'));
-            if (bandwidth > (videoBestQualityElement ? parseInt(videoBestQualityElement.getAttribute('bandwidth')) : 0)) {
-                videoBestQualityElement = rep;
-            }
-        });
-
-        return {
-            video: {
-                element: video,
-                url: decodeURIComponent(Array.from(videoBestQualityElement.getElementsByTagName('BaseURL')).at(0).textContent),
-                qualityLabel: videoBestQualityElement.getAttribute('FBQualityLabel')
-            },
-            audio: {
-                element: audio,
-                url: decodeURIComponent(Array.from(audio.getElementsByTagName('BaseURL')).at(0).textContent)
-            }
-        };
-    }
-
     let mediaCacheDirty = false;
     let mediaCacheSaveTimer = null;
 
@@ -4394,7 +4645,7 @@
                 "MODIFY_RESOURCE_EXIF": "Modify Resource EXIF Properties",
                 "SCROLL_BUTTON": "Enable Scroll Buttons for Reels Page",
                 "FORCE_RESOURCE_VIA_MEDIA": "Force Fetch Resource via Media API",
-                "DOWNLOAD_STREAM_VIDEO": "Download High-quality Streaming Videos",
+                "PREFER_DASH_MANIFEST": "Prefer DASH Manifest (Higher-Quality Video via Media API)",
                 "FALLBACK_TO_BLOB_FETCH_IF_MEDIA_API_THROTTLED": "Use Alternative Methods to Download When the Media API is Not Accessible",
                 "NEW_TAB_ALWAYS_FORCE_MEDIA_IN_POST": "Always Use Media API for 'Open in New Tab' in Posts",
                 "SKIP_VIEW_STORY_CONFIRM": "Skip the Confirmation Page for Viewing a Story/Highlight",
@@ -4413,7 +4664,7 @@
                 "MODIFY_VIDEO_VOLUME_INTRO": "Modify the video playback volume in Reels and posts (right-click to open the volume setting slider).",
                 "SCROLL_BUTTON_INTRO": "Enable scroll buttons for the lower right corner of the Reels page.",
                 "FORCE_RESOURCE_VIA_MEDIA_INTRO": "The Media API will try to get the highest quality photo or video possible, but it may take longer to load.",
-                "DOWNLOAD_STREAM_VIDEO_INTRO": "Download high-quality streaming videos (if available) through external websites and ffmpeg Wasm.",
+                "PREFER_DASH_MANIFEST_INTRO": "Prefer the DASH manifest for video resources via the Media API. If a DASH manifest is available, it will download the video and audio streams SEPARATELY for the best possible quality.",
                 "FALLBACK_TO_BLOB_FETCH_IF_MEDIA_API_THROTTLED_INTRO": "When the Media API reaches its rate limit or cannot be used for other reasons, the Forced Fetch API will be used to download resources (the resource quality may be slightly lower).",
                 "NEW_TAB_ALWAYS_FORCE_MEDIA_IN_POST_INTRO": "The [Open in New Tab] button in posts will always use the Media API to obtain high-resolution resources.",
                 "CHECK_FOR_UPDATE_INTRO": "Check for updates when the script is triggered (check every 300 seconds).\nUpdate notifications will be sent as desktop notifications through the browser.",
@@ -5015,4 +5266,4 @@
             subtree: true,
         });
     });
-})(jQuery);
+})(jQuery, Mediabunny);

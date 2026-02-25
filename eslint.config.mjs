@@ -11,6 +11,7 @@ export default [
         ...globals.browser,
         $: 'readonly',
         jQuery: 'readonly',
+        Mediabunny: 'readonly',
         piexif: 'readonly',
         GM_info: 'readable',
         GM_addStyle: 'readable',

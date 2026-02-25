@@ -627,7 +627,7 @@ export async function createMediaListDOM(postURL, selector, message) {
                 idx++;
 
                 if (resource.video_dash_manifest) {
-                    state.GL_videoDashCache[resource.id] = resource.video_dash_manifest;
+                    state.GL_mediaDataCache[resource.id] = resource;
                 }
             }
             // GraphImage
@@ -641,7 +641,7 @@ export async function createMediaListDOM(postURL, selector, message) {
                     if (e.node.__typename == "GraphVideo") {
                         $(selector).append(`<a media-id="${e.node.id}" datetime="${resource.taken_at_timestamp}" data-blob="true" data-needed="direct" data-path="${resource.shortcode}" data-name="video" data-type="mp4" data-username="${resource.owner.username}" data-globalIndex="${idx}" href="javascript:;" data-href="${e.node.video_url}"><img width="100" src="${e.node.display_resources[1].src}" /><br/>- <span data-ih-locale-title="VID">${_i18n("VID")}</span> ${idx} -</a>`);
                         if (e.node.video_dash_manifest) {
-                            state.GL_videoDashCache[e.node.id] = e.node.video_dash_manifest;
+                            state.GL_mediaDataCache[e.node.id] = e.node;
                         }
                     }
 
@@ -682,7 +682,7 @@ export async function createMediaListDOM(postURL, selector, message) {
                     else {
                         $(selector).append(`<a media-id="${mda.pk}" datetime="${mda.taken_at}" data-blob="true" data-needed="direct" data-path="${resource.code}" data-name="video" data-type="mp4" data-username="${resource.owner.username}" data-globalIndex="${idx}" href="javascript:;" data-href="${mda.video_versions[0].url}"><img width="100" src="${mda.image_versions2.candidates[0].url}" /><br/>- <span data-ih-locale="VID">${_i18n("VID")}</span> ${idx} -</a>`);
                         if (mda.video_dash_manifest) {
-                            state.GL_videoDashCache[mda.pk] = mda.video_dash_manifest;
+                            state.GL_mediaDataCache[mda.pk] = mda;
                         }
                     }
                 });
@@ -712,7 +712,7 @@ export async function createMediaListDOM(postURL, selector, message) {
                 // Video
                 else {
                     if (resource.video_dash_manifest) {
-                        state.GL_videoDashCache[resource.pk] = resource.video_dash_manifest;
+                        state.GL_mediaDataCache[resource.pk] = resource;
                     }
                     $(selector).append(`<a media-id="${resource.pk}" datetime="${resource.taken_at}" data-blob="true" data-needed="direct" data-path="${resource.code}" data-name="video" data-type="mp4" data-username="${resource.owner.username}" data-globalIndex="${idx}" href="javascript:;" data-href="${resource.video_versions[0].url}"><img width="100" src="${resource.image_versions2.candidates[0].url}" /><br/>- <span data-ih-locale="VID">${_i18n("VID")}</span> ${idx} -</a>`);
                 }

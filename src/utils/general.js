@@ -183,6 +183,250 @@ export function saveFiles(downloadLink, username, sourceType, timestamp, filetyp
 }
 
 /**
+ * fetchArrayBuffer
+ * @description Download URL as ArrayBuffer.
+ *
+ * @param {string} url
+ * @return {Promise<ArrayBuffer>}
+ */
+async function fetchArrayBuffer(url) {
+    updateLoadingBar(true);
+    try {
+        const res = await fetch(url);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        return await res.arrayBuffer();
+    } finally {
+        updateLoadingBar(false);
+    }
+}
+
+/**
+ * parseDashManifest
+ * @description Parse Media API video_dash_manifest (MPD XML).
+ *              Returns best video/audio representation URLs.
+ *
+ * @param  {string} mpdXml
+ * @return {{ video: any|null, audio: any|null }}
+ */
+function parseDashManifest(mpdXml) {
+    try {
+        if (!mpdXml || typeof mpdXml !== 'string') return { video: null, audio: null };
+
+        const xml = new DOMParser().parseFromString(mpdXml, 'application/xml');
+        if (xml.querySelector('parsererror')) return { video: null, audio: null };
+
+        const reps = Array.from(xml.querySelectorAll('Representation'));
+        const candidates = reps.map((rep) => {
+            const base = rep.querySelector('BaseURL')?.textContent?.trim();
+            if (!base) return null;
+
+            const set = rep.closest('AdaptationSet');
+            const mimeType = rep.getAttribute('mimeType') || set?.getAttribute('mimeType') || '';
+            const contentType = set?.getAttribute('contentType') || '';
+            const codecs = rep.getAttribute('codecs') || set?.getAttribute('codecs') || '';
+            const bandwidth = parseInt(rep.getAttribute('bandwidth') || '0', 10) || 0;
+            const width = parseInt(rep.getAttribute('width') || '0', 10) || 0;
+            const height = parseInt(rep.getAttribute('height') || '0', 10) || 0;
+            const id = rep.getAttribute('id') || '';
+
+            return { id, url: base, mimeType, contentType, codecs, bandwidth, width, height };
+        }).filter(Boolean);
+
+        const isVideo = (c) => ((c.contentType || '').includes('video') || (c.mimeType || '').startsWith('video'));
+        const isAudio = (c) => ((c.contentType || '').includes('audio') || (c.mimeType || '').startsWith('audio'));
+
+        const bestVideo = candidates
+            .filter(isVideo)
+            .sort((a, b) => (b.height - a.height) || (b.bandwidth - a.bandwidth) || (b.width - a.width))[0] || null;
+
+        const bestAudio = candidates
+            .filter(isAudio)
+            .sort((a, b) => (b.bandwidth - a.bandwidth))[0] || null;
+
+        return { video: bestVideo, audio: bestAudio };
+    } catch (e) {
+        logger('[DASH]', 'parseDashManifest() error:', e);
+        return { video: null, audio: null };
+    }
+}
+
+/**
+ * muxDashVideoAudioToMp4
+ * @description Mux DASH video+audio into one MP4 using Mediabunny (demux + mux).
+ *
+ * @param {ArrayBuffer} videoBuf
+ * @param {ArrayBuffer} audioBuf
+ * @return {Promise<ArrayBuffer>}
+ */
+async function muxDashVideoAudioToMp4(videoBuf, audioBuf) {
+    const MB = Mediabunny;
+
+    const videoInput = new MB.Input({
+        formats: [MB.MP4],
+        source: new MB.BufferSource(videoBuf),
+    });
+    const audioInput = new MB.Input({
+        formats: [MB.MP4],
+        source: new MB.BufferSource(audioBuf),
+    });
+
+    const vTrack = await videoInput.getPrimaryVideoTrack();
+    if (!vTrack || !vTrack.codec) throw new Error('No video track found');
+
+    const aTrack = await audioInput.getPrimaryAudioTrack();
+    if (!aTrack || !aTrack.codec) throw new Error('No audio track found');
+
+    const vSink = new MB.EncodedPacketSink(vTrack);
+    const aSink = new MB.EncodedPacketSink(aTrack);
+
+    const output = new MB.Output({
+        format: new MB.Mp4OutputFormat({ fastStart: 'in-memory' }),
+        target: new MB.BufferTarget(),
+    });
+
+    const vSource = new MB.EncodedVideoPacketSource(vTrack.codec);
+    const aSource = new MB.EncodedAudioPacketSource(aTrack.codec);
+
+    output.addVideoTrack(vSource, { rotation: vTrack.rotation || 0 });
+    output.addAudioTrack(aSource);
+
+    await output.start();
+
+    const vDecoderConfig = await vTrack.getDecoderConfig();
+    const aDecoderConfig = await aTrack.getDecoderConfig();
+
+    const vMeta = vDecoderConfig ? { decoderConfig: vDecoderConfig } : undefined;
+    const aMeta = aDecoderConfig ? { decoderConfig: aDecoderConfig } : undefined;
+
+    const vIter = vSink.packets();
+    const aIter = aSink.packets();
+
+    let vNext = await vIter.next();
+    let aNext = await aIter.next();
+    let vSentMeta = false;
+    let aSentMeta = false;
+
+    while (!vNext.done || !aNext.done) {
+        const takeVideo = (() => {
+            if (vNext.done) return false;
+            if (aNext.done) return true;
+            return vNext.value.timestamp <= aNext.value.timestamp;
+        })();
+
+        if (takeVideo) {
+            await vSource.add(vNext.value, vSentMeta ? undefined : vMeta);
+            vSentMeta = true;
+            vNext = await vIter.next();
+        } else {
+            await aSource.add(aNext.value, aSentMeta ? undefined : aMeta);
+            aSentMeta = true;
+            aNext = await aIter.next();
+        }
+    }
+
+    await output.finalize();
+
+    const outBuf = output.target.buffer;
+    if (outBuf instanceof ArrayBuffer) return outBuf;
+    if (outBuf && outBuf.buffer) {
+        return outBuf.buffer.slice(outBuf.byteOffset, outBuf.byteOffset + outBuf.byteLength);
+    }
+    throw new Error('Unexpected output buffer type');
+}
+
+async function downloadDashStreams(videoUrl, audioUrl, username, sourceType, timestamp, shortcode) {
+    logger('[DASH]', 'downloadDashStreams()', {
+        videoUrl: videoUrl,
+        audioUrl: audioUrl || null,
+        sourceType,
+        shortcode
+    });
+
+    if (!audioUrl) {
+        logger('[DASH]', 'Downloaded DASH video only (no audio rep / has_audio=false).');
+        await saveFiles(videoUrl, username, sourceType, timestamp, 'mp4', shortcode);
+        return true;
+    }
+
+    try {
+        logger('[DASH]', 'Fetching DASH streams for mux...');
+        const [vBuf, aBuf] = await Promise.all([
+            fetchArrayBuffer(videoUrl),
+            fetchArrayBuffer(audioUrl)
+        ]);
+
+        logger('[DASH]', 'Muxing DASH video+audio into one MP4 (mp4box main thread)...');
+        const mergedBuf = await muxDashVideoAudioToMp4(vBuf, aBuf);
+        const mergedBlob = new Blob([mergedBuf], { type: 'video/mp4' });
+
+        createSaveFileElement(videoUrl, mergedBlob, username, sourceType, timestamp, 'mp4', shortcode);
+        logger('[DASH]', 'Merged MP4 download triggered.');
+        return true;
+    } catch (e) {
+        logger('[DASH]', 'Mux failed -> fallback to separate downloads', e?.message || e);
+        await saveFiles(videoUrl, username, sourceType, timestamp, 'mp4', shortcode);
+        await saveFiles(audioUrl, username, sourceType, timestamp, 'm4a', shortcode);
+        return true;
+    }
+}
+
+/**
+ * tryHandleDashFromMediaItem
+ * @description Centralized DASH handling for Media API items.
+ *              Uses video_dash_manifest when present.
+ *              Picks best video by resolution (height/width), then bandwidth.
+ *              Audio is optional.
+ *
+ * @return {Promise<boolean>} true if DASH path handled it, false to let caller fallback.
+ */
+export async function tryHandleDashFromMediaItem({
+    mediaItem,
+    username,
+    sourceType,
+    timestamp,
+    shortcode,
+    isPreview,
+}) {
+    try {
+        if (!USER_SETTING.PREFER_DASH_MANIFEST) return false;
+        if (!USER_SETTING.FORCE_RESOURCE_VIA_MEDIA) return false;
+        if (!mediaItem?.video_dash_manifest) return false;
+        if (!mediaItem?.video_versions) return false;
+
+        const best = parseDashManifest(mediaItem.video_dash_manifest);
+        const vUrl = best?.video?.url || '';
+        const aUrl = best?.audio?.url || '';
+
+        if (!vUrl) {
+            return false;
+        }
+
+        logger('[DASH]', 'best reps selected', {
+            video: best.video ? { height: best.video.height, width: best.video.width, bandwidth: best.video.bandwidth, codecs: best.video.codecs } : null,
+            audio: best.audio ? { bandwidth: best.audio.bandwidth, codecs: best.audio.codecs } : '(none)'
+        });
+
+        if (isPreview) {
+            openNewTab(vUrl);
+            return true;
+        }
+
+        if (!aUrl) {
+            logger('[DASH]', 'download mode -> VIDEO-ONLY DASH (no audio rep)');
+            await saveFiles(vUrl, username, sourceType, timestamp, 'mp4', shortcode);
+            return true;
+        }
+
+        logger('[DASH]', 'download mode -> DASH video+audio');
+        await downloadDashStreams(vUrl, aUrl, username, sourceType, timestamp, shortcode);
+        return true;
+    } catch (e) {
+        logger('[DASH]', 'tryHandleDashFromMediaItem failed -> fallback', e?.message || e);
+        return false;
+    }
+}
+
+/**
  * @description Trigger download from Blob with filename.
  * 
  * @param {Blob} blob
@@ -439,19 +683,19 @@ export async function triggerLinkElement(element, isPreview) {
 
         let mediaId = $(element).attr('media-id');
 
-        if (USER_SETTING.DOWNLOAD_STREAM_VIDEO && state.GL_videoDashCache[mediaId] && !isPreview) {
+        if (USER_SETTING.PREFER_DASH_MANIFEST && state.GL_mediaDataCache[mediaId] && !isPreview) {
             logger('[Video Dash Stream]', 'Processing video with DASH manifest, mediaId:', mediaId);
-            let dashManifest = state.GL_videoDashCache[mediaId];
-            let { video, audio } = getXmlMediaDashManifest(dashManifest);
-
-
-            let videoURL = replaceSameOriginHost(video.url);
-            let audioURL = replaceSameOriginHost(audio.url);
-
-            let downloadName = getSaveFileName(videoURL, username, $(element).attr('data-name'), timestamp, $(element).attr('data-type'), $(element).attr('data-path'));
-
-            GM_openInTab(`https://www.yuriko.cc/tools/ffmpeg?videoURL=${encodeURIComponent(videoURL)}&audioURL=${encodeURIComponent(audioURL)}&filename=${encodeURIComponent(downloadName)}`, { active: true });
-            return;
+            const handled = await tryHandleDashFromMediaItem({
+                mediaItem: state.GL_mediaDataCache[mediaId],
+                username,
+                sourceType: $(element).data('name'),
+                timestamp,
+                shortcode: $(element).data('path'),
+                isPreview: false,
+            });
+            if (handled) {
+                return;
+            }
         }
 
         if (USER_SETTING.CAPTURE_IMAGE_VIA_MEDIA_CACHE) {
@@ -1190,43 +1434,4 @@ export function updatePopupSelectionSummary(root = '.IG_POPUP_DIG') {
     const selectedLabel = formatCount(selected, 'SELECTED_COUNT_SINGULAR', 'SELECTED_COUNT_PLURAL');
 
     $countSpan.text(` (${selectedLabel} / ${totalLabel})`);
-}
-
-export function getXmlMediaDashManifest(manifest) {
-    let parser = new DOMParser();
-    let xmlDoc = parser.parseFromString(manifest, 'application/xml');
-
-    let adaptationSets = xmlDoc.getElementsByTagName('AdaptationSet')
-
-    let video = null;
-    let audio = null;
-
-    Array.from(adaptationSets).forEach(element => {
-        if (element.getAttribute('contentType') === 'video') {
-            video = element;
-        } else if (element.getAttribute('contentType') === 'audio') {
-            audio = element;
-        }
-    });
-
-    let videoBestQualityElement = null;
-
-    Array.from(video.getElementsByTagName('Representation')).forEach(rep => {
-        let bandwidth = parseInt(rep.getAttribute('bandwidth'));
-        if (bandwidth > (videoBestQualityElement ? parseInt(videoBestQualityElement.getAttribute('bandwidth')) : 0)) {
-            videoBestQualityElement = rep;
-        }
-    });
-
-    return {
-        video: {
-            element: video,
-            url: decodeURIComponent(Array.from(videoBestQualityElement.getElementsByTagName('BaseURL')).at(0).textContent),
-            qualityLabel: videoBestQualityElement.getAttribute('FBQualityLabel')
-        },
-        audio: {
-            element: audio,
-            url: decodeURIComponent(Array.from(audio.getElementsByTagName('BaseURL')).at(0).textContent)
-        }
-    };
 }
