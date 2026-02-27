@@ -5,7 +5,7 @@
 // @name:ja            IG助手
 // @name:ko            IG조수
 // @namespace          https://github.snkms.com/
-// @version            3.13.2
+// @version            3.13.3
 // @description        Downloading is possible for both photos and videos from posts, as well as for stories, reels or profile picture.
 // @description:zh-TW  一鍵下載對方 Instagram 貼文中的相片、影片甚至是他們的限時動態、連續短片及大頭貼圖片！
 // @description:zh-CN  一键下载对方 Instagram 帖子中的相片、视频甚至是他们的快拍、Reels及头像图片！
@@ -1306,11 +1306,14 @@
                                 let checkBlob = setInterval(() => {
                                     if ($('.IG_POPUP_DIG .IG_POPUP_DIG_MAIN .IG_POPUP_DIG_BODY a').length > 0) {
                                         clearInterval(checkBlob);
+                                        let links = [];
                                         $('.IG_POPUP_DIG .IG_POPUP_DIG_MAIN .IG_POPUP_DIG_BODY a').each(function () {
-                                            $(this).trigger("click");
+                                            links.push($(this));
                                         });
 
-                                        $('.IG_POPUP_DIG').remove();
+                                        batchDownloadPostFiles(links).then(() => {
+                                            $('.IG_POPUP_DIG').remove();
+                                        });
                                     }
                                 }, 250);
                             });
@@ -1550,6 +1553,38 @@
             }
         }
         return index;
+    }
+
+    /**
+     * batchDownloadPostFiles
+     * @description Batch download media files in posts to prevent browser crashes.
+     * @param {jQuery} $elements
+     * @return {Promise<void>}
+     */
+    async function batchDownloadPostFiles($elements) {
+        const batchSize = 5;
+        let batchGroups = [];
+        for (let i = 0; i < $elements.length; i += batchSize) {
+            const batch = $elements.slice(i, i + batchSize);
+            batchGroups.push(batch);
+        }
+        let index = 0;
+        setDownloadProgress(0, $elements.length);
+
+        for (const currentBatch of batchGroups) {
+            await new Promise((resolve) => {
+                currentBatch.forEach(($item) => {
+                    setTimeout(() => {
+                        $item.trigger("click");
+                    }, 10 * index);
+
+                    index++;
+                    setDownloadProgress(index, $elements.length);
+                });
+
+                setTimeout(resolve, 1000);
+            });
+        }
     }
 
     /**
@@ -5037,15 +5072,20 @@
 
         $('body').on('click', '.IG_POPUP_DIG_TITLE #batch_download_selected', function () {
             let index = 0;
+            let links = [];
             $('.IG_POPUP_DIG_BODY a[data-needed="direct"]').each(function () {
-                if ($(this).prev().children('input').prop('checked')) {
-                    $(this).trigger("click");
+                let $link = $(this);
+                if ($link.prev().children('input').prop('checked')) {
+                    links.push($link);
                     index++;
                 }
             });
 
             if (index == 0) {
                 alert(_i18n('NO_CHECK_RESOURCE'));
+            }
+            else {
+                batchDownloadPostFiles(links);
             }
         });
 
@@ -5069,9 +5109,12 @@
         });
 
         $('body').on('click', '.IG_POPUP_DIG_TITLE #batch_download_direct', function () {
+            let links = [];
             $('.IG_POPUP_DIG_BODY a[data-needed="direct"]').each(function () {
-                $(this).trigger("click");
+                links.push($(this));
             });
+
+            batchDownloadPostFiles(links);
         });
 
         registerPerformanceObserver();

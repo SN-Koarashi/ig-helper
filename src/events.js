@@ -10,6 +10,7 @@ import { onHighlightsStory, onHighlightsStoryAll, onHighlightsStoryThumbnail } f
 import { onReels } from "./functions/reel";
 import { _i18n, getTranslationText, repaintingTranslations, registerMenuCommand } from "./utils/i18n";
 import { registerPerformanceObserver } from "./utils/image_cache";
+import { batchDownloadPostFiles } from "./functions/post";
 /*! ESLINT IMPORT END !*/
 
 // Running if document is ready
@@ -312,15 +313,20 @@ $(function () {
 
     $('body').on('click', '.IG_POPUP_DIG_TITLE #batch_download_selected', function () {
         let index = 0;
+        let links = [];
         $('.IG_POPUP_DIG_BODY a[data-needed="direct"]').each(function () {
-            if ($(this).prev().children('input').prop('checked')) {
-                $(this).trigger("click");
+            let $link = $(this);
+            if ($link.prev().children('input').prop('checked')) {
+                links.push($link);
                 index++;
             }
         });
 
         if (index == 0) {
             alert(_i18n('NO_CHECK_RESOURCE'));
+        }
+        else {
+            batchDownloadPostFiles(links);
         }
     });
 
@@ -344,9 +350,12 @@ $(function () {
     });
 
     $('body').on('click', '.IG_POPUP_DIG_TITLE #batch_download_direct', function () {
+        let links = [];
         $('.IG_POPUP_DIG_BODY a[data-needed="direct"]').each(function () {
-            $(this).trigger("click");
+            links.push($(this));
         });
+
+        batchDownloadPostFiles(links);
     });
 
     registerPerformanceObserver();

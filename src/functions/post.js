@@ -4,7 +4,8 @@ import {
     toggleVolumeSilder, IG_createDM, IG_setDM, triggerLinkElement,
     openImageViewer,
     updatePopupSelectionSummary,
-    replaceSameOriginHost
+    replaceSameOriginHost,
+    setDownloadProgress
 } from "../utils/general";
 import { getBlobMedia } from "../utils/api";
 import { _i18n } from "../utils/i18n";
@@ -539,11 +540,14 @@ export function createDownloadButton() {
                             let checkBlob = setInterval(() => {
                                 if ($('.IG_POPUP_DIG .IG_POPUP_DIG_MAIN .IG_POPUP_DIG_BODY a').length > 0) {
                                     clearInterval(checkBlob);
+                                    let links = [];
                                     $('.IG_POPUP_DIG .IG_POPUP_DIG_MAIN .IG_POPUP_DIG_BODY a').each(function () {
-                                        $(this).trigger("click");
+                                        links.push($(this));
                                     });
 
-                                    $('.IG_POPUP_DIG').remove();
+                                    batchDownloadPostFiles(links).then(() => {
+                                        $('.IG_POPUP_DIG').remove();
+                                    });
                                 }
                             }, 250);
                         });
@@ -783,4 +787,36 @@ export function getVisibleNodeIndex($main) {
         }
     }
     return index;
+}
+
+/**
+ * batchDownloadPostFiles
+ * @description Batch download media files in posts to prevent browser crashes.
+ * @param {jQuery} $elements
+ * @return {Promise<void>}
+ */
+export async function batchDownloadPostFiles($elements) {
+    const batchSize = 5;
+    let batchGroups = [];
+    for (let i = 0; i < $elements.length; i += batchSize) {
+        const batch = $elements.slice(i, i + batchSize);
+        batchGroups.push(batch);
+    }
+    let index = 0;
+    setDownloadProgress(0, $elements.length);
+
+    for (const currentBatch of batchGroups) {
+        await new Promise((resolve) => {
+            currentBatch.forEach(($item) => {
+                setTimeout(() => {
+                    $item.trigger("click");
+                }, 10 * index);
+
+                index++;
+                setDownloadProgress(index, $elements.length);
+            });
+
+            setTimeout(resolve, 1000);
+        });
+    }
 }
