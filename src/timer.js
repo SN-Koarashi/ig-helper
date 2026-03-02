@@ -158,7 +158,11 @@ export var timer = setInterval(function () {
                  *
                  */
                 // ? detect logo element in left-top corner
-                if ($('div[id^="mount"] section > div > a[href="/"]').length > 0 || $('div[id^="mount"] section > div > a[href^="/?hl="]').length > 0) {
+                if (
+                    $('div[id^="mount"] section > div > a[href="/"]').length > 0 ||
+                    $('div[id^="mount"] section > div > a[href^="/?hl="]').length > 0 ||
+                    $('div[id^="mount"] section i[aria-label="Instagram"]').length > 0
+                ) {
                     $('.IG_DWSTORY').remove();
                     $('.IG_DWNEWTAB').remove();
                     if ($('.IG_DWSTORY_THUMBNAIL').length) {
