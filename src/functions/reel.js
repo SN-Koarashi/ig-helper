@@ -99,7 +99,12 @@ export async function onReels(isDownload, isVideo, isPreview) {
 
                     // reels scroll has [tabindex] but header not.
                     $('section > main[role="main"] > div[tabindex], section > main[role="main"] > div[class]').children('div').each(function () {
-                        if ($(this).children().length > 0) {
+                        if (
+                            $(this).children().length > 0 &&
+                            $(this).width() > window.innerWidth * 0.8 &&
+                            $(this).height() > window.innerHeight * 0.8 &&
+                            $(this).find('video').length > 0
+                        ) {
                             if (!$(this).children().find('.IG_REELS').length) {
                                 var $main = $(this);
 
