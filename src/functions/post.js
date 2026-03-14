@@ -279,17 +279,24 @@ export function createDownloadButton() {
                     });
 
                     // first onload
-                    $childElement.find('.button_wrapper').parent().find('ul li').each(function () {
+                    $childElement.find('.button_wrapper').parent().find('ul li, div[role="button"] > div').each(function () {
                         if ($(this).find('video').length > 0 || $(this).find('img').length > 0) {
                             observer_i.observe(this);
                         }
                     });
 
-                    const listRoot = $childElement.find('.button_wrapper').parent().find('ul li').first().parent()[0];
-                    observer.observe(listRoot, {
-                        attributes: true,
-                        childList: true,
-                    });
+                    const listRoot =
+                        $childElement.find('.button_wrapper').parent().find('ul li, div[role="button"] > div').first().parent()[0];
+
+                    if (listRoot) {
+                        observer.observe(listRoot, {
+                            attributes: true,
+                            childList: true,
+                        });
+                    }
+                    else {
+                        logger("Cannot find resource list root element, thumbnail and viewer button may not work.");
+                    }
 
                 }, 50);
 

@@ -5,7 +5,7 @@
 // @name:ja            IG助手
 // @name:ko            IG조수
 // @namespace          https://github.snkms.com/
-// @version            3.13.5
+// @version            3.13.6
 // @description        Downloading is possible for both photos and videos from posts, as well as for stories, reels or profile picture.
 // @description:zh-TW  一鍵下載對方 Instagram 貼文中的相片、影片甚至是他們的限時動態、連續短片及大頭貼圖片！
 // @description:zh-CN  一键下载对方 Instagram 帖子中的相片、视频甚至是他们的快拍、Reels及头像图片！
@@ -1049,17 +1049,24 @@
                         });
 
                         // first onload
-                        $childElement.find('.button_wrapper').parent().find('ul li').each(function () {
+                        $childElement.find('.button_wrapper').parent().find('ul li, div[role="button"] > div').each(function () {
                             if ($(this).find('video').length > 0 || $(this).find('img').length > 0) {
                                 observer_i.observe(this);
                             }
                         });
 
-                        const listRoot = $childElement.find('.button_wrapper').parent().find('ul li').first().parent()[0];
-                        observer.observe(listRoot, {
-                            attributes: true,
-                            childList: true,
-                        });
+                        const listRoot =
+                            $childElement.find('.button_wrapper').parent().find('ul li, div[role="button"] > div').first().parent()[0];
+
+                        if (listRoot) {
+                            observer.observe(listRoot, {
+                                attributes: true,
+                                childList: true,
+                            });
+                        }
+                        else {
+                            logger("Cannot find resource list root element, thumbnail and viewer button may not work.");
+                        }
 
                     }, 50);
 
