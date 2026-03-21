@@ -2,7 +2,7 @@ import { state, USER_SETTING } from "./settings";
 import {
     showSetting, showDebugDOM, reloadScript,
     triggerLinkElement, openNewTab, saveFiles, logger, toggleVolumeSilder, updatePopupSelectionSummary,
-    replaceSameOriginHost
+    replaceSameOriginHost, setTimeElementDateAndLocaleTime, getHighlightCurrentTimeElement
 } from "./utils/general";
 import { onStory, onStoryAll, onStoryThumbnail } from "./functions/story";
 import { onProfileAvatar } from "./functions/profile";
@@ -373,11 +373,8 @@ $(function () {
                             node.tagName === "DIV"
                         ) {
                             // replace something times ago format to publish time when switch highlight
-                            var $time = $(node).find("time[datetime]");
-                            let publishTitle = $time?.attr('title');
-                            if (publishTitle != null) {
-                                $time.text(publishTitle);
-                            }
+                            var $time = getHighlightCurrentTimeElement($(node));
+                            setTimeElementDateAndLocaleTime($time);
                         }
                     }
 

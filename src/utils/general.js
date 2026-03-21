@@ -41,6 +41,148 @@ export function getAppID() {
     return (result) ? result.at(0).at(-1) : null;
 }
 
+/**
+ * getTimeElementBaseDateSource
+ * @description Get the base date text source and cache key from a time element.
+ *
+ * @param  {JQuery}  $time
+ * @return {{dateText: ?string, cacheKey: ?string}}
+ */
+function getTimeElementBaseDateSource($time) {
+    const titleText = $time.attr('title')?.trim();
+    if (titleText) {
+        return {
+            dateText: titleText,
+            cacheKey: `title:${titleText}`
+        };
+    }
+
+    const datetime = $time.attr('datetime')?.trim();
+    if (datetime) {
+        const date = new Date(datetime);
+        if (!Number.isNaN(date.getTime())) {
+            return {
+                dateText: new Intl.DateTimeFormat(undefined, {
+                    year: 'numeric',
+                    month: 'short',
+                    day: 'numeric'
+                }).format(date),
+                cacheKey: `datetime:${datetime}`
+            };
+        }
+    }
+
+    return {
+        dateText: null,
+        cacheKey: null
+    };
+}
+
+/**
+ * getTimeElementBaseDateText
+ * @description Get the preserved absolute date text from a time element.
+ *
+ * @param  {JQuery}  $time
+ * @return {?string}
+ */
+function getTimeElementBaseDateText($time) {
+    const preservedText = $time.attr('data-ih-original-date')?.trim();
+    const preservedKey = $time.attr('data-ih-original-date-key')?.trim();
+    const { dateText, cacheKey } = getTimeElementBaseDateSource($time);
+
+    if (preservedText && preservedKey && cacheKey && preservedKey === cacheKey) {
+        return preservedText;
+    }
+
+    if (dateText && cacheKey) {
+        $time.attr('data-ih-original-date', dateText);
+        $time.attr('data-ih-original-date-key', cacheKey);
+        return dateText;
+    }
+
+    return null;
+}
+
+/**
+ * setTimeElementDateAndLocaleTime
+ * @description Replace time element text with absolute date and localized time.
+ *
+ * @param  {JQuery}  $time
+ * @return {void}
+ */
+export function setTimeElementDateAndLocaleTime($time) {
+    if ($time == null || $time.length === 0) {
+        return;
+    }
+
+    const datetime = $time.attr('datetime');
+    if (!datetime) {
+        return;
+    }
+
+    const date = new Date(datetime);
+    if (Number.isNaN(date.getTime())) {
+        return;
+    }
+
+    const dateText = getTimeElementBaseDateText($time);
+    if (!dateText) {
+        return;
+    }
+
+    const localeTime = new Intl.DateTimeFormat(undefined, {
+        hour: 'numeric',
+        minute: '2-digit'
+    }).format(date);
+
+    if (!localeTime) {
+        return;
+    }
+
+    const finalText = `${dateText} ${localeTime}`;
+
+    if ($time.text()?.trim() !== finalText) {
+        $time.text(finalText);
+    }
+}
+
+/**
+ * getHighlightCurrentTimeElement
+ * @description Get the publish time element in the current highlight view.
+ *
+ * @param  {JQuery}  $element
+ * @return {JQuery}
+ */
+export function getHighlightCurrentTimeElement($element) {
+    if ($element == null || $element.length === 0) {
+        $element = $('body');
+    }
+
+    let $section = $element.closest('section:visible');
+    if ($section.length === 0) {
+        $section = $('body > div section:visible').last();
+    }
+
+    if ($section.length === 0) {
+        return $();
+    }
+
+    let $times = $section.find('time[datetime]').filter(function () {
+        const $time = $(this);
+
+        return (
+            $time.is(':visible') &&
+            $time.closest('a[href^="/stories/highlights/"]').length === 0 &&
+            $time.closest('[role="button"]').length === 0
+        );
+    });
+
+    if ($times.length === 0) {
+        return $();
+    }
+
+    return $times.first();
+}
 
 /**
  * updateLoadingBar

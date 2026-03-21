@@ -2,8 +2,8 @@ import { USER_SETTING, SVG, state } from "../settings";
 import {
     updateLoadingBar, openNewTab, logger,
     setDownloadProgress, saveFiles, getStoryProgress,
-    tryHandleDashFromMediaItem,
-    IG_createDM
+    tryHandleDashFromMediaItem, IG_createDM,
+    getHighlightCurrentTimeElement, setTimeElementDateAndLocaleTime
 } from "../utils/general";
 import { _i18n } from "../utils/i18n";
 import { getHighlightStories, getMediaInfo } from "../utils/api";
@@ -251,10 +251,7 @@ export async function onHighlightsStory(isDownload, isPreview) {
                 }
 
                 // replace something times ago format to publish time in first init
-                let publishTitle = $header.parents("div[class]").find("time[datetime]")?.attr('title');
-                if (publishTitle != null) {
-                    $header.parents("div[class]").find("time[datetime]").text(publishTitle);
-                }
+                setTimeElementDateAndLocaleTime(getHighlightCurrentTimeElement($header));
 
                 //// Modify video volume
                 //if(USER_SETTING.MODIFY_VIDEO_VOLUME){
