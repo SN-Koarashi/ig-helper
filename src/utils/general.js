@@ -143,6 +143,7 @@ export function setTimeElementDateAndLocaleTime($time) {
 
     if ($time.text()?.trim() !== finalText) {
         $time.text(finalText);
+        $time.css('white-space', 'break-spaces');
     }
 }
 
