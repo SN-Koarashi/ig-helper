@@ -133,19 +133,35 @@
     z-index: 5;
 }
 
+*:not(:has(> section[class])) > .IG_DWSTORY,
+*:not(:has(> section[class])) > .IG_DWHISTORY,
+*:not(:has(> section[class])) > .IG_DWSTORY_THUMBNAIL,
+*:not(:has(> section[class])) > .IG_DWHISTORY_THUMBNAIL,
+*:not(:has(> section[class])) > .IG_DWNEWTAB,
+*:not(:has(> section[class])) > .IG_DWHINEWTAB {
+    right: -40px;
+    color: #000;
+}
+
+*:not(:has(> section[class])) > .IG_DWSTORY_ALL,
+*:not(:has(> section[class])) > .IG_DWHISTORY_ALL {
+    right: -70px;
+    color: #000;
+}
+
 .IG_DWSTORY,
 .IG_DWHISTORY,
 .IG_DWSTORY_THUMBNAIL,
 .IG_DWHISTORY_THUMBNAIL,
 .IG_DWNEWTAB,
 .IG_DWHINEWTAB {
-    right: -40px;
+    right: 6px;
     color: #000;
 }
 
 .IG_DWSTORY_ALL,
 .IG_DWHISTORY_ALL {
-    right: -70px;
+    right: -24px;
     color: #000;
 }
 
