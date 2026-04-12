@@ -278,9 +278,23 @@ export function createDownloadButton() {
                         });
                     });
 
+                    let $triggeredTarget = null;
                     // first onload
-                    $childElement.find('.button_wrapper').parent().find('ul li, div[role="button"] > div').each(function () {
-                        if ($(this).find('video').length > 0 || $(this).find('img').length > 0) {
+                    $childElement.find('.button_wrapper').parent().find('ul li, div[role="button"] > div, div[class] > div').each(function () {
+                        const $targetNode = $(this).find('video') || $(this).find('img');
+                        // Check if the node is visible and has size, 
+                        // and not the same node as last triggered one to avoid duplicated trigger 
+                        // when switching resources with same container
+                        if (
+                            $targetNode.length > 0 &&
+                            $targetNode.is(':visible') &&
+                            $targetNode[0].getBoundingClientRect().width > 0 &&
+                            $targetNode[0].getBoundingClientRect().height > 0 &&
+                            this.getBoundingClientRect().width > 0 &&
+                            this.getBoundingClientRect().height > 0 &&
+                            $triggeredTarget?.get(0) != $targetNode?.get(0)
+                        ) {
+                            $triggeredTarget = $targetNode;
                             observer_i.observe(this);
                         }
                     });
