@@ -5,7 +5,7 @@
 // @name:ja            IG助手
 // @name:ko            IG조수
 // @namespace          https://github.snkms.com/
-// @version            3.13.7
+// @version            3.13.8
 // @description        Downloading is possible for both photos and videos from posts, as well as for stories, reels or profile picture.
 // @description:zh-TW  一鍵下載對方 Instagram 貼文中的相片、影片甚至是他們的限時動態、連續短片及大頭貼圖片！
 // @description:zh-CN  一键下载对方 Instagram 帖子中的相片、视频甚至是他们的快拍、Reels及头像图片！
@@ -1045,9 +1045,23 @@
                             });
                         });
 
+                        let $triggeredTarget = null;
                         // first onload
-                        $childElement.find('.button_wrapper').parent().find('ul li, div[role="button"] > div').each(function () {
-                            if ($(this).find('video').length > 0 || $(this).find('img').length > 0) {
+                        $childElement.find('.button_wrapper').parent().find('ul li, div[role="button"] > div, div[class] > div').each(function () {
+                            const $targetNode = $(this).find('video') || $(this).find('img');
+                            // Check if the node is visible and has size, 
+                            // and not the same node as last triggered one to avoid duplicated trigger 
+                            // when switching resources with same container
+                            if (
+                                $targetNode.length > 0 &&
+                                $targetNode.is(':visible') &&
+                                $targetNode[0].getBoundingClientRect().width > 0 &&
+                                $targetNode[0].getBoundingClientRect().height > 0 &&
+                                this.getBoundingClientRect().width > 0 &&
+                                this.getBoundingClientRect().height > 0 &&
+                                $triggeredTarget?.get(0) != $targetNode?.get(0)
+                            ) {
+                                $triggeredTarget = $targetNode;
                                 observer_i.observe(this);
                             }
                         });
