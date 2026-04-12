@@ -302,21 +302,22 @@ export function IG_setDM(hasHidden) {
  * @description Download the specified media URL to the computer.
  *
  * @param  {String}  downloadLink
- * @param  {String}  username
- * @param  {String}  sourceType
- * @param  {Integer}  timestamp
- * @param  {String}  filetype
- * @param  {String}  shortcode
+ * @param  {Object}  metadata
+ * @param  {String}  metadata.username
+ * @param  {String}  metadata.sourceType
+ * @param  {Integer}  metadata.timestamp
+ * @param  {String}  metadata.filetype
+ * @param  {String}  metadata.shortcode
  * @return {Promise}
  */
-export function saveFiles(downloadLink, username, sourceType, timestamp, filetype, shortcode) {
+export function saveFiles(downloadLink, metadata) {
     return new Promise((resolve) => {
         setTimeout(() => {
             updateLoadingBar(true);
             fetch(downloadLink).then(res => {
                 return res.blob().then(dwel => {
                     updateLoadingBar(false);
-                    createSaveFileElement(downloadLink, dwel, username, sourceType, timestamp, filetype, shortcode);
+                    createSaveFileElement(downloadLink, dwel, metadata);
 
                     resolve(true);
                 });
@@ -487,7 +488,13 @@ async function downloadDashStreams(videoUrl, audioUrl, username, sourceType, tim
 
     if (!audioUrl) {
         logger('[DASH]', 'Downloaded DASH video only (no audio rep / has_audio=false).');
-        await saveFiles(videoUrl, username, sourceType, timestamp, 'mp4', shortcode);
+        await saveFiles(videoUrl, {
+            username,
+            sourceType,
+            timestamp,
+            filetype: 'mp4',
+            shortcode
+        });
         return true;
     }
 
@@ -502,13 +509,25 @@ async function downloadDashStreams(videoUrl, audioUrl, username, sourceType, tim
         const mergedBuf = await muxDashVideoAudioToMp4(vBuf, aBuf);
         const mergedBlob = new Blob([mergedBuf], { type: 'video/mp4' });
 
-        createSaveFileElement(videoUrl, mergedBlob, username, sourceType, timestamp, 'mp4', shortcode);
+        createSaveFileElement(videoUrl, mergedBlob, { username, sourceType, timestamp, filetype: 'mp4', shortcode });
         logger('[DASH]', 'Merged MP4 download triggered.');
         return true;
     } catch (e) {
         logger('[DASH]', 'Mux failed -> fallback to separate downloads', e?.message || e);
-        await saveFiles(videoUrl, username, sourceType, timestamp, 'mp4', shortcode);
-        await saveFiles(audioUrl, username, sourceType, timestamp, 'm4a', shortcode);
+        await saveFiles(videoUrl, {
+            username,
+            sourceType,
+            timestamp,
+            filetype: 'mp4',
+            shortcode
+        });
+        await saveFiles(audioUrl, {
+            username,
+            sourceType,
+            timestamp,
+            filetype: 'm4a',
+            shortcode
+        });
         return true;
     }
 }
@@ -556,7 +575,13 @@ export async function tryHandleDashFromMediaItem({
 
         if (!aUrl) {
             logger('[DASH]', 'download mode -> VIDEO-ONLY DASH (no audio rep)');
-            await saveFiles(vUrl, username, sourceType, timestamp, 'mp4', shortcode);
+            await saveFiles(vUrl, {
+                username,
+                sourceType,
+                timestamp,
+                filetype: 'mp4',
+                shortcode
+            });
             return true;
         }
 
@@ -588,14 +613,16 @@ function triggerDownload(blob, filename) {
  * @description Get the file name for downloaded media according to the user settings and resource information.
  *
  * @param  {String}  downloadLink
- * @param  {String}  username
- * @param  {String}  sourceType
- * @param  {Integer}  timestamp
- * @param  {String}  filetype
- * @param  {String}  shortcode
+ * @param  {Object}  metadata
+ * @param  {String}  metadata.username
+ * @param  {String}  metadata.sourceType
+ * @param  {Integer}  metadata.timestamp
+ * @param  {String}  metadata.filetype
+ * @param  {String}  metadata.shortcode
  * @return {String}  The generated filename
  */
-export function getSaveFileName(downloadLink, username, sourceType, timestamp, filetype, shortcode) {
+export function getSaveFileName(downloadLink, metadata) {
+    let { username, sourceType, timestamp, filetype, shortcode } = metadata;
     timestamp = parseInt(timestamp.toString().padEnd(13, '0'));
 
     if (USER_SETTING.RENAME_PUBLISH_DATE) {
@@ -650,15 +677,24 @@ export function getSaveFileName(downloadLink, username, sourceType, timestamp, f
  *
  * @param  {String}  downloadLink
  * @param  {Object}  object
- * @param  {String}  username
- * @param  {String}  sourceType
- * @param  {Integer}  timestamp
- * @param  {String}  filetype
- * @param  {String}  shortcode
+ * @param  {Object}  metadata
+ * @param  {String}  metadata.username
+ * @param  {String}  metadata.sourceType
+ * @param  {Integer}  metadata.timestamp
+ * @param  {String}  metadata.filetype
+ * @param  {String}  metadata.shortcode
  * @return {void}
  */
-export function createSaveFileElement(downloadLink, object, username, sourceType, timestamp, filetype, shortcode) {
-    const downloadName = getSaveFileName(downloadLink, username, sourceType, timestamp, filetype, shortcode);
+export function createSaveFileElement(downloadLink, object, metadata) {
+    let { username, sourceType, timestamp, filetype, shortcode } = metadata;
+    const downloadName = getSaveFileName(downloadLink, {
+        username,
+        sourceType,
+        timestamp,
+        filetype,
+        shortcode
+    });
+
     if (USER_SETTING.MODIFY_RESOURCE_EXIF && filetype === 'jpg' && shortcode && sourceType === 'photo' && (object.type === 'image/jpeg' || object.type === 'image/webp')) {
         changeExifData(object, shortcode)
             .then(newBlob => triggerDownload(newBlob, downloadName))
@@ -847,7 +883,13 @@ export async function triggerLinkElement(element, isPreview) {
                 if (isPreview) {
                     openNewTab(cached);
                 } else {
-                    saveFiles(cached, username, $(element).data('name'), timestamp, $(element).data('type') || 'jpg', $(element).data('path'));
+                    saveFiles(cached, {
+                        username,
+                        sourceType: $(element).data('name'),
+                        timestamp,
+                        filetype: $(element).data('type') || 'jpg',
+                        shortcode: $(element).data('path')
+                    });
                 }
                 return;
             }
@@ -911,7 +953,13 @@ export async function triggerLinkElement(element, isPreview) {
                     openNewTab(replaceSameOriginHost(resource_url));
                 }
                 else {
-                    saveFiles(resource_url, username, $(element).attr('data-name'), timestamp, $(element).attr('data-type'), $(element).attr('data-path'));
+                    saveFiles(resource_url, {
+                        username,
+                        sourceType: $(element).attr('data-name'),
+                        timestamp,
+                        filetype: $(element).attr('data-type'),
+                        shortcode: $(element).attr('data-path')
+                    });
                 }
             }
             else {
@@ -920,7 +968,13 @@ export async function triggerLinkElement(element, isPreview) {
                         openNewTab(replaceSameOriginHost($(element).attr('data-href')));
                     }
                     else {
-                        saveFiles($(element).attr('data-href'), username, $(element).attr('data-name'), timestamp, $(element).attr('data-type'), $(element).attr('data-path'));
+                        saveFiles($(element).attr('data-href'), {
+                            username,
+                            sourceType: $(element).attr('data-name'),
+                            timestamp,
+                            filetype: $(element).attr('data-type'),
+                            shortcode: $(element).attr('data-path')
+                        });
                     }
                 }
                 else {
@@ -930,7 +984,13 @@ export async function triggerLinkElement(element, isPreview) {
             }
         }
         else {
-            saveFiles($(element).attr('data-href'), username, $(element).attr('data-name'), timestamp, $(element).attr('data-type'), $(element).attr('data-path'));
+            saveFiles($(element).attr('data-href'), {
+                username,
+                sourceType: $(element).attr('data-name'),
+                timestamp,
+                filetype: $(element).attr('data-type'),
+                shortcode: $(element).attr('data-path')
+            });
         }
     }
     catch (err) {

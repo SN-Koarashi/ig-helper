@@ -5,7 +5,7 @@
 // @name:ja            IG助手
 // @name:ko            IG조수
 // @namespace          https://github.snkms.com/
-// @version            3.13.8
+// @version            3.14.1
 // @description        Downloading is possible for both photos and videos from posts, as well as for stories, reels or profile picture.
 // @description:zh-TW  一鍵下載對方 Instagram 貼文中的相片、影片甚至是他們的限時動態、連續短片及大頭貼圖片！
 // @description:zh-CN  一键下载对方 Instagram 帖子中的相片、视频甚至是他们的快拍、Reels及头像图片！
@@ -433,14 +433,30 @@
                                 }
                             }
 
-                            await saveFiles(item.video_resources[0].src, username, "highlights", timestamp, 'mp4', item.id);
+                            await saveFiles(
+                                item.video_resources[0].src,
+                                {
+                                    username,
+                                    sourceType: "highlights",
+                                    timestamp,
+                                    filetype: 'mp4',
+                                    shortcode: item.id
+                                }
+                            );
                             setDownloadProgress(++complete, highStories.data.reels_media[0].items.length);
                         })();
                     }
                     else {
-                        saveFiles(item.display_resources[0].src, username, "highlights", timestamp, 'jpg', item.id).then(() => {
-                            setDownloadProgress(++complete, highStories.data.reels_media[0].items.length);
-                        });
+                        saveFiles(item.display_resources[0].src,
+                            {
+                                username,
+                                sourceType: "highlights",
+                                timestamp,
+                                filetype: 'jpg',
+                                shortcode: item.id
+                            }).then(() => {
+                                setDownloadProgress(++complete, highStories.data.reels_media[0].items.length);
+                            });
                     }
                 }, 100 * idx);
             });
@@ -506,7 +522,13 @@
                         openNewTab(cached);
                     }
                     else {
-                        saveFiles(cached, username, "stories", timestamp, 'jpg', target.id);
+                        saveFiles(cached, {
+                            username,
+                            sourceType: "highlights",
+                            timestamp,
+                            filetype: 'jpg',
+                            shortcode: target.id
+                        });
                     }
                     return;
                 }
@@ -531,7 +553,14 @@
                             openNewTab(result.items[0].video_versions[0].url);
                         }
                         else {
-                            saveFiles(result.items[0].video_versions[0].url, username, "highlights", timestamp, 'mp4', result.items[0].id);
+                            saveFiles(result.items[0].video_versions[0].url,
+                                {
+                                    username,
+                                    sourceType: "highlights",
+                                    timestamp,
+                                    filetype: 'mp4',
+                                    shortcode: result.items[0].id
+                                });
                         }
                     }
                     else {
@@ -539,7 +568,13 @@
                             openNewTab(result.items[0].image_versions2.candidates[0].url);
                         }
                         else {
-                            saveFiles(result.items[0].image_versions2.candidates[0].url, username, "highlights", timestamp, 'jpg', result.items[0].id);
+                            saveFiles(result.items[0].image_versions2.candidates[0].url, {
+                                username,
+                                sourceType: "highlights",
+                                timestamp,
+                                filetype: 'jpg',
+                                shortcode: result.items[0].id
+                            });
                         }
                     }
                 }
@@ -563,7 +598,13 @@
                         openNewTab(target.video_resources.at(-1).src, username);
                     }
                     else {
-                        saveFiles(target.video_resources.at(-1).src, username, "highlights", timestamp, 'mp4', target.id);
+                        saveFiles(target.video_resources.at(-1).src, {
+                            username,
+                            sourceType: "highlights",
+                            timestamp,
+                            filetype: 'mp4',
+                            shortcode: target.id
+                        });
                     }
                 }
                 else {
@@ -571,7 +612,13 @@
                         openNewTab(target.display_resources.at(-1).src, username);
                     }
                     else {
-                        saveFiles(target.display_resources.at(-1).src, username, "highlights", timestamp, 'jpg', target.id);
+                        saveFiles(target.display_resources.at(-1).src, {
+                            username,
+                            sourceType: "highlights",
+                            timestamp,
+                            filetype: 'jpg',
+                            shortcode: target.id
+                        });
                     }
                 }
 
@@ -716,7 +763,13 @@
                 let result = await getMediaInfo(target.id);
 
                 if (result.status === 'ok') {
-                    saveFiles(result.items[0].image_versions2.candidates[0].url, username, "highlights", timestamp, 'jpg', highlightId);
+                    saveFiles(result.items[0].image_versions2.candidates[0].url, {
+                        username,
+                        sourceType: "highlights",
+                        timestamp,
+                        filetype: 'jpg',
+                        shortcode: highlightId
+                    });
                 }
                 else {
                     if (USER_SETTING.FALLBACK_TO_BLOB_FETCH_IF_MEDIA_API_THROTTLED) {
@@ -733,7 +786,13 @@
                 }
             }
             else {
-                saveFiles(target.display_resources.at(-1).src, username, "highlights", timestamp, 'jpg', highlightId);
+                saveFiles(target.display_resources.at(-1).src, {
+                    username,
+                    sourceType: "highlights",
+                    timestamp,
+                    filetype: 'jpg',
+                    shortcode: highlightId
+                });
                 state.tempFetchRateLimit = false;
             }
 
@@ -1627,11 +1686,21 @@
 
             try {
                 let dataURL = await getUserHighSizeProfile(userInfo.user.pk);
-                saveFiles(dataURL, username, "avatar", timestamp, 'jpg');
+                saveFiles(dataURL, {
+                    username,
+                    sourceType: "avatar",
+                    timestamp,
+                    filetype: 'jpg'
+                });
             }
             // eslint-disable-next-line no-unused-vars
             catch (err) {
-                saveFiles(userInfo.user.profile_pic_url, username, "avatar", timestamp, 'jpg');
+                saveFiles(userInfo.user.profile_pic_url, {
+                    username,
+                    sourceType: "avatar",
+                    timestamp,
+                    filetype: 'jpg'
+                });
             }
 
             updateLoadingBar(false);
@@ -1794,7 +1863,13 @@
                         }
                         else {
                             let type = 'mp4';
-                            saveFiles(media.video_url, media.owner.username, "reels", timestamp, type, reelsPath);
+                            saveFiles(media.video_url, {
+                                username: media.owner.username,
+                                sourceType: "reels",
+                                timestamp,
+                                filetype: type,
+                                shortcode: reelsPath
+                            });
                         }
                     }
                     else {
@@ -1803,7 +1878,13 @@
                         }
                         else {
                             let type = 'jpg';
-                            saveFiles(media.display_resources.at(-1).src, media.owner.username, "reels", timestamp, type, reelsPath);
+                            saveFiles(media.display_resources.at(-1).src, {
+                                username: media.owner.username,
+                                sourceType: "reels",
+                                timestamp,
+                                filetype: type,
+                                shortcode: reelsPath
+                            });
                         }
                     }
                 }
@@ -1814,7 +1895,13 @@
                         }
                         else {
                             let type = 'mp4';
-                            saveFiles(media.video_versions[0].url, media.owner.username, "reels", timestamp, type, reelsPath);
+                            saveFiles(media.video_versions[0].url, {
+                                username: media.owner.username,
+                                sourceType: "reels",
+                                timestamp,
+                                filetype: type,
+                                shortcode: reelsPath
+                            });
                         }
                     }
                     else {
@@ -1823,7 +1910,13 @@
                         }
                         else {
                             let type = 'jpg';
-                            saveFiles(media.image_versions2.candidates[0].url, media.owner.username, "reels", timestamp, type, reelsPath);
+                            saveFiles(media.image_versions2.candidates[0].url, {
+                                username: media.owner.username,
+                                sourceType: "reels",
+                                timestamp,
+                                filetype: type,
+                                shortcode: reelsPath
+                            });
                         }
                     }
                 }
@@ -2073,12 +2166,25 @@
                     });
 
                     if (item.is_video) {
-                        saveFiles(item.video_resources[0].src, username, "stories", timestamp, 'mp4', item.id).then(() => {
-                            setDownloadProgress(++complete, stories.data.reels_media[0].items.length);
-                        });
+                        saveFiles(item.video_resources[0].src,
+                            {
+                                username,
+                                sourceType: "stories",
+                                timestamp,
+                                filetype: 'mp4',
+                                shortcode: item.id
+                            }).then(() => {
+                                setDownloadProgress(++complete, stories.data.reels_media[0].items.length);
+                            });
                     }
                     else {
-                        saveFiles(item.display_resources[0].src, username, "stories", timestamp, 'jpg', item.id).then(() => {
+                        saveFiles(item.display_resources[0].src, {
+                            username,
+                            sourceType: "stories",
+                            timestamp,
+                            filetype: 'jpg',
+                            shortcode: item.id
+                        }).then(() => {
                             setDownloadProgress(++complete, stories.data.reels_media[0].items.length);
                         });
                     }
@@ -2181,7 +2287,13 @@
                             openNewTab(cached);
                         }
                         else {
-                            saveFiles(cached, username, "stories", timestamp, 'jpg', mediaId);
+                            saveFiles(cached, {
+                                username,
+                                sourceType: "stories",
+                                timestamp,
+                                filetype: 'jpg',
+                                shortcode: mediaId
+                            });
                         }
                         return;
                     }
@@ -2212,7 +2324,13 @@
                             openNewTab(result.items[0].video_versions[0].url);
                         }
                         else {
-                            saveFiles(result.items[0].video_versions[0].url, username, "stories", timestamp, 'mp4', mediaId);
+                            saveFiles(result.items[0].video_versions[0].url, {
+                                username,
+                                sourceType: "stories",
+                                timestamp,
+                                filetype: 'mp4',
+                                shortcode: mediaId
+                            });
                         }
                     }
                     else {
@@ -2220,7 +2338,13 @@
                             openNewTab(result.items[0].image_versions2.candidates[0].url);
                         }
                         else {
-                            saveFiles(result.items[0].image_versions2.candidates[0].url, username, "stories", timestamp, 'jpg', mediaId);
+                            saveFiles(result.items[0].image_versions2.candidates[0].url, {
+                                username,
+                                sourceType: "stories",
+                                timestamp,
+                                filetype: 'jpg',
+                                shortcode: mediaId
+                            });
                         }
                     }
                 }
@@ -2333,7 +2457,13 @@
                         openNewTab(videoURL);
                     }
                     else {
-                        saveFiles(videoURL, username, "stories", timestamp, type, mediaId);
+                        saveFiles(videoURL, {
+                            username,
+                            sourceType: "stories",
+                            timestamp,
+                            filetype: type,
+                            shortcode: mediaId
+                        });
                     }
                 }
             }
@@ -2366,7 +2496,13 @@
                             openNewTab(cached);
                         }
                         else {
-                            saveFiles(cached, username, "stories", timestamp, 'jpg', mediaId);
+                            saveFiles(cached, {
+                                username,
+                                sourceType: "stories",
+                                timestamp,
+                                filetype: 'jpg',
+                                shortcode: mediaId
+                            });
                         }
                         return;
                     }
@@ -2376,7 +2512,13 @@
                     openNewTab(downloadLink);
                 }
                 else {
-                    saveFiles(downloadLink, username, "stories", timestamp, type, mediaId);
+                    saveFiles(downloadLink, {
+                        username,
+                        sourceType: "stories",
+                        timestamp,
+                        filetype: type,
+                        shortcode: mediaId
+                    });
                 }
             }
 
@@ -2558,7 +2700,13 @@
                 }
 
                 if (result.status === 'ok') {
-                    saveFiles(result.items[0].image_versions2.candidates[0].url, username, "stories", timestamp, 'jpg', mediaId);
+                    saveFiles(result.items[0].image_versions2.candidates[0].url, {
+                        username,
+                        sourceType: "stories",
+                        timestamp,
+                        filetype: 'jpg',
+                        shortcode: mediaId
+                    });
 
                 }
                 else {
@@ -2652,7 +2800,13 @@
                 }
             }
 
-            saveFiles(videoThumbnailURL, username, "thumbnail", timestamp, type, mediaId);
+            saveFiles(videoThumbnailURL, {
+                username,
+                sourceType: "thumbnail",
+                timestamp,
+                filetype: type,
+                shortcode: mediaId
+            });
             state.tempFetchRateLimit = false;
             updateLoadingBar(false);
         }
@@ -3397,21 +3551,22 @@
      * @description Download the specified media URL to the computer.
      *
      * @param  {String}  downloadLink
-     * @param  {String}  username
-     * @param  {String}  sourceType
-     * @param  {Integer}  timestamp
-     * @param  {String}  filetype
-     * @param  {String}  shortcode
+     * @param  {Object}  metadata
+     * @param  {String}  metadata.username
+     * @param  {String}  metadata.sourceType
+     * @param  {Integer}  metadata.timestamp
+     * @param  {String}  metadata.filetype
+     * @param  {String}  metadata.shortcode
      * @return {Promise}
      */
-    function saveFiles(downloadLink, username, sourceType, timestamp, filetype, shortcode) {
+    function saveFiles(downloadLink, metadata) {
         return new Promise((resolve) => {
             setTimeout(() => {
                 updateLoadingBar(true);
                 fetch(downloadLink).then(res => {
                     return res.blob().then(dwel => {
                         updateLoadingBar(false);
-                        createSaveFileElement(downloadLink, dwel, username, sourceType, timestamp, filetype, shortcode);
+                        createSaveFileElement(downloadLink, dwel, metadata);
 
                         resolve(true);
                     });
@@ -3582,7 +3737,13 @@
 
         if (!audioUrl) {
             logger('[DASH]', 'Downloaded DASH video only (no audio rep / has_audio=false).');
-            await saveFiles(videoUrl, username, sourceType, timestamp, 'mp4', shortcode);
+            await saveFiles(videoUrl, {
+                username,
+                sourceType,
+                timestamp,
+                filetype: 'mp4',
+                shortcode
+            });
             return true;
         }
 
@@ -3597,13 +3758,25 @@
             const mergedBuf = await muxDashVideoAudioToMp4(vBuf, aBuf);
             const mergedBlob = new Blob([mergedBuf], { type: 'video/mp4' });
 
-            createSaveFileElement(videoUrl, mergedBlob, username, sourceType, timestamp, 'mp4', shortcode);
+            createSaveFileElement(videoUrl, mergedBlob, { username, sourceType, timestamp, filetype: 'mp4', shortcode });
             logger('[DASH]', 'Merged MP4 download triggered.');
             return true;
         } catch (e) {
             logger('[DASH]', 'Mux failed -> fallback to separate downloads', e?.message || e);
-            await saveFiles(videoUrl, username, sourceType, timestamp, 'mp4', shortcode);
-            await saveFiles(audioUrl, username, sourceType, timestamp, 'm4a', shortcode);
+            await saveFiles(videoUrl, {
+                username,
+                sourceType,
+                timestamp,
+                filetype: 'mp4',
+                shortcode
+            });
+            await saveFiles(audioUrl, {
+                username,
+                sourceType,
+                timestamp,
+                filetype: 'm4a',
+                shortcode
+            });
             return true;
         }
     }
@@ -3651,7 +3824,13 @@
 
             if (!aUrl) {
                 logger('[DASH]', 'download mode -> VIDEO-ONLY DASH (no audio rep)');
-                await saveFiles(vUrl, username, sourceType, timestamp, 'mp4', shortcode);
+                await saveFiles(vUrl, {
+                    username,
+                    sourceType,
+                    timestamp,
+                    filetype: 'mp4',
+                    shortcode
+                });
                 return true;
             }
 
@@ -3683,14 +3862,16 @@
      * @description Get the file name for downloaded media according to the user settings and resource information.
      *
      * @param  {String}  downloadLink
-     * @param  {String}  username
-     * @param  {String}  sourceType
-     * @param  {Integer}  timestamp
-     * @param  {String}  filetype
-     * @param  {String}  shortcode
+     * @param  {Object}  metadata
+     * @param  {String}  metadata.username
+     * @param  {String}  metadata.sourceType
+     * @param  {Integer}  metadata.timestamp
+     * @param  {String}  metadata.filetype
+     * @param  {String}  metadata.shortcode
      * @return {String}  The generated filename
      */
-    function getSaveFileName(downloadLink, username, sourceType, timestamp, filetype, shortcode) {
+    function getSaveFileName(downloadLink, metadata) {
+        let { username, sourceType, timestamp, filetype, shortcode } = metadata;
         timestamp = parseInt(timestamp.toString().padEnd(13, '0'));
 
         if (USER_SETTING.RENAME_PUBLISH_DATE) {
@@ -3745,15 +3926,24 @@
      *
      * @param  {String}  downloadLink
      * @param  {Object}  object
-     * @param  {String}  username
-     * @param  {String}  sourceType
-     * @param  {Integer}  timestamp
-     * @param  {String}  filetype
-     * @param  {String}  shortcode
+     * @param  {Object}  metadata
+     * @param  {String}  metadata.username
+     * @param  {String}  metadata.sourceType
+     * @param  {Integer}  metadata.timestamp
+     * @param  {String}  metadata.filetype
+     * @param  {String}  metadata.shortcode
      * @return {void}
      */
-    function createSaveFileElement(downloadLink, object, username, sourceType, timestamp, filetype, shortcode) {
-        const downloadName = getSaveFileName(downloadLink, username, sourceType, timestamp, filetype, shortcode);
+    function createSaveFileElement(downloadLink, object, metadata) {
+        let { username, sourceType, timestamp, filetype, shortcode } = metadata;
+        const downloadName = getSaveFileName(downloadLink, {
+            username,
+            sourceType,
+            timestamp,
+            filetype,
+            shortcode
+        });
+
         if (USER_SETTING.MODIFY_RESOURCE_EXIF && filetype === 'jpg' && shortcode && sourceType === 'photo' && (object.type === 'image/jpeg' || object.type === 'image/webp')) {
             changeExifData(object, shortcode)
                 .then(newBlob => triggerDownload(newBlob, downloadName))
@@ -3942,7 +4132,13 @@
                     if (isPreview) {
                         openNewTab(cached);
                     } else {
-                        saveFiles(cached, username, $(element).data('name'), timestamp, $(element).data('type') || 'jpg', $(element).data('path'));
+                        saveFiles(cached, {
+                            username,
+                            sourceType: $(element).data('name'),
+                            timestamp,
+                            filetype: $(element).data('type') || 'jpg',
+                            shortcode: $(element).data('path')
+                        });
                     }
                     return;
                 }
@@ -4006,7 +4202,13 @@
                         openNewTab(replaceSameOriginHost(resource_url));
                     }
                     else {
-                        saveFiles(resource_url, username, $(element).attr('data-name'), timestamp, $(element).attr('data-type'), $(element).attr('data-path'));
+                        saveFiles(resource_url, {
+                            username,
+                            sourceType: $(element).attr('data-name'),
+                            timestamp,
+                            filetype: $(element).attr('data-type'),
+                            shortcode: $(element).attr('data-path')
+                        });
                     }
                 }
                 else {
@@ -4015,7 +4217,13 @@
                             openNewTab(replaceSameOriginHost($(element).attr('data-href')));
                         }
                         else {
-                            saveFiles($(element).attr('data-href'), username, $(element).attr('data-name'), timestamp, $(element).attr('data-type'), $(element).attr('data-path'));
+                            saveFiles($(element).attr('data-href'), {
+                                username,
+                                sourceType: $(element).attr('data-name'),
+                                timestamp,
+                                filetype: $(element).attr('data-type'),
+                                shortcode: $(element).attr('data-path')
+                            });
                         }
                     }
                     else {
@@ -4025,7 +4233,13 @@
                 }
             }
             else {
-                saveFiles($(element).attr('data-href'), username, $(element).attr('data-name'), timestamp, $(element).attr('data-type'), $(element).attr('data-path'));
+                saveFiles($(element).attr('data-href'), {
+                    username,
+                    sourceType: $(element).attr('data-name'),
+                    timestamp,
+                    filetype: $(element).attr('data-type'),
+                    shortcode: $(element).attr('data-path')
+                });
             }
         }
         catch (err) {
@@ -5133,7 +5347,15 @@
 
             let postPath = $(this).parent().children('a').attr('data-path') ?? $('#article-id').text();
 
-            saveFiles($(this).parent().children('a').find('img').first().attr('src'), $(this).parent().children('a').attr('data-username'), 'thumbnail', timestamp, 'jpg', postPath);
+            saveFiles(
+                $(this).parent().children('a').find('img').first().attr('src'),
+                {
+                    username: $(this).parent().children('a').attr('data-username'),
+                    sourceType: 'thumbnail',
+                    timestamp,
+                    filetype: 'jpg',
+                    shortcode: postPath
+                });
         });
 
         // Running if user left-click download icon in stories

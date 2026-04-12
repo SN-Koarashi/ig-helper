@@ -22,11 +22,21 @@ export async function onProfileAvatar(isDownload) {
 
         try {
             let dataURL = await getUserHighSizeProfile(userInfo.user.pk);
-            saveFiles(dataURL, username, "avatar", timestamp, 'jpg');
+            saveFiles(dataURL, {
+                username,
+                sourceType: "avatar",
+                timestamp,
+                filetype: 'jpg'
+            });
         }
         // eslint-disable-next-line no-unused-vars
         catch (err) {
-            saveFiles(userInfo.user.profile_pic_url, username, "avatar", timestamp, 'jpg');
+            saveFiles(userInfo.user.profile_pic_url, {
+                username,
+                sourceType: "avatar",
+                timestamp,
+                filetype: 'jpg'
+            });
         }
 
         updateLoadingBar(false);

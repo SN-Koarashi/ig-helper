@@ -98,12 +98,25 @@ export async function onStoryAll() {
                 });
 
                 if (item.is_video) {
-                    saveFiles(item.video_resources[0].src, username, "stories", timestamp, 'mp4', item.id).then(() => {
-                        setDownloadProgress(++complete, stories.data.reels_media[0].items.length);
-                    });
+                    saveFiles(item.video_resources[0].src,
+                        {
+                            username,
+                            sourceType: "stories",
+                            timestamp,
+                            filetype: 'mp4',
+                            shortcode: item.id
+                        }).then(() => {
+                            setDownloadProgress(++complete, stories.data.reels_media[0].items.length);
+                        });
                 }
                 else {
-                    saveFiles(item.display_resources[0].src, username, "stories", timestamp, 'jpg', item.id).then(() => {
+                    saveFiles(item.display_resources[0].src, {
+                        username,
+                        sourceType: "stories",
+                        timestamp,
+                        filetype: 'jpg',
+                        shortcode: item.id
+                    }).then(() => {
                         setDownloadProgress(++complete, stories.data.reels_media[0].items.length);
                     });
                 }
@@ -206,7 +219,13 @@ export async function onStory(isDownload, isForce, isPreview) {
                         openNewTab(cached);
                     }
                     else {
-                        saveFiles(cached, username, "stories", timestamp, 'jpg', mediaId);
+                        saveFiles(cached, {
+                            username,
+                            sourceType: "stories",
+                            timestamp,
+                            filetype: 'jpg',
+                            shortcode: mediaId
+                        });
                     }
                     return;
                 }
@@ -237,7 +256,13 @@ export async function onStory(isDownload, isForce, isPreview) {
                         openNewTab(result.items[0].video_versions[0].url);
                     }
                     else {
-                        saveFiles(result.items[0].video_versions[0].url, username, "stories", timestamp, 'mp4', mediaId);
+                        saveFiles(result.items[0].video_versions[0].url, {
+                            username,
+                            sourceType: "stories",
+                            timestamp,
+                            filetype: 'mp4',
+                            shortcode: mediaId
+                        });
                     }
                 }
                 else {
@@ -245,7 +270,13 @@ export async function onStory(isDownload, isForce, isPreview) {
                         openNewTab(result.items[0].image_versions2.candidates[0].url);
                     }
                     else {
-                        saveFiles(result.items[0].image_versions2.candidates[0].url, username, "stories", timestamp, 'jpg', mediaId);
+                        saveFiles(result.items[0].image_versions2.candidates[0].url, {
+                            username,
+                            sourceType: "stories",
+                            timestamp,
+                            filetype: 'jpg',
+                            shortcode: mediaId
+                        });
                     }
                 }
             }
@@ -358,7 +389,13 @@ export async function onStory(isDownload, isForce, isPreview) {
                     openNewTab(videoURL);
                 }
                 else {
-                    saveFiles(videoURL, username, "stories", timestamp, type, mediaId);
+                    saveFiles(videoURL, {
+                        username,
+                        sourceType: "stories",
+                        timestamp,
+                        filetype: type,
+                        shortcode: mediaId
+                    });
                 }
             }
         }
@@ -391,7 +428,13 @@ export async function onStory(isDownload, isForce, isPreview) {
                         openNewTab(cached);
                     }
                     else {
-                        saveFiles(cached, username, "stories", timestamp, 'jpg', mediaId);
+                        saveFiles(cached, {
+                            username,
+                            sourceType: "stories",
+                            timestamp,
+                            filetype: 'jpg',
+                            shortcode: mediaId
+                        });
                     }
                     return;
                 }
@@ -401,7 +444,13 @@ export async function onStory(isDownload, isForce, isPreview) {
                 openNewTab(downloadLink);
             }
             else {
-                saveFiles(downloadLink, username, "stories", timestamp, type, mediaId);
+                saveFiles(downloadLink, {
+                    username,
+                    sourceType: "stories",
+                    timestamp,
+                    filetype: type,
+                    shortcode: mediaId
+                });
             }
         }
 
@@ -583,7 +632,13 @@ export async function onStoryThumbnail(isDownload, isForce) {
             }
 
             if (result.status === 'ok') {
-                saveFiles(result.items[0].image_versions2.candidates[0].url, username, "stories", timestamp, 'jpg', mediaId);
+                saveFiles(result.items[0].image_versions2.candidates[0].url, {
+                    username,
+                    sourceType: "stories",
+                    timestamp,
+                    filetype: 'jpg',
+                    shortcode: mediaId
+                });
 
             }
             else {
@@ -677,7 +732,13 @@ export async function onStoryThumbnail(isDownload, isForce) {
             }
         }
 
-        saveFiles(videoThumbnailURL, username, "thumbnail", timestamp, type, mediaId);
+        saveFiles(videoThumbnailURL, {
+            username,
+            sourceType: "thumbnail",
+            timestamp,
+            filetype: type,
+            shortcode: mediaId
+        });
         state.tempFetchRateLimit = false;
         updateLoadingBar(false);
     }

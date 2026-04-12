@@ -41,7 +41,13 @@ export async function onReels(isDownload, isVideo, isPreview) {
                     }
                     else {
                         let type = 'mp4';
-                        saveFiles(media.video_url, media.owner.username, "reels", timestamp, type, reelsPath);
+                        saveFiles(media.video_url, {
+                            username: media.owner.username,
+                            sourceType: "reels",
+                            timestamp,
+                            filetype: type,
+                            shortcode: reelsPath
+                        });
                     }
                 }
                 else {
@@ -50,7 +56,13 @@ export async function onReels(isDownload, isVideo, isPreview) {
                     }
                     else {
                         let type = 'jpg';
-                        saveFiles(media.display_resources.at(-1).src, media.owner.username, "reels", timestamp, type, reelsPath);
+                        saveFiles(media.display_resources.at(-1).src, {
+                            username: media.owner.username,
+                            sourceType: "reels",
+                            timestamp,
+                            filetype: type,
+                            shortcode: reelsPath
+                        });
                     }
                 }
             }
@@ -61,7 +73,13 @@ export async function onReels(isDownload, isVideo, isPreview) {
                     }
                     else {
                         let type = 'mp4';
-                        saveFiles(media.video_versions[0].url, media.owner.username, "reels", timestamp, type, reelsPath);
+                        saveFiles(media.video_versions[0].url, {
+                            username: media.owner.username,
+                            sourceType: "reels",
+                            timestamp,
+                            filetype: type,
+                            shortcode: reelsPath
+                        });
                     }
                 }
                 else {
@@ -70,7 +88,13 @@ export async function onReels(isDownload, isVideo, isPreview) {
                     }
                     else {
                         let type = 'jpg';
-                        saveFiles(media.image_versions2.candidates[0].url, media.owner.username, "reels", timestamp, type, reelsPath);
+                        saveFiles(media.image_versions2.candidates[0].url, {
+                            username: media.owner.username,
+                            sourceType: "reels",
+                            timestamp,
+                            filetype: type,
+                            shortcode: reelsPath
+                        });
                     }
                 }
             }

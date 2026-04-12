@@ -204,7 +204,15 @@ $(function () {
 
         let postPath = $(this).parent().children('a').attr('data-path') ?? $('#article-id').text();
 
-        saveFiles($(this).parent().children('a').find('img').first().attr('src'), $(this).parent().children('a').attr('data-username'), 'thumbnail', timestamp, 'jpg', postPath);
+        saveFiles(
+            $(this).parent().children('a').find('img').first().attr('src'),
+            {
+                username: $(this).parent().children('a').attr('data-username'),
+                sourceType: 'thumbnail',
+                timestamp,
+                filetype: 'jpg',
+                shortcode: postPath
+            });
     });
 
     // Running if user left-click download icon in stories

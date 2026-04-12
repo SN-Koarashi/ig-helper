@@ -65,14 +65,30 @@ export async function onHighlightsStoryAll() {
                             }
                         }
 
-                        await saveFiles(item.video_resources[0].src, username, "highlights", timestamp, 'mp4', item.id);
+                        await saveFiles(
+                            item.video_resources[0].src,
+                            {
+                                username,
+                                sourceType: "highlights",
+                                timestamp,
+                                filetype: 'mp4',
+                                shortcode: item.id
+                            }
+                        );
                         setDownloadProgress(++complete, highStories.data.reels_media[0].items.length);
                     })();
                 }
                 else {
-                    saveFiles(item.display_resources[0].src, username, "highlights", timestamp, 'jpg', item.id).then(() => {
-                        setDownloadProgress(++complete, highStories.data.reels_media[0].items.length);
-                    });
+                    saveFiles(item.display_resources[0].src,
+                        {
+                            username,
+                            sourceType: "highlights",
+                            timestamp,
+                            filetype: 'jpg',
+                            shortcode: item.id
+                        }).then(() => {
+                            setDownloadProgress(++complete, highStories.data.reels_media[0].items.length);
+                        });
                 }
             }, 100 * idx);
         });
@@ -138,7 +154,13 @@ export async function onHighlightsStory(isDownload, isPreview) {
                     openNewTab(cached);
                 }
                 else {
-                    saveFiles(cached, username, "stories", timestamp, 'jpg', target.id);
+                    saveFiles(cached, {
+                        username,
+                        sourceType: "highlights",
+                        timestamp,
+                        filetype: 'jpg',
+                        shortcode: target.id
+                    });
                 }
                 return;
             }
@@ -163,7 +185,14 @@ export async function onHighlightsStory(isDownload, isPreview) {
                         openNewTab(result.items[0].video_versions[0].url);
                     }
                     else {
-                        saveFiles(result.items[0].video_versions[0].url, username, "highlights", timestamp, 'mp4', result.items[0].id);
+                        saveFiles(result.items[0].video_versions[0].url,
+                            {
+                                username,
+                                sourceType: "highlights",
+                                timestamp,
+                                filetype: 'mp4',
+                                shortcode: result.items[0].id
+                            });
                     }
                 }
                 else {
@@ -171,7 +200,13 @@ export async function onHighlightsStory(isDownload, isPreview) {
                         openNewTab(result.items[0].image_versions2.candidates[0].url);
                     }
                     else {
-                        saveFiles(result.items[0].image_versions2.candidates[0].url, username, "highlights", timestamp, 'jpg', result.items[0].id);
+                        saveFiles(result.items[0].image_versions2.candidates[0].url, {
+                            username,
+                            sourceType: "highlights",
+                            timestamp,
+                            filetype: 'jpg',
+                            shortcode: result.items[0].id
+                        });
                     }
                 }
             }
@@ -195,7 +230,13 @@ export async function onHighlightsStory(isDownload, isPreview) {
                     openNewTab(target.video_resources.at(-1).src, username);
                 }
                 else {
-                    saveFiles(target.video_resources.at(-1).src, username, "highlights", timestamp, 'mp4', target.id);
+                    saveFiles(target.video_resources.at(-1).src, {
+                        username,
+                        sourceType: "highlights",
+                        timestamp,
+                        filetype: 'mp4',
+                        shortcode: target.id
+                    });
                 }
             }
             else {
@@ -203,7 +244,13 @@ export async function onHighlightsStory(isDownload, isPreview) {
                     openNewTab(target.display_resources.at(-1).src, username);
                 }
                 else {
-                    saveFiles(target.display_resources.at(-1).src, username, "highlights", timestamp, 'jpg', target.id);
+                    saveFiles(target.display_resources.at(-1).src, {
+                        username,
+                        sourceType: "highlights",
+                        timestamp,
+                        filetype: 'jpg',
+                        shortcode: target.id
+                    });
                 }
             }
 
@@ -348,7 +395,13 @@ export async function onHighlightsStoryThumbnail(isDownload) {
             let result = await getMediaInfo(target.id);
 
             if (result.status === 'ok') {
-                saveFiles(result.items[0].image_versions2.candidates[0].url, username, "highlights", timestamp, 'jpg', highlightId);
+                saveFiles(result.items[0].image_versions2.candidates[0].url, {
+                    username,
+                    sourceType: "highlights",
+                    timestamp,
+                    filetype: 'jpg',
+                    shortcode: highlightId
+                });
             }
             else {
                 if (USER_SETTING.FALLBACK_TO_BLOB_FETCH_IF_MEDIA_API_THROTTLED) {
@@ -365,7 +418,13 @@ export async function onHighlightsStoryThumbnail(isDownload) {
             }
         }
         else {
-            saveFiles(target.display_resources.at(-1).src, username, "highlights", timestamp, 'jpg', highlightId);
+            saveFiles(target.display_resources.at(-1).src, {
+                username,
+                sourceType: "highlights",
+                timestamp,
+                filetype: 'jpg',
+                shortcode: highlightId
+            });
             state.tempFetchRateLimit = false;
         }
 
