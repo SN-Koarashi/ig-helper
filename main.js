@@ -5,7 +5,7 @@
 // @name:ja            IG助手
 // @name:ko            IG조수
 // @namespace          https://github.snkms.com/
-// @version            3.15.1
+// @version            3.16.1
 // @description        Downloading is possible for both photos and videos from posts, as well as for stories, reels or profile picture.
 // @description:zh-TW  一鍵下載對方 Instagram 貼文中的相片、影片甚至是他們的限時動態、連續短片及大頭貼圖片！
 // @description:zh-CN  一键下载对方 Instagram 帖子中的相片、视频甚至是他们的快拍、Reels及头像图片！
@@ -3953,7 +3953,7 @@
         });
 
         if (USER_SETTING.MODIFY_RESOURCE_EXIF && filetype === 'jpg' && shortcode && sourceType === 'photo' && (object.type === 'image/jpeg' || object.type === 'image/webp')) {
-            changeExifData(object, shortcode)
+            changeExifData(object, metadata)
                 .then(newBlob => triggerDownload(newBlob, downloadName))
                 .catch(err => {
                     console.error('Failed to strip EXIF and/or attach post URL to EXIF.', err);
@@ -3969,10 +3969,16 @@
      * @description Strips EXIF metadata and attaches post URLs to the EXIF of downloaded image resources.
      *
      * @param  {Object}  blob
-     * @param  {string}  shortcode
+     * @param  {Object}  metadata
+     * @param  {String}  metadata.username
+     * @param  {String}  metadata.sourceType
+     * @param  {Integer}  metadata.timestamp
+     * @param  {String}  metadata.filetype
+     * @param  {String}  metadata.shortcode
+     * @param  {Integer|null}  metadata.index
      * @return {Blob}
      */
-    async function changeExifData(blob, shortcode) {
+    async function changeExifData(blob, metadata) {
         const concat = (...arr) => {
             const len = arr.reduce((s, a) => s + a.length, 0);
             const out = new Uint8Array(len);
@@ -3988,7 +3994,45 @@
             new DataView(b.buffer).setUint32(0, v, true);
             return b;
         };
+        const u16le = v => {
+            const b = new Uint8Array(2);
+            new DataView(b.buffer).setUint16(0, v, true);
+            return b;
+        };
         const enc = s => new TextEncoder().encode(s);
+        const encUtf16le = s => {
+            const out = new Uint8Array(s.length * 2);
+            for (let i = 0; i < s.length; i++) {
+                const code = s.charCodeAt(i);
+                out[i * 2] = code & 0xFF;
+                out[i * 2 + 1] = (code >> 8) & 0xFF;
+            }
+            return out;
+        };
+        const formatExifDate = ts => {
+            let parsed = Number(ts);
+            if (!Number.isFinite(parsed)) {
+                parsed = Date.now();
+            }
+            if (parsed < 1e12) {
+                parsed *= 1000;
+            }
+
+            const date = new Date(parsed);
+            if (Number.isNaN(date.getTime())) {
+                return '1970:01:01 00:00:00';
+            }
+
+            const y = String(date.getFullYear()).padStart(4, '0');
+            const m = String(date.getMonth() + 1).padStart(2, '0');
+            const d = String(date.getDate()).padStart(2, '0');
+            const hh = String(date.getHours()).padStart(2, '0');
+            const mm = String(date.getMinutes()).padStart(2, '0');
+            const ss = String(date.getSeconds()).padStart(2, '0');
+            return `${y}:${m}:${d} ${hh}:${mm}:${ss}`;
+        };
+        const makeIFDEntry = (tag, type, count, valueOrOffset) =>
+            concat(u16le(tag), u16le(type), u32le(count), u32le(valueOrOffset));
         const fourCC = (dv, o) =>
             String.fromCharCode(dv.getUint8(o), dv.getUint8(o + 1), dv.getUint8(o + 2), dv.getUint8(o + 3));
 
@@ -3999,16 +4043,44 @@
             String.fromCharCode(...head.subarray(8, 12)) === 'WEBP';
         if (!isJPEG && !isWEBP) throw new Error('Not a JPEG or WEBP');
 
-        const urlBytes = enc(`https://www.instagram.com/p/${shortcode}/\0`);
+        const exifDateString = `${formatExifDate(metadata.timestamp)}\0`;
+        const username = `${(metadata.username || 'unknown').toString()}\0`;
+        const url = `https://www.instagram.com/p/${metadata.shortcode}/`;
+
+        const dateBytes = enc(exifDateString);
+        const artistBytes = enc(username);
+        const keywordBytes = encUtf16le(`${url}\0`);
+
         const exifPrefix = enc('Exif\0\0');
         const tiffHeader = Uint8Array.from([0x49, 0x49, 0x2A, 0x00, 0x08, 0x00, 0x00, 0x00]);
-        const entryCount = Uint8Array.from([0x01, 0x00]);
-        const entry = concat(
-            Uint8Array.from([0x0E, 0x01, 0x02, 0x00]),
-            u32le(urlBytes.length),
-            u32le(8 + 2 + 12 + 4)
+
+        const ifd0Count = 3;
+        const exifIfdCount = 1;
+
+        const ifd0Size = 2 + (ifd0Count * 12) + 4;
+        const exifIfdOffset = 8 + ifd0Size;
+        const exifIfdSize = 2 + (exifIfdCount * 12) + 4;
+        const dataStartOffset = 8 + ifd0Size + exifIfdSize;
+
+        const artistOffset = dataStartOffset;
+        const keywordOffset = artistOffset + artistBytes.length;
+        const dateOffset = keywordOffset + keywordBytes.length;
+
+        const ifd0 = concat(
+            u16le(ifd0Count),
+            makeIFDEntry(0x013B, 2, artistBytes.length, artistOffset),
+            makeIFDEntry(0x9C9E, 1, keywordBytes.length, keywordOffset),
+            makeIFDEntry(0x8769, 4, 1, exifIfdOffset),
+            u32le(0)
         );
-        const tiffBody = concat(tiffHeader, entryCount, entry, u32le(0), urlBytes);
+
+        const exifIfd = concat(
+            u16le(exifIfdCount),
+            makeIFDEntry(0x9003, 2, dateBytes.length, dateOffset),
+            u32le(0)
+        );
+
+        const tiffBody = concat(tiffHeader, ifd0, exifIfd, artistBytes, keywordBytes, dateBytes);
 
         if (isJPEG) {
             const ab = await blob.arrayBuffer();
