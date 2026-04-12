@@ -1111,11 +1111,6 @@
                             // Check if the node is visible and has size, 
                             // and not the same node as last triggered one to avoid duplicated trigger 
                             // when switching resources with same container
-                            console.log("aaa",
-                                this,
-                                $(this).find('video'),
-                                $(this).find('img')
-                            );
                             if (
                                 $targetNode.length > 0 &&
                                 $targetNode.is(':visible') &&
