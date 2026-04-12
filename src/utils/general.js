@@ -308,6 +308,7 @@ export function IG_setDM(hasHidden) {
  * @param  {Integer}  metadata.timestamp
  * @param  {String}  metadata.filetype
  * @param  {String}  metadata.shortcode
+ * @param  {Integer|null}  metadata.index
  * @return {Promise}
  */
 export function saveFiles(downloadLink, metadata) {
@@ -548,6 +549,7 @@ export async function tryHandleDashFromMediaItem({
     timestamp,
     shortcode,
     isPreview,
+    index
 }) {
     try {
         if (!USER_SETTING.PREFER_DASH_MANIFEST) return false;
@@ -580,7 +582,8 @@ export async function tryHandleDashFromMediaItem({
                 sourceType,
                 timestamp,
                 filetype: 'mp4',
-                shortcode
+                shortcode,
+                index
             });
             return true;
         }
@@ -619,11 +622,13 @@ function triggerDownload(blob, filename) {
  * @param  {Integer}  metadata.timestamp
  * @param  {String}  metadata.filetype
  * @param  {String}  metadata.shortcode
+ * @param  {Integer|null}  metadata.index
  * @return {String}  The generated filename
  */
 export function getSaveFileName(downloadLink, metadata) {
-    let { username, sourceType, timestamp, filetype, shortcode } = metadata;
+    let { username, sourceType, timestamp, filetype, shortcode, index } = metadata;
     timestamp = parseInt(timestamp.toString().padEnd(13, '0'));
+    index = (index != null) ? index : 0;
 
     if (USER_SETTING.RENAME_PUBLISH_DATE) {
         timestamp = parseInt(timestamp.toString().padEnd(13, '0'));
@@ -656,7 +661,8 @@ export function getSaveFileName(downloadLink, metadata) {
         '%MINUTE%': minute,
         '%SECOND%': second,
         '%ORIGINAL_NAME%': original_name,
-        '%ORIGINAL_NAME_FIRST%': original_name.split('_').at(0)
+        '%ORIGINAL_NAME_FIRST%': original_name.split('_').at(0),
+        '%INDEX%': index.toString(),
     };
 
     // eslint-disable-next-line no-useless-escape
@@ -683,16 +689,18 @@ export function getSaveFileName(downloadLink, metadata) {
  * @param  {Integer}  metadata.timestamp
  * @param  {String}  metadata.filetype
  * @param  {String}  metadata.shortcode
+ * @param  {Integer|null}  metadata.index
  * @return {void}
  */
 export function createSaveFileElement(downloadLink, object, metadata) {
-    let { username, sourceType, timestamp, filetype, shortcode } = metadata;
+    let { username, sourceType, timestamp, filetype, shortcode, index } = metadata;
     const downloadName = getSaveFileName(downloadLink, {
         username,
         sourceType,
         timestamp,
         filetype,
-        shortcode
+        shortcode,
+        index
     });
 
     if (USER_SETTING.MODIFY_RESOURCE_EXIF && filetype === 'jpg' && shortcode && sourceType === 'photo' && (object.type === 'image/jpeg' || object.type === 'image/webp')) {
@@ -844,6 +852,7 @@ export async function triggerLinkElement(element, isPreview) {
         let date = new Date().getTime();
         let timestamp = Math.floor(date / 1000);
         let username = ($(element).attr('data-username')) ? $(element).attr('data-username') : state.GL_username;
+        let index = $(element).attr('data-globalindex') || 0;
 
         if (!username && $(element).attr('data-path')) {
             logger('catching owner name from shortcode:', $(element).attr('data-href'));
@@ -871,6 +880,7 @@ export async function triggerLinkElement(element, isPreview) {
                 timestamp,
                 shortcode: $(element).data('path'),
                 isPreview: false,
+                index
             });
             if (handled) {
                 return;
@@ -888,7 +898,8 @@ export async function triggerLinkElement(element, isPreview) {
                         sourceType: $(element).data('name'),
                         timestamp,
                         filetype: $(element).data('type') || 'jpg',
-                        shortcode: $(element).data('path')
+                        shortcode: $(element).data('path'),
+                        index
                     });
                 }
                 return;

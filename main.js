@@ -5,7 +5,7 @@
 // @name:ja            IG助手
 // @name:ko            IG조수
 // @namespace          https://github.snkms.com/
-// @version            3.14.1
+// @version            3.15.1
 // @description        Downloading is possible for both photos and videos from posts, as well as for stories, reels or profile picture.
 // @description:zh-TW  一鍵下載對方 Instagram 貼文中的相片、影片甚至是他們的限時動態、連續短片及大頭貼圖片！
 // @description:zh-CN  一键下载对方 Instagram 帖子中的相片、视频甚至是他们的快拍、Reels及头像图片！
@@ -1111,11 +1111,6 @@
                             // Check if the node is visible and has size, 
                             // and not the same node as last triggered one to avoid duplicated trigger 
                             // when switching resources with same container
-                            console.log("aaa",
-                                this,
-                                $(this).find('video'),
-                                $(this).find('img')
-                            );
                             if (
                                 $targetNode.length > 0 &&
                                 $targetNode.is(':visible') &&
@@ -3562,6 +3557,7 @@
      * @param  {Integer}  metadata.timestamp
      * @param  {String}  metadata.filetype
      * @param  {String}  metadata.shortcode
+     * @param  {Integer|null}  metadata.index
      * @return {Promise}
      */
     function saveFiles(downloadLink, metadata) {
@@ -3802,6 +3798,7 @@
         timestamp,
         shortcode,
         isPreview,
+        index
     }) {
         try {
             if (!USER_SETTING.PREFER_DASH_MANIFEST) return false;
@@ -3834,7 +3831,8 @@
                     sourceType,
                     timestamp,
                     filetype: 'mp4',
-                    shortcode
+                    shortcode,
+                    index
                 });
                 return true;
             }
@@ -3873,11 +3871,13 @@
      * @param  {Integer}  metadata.timestamp
      * @param  {String}  metadata.filetype
      * @param  {String}  metadata.shortcode
+     * @param  {Integer|null}  metadata.index
      * @return {String}  The generated filename
      */
     function getSaveFileName(downloadLink, metadata) {
-        let { username, sourceType, timestamp, filetype, shortcode } = metadata;
+        let { username, sourceType, timestamp, filetype, shortcode, index } = metadata;
         timestamp = parseInt(timestamp.toString().padEnd(13, '0'));
+        index = (index != null) ? index : 0;
 
         if (USER_SETTING.RENAME_PUBLISH_DATE) {
             timestamp = parseInt(timestamp.toString().padEnd(13, '0'));
@@ -3910,7 +3910,8 @@
             '%MINUTE%': minute,
             '%SECOND%': second,
             '%ORIGINAL_NAME%': original_name,
-            '%ORIGINAL_NAME_FIRST%': original_name.split('_').at(0)
+            '%ORIGINAL_NAME_FIRST%': original_name.split('_').at(0),
+            '%INDEX%': index.toString(),
         };
 
         // eslint-disable-next-line no-useless-escape
@@ -3937,16 +3938,18 @@
      * @param  {Integer}  metadata.timestamp
      * @param  {String}  metadata.filetype
      * @param  {String}  metadata.shortcode
+     * @param  {Integer|null}  metadata.index
      * @return {void}
      */
     function createSaveFileElement(downloadLink, object, metadata) {
-        let { username, sourceType, timestamp, filetype, shortcode } = metadata;
+        let { username, sourceType, timestamp, filetype, shortcode, index } = metadata;
         const downloadName = getSaveFileName(downloadLink, {
             username,
             sourceType,
             timestamp,
             filetype,
-            shortcode
+            shortcode,
+            index
         });
 
         if (USER_SETTING.MODIFY_RESOURCE_EXIF && filetype === 'jpg' && shortcode && sourceType === 'photo' && (object.type === 'image/jpeg' || object.type === 'image/webp')) {
@@ -4098,6 +4101,7 @@
             let date = new Date().getTime();
             let timestamp = Math.floor(date / 1000);
             let username = ($(element).attr('data-username')) ? $(element).attr('data-username') : state.GL_username;
+            let index = $(element).attr('data-globalindex') || 0;
 
             if (!username && $(element).attr('data-path')) {
                 logger('catching owner name from shortcode:', $(element).attr('data-href'));
@@ -4125,6 +4129,7 @@
                     timestamp,
                     shortcode: $(element).data('path'),
                     isPreview: false,
+                    index
                 });
                 if (handled) {
                     return;
@@ -4142,7 +4147,8 @@
                             sourceType: $(element).data('name'),
                             timestamp,
                             filetype: $(element).data('type') || 'jpg',
-                            shortcode: $(element).data('path')
+                            shortcode: $(element).data('path'),
+                            index
                         });
                     }
                     return;
@@ -5061,7 +5067,7 @@
                 "SKIP_SHARED_WITH_YOU_DIALOG": "Skip \"shared this with you\" dialog on shared profile links",
                 "CAPTURE_IMAGE_VIA_MEDIA_CACHE": "Capture Image Resource Using Media Cache",
                 "SET_INSTAGRAM_LAYOUT_AS_DEFAULT": "Set Instagram Layout as Default",
-                "AUTO_RENAME_INTRO": "Auto rename file to custom format:\nCustom Format List: \n%USERNAME% - Username\n%SOURCE_TYPE% - Download Source\n%SHORTCODE% - Post Shortcode\n%YEAR% - Year when downloaded/published\n%2-YEAR% - Year (last two digits) when downloaded/published\n%MONTH% - Month when downloaded/published\n%DAY% - Day when downloaded/published\n%HOUR% - Hour when downloaded/published\n%MINUTE% - Minute when downloaded/published\n%SECOND% - Second when downloaded/published\n%ORIGINAL_NAME% - Original name of downloaded file\n%ORIGINAL_NAME_FIRST% - Original name of downloaded file (first part of name)\n\nIf set to false, the file name will remain unchanged.\nExample: instagram_321565527_679025940443063_4318007696887450953_n.jpg",
+                "AUTO_RENAME_INTRO": "Auto rename file to custom format:\nCustom Format List: \n%USERNAME% - Username\n%SOURCE_TYPE% - Download Source\n%SHORTCODE% - Post Shortcode\n%YEAR% - Year when downloaded/published\n%2-YEAR% - Year (last two digits) when downloaded/published\n%MONTH% - Month when downloaded/published\n%DAY% - Day when downloaded/published\n%HOUR% - Hour when downloaded/published\n%MINUTE% - Minute when downloaded/published\n%SECOND% - Second when downloaded/published\n%ORIGINAL_NAME% - Original name of downloaded file\n%ORIGINAL_NAME_FIRST% - Original name of downloaded file (first part of name)\n%INDEX% - Resource index\n\nIf set to false, the file name will remain unchanged.\nExample: instagram_321565527_679025940443063_4318007696887450953_n.jpg",
                 "RENAME_PUBLISH_DATE_INTRO": "Sets the timestamp in the file rename format to the resource publish date (browser time zone).\n\nThis feature only works when [Automatically Rename Files] is set to TRUE.",
                 "RENAME_LOCATE_DATE_INTRO": "Modify the renamed file timestamp date format to the browser's local time, and format it to your preferred regional date format.\n\nThis feature only works when [Automatically Rename Files] is set to TRUE.",
                 "DISABLE_VIDEO_LOOPING_INTRO": "Disable video auto-looping in Reels and posts.",
