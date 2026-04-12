@@ -5,7 +5,7 @@
 // @name:ja            IG助手
 // @name:ko            IG조수
 // @namespace          https://github.snkms.com/
-// @version            3.16.1
+// @version            3.16.2
 // @description        Downloading is possible for both photos and videos from posts, as well as for stories, reels or profile picture.
 // @description:zh-TW  一鍵下載對方 Instagram 貼文中的相片、影片甚至是他們的限時動態、連續短片及大頭貼圖片！
 // @description:zh-CN  一键下载对方 Instagram 帖子中的相片、视频甚至是他们的快拍、Reels及头像图片！
@@ -1107,7 +1107,10 @@
                         let $triggeredTarget = null;
                         // first onload
                         $childElement.find('.button_wrapper').parent().find('ul li, div[role="button"] > div, div[class] > div').each(function () {
-                            const $targetNode = $(this).find('video, img').first();
+                            const $targetNode = $(this).find('video').length > 0
+                                ? $(this).find('video')?.first()
+                                : $(this).find('img')?.first();
+
                             // Check if the node is visible and has size, 
                             // and not the same node as last triggered one to avoid duplicated trigger 
                             // when switching resources with same container
@@ -1120,8 +1123,18 @@
                                 this.getBoundingClientRect().height > 64 &&
                                 $triggeredTarget?.get(0) != $targetNode?.get(0)
                             ) {
+                                // ignore the image without alt attribute, 
+                                // because it is usually used for video thumbnail
+                                if (
+                                    $targetNode.get(0).tagName === "IMG" &&
+                                    $targetNode.attr('alt')?.length == 0
+                                ) {
+                                    return;
+                                }
+
                                 $triggeredTarget = $targetNode;
                                 observer_i.observe(this);
+                                console.log("aaa", this, $targetNode);
                             }
                         });
 

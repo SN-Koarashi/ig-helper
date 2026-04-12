@@ -281,7 +281,10 @@ export function createDownloadButton() {
                     let $triggeredTarget = null;
                     // first onload
                     $childElement.find('.button_wrapper').parent().find('ul li, div[role="button"] > div, div[class] > div').each(function () {
-                        const $targetNode = $(this).find('video, img').first();
+                        const $targetNode = $(this).find('video').length > 0
+                            ? $(this).find('video')?.first()
+                            : $(this).find('img')?.first();
+
                         // Check if the node is visible and has size, 
                         // and not the same node as last triggered one to avoid duplicated trigger 
                         // when switching resources with same container
@@ -294,8 +297,18 @@ export function createDownloadButton() {
                             this.getBoundingClientRect().height > 64 &&
                             $triggeredTarget?.get(0) != $targetNode?.get(0)
                         ) {
+                            // ignore the image without alt attribute, 
+                            // because it is usually used for video thumbnail
+                            if (
+                                $targetNode.get(0).tagName === "IMG" &&
+                                $targetNode.attr('alt')?.length == 0
+                            ) {
+                                return;
+                            }
+
                             $triggeredTarget = $targetNode;
                             observer_i.observe(this);
+                            console.log("aaa", this, $targetNode);
                         }
                     });
 
