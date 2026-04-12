@@ -483,6 +483,11 @@ export async function onStory(isDownload, isForce, isPreview) {
                 $element.css('position', 'relative');
             }
 
+            if ($element.length === 0) {
+                $element = $('div[id^="mount"] section > div a[href="/"]').parents('section:visible').find('div[style]:not([class])');
+                $element.css('position', 'relative');
+            }
+
 
             // Detecter for div layout mode
             if ($element.length === 0) {
