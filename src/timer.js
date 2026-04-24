@@ -168,6 +168,9 @@ export var timer = setInterval(function () {
                     if ($('.IG_DWSTORY_THUMBNAIL').length) {
                         $('.IG_DWSTORY_THUMBNAIL').remove();
                     }
+                    if ($('.IG_DWSTORY_POSITION').length) {
+                        $('.IG_DWSTORY_POSITION').remove();
+                    }
 
                     onStory(false);
 
@@ -205,6 +208,9 @@ export var timer = setInterval(function () {
                 if ($('.IG_DWSTORY_THUMBNAIL').length) {
                     $('.IG_DWSTORY_THUMBNAIL').remove();
                 }
+                if ($('.IG_DWSTORY_POSITION').length) {
+                    $('.IG_DWSTORY_POSITION').remove();
+                }
 
                 if ($('.IG_DWHISTORY').length) {
                     $('.IG_DWHISTORY').remove();
@@ -217,6 +223,9 @@ export var timer = setInterval(function () {
                 }
                 if ($('.IG_DWHISTORY_THUMBNAIL').length) {
                     $('.IG_DWHISTORY_THUMBNAIL').remove();
+                }
+                if ($('.IG_DWHISTORY_POSITION').length) {
+                    $('.IG_DWHISTORY_POSITION').remove();
                 }
             }
         }

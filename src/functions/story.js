@@ -5,7 +5,9 @@ import {
     getStoryId,
     tryHandleDashFromMediaItem,
     IG_createDM,
-    updatePopupSelectionSummary
+    updatePopupSelectionSummary,
+    setStoryProgressIndexText,
+    setStoryProgressIndexByUsername
 } from "../utils/general";
 import { getUserId, getStories, getMediaInfo } from "../utils/api";
 import { _i18n } from "../utils/i18n";
@@ -513,6 +515,8 @@ export async function onStory(isDownload, isForce, isPreview) {
                     $element.first().append(`<div data-ih-locale-title="DW_ALL" title="${_i18n("DW_ALL")}" class="IG_DWSTORY_ALL">${SVG.DOWNLOAD_ALL}</div>`);
                 }
 
+                setStoryProgressIndexText($element.first(), $header, 'IG_DWSTORY_POSITION');
+
                 // Modify video volume
                 //if(USER_SETTING.MODIFY_VIDEO_VOLUME){
                 //    $element.find('video').each(function(){
@@ -560,6 +564,9 @@ export async function onStory(isDownload, isForce, isPreview) {
                 //    });
                 //});
             }
+        }
+        else {
+            setStoryProgressIndexByUsername($('.IG_DWSTORY').parent(), username, 'IG_DWSTORY_POSITION');
         }
     }
 }

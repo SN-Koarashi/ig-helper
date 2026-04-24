@@ -133,6 +133,31 @@
     z-index: 5;
 }
 
+.IG_DWSTORY_POSITION,
+.IG_DWHISTORY_POSITION {
+    position: absolute;
+    right: -24px;
+    top: 47px;
+    width: 28px;
+    height: 28px;
+    padding: 2px;
+    box-sizing: border-box;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #fff;
+    border-radius: 5px;
+    color: #000;
+    cursor: default;
+    font-size: 10px;
+    font-weight: 700;
+    line-height: 1;
+    letter-spacing: -0.4px;
+    white-space: nowrap;
+    z-index: 5;
+    user-select: none;
+}
+
 *:not(:has(> section[class])) > .IG_DWSTORY,
 *:not(:has(> section[class])) > .IG_DWHISTORY,
 *:not(:has(> section[class])) > .IG_DWSTORY_THUMBNAIL,
@@ -144,7 +169,9 @@
 }
 
 *:not(:has(> section[class])) > .IG_DWSTORY_ALL,
-*:not(:has(> section[class])) > .IG_DWHISTORY_ALL {
+*:not(:has(> section[class])) > .IG_DWHISTORY_ALL,
+*:not(:has(> section[class])) > .IG_DWSTORY_POSITION,
+*:not(:has(> section[class])) > .IG_DWHISTORY_POSITION {
     right: -70px;
     color: #000;
 }

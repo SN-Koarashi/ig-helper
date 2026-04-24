@@ -235,6 +235,95 @@ export function getStoryProgress(username) {
 }
 
 /**
+ * getStoryProgressIndex
+ * @description Get the current story index and total count from Instagram's progress bar.
+ *
+ * @param  {Object}  $header - Progress bar items returned by getStoryProgress
+ * @return {?Object}
+ */
+export function getStoryProgressIndex($header) {
+    let current = 0;
+    let total = $header.length;
+
+    if (total === 0) {
+        return null;
+    }
+
+    $header.each(function (index) {
+        if ($(this).children().length > 0) {
+            current = index + 1;
+        }
+    });
+
+    if (current === 0) {
+        return null;
+    }
+
+    return { current, total };
+}
+
+/**
+ * setStoryProgressIndexText
+ * @description Render the current story index and total count.
+ *
+ * @param  {Object}  $element - Element to append the counter to
+ * @param  {Object}  $header - Progress bar items returned by getStoryProgress
+ * @param  {String}  className - Counter class name
+ * @return {void}
+ */
+export function setStoryProgressIndexText($element, $header, className) {
+    let progress = getStoryProgressIndex($header);
+    let $counter = $element.find('.' + className).first();
+
+    if (progress == null || progress.total < 2) {
+        if ($counter.length > 0) {
+            $counter.remove();
+        }
+        return;
+    }
+
+    let text = progress.current + '/' + progress.total;
+    let title = _i18n('ITEM_POSITION')
+        .replace('%CURRENT%', progress.current)
+        .replace('%TOTAL%', progress.total);
+
+    if ($counter.length === 0) {
+        $counter = $('<div>').addClass(className);
+        $element.append($counter);
+    }
+
+    if ($counter.text() !== text) {
+        $counter.text(text);
+    }
+
+    if ($counter.attr('title') !== title) {
+        $counter.attr('title', title);
+    }
+
+    if ($counter.attr('aria-label') !== title) {
+        $counter.attr('aria-label', title);
+    }
+}
+
+/**
+ * setStoryProgressIndexByUsername
+ * @description Render current story index and total count from a username.
+ *
+ * @param  {Object}  $element - Element to append the counter to
+ * @param  {String}  username - Story owner's username
+ * @param  {String}  className - Counter class name
+ * @return {void}
+ */
+export function setStoryProgressIndexByUsername($element, username, className) {
+    if ($element == null || $element.length === 0 || username == null) {
+        return;
+    }
+
+    let $header = getStoryProgress(username);
+    setStoryProgressIndexText($element, $header, className);
+}
+
+/**
  * setDownloadProgress
  * @description Show and set download circle progress.
  *
@@ -1378,7 +1467,7 @@ export function reloadScript() {
     state.GL_registerEventList = [];
 
     $('.button_wrapper').remove();
-    $('.IG_DWPROFILE, .IG_DWPROFILE, .IG_DWSTORY, .IG_DWSTORY_ALL, .IG_DWSTORY_THUMBNAIL, .IG_DWNEWTAB, .IG_DWHISTORY, .IG_DWHISTORY_ALL, .IG_DWHINEWTAB, .IG_DWHISTORY_THUMBNAIL, .IG_REELS, .IG_REELS_NEWTAB, .IG_REELS_THUMBNAIL').remove();
+    $('.IG_DWPROFILE, .IG_DWPROFILE, .IG_DWSTORY, .IG_DWSTORY_ALL, .IG_DWSTORY_THUMBNAIL, .IG_DWSTORY_POSITION, .IG_DWNEWTAB, .IG_DWHISTORY, .IG_DWHISTORY_ALL, .IG_DWHINEWTAB, .IG_DWHISTORY_THUMBNAIL, .IG_DWHISTORY_POSITION, .IG_REELS, .IG_REELS_NEWTAB, .IG_REELS_THUMBNAIL').remove();
     $('[data-snig]').removeAttr('data-snig');
 
     state.pageLoaded = false;
