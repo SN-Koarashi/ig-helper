@@ -5,7 +5,7 @@
 // @name:ja            IG助手
 // @name:ko            IG조수
 // @namespace          https://github.snkms.com/
-// @version            3.17.1
+// @version            3.17.2
 // @description        Downloading is possible for both photos and videos from posts, as well as for stories, reels or profile picture.
 // @description:zh-TW  一鍵下載對方 Instagram 貼文中的相片、影片甚至是他們的限時動態、連續短片及大頭貼圖片！
 // @description:zh-CN  一键下载对方 Instagram 帖子中的相片、视频甚至是他们的快拍、Reels及头像图片！
@@ -886,9 +886,11 @@
      * @description Initialize settings related to the video resources in the post.
      *
      * @param  {Object}  $mainElement
+     * @param  {number}  clientX
+     * @param  {number}  clientY
      * @return {Void}
      */
-    function initPostVideoFunction($mainElement) {
+    function initPostVideoFunction($mainElement, clientX, clientY) {
         // Disable video autoplay
         if (USER_SETTING.DISABLE_VIDEO_LOOPING) {
             $mainElement.find('video').each(function () {
@@ -931,7 +933,7 @@
                     }
 
                     let $targets = $(this).parent().find('video + div > div').first();
-                    const pointerInfo = getPointerElement($(this));
+                    const pointerInfo = getPointerElement($(this), clientX, clientY);
                     if (!pointerInfo.self) {
                         let $parent = $(pointerInfo.topElement).parents('div[data-visualcompletion="ignore"]').first();
                         if ($parent.length > 0) {
@@ -941,6 +943,19 @@
                         }
                     }
 
+                    const hideController = function (e) {
+                        e.preventDefault();
+                        e.stopPropagation();
+
+                        $video.css('z-index', '2');
+                        $video.attr('controls', true);
+
+                        $targets.css('z-index', '-10');
+                    };
+
+                    // Hide layout to show controller
+                    $targets.off('contextmenu.IG_videoControl').on('contextmenu.IG_videoControl', hideController);
+
                     // Restore layout to show details interface
                     $(this).on('contextmenu', function (e) {
                         e.preventDefault();
@@ -948,17 +963,6 @@
                         $video.removeAttr('controls');
 
                         $targets.css('z-index', '1');
-                    });
-
-                    // Hide layout to show controller
-                    $targets.off('contextmenu.IG_videoControl').on('contextmenu.IG_videoControl', function (e) {
-                        e.preventDefault();
-                        e.stopPropagation();
-
-                        $video.css('z-index', '2');
-                        $video.attr('controls', true);
-
-                        $(this).css('z-index', '-10');
                     });
 
                     $(this).on('volumechange', function () {
@@ -997,6 +1001,10 @@
 
                     $(this).css('position', 'absolute');
                     $(this).attr('data-controls', true);
+
+                    if ($targets.length === 0) {
+                        $(this).removeAttr('data-controls');
+                    }
                 }
             });
         }
@@ -1436,6 +1444,27 @@
                     var username = $(this).find("header > div:last-child > div:first-child span a").first().text() || $(this).find('a[href^="/"]').filter(function () {
                         return $(this)?.text()?.length > 0;
                     }).first().text();
+
+
+                    const observer_video = new IntersectionObserver((entries) => {
+                        entries.forEach(entry => {
+                            let $el = $(entry.target);
+                            let detectionTimer = null;
+                            if (entry.isIntersecting) {
+                                $el.off('mousemove.IG_detect').on('mousemove.IG_detect', function (e) {
+                                    clearTimeout(detectionTimer);
+                                    detectionTimer = setTimeout(() => {
+                                        initPostVideoFunction($el, e.clientX, e.clientY);
+                                    }, 50);
+                                });
+                            }
+                        });
+                    }, {
+                        root: null,
+                        threshold: 0.1,
+                    });
+
+                    observer_video.observe(this);
 
                     $(this).attr('data-snig', 'canDownload');
                     $(this).attr('data-username', username);
@@ -4776,21 +4805,31 @@
     /**
      * 
      * @param {JQuery<HTMLElement>} $target 
+     * @param {number} clientX
+     * @param {number} clientY
      */
-    function getPointerElement($target) {
+    function getPointerElement($target, clientX, clientY) {
         let element = $target.get(0);
-
         const rect = element.getBoundingClientRect();
-        const x = rect.left + rect.width / 2;
-        const y = rect.top + rect.height / 2;
 
-        const topElement = document.elementFromPoint(x, y);
+        const viewportWidth = window.innerWidth;
+        const viewportHeight = window.innerHeight;
 
-        // 3. 判斷是否被遮住
-        if (topElement !== element && !element.contains(topElement)) {
-            return { self: false, topElement };
+        const visibleX = Math.max(rect.left, 0) + (Math.min(rect.right, viewportWidth) - Math.max(rect.left, 0)) / 2;
+        const visibleY = Math.max(rect.top, 0) + (Math.min(rect.bottom, viewportHeight) - Math.max(rect.top, 0)) / 2;
+
+        if (visibleX < 0 || visibleX > viewportWidth || visibleY < 0 || visibleY > viewportHeight) {
+            if (clientX == null || clientY == null) {
+                return { self: false, topElement: null, target: $target, error: 'out_of_viewport', rect };
+            }
+        }
+
+        const topElement = document.elementFromPoint(clientX || visibleX, clientY || visibleY);
+
+        if (topElement && topElement !== element && !element.contains(topElement)) {
+            return { self: false, topElement, target: $target };
         } else {
-            return { self: true, topElement };
+            return { self: true, topElement, target: $target };
         }
     }
 

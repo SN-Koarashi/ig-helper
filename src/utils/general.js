@@ -1485,21 +1485,31 @@ export function toggleVolumeSilder($videos, $buttonParent, loggerType, customCla
 /**
  * 
  * @param {JQuery<HTMLElement>} $target 
+ * @param {number} clientX
+ * @param {number} clientY
  */
-export function getPointerElement($target) {
+export function getPointerElement($target, clientX, clientY) {
     let element = $target.get(0);
-
     const rect = element.getBoundingClientRect();
-    const x = rect.left + rect.width / 2;
-    const y = rect.top + rect.height / 2;
 
-    const topElement = document.elementFromPoint(x, y);
+    const viewportWidth = window.innerWidth;
+    const viewportHeight = window.innerHeight;
 
-    // 3. 判斷是否被遮住
-    if (topElement !== element && !element.contains(topElement)) {
-        return { self: false, topElement };
+    const visibleX = Math.max(rect.left, 0) + (Math.min(rect.right, viewportWidth) - Math.max(rect.left, 0)) / 2;
+    const visibleY = Math.max(rect.top, 0) + (Math.min(rect.bottom, viewportHeight) - Math.max(rect.top, 0)) / 2;
+
+    if (visibleX < 0 || visibleX > viewportWidth || visibleY < 0 || visibleY > viewportHeight) {
+        if (clientX == null || clientY == null) {
+            return { self: false, topElement: null, target: $target, error: 'out_of_viewport', rect };
+        }
+    }
+
+    const topElement = document.elementFromPoint(clientX || visibleX, clientY || visibleY);
+
+    if (topElement && topElement !== element && !element.contains(topElement)) {
+        return { self: false, topElement, target: $target };
     } else {
-        return { self: true, topElement };
+        return { self: true, topElement, target: $target };
     }
 }
 
