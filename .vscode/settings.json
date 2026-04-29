@@ -8,6 +8,11 @@
     },
     "files.readonlyInclude": {
         "main.js": true,
+        "package-lock.json": true
+    },
+    "files.watcherExclude": {
+        "main.js": true,
+        "package-lock.json": true
     },
     "cSpell.diagnosticLevel": "Hint"
 }
