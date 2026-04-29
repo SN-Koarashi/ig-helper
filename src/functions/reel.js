@@ -1,5 +1,5 @@
 import { USER_SETTING, SVG, state } from "../settings";
-import { updateLoadingBar, saveFiles, openNewTab, logger, toggleVolumeSilder } from "../utils/general";
+import { updateLoadingBar, saveFiles, openNewTab, logger, toggleVolumeSilder, getPointerElement } from "../utils/general";
 import { getBlobMedia } from "../utils/api";
 import { filterResourceData } from "./post";
 import { _i18n } from "../utils/i18n";
@@ -160,19 +160,6 @@ export async function onReels(isDownload, isVideo, isPreview) {
                                     });
                                 }
 
-                                // Modify video volume
-                                //if(USER_SETTING.MODIFY_VIDEO_VOLUME){
-                                //    $(this).find('video').each(function(){
-                                //        $(this).on('play playing', function(){
-                                //            if(!$(this).data('modify')){
-                                //                $(this).attr('data-modify', true);
-                                //                this.volume = VIDEO_VOLUME;
-                                //                logger('(reel) Added video event listener #modify');
-                                //            }
-                                //        });
-                                //    });
-                                //}
-
                                 if (USER_SETTING.HTML5_VIDEO_CONTROL) {
                                     $(this).find('video').each(function () {
                                         if (!$(this).data('controls')) {
@@ -188,20 +175,37 @@ export async function onReels(isDownload, isVideo, isPreview) {
                                                 });
                                             }
 
+                                            let $targets = $(this).parent().find('video + div div[role="button"]').filter(function () {
+                                                return $(this).parent('div[role="presentation"]').length > 0 && $(this).css('cursor') === 'pointer' && $(this).attr('style') != null;
+                                            }).first();
+
+                                            const pointerInfo = getPointerElement($(this));
+                                            if (!pointerInfo.self) {
+                                                let $parent = $(pointerInfo.topElement).parents('div[data-visualcompletion="ignore"]').first();
+                                                if ($parent.length > 0) {
+                                                    $targets = $targets.add($parent);
+                                                } else {
+                                                    $targets = $targets.add(pointerInfo.topElement);
+                                                }
+                                            }
+
                                             // Restore layout to show details interface
                                             $(this).on('contextmenu', function (e) {
                                                 e.preventDefault();
                                                 $video.css('z-index', '-1');
                                                 $video.removeAttr('controls');
+                                                $targets.css('z-index', '1');
                                             });
 
                                             // Hide layout to show controller
-                                            $(this).parent().find('video + div div[role="button"]').filter(function () {
-                                                return $(this).parent('div[role="presentation"]').length > 0 && $(this).css('cursor') === 'pointer' && $(this).attr('style') != null;
-                                            }).first().on('contextmenu', function (e) {
+                                            $targets.off('contextmenu.IG_videoControl').on('contextmenu.IG_videoControl', function (e) {
                                                 e.preventDefault();
+                                                e.stopPropagation();
+
                                                 $video.css('z-index', '2');
                                                 $video.attr('controls', true);
+
+                                                $(this).css('z-index', '-10');
                                             });
 
 
@@ -231,10 +235,12 @@ export async function onReels(isDownload, isVideo, isPreview) {
 
                                             if (USER_SETTING.SET_INSTAGRAM_LAYOUT_AS_DEFAULT) {
                                                 $(this).css('z-index', '-1');
+                                                $targets.css('z-index', '1');
                                             }
                                             else {
                                                 $(this).css('z-index', '2');
                                                 $(this).attr('controls', true);
+                                                $targets.css('z-index', '-10');
                                             }
 
                                             $(this).css('position', 'relative');

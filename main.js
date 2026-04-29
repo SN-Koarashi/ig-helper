@@ -930,18 +930,35 @@
                         });
                     }
 
+                    let $targets = $(this).parent().find('video + div > div').first();
+                    const pointerInfo = getPointerElement($(this));
+                    if (!pointerInfo.self) {
+                        let $parent = $(pointerInfo.topElement).parents('div[data-visualcompletion="ignore"]').first();
+                        if ($parent.length > 0) {
+                            $targets = $targets.add($parent);
+                        } else {
+                            $targets = $targets.add(pointerInfo.topElement);
+                        }
+                    }
+
                     // Restore layout to show details interface
                     $(this).on('contextmenu', function (e) {
                         e.preventDefault();
                         $video.css('z-index', '-1');
                         $video.removeAttr('controls');
+
+                        $targets.css('z-index', '1');
                     });
 
                     // Hide layout to show controller
-                    $(this).parent().find('video + div > div').first().on('contextmenu', function (e) {
+                    $targets.off('contextmenu.IG_videoControl').on('contextmenu.IG_videoControl', function (e) {
                         e.preventDefault();
+                        e.stopPropagation();
+
                         $video.css('z-index', '2');
                         $video.attr('controls', true);
+
+                        $(this).css('z-index', '-10');
                     });
 
                     $(this).on('volumechange', function () {
@@ -970,10 +987,12 @@
 
                     if (USER_SETTING.SET_INSTAGRAM_LAYOUT_AS_DEFAULT) {
                         $(this).css('z-index', '-1');
+                        $targets.css('z-index', '1');
                     }
                     else {
                         $(this).css('z-index', '2');
                         $(this).attr('controls', true);
+                        $targets.css('z-index', '-10');
                     }
 
                     $(this).css('position', 'absolute');
@@ -1134,7 +1153,6 @@
 
                                 $triggeredTarget = $targetNode;
                                 observer_i.observe(this);
-                                console.log("aaa", this, $targetNode);
                             }
                         });
 
@@ -1995,19 +2013,6 @@
                                         });
                                     }
 
-                                    // Modify video volume
-                                    //if(USER_SETTING.MODIFY_VIDEO_VOLUME){
-                                    //    $(this).find('video').each(function(){
-                                    //        $(this).on('play playing', function(){
-                                    //            if(!$(this).data('modify')){
-                                    //                $(this).attr('data-modify', true);
-                                    //                this.volume = VIDEO_VOLUME;
-                                    //                logger('(reel) Added video event listener #modify');
-                                    //            }
-                                    //        });
-                                    //    });
-                                    //}
-
                                     if (USER_SETTING.HTML5_VIDEO_CONTROL) {
                                         $(this).find('video').each(function () {
                                             if (!$(this).data('controls')) {
@@ -2023,20 +2028,37 @@
                                                     });
                                                 }
 
+                                                let $targets = $(this).parent().find('video + div div[role="button"]').filter(function () {
+                                                    return $(this).parent('div[role="presentation"]').length > 0 && $(this).css('cursor') === 'pointer' && $(this).attr('style') != null;
+                                                }).first();
+
+                                                const pointerInfo = getPointerElement($(this));
+                                                if (!pointerInfo.self) {
+                                                    let $parent = $(pointerInfo.topElement).parents('div[data-visualcompletion="ignore"]').first();
+                                                    if ($parent.length > 0) {
+                                                        $targets = $targets.add($parent);
+                                                    } else {
+                                                        $targets = $targets.add(pointerInfo.topElement);
+                                                    }
+                                                }
+
                                                 // Restore layout to show details interface
                                                 $(this).on('contextmenu', function (e) {
                                                     e.preventDefault();
                                                     $video.css('z-index', '-1');
                                                     $video.removeAttr('controls');
+                                                    $targets.css('z-index', '1');
                                                 });
 
                                                 // Hide layout to show controller
-                                                $(this).parent().find('video + div div[role="button"]').filter(function () {
-                                                    return $(this).parent('div[role="presentation"]').length > 0 && $(this).css('cursor') === 'pointer' && $(this).attr('style') != null;
-                                                }).first().on('contextmenu', function (e) {
+                                                $targets.off('contextmenu.IG_videoControl').on('contextmenu.IG_videoControl', function (e) {
                                                     e.preventDefault();
+                                                    e.stopPropagation();
+
                                                     $video.css('z-index', '2');
                                                     $video.attr('controls', true);
+
+                                                    $(this).css('z-index', '-10');
                                                 });
 
 
@@ -2066,10 +2088,12 @@
 
                                                 if (USER_SETTING.SET_INSTAGRAM_LAYOUT_AS_DEFAULT) {
                                                     $(this).css('z-index', '-1');
+                                                    $targets.css('z-index', '1');
                                                 }
                                                 else {
                                                     $(this).css('z-index', '2');
                                                     $(this).attr('controls', true);
+                                                    $targets.css('z-index', '-10');
                                                 }
 
                                                 $(this).css('position', 'relative');
@@ -4749,6 +4773,27 @@
         }
     }
 
+    /**
+     * 
+     * @param {JQuery<HTMLElement>} $target 
+     */
+    function getPointerElement($target) {
+        let element = $target.get(0);
+
+        const rect = element.getBoundingClientRect();
+        const x = rect.left + rect.width / 2;
+        const y = rect.top + rect.height / 2;
+
+        const topElement = document.elementFromPoint(x, y);
+
+        // 3. 判斷是否被遮住
+        if (topElement !== element && !element.contains(topElement)) {
+            return { self: false, topElement };
+        } else {
+            return { self: true, topElement };
+        }
+    }
+
     var detectMovingViewerTimer = null;
 
     function openImageViewer(imageUrl) {
@@ -5699,10 +5744,25 @@
                                             let $readMoreButton = $videoParent.find('div[class][role="button"]');
                                             $readMoreButton.hide();
 
+                                            let $targets = $video.parent().find('video + div');
+
+                                            const pointerInfo = getPointerElement($(this));
+                                            if (!pointerInfo.self) {
+                                                let $parent = $(pointerInfo.topElement).parents('div[data-visualcompletion="ignore"]').first();
+                                                if ($parent.length > 0) {
+                                                    $targets = $targets.add($parent);
+                                                } else {
+                                                    $targets = $targets.add(pointerInfo.topElement);
+                                                }
+                                            }
+
                                             const hideContextmenu = function (e) {
                                                 e.preventDefault();
+                                                e.stopPropagation();
+
                                                 $video.css('z-index', '2');
                                                 $video.attr('controls', true);
+                                                $targets.css('z-index', '-10');
 
                                                 $readMoreButton.hide();
                                                 $bottomBar.hide();
@@ -5713,15 +5773,17 @@
                                             };
 
                                             // Hide layout to show controller
-                                            $video.parent().find('video + div').on('contextmenu', hideContextmenu);
-                                            $readMoreButton.on('contextmenu', hideContextmenu);
-                                            $bottomBar.on('contextmenu', hideContextmenu);
+                                            $targets.off('contextmenu.IG_videoControl').on('contextmenu.IG_videoControl', hideContextmenu);
+                                            $readMoreButton.off('contextmenu.IG_videoControl').on('contextmenu.IG_videoControl', hideContextmenu);
+                                            $bottomBar.off('contextmenu.IG_videoControl').on('contextmenu.IG_videoControl', hideContextmenu);
 
                                             // Restore layout to show details interface
                                             $video.on('contextmenu', function (e) {
                                                 e.preventDefault();
+
                                                 $video.css('z-index', '-1');
                                                 $video.removeAttr('controls');
+                                                $targets.css('z-index', '1');
 
                                                 $bottomBar.show();
                                                 $readMoreButton.show();
@@ -5756,10 +5818,12 @@
 
                                             if (USER_SETTING.SET_INSTAGRAM_LAYOUT_AS_DEFAULT) {
                                                 $video.css('z-index', '-1');
+                                                $targets.css('z-index', '1');
                                             }
                                             else {
                                                 $video.css('z-index', '2');
                                                 $video.attr('controls', true);
+                                                $targets.css('z-index', '-10');
                                             }
 
                                             $video.css('position', 'absolute');

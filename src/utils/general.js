@@ -1482,6 +1482,27 @@ export function toggleVolumeSilder($videos, $buttonParent, loggerType, customCla
     }
 }
 
+/**
+ * 
+ * @param {JQuery<HTMLElement>} $target 
+ */
+export function getPointerElement($target) {
+    let element = $target.get(0);
+
+    const rect = element.getBoundingClientRect();
+    const x = rect.left + rect.width / 2;
+    const y = rect.top + rect.height / 2;
+
+    const topElement = document.elementFromPoint(x, y);
+
+    // 3. 判斷是否被遮住
+    if (topElement !== element && !element.contains(topElement)) {
+        return { self: false, topElement };
+    } else {
+        return { self: true, topElement };
+    }
+}
+
 var detectMovingViewerTimer = null;
 
 export function openImageViewer(imageUrl) {

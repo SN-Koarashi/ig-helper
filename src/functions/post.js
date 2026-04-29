@@ -5,7 +5,8 @@ import {
     openImageViewer,
     updatePopupSelectionSummary,
     replaceSameOriginHost,
-    setDownloadProgress
+    setDownloadProgress,
+    getPointerElement
 } from "../utils/general";
 import { getBlobMedia } from "../utils/api";
 import { _i18n } from "../utils/i18n";
@@ -104,18 +105,35 @@ export function initPostVideoFunction($mainElement) {
                     });
                 }
 
+                let $targets = $(this).parent().find('video + div > div').first();
+                const pointerInfo = getPointerElement($(this));
+                if (!pointerInfo.self) {
+                    let $parent = $(pointerInfo.topElement).parents('div[data-visualcompletion="ignore"]').first();
+                    if ($parent.length > 0) {
+                        $targets = $targets.add($parent);
+                    } else {
+                        $targets = $targets.add(pointerInfo.topElement);
+                    }
+                }
+
                 // Restore layout to show details interface
                 $(this).on('contextmenu', function (e) {
                     e.preventDefault();
                     $video.css('z-index', '-1');
                     $video.removeAttr('controls');
+
+                    $targets.css('z-index', '1');
                 });
 
                 // Hide layout to show controller
-                $(this).parent().find('video + div > div').first().on('contextmenu', function (e) {
+                $targets.off('contextmenu.IG_videoControl').on('contextmenu.IG_videoControl', function (e) {
                     e.preventDefault();
+                    e.stopPropagation();
+
                     $video.css('z-index', '2');
                     $video.attr('controls', true);
+
+                    $(this).css('z-index', '-10');
                 });
 
                 $(this).on('volumechange', function () {
@@ -144,10 +162,12 @@ export function initPostVideoFunction($mainElement) {
 
                 if (USER_SETTING.SET_INSTAGRAM_LAYOUT_AS_DEFAULT) {
                     $(this).css('z-index', '-1');
+                    $targets.css('z-index', '1');
                 }
                 else {
                     $(this).css('z-index', '2');
                     $(this).attr('controls', true);
+                    $targets.css('z-index', '-10');
                 }
 
                 $(this).css('position', 'absolute');
@@ -308,7 +328,6 @@ export function createDownloadButton() {
 
                             $triggeredTarget = $targetNode;
                             observer_i.observe(this);
-                            console.log("aaa", this, $targetNode);
                         }
                     });
 
