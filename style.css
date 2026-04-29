@@ -133,18 +133,18 @@
     z-index: 5;
 }
 
-*:not(:has(> section[class])) > .IG_DWSTORY,
-*:not(:has(> section[class])) > .IG_DWHISTORY,
-*:not(:has(> section[class])) > .IG_DWSTORY_THUMBNAIL,
-*:not(:has(> section[class])) > .IG_DWHISTORY_THUMBNAIL,
-*:not(:has(> section[class])) > .IG_DWNEWTAB,
-*:not(:has(> section[class])) > .IG_DWHINEWTAB {
+*:not(:has(> section[class]))>.IG_DWSTORY,
+*:not(:has(> section[class]))>.IG_DWHISTORY,
+*:not(:has(> section[class]))>.IG_DWSTORY_THUMBNAIL,
+*:not(:has(> section[class]))>.IG_DWHISTORY_THUMBNAIL,
+*:not(:has(> section[class]))>.IG_DWNEWTAB,
+*:not(:has(> section[class]))>.IG_DWHINEWTAB {
     right: -40px;
     color: #000;
 }
 
-*:not(:has(> section[class])) > .IG_DWSTORY_ALL,
-*:not(:has(> section[class])) > .IG_DWHISTORY_ALL {
+*:not(:has(> section[class]))>.IG_DWSTORY_ALL,
+*:not(:has(> section[class]))>.IG_DWHISTORY_ALL {
     right: -70px;
     color: #000;
 }

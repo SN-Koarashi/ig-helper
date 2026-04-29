@@ -126,6 +126,7 @@ export function initPostVideoFunction($mainElement, clientX, clientY) {
                     $video.attr('controls', true);
 
                     $targets.css('z-index', '-10');
+                    $(this).parents('a[href^="/reels/"]').first().attr("draggable", false);
                 };
 
                 // Hide layout to show controller
@@ -138,6 +139,8 @@ export function initPostVideoFunction($mainElement, clientX, clientY) {
                     $video.removeAttr('controls');
 
                     $targets.css('z-index', '1');
+
+                    $(this).parents('a[href^="/reels/"]').first().removeAttr("draggable");
                 });
 
                 $(this).on('volumechange', function () {
@@ -164,14 +167,25 @@ export function initPostVideoFunction($mainElement, clientX, clientY) {
                     }
                 });
 
+                $(this).parents('a[href^="/reels/"]').first().on('click', function (e) {
+                    if ($video.attr('controls')) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                    }
+                });
+
                 if (USER_SETTING.SET_INSTAGRAM_LAYOUT_AS_DEFAULT) {
                     $(this).css('z-index', '-1');
                     $targets.css('z-index', '1');
+
+                    $(this).parents('a[href^="/reels/"]').first().removeAttr("draggable");
                 }
                 else {
                     $(this).css('z-index', '2');
                     $(this).attr('controls', true);
                     $targets.css('z-index', '-10');
+
+                    $(this).parents('a[href^="/reels/"]').first().attr("draggable", false);
                 }
 
                 $(this).css('position', 'absolute');
