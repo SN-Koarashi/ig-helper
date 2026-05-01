@@ -81,6 +81,7 @@
     display: flex;
     flex-flow: row-reverse;
     gap: 5px;
+    z-index: 1;
 }
 
 #_SNLOAD {
