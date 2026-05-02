@@ -1605,10 +1605,17 @@ export function getPointerElement($target, clientX, clientY) {
 
     if (topElement && topElement !== element && !element.contains(topElement)) {
         if ($(topElement).find($target).length > 0) {
-            return { self: false, topElement, target: $target };
+            // return { self: false, topElement, target: $target };
+            return { self: false, topElement: null, target: $target, error: 'covered_by_element', rect };
         }
 
-        return { self: false, topElement: null, target: $target, error: 'none_of_element_children', rect };
+        if ($(topElement).width() != $target.width() || $(topElement).height() != $target.height()) {
+            return { self: false, topElement: null, target: $target, error: 'different_dimensions', rect };
+        }
+
+
+        // return { self: false, topElement: null, target: $target, error: 'none_of_element', rect };
+        return { self: false, topElement, target: $target };
     } else {
         return { self: true, topElement, target: $target };
     }

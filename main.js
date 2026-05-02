@@ -2077,7 +2077,9 @@
                             }
 
                             // reels scroll has [tabindex] but header not.
-                            $('section > main[role="main"] > div[tabindex], section > main[role="main"] > div[class]').children('div').each(function () {
+                            // ? Old selector: section > main[role="main"] > div[tabindex], section > main[role="main"] > div[class]
+                            // ! Co-author: sn-o-w
+                            $('div[aria-busy][tabindex]').children('div').each(function () {
                                 if (
                                     $(this).children().length > 0 &&
                                     $(this).width() > window.innerWidth * 0.8 &&
@@ -5006,10 +5008,17 @@
 
         if (topElement && topElement !== element && !element.contains(topElement)) {
             if ($(topElement).find($target).length > 0) {
-                return { self: false, topElement, target: $target };
+                // return { self: false, topElement, target: $target };
+                return { self: false, topElement: null, target: $target, error: 'covered_by_element', rect };
             }
 
-            return { self: false, topElement: null, target: $target, error: 'none_of_element_children', rect };
+            if ($(topElement).width() != $target.width() || $(topElement).height() != $target.height()) {
+                return { self: false, topElement: null, target: $target, error: 'different_dimensions', rect };
+            }
+
+
+            // return { self: false, topElement: null, target: $target, error: 'none_of_element', rect };
+            return { self: false, topElement, target: $target };
         } else {
             return { self: true, topElement, target: $target };
         }

@@ -155,7 +155,9 @@ export async function onReels(isDownload, isVideo, isPreview) {
                         }
 
                         // reels scroll has [tabindex] but header not.
-                        $('section > main[role="main"] > div[tabindex], section > main[role="main"] > div[class]').children('div').each(function () {
+                        // ? Old selector: section > main[role="main"] > div[tabindex], section > main[role="main"] > div[class]
+                        // ! Co-author: sn-o-w
+                        $('div[aria-busy][tabindex]').children('div').each(function () {
                             if (
                                 $(this).children().length > 0 &&
                                 $(this).width() > window.innerWidth * 0.8 &&
