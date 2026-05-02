@@ -5,7 +5,7 @@
 // @name:ja            IG助手
 // @name:ko            IG조수
 // @namespace          https://github.snkms.com/
-// @version            3.17.7
+// @version            3.17.8
 // @description        Downloading is possible for both photos and videos from posts, as well as for stories, reels or profile picture.
 // @description:zh-TW  一鍵下載對方 Instagram 貼文中的相片、影片甚至是他們的限時動態、連續短片及大頭貼圖片！
 // @description:zh-CN  一键下载对方 Instagram 帖子中的相片、视频甚至是他们的快拍、Reels及头像图片！
@@ -995,8 +995,11 @@
                     });
 
                     $(this).on('volumechange', function () {
+                        let $mute_button_wrapper = $(this).parent().find('video + div > div');
+                        $mute_button_wrapper = $mute_button_wrapper.add($mainElement);
+
                         // eslint-disable-next-line no-unused-vars
-                        let $element_mute_button = $(this).parent().find('video + div > div').find('button[type="button"], div[role="button"]').filter(function (idx) {
+                        let $element_mute_button = $mute_button_wrapper.find('button[type="button"], div[role="button"]').filter(function (idx) {
                             // This is mute/unmute's icon
                             return $(this).width() <= 64 && $(this).height() <= 64 && $(this).find('svg > path[d^="M16.636 7.028a1.5"], svg > path[d^="M1.5 13.3c-.8"]').length > 0;
                         });
@@ -1042,10 +1045,6 @@
 
                     $(this).css('position', 'absolute');
                     $(this).attr('data-controls', true);
-
-                    if ($targets.length === 0) {
-                        $(this).removeAttr('data-controls');
-                    }
                 }
             });
         }
@@ -1215,6 +1214,7 @@
                             });
                         }
                         else {
+                            initPostVideoFunction($mainElement);
                             logger("Cannot find resource list root element, thumbnail and viewer button may not work.");
                         }
 
@@ -1222,8 +1222,6 @@
 
 
                     $childElement.css('position', 'relative');
-
-                    initPostVideoFunction($mainElement);
 
                     state.GL_registerEventList.push({
                         element: this,
@@ -2131,8 +2129,11 @@
                         $targets.off('contextmenu.IG_videoControl').on('contextmenu.IG_videoControl', handleSwitchController);
 
                         $(this).on('volumechange', function () {
+                            let $mute_button_wrapper = $(this).parent().find('video + div > div');
+                            $mute_button_wrapper = $mute_button_wrapper.add($main);
+
                             // eslint-disable-next-line no-unused-vars
-                            let $element_mute_button = $(this).parent().find('video + div > div').find('button[type="button"], div[role="button"]').filter(function (idx) {
+                            let $element_mute_button = $mute_button_wrapper.find('button[type="button"], div[role="button"]').filter(function (idx) {
                                 // This is mute/unmute's icon
                                 return $(this).width() <= 64 && $(this).height() <= 64 && $(this).find('svg > path[d^="M16.636 7.028a1.5"], svg > path[d^="M1.5 13.3c-.8"]').length > 0;
                             });

@@ -144,8 +144,11 @@ export function initPostVideoFunction($mainElement) {
                 });
 
                 $(this).on('volumechange', function () {
+                    let $mute_button_wrapper = $(this).parent().find('video + div > div');
+                    $mute_button_wrapper = $mute_button_wrapper.add($mainElement);
+
                     // eslint-disable-next-line no-unused-vars
-                    let $element_mute_button = $(this).parent().find('video + div > div').find('button[type="button"], div[role="button"]').filter(function (idx) {
+                    let $element_mute_button = $mute_button_wrapper.find('button[type="button"], div[role="button"]').filter(function (idx) {
                         // This is mute/unmute's icon
                         return $(this).width() <= 64 && $(this).height() <= 64 && $(this).find('svg > path[d^="M16.636 7.028a1.5"], svg > path[d^="M1.5 13.3c-.8"]').length > 0;
                     });
@@ -191,10 +194,6 @@ export function initPostVideoFunction($mainElement) {
 
                 $(this).css('position', 'absolute');
                 $(this).attr('data-controls', true);
-
-                if ($targets.length === 0) {
-                    $(this).removeAttr('data-controls');
-                }
             }
         });
     }
@@ -364,6 +363,7 @@ export function createDownloadButton() {
                         });
                     }
                     else {
+                        initPostVideoFunction($mainElement);
                         logger("Cannot find resource list root element, thumbnail and viewer button may not work.");
                     }
 
@@ -371,8 +371,6 @@ export function createDownloadButton() {
 
 
                 $childElement.css('position', 'relative');
-
-                initPostVideoFunction($mainElement);
 
                 state.GL_registerEventList.push({
                     element: this,

@@ -228,8 +228,11 @@ function appendReelsButton($main) {
                     $targets.off('contextmenu.IG_videoControl').on('contextmenu.IG_videoControl', handleSwitchController);
 
                     $(this).on('volumechange', function () {
+                        let $mute_button_wrapper = $(this).parent().find('video + div > div');
+                        $mute_button_wrapper = $mute_button_wrapper.add($main);
+
                         // eslint-disable-next-line no-unused-vars
-                        let $element_mute_button = $(this).parent().find('video + div > div').find('button[type="button"], div[role="button"]').filter(function (idx) {
+                        let $element_mute_button = $mute_button_wrapper.find('button[type="button"], div[role="button"]').filter(function (idx) {
                             // This is mute/unmute's icon
                             return $(this).width() <= 64 && $(this).height() <= 64 && $(this).find('svg > path[d^="M16.636 7.028a1.5"], svg > path[d^="M1.5 13.3c-.8"]').length > 0;
                         });
