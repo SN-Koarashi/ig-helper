@@ -840,8 +840,9 @@ export function getVisibleNodeIndex($main) {
 
     // a. Locate the "viewport" element: it is the grandparent of ul
     // "_acay" class of <ul> has been removed by Instagram; [class] added to <ul> to get much lesser matches in page
-    // The parent of the parent of ul[class] always has the attribute "role"
-    const $viewport = $main.find('ul[class]').parent().parent('[role]');
+    // The parent of the parent of ul[class] always has the attributes "role"
+    // '*:not([data-pagelet])>*:not([role])>*>*>*[role]>*>ul[class]' is useful for avoiding the homepage stories section and account highlights section.
+    const $viewport = $main.find('*:not([data-pagelet])>*:not([role])>*>*>*[role]>*>ul[class]').parent().parent('[role]');
 
     if ($viewport.length > 0) {
         const viewportRect = $viewport.get(0).getBoundingClientRect();
