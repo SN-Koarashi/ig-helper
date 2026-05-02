@@ -1506,8 +1506,20 @@ export function getPointerElement($target, clientX, clientY) {
 
     const topElement = document.elementFromPoint(clientX || visibleX, clientY || visibleY);
 
+    if ($(topElement).height() > document.body.clientHeight) {
+        return { self: false, topElement: null, target: $target, error: 'oversize_element', rect };
+    }
+
+    if ($(topElement).width() < 100 || $(topElement).height() < 100) {
+        return { self: false, topElement: null, target: $target, error: 'small_element', rect };
+    }
+
     if (topElement && topElement !== element && !element.contains(topElement)) {
-        return { self: false, topElement, target: $target };
+        if ($(topElement).find($target).length > 0) {
+            return { self: false, topElement, target: $target };
+        }
+
+        return { self: false, topElement: null, target: $target, error: 'none_of_element_children', rect };
     } else {
         return { self: true, topElement, target: $target };
     }

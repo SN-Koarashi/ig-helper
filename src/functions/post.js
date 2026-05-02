@@ -109,7 +109,7 @@ export function initPostVideoFunction($mainElement, clientX, clientY) {
 
                 let $targets = $(this).parent().find('video + div > div').first();
                 const pointerInfo = getPointerElement($(this), clientX, clientY);
-                if (!pointerInfo.self) {
+                if (!pointerInfo.self && pointerInfo.topElement != null) {
                     let $parent = $(pointerInfo.topElement).parents('div[data-visualcompletion="ignore"]').first();
                     if ($parent.length > 0) {
                         $targets = $targets.add($parent);
