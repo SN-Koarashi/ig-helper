@@ -941,6 +941,7 @@
         }
 
         if (USER_SETTING.HTML5_VIDEO_CONTROL) {
+            let $overlayElement = null;
             const handleSwitchController = function (e) {
                 e.preventDefault();
                 e.stopPropagation();
@@ -950,7 +951,11 @@
                     $(this).attr('controls', true);
                 });
 
-                $(e.target).parents('div[aria-label][data-visualcompletion="ignore"]').first().css('z-index', '-10');
+                if ($overlayElement == null) {
+                    $overlayElement = $(e.target).parents('div[aria-label][data-visualcompletion="ignore"]').first();
+                }
+
+                $overlayElement.css('z-index', '-10');
                 $mainElement.find('a[href^="/reels/"]').first().attr("draggable", false);
             };
 
@@ -984,6 +989,7 @@
                         $video.removeAttr('controls');
 
                         $targets.css('z-index', '1');
+                        $overlayElement?.css('z-index', '1');
 
                         $(this).parents('a[href^="/reels/"]').first().removeAttr("draggable");
                     });
@@ -2073,6 +2079,7 @@
             }
 
             if (USER_SETTING.HTML5_VIDEO_CONTROL) {
+                let $overlayElement = null;
                 const handleSwitchController = function (e) {
                     e.preventDefault();
                     e.stopPropagation();
@@ -2082,7 +2089,11 @@
                         $(this).attr('controls', true);
                     });
 
-                    $(e.target).parents('div[aria-label][data-visualcompletion="ignore"]').first().css('z-index', '-10');
+                    if ($overlayElement == null) {
+                        $overlayElement = $(e.target).parents('div[aria-label][data-visualcompletion="ignore"]').first();
+                    }
+
+                    $overlayElement.css('z-index', '-10');
                     $main.find('a[href^="/reels/"]').first().attr("draggable", false);
                 };
 
@@ -2113,6 +2124,7 @@
                             $video.css('z-index', '-1');
                             $video.removeAttr('controls');
                             $targets.css('z-index', '1');
+                            $overlayElement?.css('z-index', '1');
                         });
 
                         // Hide layout to show controller
