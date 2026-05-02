@@ -5,8 +5,7 @@ import {
     openImageViewer,
     updatePopupSelectionSummary,
     replaceSameOriginHost,
-    setDownloadProgress,
-    getPointerElement
+    setDownloadProgress
 } from "../utils/general";
 import { getBlobMedia } from "../utils/api";
 import { _i18n } from "../utils/i18n";
@@ -60,12 +59,10 @@ export function onReadyMyDW(NoDialog, hasReferrer) {
  * initPostVideoFunction
  * @description Initialize settings related to the video resources in the post.
  *
- * @param  {Object}  $mainElement
- * @param  {number}  clientX
- * @param  {number}  clientY
+ * @param  {JQuery<HTMLElement>}  $mainElement
  * @return {Void}
  */
-export function initPostVideoFunction($mainElement, clientX, clientY) {
+export function initPostVideoFunction($mainElement) {
     // Disable video autoplay
     if (USER_SETTING.DISABLE_VIDEO_LOOPING) {
         $mainElement.find('video').each(function () {
@@ -93,6 +90,21 @@ export function initPostVideoFunction($mainElement, clientX, clientY) {
     }
 
     if (USER_SETTING.HTML5_VIDEO_CONTROL) {
+        const handleSwitchController = function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+
+            $mainElement.find('video').each(function () {
+                $(this).css('z-index', '2');
+                $(this).attr('controls', true);
+            });
+
+            $(e.target).parents('div[aria-label][data-visualcompletion="ignore"]').first().css('z-index', '-10');
+            $mainElement.find('a[href^="/reels/"]').first().attr("draggable", false);
+        };
+
+        $mainElement.off('contextmenu.IG_videoControl').on('contextmenu.IG_videoControl', handleSwitchController);
+
         $mainElement.find('video').each(function () {
             if (!$(this).data('controls')) {
                 let $video = $(this);
@@ -108,33 +120,15 @@ export function initPostVideoFunction($mainElement, clientX, clientY) {
                 }
 
                 let $targets = $(this).parent().find('video + div > div').first();
-                const pointerInfo = getPointerElement($(this), clientX, clientY);
-                if (!pointerInfo.self && pointerInfo.topElement != null) {
-                    let $parent = $(pointerInfo.topElement).parents('div[data-visualcompletion="ignore"]').first();
-                    if ($parent.length > 0) {
-                        $targets = $targets.add($parent);
-                    } else {
-                        $targets = $targets.add(pointerInfo.topElement);
-                    }
-                }
-
-                const hideController = function (e) {
-                    e.preventDefault();
-                    e.stopPropagation();
-
-                    $video.css('z-index', '2');
-                    $video.attr('controls', true);
-
-                    $targets.css('z-index', '-10');
-                    $(this).parents('a[href^="/reels/"]').first().attr("draggable", false);
-                };
 
                 // Hide layout to show controller
-                $targets.off('contextmenu.IG_videoControl').on('contextmenu.IG_videoControl', hideController);
+                $targets.off('contextmenu.IG_videoControl').on('contextmenu.IG_videoControl', handleSwitchController);
 
                 // Restore layout to show details interface
                 $(this).on('contextmenu', function (e) {
                     e.preventDefault();
+                    e.stopPropagation();
+
                     $video.css('z-index', '-1');
                     $video.removeAttr('controls');
 
@@ -174,6 +168,7 @@ export function initPostVideoFunction($mainElement, clientX, clientY) {
                     }
                 });
 
+                // ! Due to technical limitations, this feature may be removed in the future; the default Instagram layout will prevail.
                 if (USER_SETTING.SET_INSTAGRAM_LAYOUT_AS_DEFAULT) {
                     $(this).css('z-index', '-1');
                     $targets.css('z-index', '1');
@@ -633,27 +628,6 @@ export function createDownloadButton() {
                 var username = $(this).find("header > div:last-child > div:first-child span a").first().text() || $(this).find('a[href^="/"]').filter(function () {
                     return $(this)?.text()?.length > 0;
                 }).first().text();
-
-
-                const observer_video = new IntersectionObserver((entries) => {
-                    entries.forEach(entry => {
-                        let $el = $(entry.target);
-                        let detectionTimer = null;
-                        if (entry.isIntersecting) {
-                            $el.off('mousemove.IG_detect').on('mousemove.IG_detect', function (e) {
-                                clearTimeout(detectionTimer);
-                                detectionTimer = setTimeout(() => {
-                                    initPostVideoFunction($el, e.clientX, e.clientY);
-                                }, 50);
-                            });
-                        }
-                    });
-                }, {
-                    root: null,
-                    threshold: 0.1,
-                });
-
-                observer_video.observe(this);
 
                 $(this).attr('data-snig', 'canDownload');
                 $(this).attr('data-username', username);

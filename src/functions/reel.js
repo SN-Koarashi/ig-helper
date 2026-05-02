@@ -1,5 +1,5 @@
 import { USER_SETTING, SVG, state } from "../settings";
-import { updateLoadingBar, saveFiles, openNewTab, logger, toggleVolumeSilder, getPointerElement } from "../utils/general";
+import { updateLoadingBar, saveFiles, openNewTab, logger, toggleVolumeSilder } from "../utils/general";
 import { getBlobMedia } from "../utils/api";
 import { filterResourceData } from "./post";
 import { _i18n } from "../utils/i18n";
@@ -109,65 +109,33 @@ export async function onReels(isDownload, isVideo, isPreview) {
                 if (hasTiktokStyleLayout || $('section > main[role="main"] > div div.x1qjc9v5 video').length > 0) {
                     clearInterval(timer);
 
-                    if (hasTiktokStyleLayout) {
-                        const $wrapper = $(svgClose).parents('div[class][tabindex]').filter(function () {
-                            return $(this).width() == document.body.clientWidth && document.body.clientHeight == $(this).height();
-                        }).first();
+                    if (USER_SETTING.SCROLL_BUTTON) {
+                        $('#scrollWrapper').remove();
+                        $('section > main[role="main"]').append('<section id="scrollWrapper"></section>');
+                        $('section > main[role="main"] > #scrollWrapper').append('<div class="button-up"><div></div></div>');
+                        $('section > main[role="main"] > #scrollWrapper').append('<div class="button-down"><div></div></div>');
 
-                        console.log($wrapper.children('div[aria-busy]').children('div[class]'));
-                        $wrapper.children('div[aria-busy]').children('div[class]').each(function () {
-                            if ($(this).find('video').length > 0) {
-                                const observer_video = new IntersectionObserver((entries) => {
-                                    entries.forEach(entry => {
-                                        let $el = $(entry.target);
-                                        let detectionTimer = null;
-                                        if (entry.isIntersecting) {
-                                            $el.off('mousemove.IG_detect').on('mousemove.IG_detect', function (e) {
-                                                clearTimeout(detectionTimer);
-                                                detectionTimer = setTimeout(() => {
-                                                    appendReelsButton($el, e.clientX, e.clientY);
-                                                }, 50);
-                                            });
-                                        }
-                                    });
-                                }, {
-                                    root: null,
-                                    threshold: 0.1,
-                                });
-
-                                observer_video.observe(this);
-                            }
+                        $('section > main[role="main"] > #scrollWrapper > .button-up').on('click', function () {
+                            $('section > main[role="main"] > div')[0].scrollBy({ top: -30, behavior: "smooth" });
+                        });
+                        $('section > main[role="main"] > #scrollWrapper > .button-down').on('click', function () {
+                            $('section > main[role="main"] > div')[0].scrollBy({ top: 30, behavior: "smooth" });
                         });
                     }
-                    else {
-                        if (USER_SETTING.SCROLL_BUTTON) {
-                            $('#scrollWrapper').remove();
-                            $('section > main[role="main"]').append('<section id="scrollWrapper"></section>');
-                            $('section > main[role="main"] > #scrollWrapper').append('<div class="button-up"><div></div></div>');
-                            $('section > main[role="main"] > #scrollWrapper').append('<div class="button-down"><div></div></div>');
 
-                            $('section > main[role="main"] > #scrollWrapper > .button-up').on('click', function () {
-                                $('section > main[role="main"] > div')[0].scrollBy({ top: -30, behavior: "smooth" });
-                            });
-                            $('section > main[role="main"] > #scrollWrapper > .button-down').on('click', function () {
-                                $('section > main[role="main"] > div')[0].scrollBy({ top: 30, behavior: "smooth" });
-                            });
+                    // reels scroll has [tabindex] but header not.
+                    // ? Old selector: section > main[role="main"] > div[tabindex], section > main[role="main"] > div[class]
+                    // ! Co-author: sn-o-w
+                    $('div[aria-busy][tabindex]').children('div').each(function () {
+                        if (
+                            $(this).children().length > 0 &&
+                            $(this).width() > window.innerWidth * 0.8 &&
+                            $(this).height() > window.innerHeight * 0.8 &&
+                            $(this).find('video').length > 0
+                        ) {
+                            appendReelsButton($(this));
                         }
-
-                        // reels scroll has [tabindex] but header not.
-                        // ? Old selector: section > main[role="main"] > div[tabindex], section > main[role="main"] > div[class]
-                        // ! Co-author: sn-o-w
-                        $('div[aria-busy][tabindex]').children('div').each(function () {
-                            if (
-                                $(this).children().length > 0 &&
-                                $(this).width() > window.innerWidth * 0.8 &&
-                                $(this).height() > window.innerHeight * 0.8 &&
-                                $(this).find('video').length > 0
-                            ) {
-                                appendReelsButton($(this));
-                            }
-                        });
-                    }
+                    });
                 }
             }, 250);
         }
@@ -177,7 +145,7 @@ export async function onReels(isDownload, isVideo, isPreview) {
     }
 }
 
-function appendReelsButton($main, clientX, clientY) {
+function appendReelsButton($main) {
     if (!$main.children().find('.IG_REELS').length) {
         $main.children().css('position', 'relative');
 
@@ -208,6 +176,20 @@ function appendReelsButton($main, clientX, clientY) {
         }
 
         if (USER_SETTING.HTML5_VIDEO_CONTROL) {
+            const handleSwitchController = function (e) {
+                e.preventDefault();
+                e.stopPropagation();
+
+                $main.find('video').each(function () {
+                    $(this).css('z-index', '2');
+                    $(this).attr('controls', true);
+                });
+
+                $(e.target).parents('div[aria-label][data-visualcompletion="ignore"]').first().css('z-index', '-10');
+                $main.find('a[href^="/reels/"]').first().attr("draggable", false);
+            };
+
+            $main.off('contextmenu.IG_videoControl').on('contextmenu.IG_videoControl', handleSwitchController);
             $main.find('video').each(function () {
                 if (!$(this).data('controls')) {
                     let $video = $(this);
@@ -226,35 +208,18 @@ function appendReelsButton($main, clientX, clientY) {
                         return $(this).parent('div[role="presentation"]').length > 0 && $(this).css('cursor') === 'pointer' && $(this).attr('style') != null;
                     }).first();
 
-                    const pointerInfo = getPointerElement($(this), clientX, clientY);
-                    if (!pointerInfo.self) {
-                        let $parent = $(pointerInfo.topElement).parents('div[data-visualcompletion="ignore"]').first();
-                        if ($parent.length > 0) {
-                            $targets = $targets.add($parent);
-                        } else {
-                            $targets = $targets.add(pointerInfo.topElement);
-                        }
-                    }
-
                     // Restore layout to show details interface
                     $(this).on('contextmenu', function (e) {
                         e.preventDefault();
+                        e.stopPropagation();
+
                         $video.css('z-index', '-1');
                         $video.removeAttr('controls');
                         $targets.css('z-index', '1');
                     });
 
                     // Hide layout to show controller
-                    $targets.off('contextmenu.IG_videoControl').on('contextmenu.IG_videoControl', function (e) {
-                        e.preventDefault();
-                        e.stopPropagation();
-
-                        $video.css('z-index', '2');
-                        $video.attr('controls', true);
-
-                        $(this).css('z-index', '-10');
-                    });
-
+                    $targets.off('contextmenu.IG_videoControl').on('contextmenu.IG_videoControl', handleSwitchController);
 
                     $(this).on('volumechange', function () {
                         // eslint-disable-next-line no-unused-vars
@@ -280,6 +245,7 @@ function appendReelsButton($main, clientX, clientY) {
                         }
                     });
 
+                    // ! Due to technical limitations, this feature may be removed in the future; the default Instagram layout will prevail.
                     if (USER_SETTING.SET_INSTAGRAM_LAYOUT_AS_DEFAULT) {
                         $(this).css('z-index', '-1');
                         $targets.css('z-index', '1');

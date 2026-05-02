@@ -5,7 +5,7 @@
 // @name:ja            IG助手
 // @name:ko            IG조수
 // @namespace          https://github.snkms.com/
-// @version            3.17.6
+// @version            3.17.7
 // @description        Downloading is possible for both photos and videos from posts, as well as for stories, reels or profile picture.
 // @description:zh-TW  一鍵下載對方 Instagram 貼文中的相片、影片甚至是他們的限時動態、連續短片及大頭貼圖片！
 // @description:zh-CN  一键下载对方 Instagram 帖子中的相片、视频甚至是他们的快拍、Reels及头像图片！
@@ -910,12 +910,10 @@
      * initPostVideoFunction
      * @description Initialize settings related to the video resources in the post.
      *
-     * @param  {Object}  $mainElement
-     * @param  {number}  clientX
-     * @param  {number}  clientY
+     * @param  {JQuery<HTMLElement>}  $mainElement
      * @return {Void}
      */
-    function initPostVideoFunction($mainElement, clientX, clientY) {
+    function initPostVideoFunction($mainElement) {
         // Disable video autoplay
         if (USER_SETTING.DISABLE_VIDEO_LOOPING) {
             $mainElement.find('video').each(function () {
@@ -943,6 +941,21 @@
         }
 
         if (USER_SETTING.HTML5_VIDEO_CONTROL) {
+            const handleSwitchController = function (e) {
+                e.preventDefault();
+                e.stopPropagation();
+
+                $mainElement.find('video').each(function () {
+                    $(this).css('z-index', '2');
+                    $(this).attr('controls', true);
+                });
+
+                $(e.target).parents('div[aria-label][data-visualcompletion="ignore"]').first().css('z-index', '-10');
+                $mainElement.find('a[href^="/reels/"]').first().attr("draggable", false);
+            };
+
+            $mainElement.off('contextmenu.IG_videoControl').on('contextmenu.IG_videoControl', handleSwitchController);
+
             $mainElement.find('video').each(function () {
                 if (!$(this).data('controls')) {
                     let $video = $(this);
@@ -958,33 +971,15 @@
                     }
 
                     let $targets = $(this).parent().find('video + div > div').first();
-                    const pointerInfo = getPointerElement($(this), clientX, clientY);
-                    if (!pointerInfo.self && pointerInfo.topElement != null) {
-                        let $parent = $(pointerInfo.topElement).parents('div[data-visualcompletion="ignore"]').first();
-                        if ($parent.length > 0) {
-                            $targets = $targets.add($parent);
-                        } else {
-                            $targets = $targets.add(pointerInfo.topElement);
-                        }
-                    }
-
-                    const hideController = function (e) {
-                        e.preventDefault();
-                        e.stopPropagation();
-
-                        $video.css('z-index', '2');
-                        $video.attr('controls', true);
-
-                        $targets.css('z-index', '-10');
-                        $(this).parents('a[href^="/reels/"]').first().attr("draggable", false);
-                    };
 
                     // Hide layout to show controller
-                    $targets.off('contextmenu.IG_videoControl').on('contextmenu.IG_videoControl', hideController);
+                    $targets.off('contextmenu.IG_videoControl').on('contextmenu.IG_videoControl', handleSwitchController);
 
                     // Restore layout to show details interface
                     $(this).on('contextmenu', function (e) {
                         e.preventDefault();
+                        e.stopPropagation();
+
                         $video.css('z-index', '-1');
                         $video.removeAttr('controls');
 
@@ -1024,6 +1019,7 @@
                         }
                     });
 
+                    // ! Due to technical limitations, this feature may be removed in the future; the default Instagram layout will prevail.
                     if (USER_SETTING.SET_INSTAGRAM_LAYOUT_AS_DEFAULT) {
                         $(this).css('z-index', '-1');
                         $targets.css('z-index', '1');
@@ -1483,27 +1479,6 @@
                     var username = $(this).find("header > div:last-child > div:first-child span a").first().text() || $(this).find('a[href^="/"]').filter(function () {
                         return $(this)?.text()?.length > 0;
                     }).first().text();
-
-
-                    const observer_video = new IntersectionObserver((entries) => {
-                        entries.forEach(entry => {
-                            let $el = $(entry.target);
-                            let detectionTimer = null;
-                            if (entry.isIntersecting) {
-                                $el.off('mousemove.IG_detect').on('mousemove.IG_detect', function (e) {
-                                    clearTimeout(detectionTimer);
-                                    detectionTimer = setTimeout(() => {
-                                        initPostVideoFunction($el, e.clientX, e.clientY);
-                                    }, 50);
-                                });
-                            }
-                        });
-                    }, {
-                        root: null,
-                        threshold: 0.1,
-                    });
-
-                    observer_video.observe(this);
 
                     $(this).attr('data-snig', 'canDownload');
                     $(this).attr('data-username', username);
@@ -2031,65 +2006,33 @@
                     if (hasTiktokStyleLayout || $('section > main[role="main"] > div div.x1qjc9v5 video').length > 0) {
                         clearInterval(timer);
 
-                        if (hasTiktokStyleLayout) {
-                            const $wrapper = $(svgClose).parents('div[class][tabindex]').filter(function () {
-                                return $(this).width() == document.body.clientWidth && document.body.clientHeight == $(this).height();
-                            }).first();
+                        if (USER_SETTING.SCROLL_BUTTON) {
+                            $('#scrollWrapper').remove();
+                            $('section > main[role="main"]').append('<section id="scrollWrapper"></section>');
+                            $('section > main[role="main"] > #scrollWrapper').append('<div class="button-up"><div></div></div>');
+                            $('section > main[role="main"] > #scrollWrapper').append('<div class="button-down"><div></div></div>');
 
-                            console.log($wrapper.children('div[aria-busy]').children('div[class]'));
-                            $wrapper.children('div[aria-busy]').children('div[class]').each(function () {
-                                if ($(this).find('video').length > 0) {
-                                    const observer_video = new IntersectionObserver((entries) => {
-                                        entries.forEach(entry => {
-                                            let $el = $(entry.target);
-                                            let detectionTimer = null;
-                                            if (entry.isIntersecting) {
-                                                $el.off('mousemove.IG_detect').on('mousemove.IG_detect', function (e) {
-                                                    clearTimeout(detectionTimer);
-                                                    detectionTimer = setTimeout(() => {
-                                                        appendReelsButton($el, e.clientX, e.clientY);
-                                                    }, 50);
-                                                });
-                                            }
-                                        });
-                                    }, {
-                                        root: null,
-                                        threshold: 0.1,
-                                    });
-
-                                    observer_video.observe(this);
-                                }
+                            $('section > main[role="main"] > #scrollWrapper > .button-up').on('click', function () {
+                                $('section > main[role="main"] > div')[0].scrollBy({ top: -30, behavior: "smooth" });
+                            });
+                            $('section > main[role="main"] > #scrollWrapper > .button-down').on('click', function () {
+                                $('section > main[role="main"] > div')[0].scrollBy({ top: 30, behavior: "smooth" });
                             });
                         }
-                        else {
-                            if (USER_SETTING.SCROLL_BUTTON) {
-                                $('#scrollWrapper').remove();
-                                $('section > main[role="main"]').append('<section id="scrollWrapper"></section>');
-                                $('section > main[role="main"] > #scrollWrapper').append('<div class="button-up"><div></div></div>');
-                                $('section > main[role="main"] > #scrollWrapper').append('<div class="button-down"><div></div></div>');
 
-                                $('section > main[role="main"] > #scrollWrapper > .button-up').on('click', function () {
-                                    $('section > main[role="main"] > div')[0].scrollBy({ top: -30, behavior: "smooth" });
-                                });
-                                $('section > main[role="main"] > #scrollWrapper > .button-down').on('click', function () {
-                                    $('section > main[role="main"] > div')[0].scrollBy({ top: 30, behavior: "smooth" });
-                                });
+                        // reels scroll has [tabindex] but header not.
+                        // ? Old selector: section > main[role="main"] > div[tabindex], section > main[role="main"] > div[class]
+                        // ! Co-author: sn-o-w
+                        $('div[aria-busy][tabindex]').children('div').each(function () {
+                            if (
+                                $(this).children().length > 0 &&
+                                $(this).width() > window.innerWidth * 0.8 &&
+                                $(this).height() > window.innerHeight * 0.8 &&
+                                $(this).find('video').length > 0
+                            ) {
+                                appendReelsButton($(this));
                             }
-
-                            // reels scroll has [tabindex] but header not.
-                            // ? Old selector: section > main[role="main"] > div[tabindex], section > main[role="main"] > div[class]
-                            // ! Co-author: sn-o-w
-                            $('div[aria-busy][tabindex]').children('div').each(function () {
-                                if (
-                                    $(this).children().length > 0 &&
-                                    $(this).width() > window.innerWidth * 0.8 &&
-                                    $(this).height() > window.innerHeight * 0.8 &&
-                                    $(this).find('video').length > 0
-                                ) {
-                                    appendReelsButton($(this));
-                                }
-                            });
-                        }
+                        });
                     }
                 }, 250);
             }
@@ -2099,7 +2042,7 @@
         }
     }
 
-    function appendReelsButton($main, clientX, clientY) {
+    function appendReelsButton($main) {
         if (!$main.children().find('.IG_REELS').length) {
             $main.children().css('position', 'relative');
 
@@ -2130,6 +2073,20 @@
             }
 
             if (USER_SETTING.HTML5_VIDEO_CONTROL) {
+                const handleSwitchController = function (e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+
+                    $main.find('video').each(function () {
+                        $(this).css('z-index', '2');
+                        $(this).attr('controls', true);
+                    });
+
+                    $(e.target).parents('div[aria-label][data-visualcompletion="ignore"]').first().css('z-index', '-10');
+                    $main.find('a[href^="/reels/"]').first().attr("draggable", false);
+                };
+
+                $main.off('contextmenu.IG_videoControl').on('contextmenu.IG_videoControl', handleSwitchController);
                 $main.find('video').each(function () {
                     if (!$(this).data('controls')) {
                         let $video = $(this);
@@ -2148,35 +2105,18 @@
                             return $(this).parent('div[role="presentation"]').length > 0 && $(this).css('cursor') === 'pointer' && $(this).attr('style') != null;
                         }).first();
 
-                        const pointerInfo = getPointerElement($(this), clientX, clientY);
-                        if (!pointerInfo.self) {
-                            let $parent = $(pointerInfo.topElement).parents('div[data-visualcompletion="ignore"]').first();
-                            if ($parent.length > 0) {
-                                $targets = $targets.add($parent);
-                            } else {
-                                $targets = $targets.add(pointerInfo.topElement);
-                            }
-                        }
-
                         // Restore layout to show details interface
                         $(this).on('contextmenu', function (e) {
                             e.preventDefault();
+                            e.stopPropagation();
+
                             $video.css('z-index', '-1');
                             $video.removeAttr('controls');
                             $targets.css('z-index', '1');
                         });
 
                         // Hide layout to show controller
-                        $targets.off('contextmenu.IG_videoControl').on('contextmenu.IG_videoControl', function (e) {
-                            e.preventDefault();
-                            e.stopPropagation();
-
-                            $video.css('z-index', '2');
-                            $video.attr('controls', true);
-
-                            $(this).css('z-index', '-10');
-                        });
-
+                        $targets.off('contextmenu.IG_videoControl').on('contextmenu.IG_videoControl', handleSwitchController);
 
                         $(this).on('volumechange', function () {
                             // eslint-disable-next-line no-unused-vars
@@ -2202,6 +2142,7 @@
                             }
                         });
 
+                        // ! Due to technical limitations, this feature may be removed in the future; the default Instagram layout will prevail.
                         if (USER_SETTING.SET_INSTAGRAM_LAYOUT_AS_DEFAULT) {
                             $(this).css('z-index', '-1');
                             $targets.css('z-index', '1');
