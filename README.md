@@ -46,6 +46,8 @@
 > 
 > The extensions we support and test is Tampermonkey and make sure that you are downloaded the script from GreasyFork.
 
+Finally, I want to say that Instagram's inconsistent UI layout increased the development pain, especially the need to de-parse components built with React. Therefore, the malfunction of IG Helper was incredibly frustrating, but there was nothing I could do. I could only try to fix these parts in my spare time.
+
 ## ✨ Development Guide
 This guide provides comprehensive documentation for developers who want to understand, modify, or contribute to the IG Helper codebase. It covers the build system, development environment setup, and contribution workflow.
 

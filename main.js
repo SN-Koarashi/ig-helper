@@ -5,7 +5,7 @@
 // @name:ja            IG助手
 // @name:ko            IG조수
 // @namespace          https://github.snkms.com/
-// @version            3.16.3
+// @version            3.17.5
 // @description        Downloading is possible for both photos and videos from posts, as well as for stories, reels or profile picture.
 // @description:zh-TW  一鍵下載對方 Instagram 貼文中的相片、影片甚至是他們的限時動態、連續短片及大頭貼圖片！
 // @description:zh-CN  一键下载对方 Instagram 帖子中的相片、视频甚至是他们的快拍、Reels及头像图片！
@@ -886,9 +886,11 @@
      * @description Initialize settings related to the video resources in the post.
      *
      * @param  {Object}  $mainElement
+     * @param  {number}  clientX
+     * @param  {number}  clientY
      * @return {Void}
      */
-    function initPostVideoFunction($mainElement) {
+    function initPostVideoFunction($mainElement, clientX, clientY) {
         // Disable video autoplay
         if (USER_SETTING.DISABLE_VIDEO_LOOPING) {
             $mainElement.find('video').each(function () {
@@ -930,18 +932,40 @@
                         });
                     }
 
+                    let $targets = $(this).parent().find('video + div > div').first();
+                    const pointerInfo = getPointerElement($(this), clientX, clientY);
+                    if (!pointerInfo.self && pointerInfo.topElement != null) {
+                        let $parent = $(pointerInfo.topElement).parents('div[data-visualcompletion="ignore"]').first();
+                        if ($parent.length > 0) {
+                            $targets = $targets.add($parent);
+                        } else {
+                            $targets = $targets.add(pointerInfo.topElement);
+                        }
+                    }
+
+                    const hideController = function (e) {
+                        e.preventDefault();
+                        e.stopPropagation();
+
+                        $video.css('z-index', '2');
+                        $video.attr('controls', true);
+
+                        $targets.css('z-index', '-10');
+                        $(this).parents('a[href^="/reels/"]').first().attr("draggable", false);
+                    };
+
+                    // Hide layout to show controller
+                    $targets.off('contextmenu.IG_videoControl').on('contextmenu.IG_videoControl', hideController);
+
                     // Restore layout to show details interface
                     $(this).on('contextmenu', function (e) {
                         e.preventDefault();
                         $video.css('z-index', '-1');
                         $video.removeAttr('controls');
-                    });
 
-                    // Hide layout to show controller
-                    $(this).parent().find('video + div > div').first().on('contextmenu', function (e) {
-                        e.preventDefault();
-                        $video.css('z-index', '2');
-                        $video.attr('controls', true);
+                        $targets.css('z-index', '1');
+
+                        $(this).parents('a[href^="/reels/"]').first().removeAttr("draggable");
                     });
 
                     $(this).on('volumechange', function () {
@@ -968,16 +992,33 @@
                         }
                     });
 
+                    $(this).parents('a[href^="/reels/"]').first().on('click', function (e) {
+                        if ($video.attr('controls')) {
+                            e.preventDefault();
+                            e.stopPropagation();
+                        }
+                    });
+
                     if (USER_SETTING.SET_INSTAGRAM_LAYOUT_AS_DEFAULT) {
                         $(this).css('z-index', '-1');
+                        $targets.css('z-index', '1');
+
+                        $(this).parents('a[href^="/reels/"]').first().removeAttr("draggable");
                     }
                     else {
                         $(this).css('z-index', '2');
                         $(this).attr('controls', true);
+                        $targets.css('z-index', '-10');
+
+                        $(this).parents('a[href^="/reels/"]').first().attr("draggable", false);
                     }
 
                     $(this).css('position', 'absolute');
                     $(this).attr('data-controls', true);
+
+                    if ($targets.length === 0) {
+                        $(this).removeAttr('data-controls');
+                    }
                 }
             });
         }
@@ -1134,7 +1175,6 @@
 
                                 $triggeredTarget = $targetNode;
                                 observer_i.observe(this);
-                                console.log("aaa", this, $targetNode);
                             }
                         });
 
@@ -1418,6 +1458,27 @@
                     var username = $(this).find("header > div:last-child > div:first-child span a").first().text() || $(this).find('a[href^="/"]').filter(function () {
                         return $(this)?.text()?.length > 0;
                     }).first().text();
+
+
+                    const observer_video = new IntersectionObserver((entries) => {
+                        entries.forEach(entry => {
+                            let $el = $(entry.target);
+                            let detectionTimer = null;
+                            if (entry.isIntersecting) {
+                                $el.off('mousemove.IG_detect').on('mousemove.IG_detect', function (e) {
+                                    clearTimeout(detectionTimer);
+                                    detectionTimer = setTimeout(() => {
+                                        initPostVideoFunction($el, e.clientX, e.clientY);
+                                    }, 50);
+                                });
+                            }
+                        });
+                    }, {
+                        root: null,
+                        threshold: 0.1,
+                    });
+
+                    observer_video.observe(this);
 
                     $(this).attr('data-snig', 'canDownload');
                     $(this).attr('data-username', username);
@@ -1938,158 +1999,200 @@
             }
             else {
                 //$('.IG_REELS_THUMBNAIL, .IG_REELS').remove();
+                const svgClose = 'svg > polyline[points^="20.643 3.357 12 12 3.353 20.647"] ~ line';
                 var timer = setInterval(() => {
-                    if ($('section > main[role="main"] > div div.x1qjc9v5 video').length > 0) {
+                    const hasTiktokStyleLayout = $(svgClose).length > 0;
+                    if (hasTiktokStyleLayout || $('section > main[role="main"] > div div.x1qjc9v5 video').length > 0) {
                         clearInterval(timer);
 
-                        if (USER_SETTING.SCROLL_BUTTON) {
-                            $('#scrollWrapper').remove();
-                            $('section > main[role="main"]').append('<section id="scrollWrapper"></section>');
-                            $('section > main[role="main"] > #scrollWrapper').append('<div class="button-up"><div></div></div>');
-                            $('section > main[role="main"] > #scrollWrapper').append('<div class="button-down"><div></div></div>');
+                        if (hasTiktokStyleLayout) {
+                            const $wrapper = $(svgClose).parents('div[class][tabindex]').filter(function () {
+                                return $(this).width() == document.body.clientWidth && document.body.clientHeight == $(this).height();
+                            }).first();
 
-                            $('section > main[role="main"] > #scrollWrapper > .button-up').on('click', function () {
-                                $('section > main[role="main"] > div')[0].scrollBy({ top: -30, behavior: "smooth" });
-                            });
-                            $('section > main[role="main"] > #scrollWrapper > .button-down').on('click', function () {
-                                $('section > main[role="main"] > div')[0].scrollBy({ top: 30, behavior: "smooth" });
-                            });
-                        }
-
-                        // reels scroll has [tabindex] but header not.
-                        $('section > main[role="main"] > div[tabindex], section > main[role="main"] > div[class]').children('div').each(function () {
-                            if (
-                                $(this).children().length > 0 &&
-                                $(this).width() > window.innerWidth * 0.8 &&
-                                $(this).height() > window.innerHeight * 0.8 &&
-                                $(this).find('video').length > 0
-                            ) {
-                                if (!$(this).children().find('.IG_REELS').length) {
-                                    var $main = $(this);
-
-                                    $(this).children().css('position', 'relative');
-
-                                    $(this).children().append(`<div data-ih-locale-title="DW" title="${_i18n("DW")}" class="IG_REELS">${SVG.DOWNLOAD}</div>`);
-                                    $(this).children().append(`<div data-ih-locale-title="NEW_TAB" title="${_i18n("NEW_TAB")}" class="IG_REELS_NEWTAB">${SVG.NEW_TAB}</div>`);
-                                    $(this).children().append(`<div data-ih-locale-title="VIDEO_THUMBNAIL" title="${_i18n("VIDEO_THUMBNAIL")}" class="IG_REELS_THUMBNAIL">${SVG.THUMBNAIL}</div>`);
-
-                                    // Disable video autoplay
-                                    if (USER_SETTING.DISABLE_VIDEO_LOOPING) {
-                                        $(this).find('video').each(function () {
-                                            $(this).on('ended', function () {
-                                                if (!$(this).data('loop')) {
-                                                    let $element_play_button = $(this).next().find('div[role="presentation"] > div svg > path[d^="M5.888"]').parents('button[role="button"], div[role="button"]');
-                                                    if ($element_play_button.length > 0) {
-                                                        $(this).attr('data-loop', true);
-                                                        $element_play_button.trigger("click");
-                                                        logger('Adding video event listener #loop, then paused click()');
-                                                    }
-                                                    else {
-                                                        $(this).attr('data-loop', true);
-                                                        $(this).parent().find('.xpgaw4o').removeAttr('style');
-                                                        this.pause();
-                                                        logger('Adding video event listener #loop, then paused pause()');
-                                                    }
-                                                }
-                                            });
-                                        });
-                                    }
-
-                                    // Modify video volume
-                                    //if(USER_SETTING.MODIFY_VIDEO_VOLUME){
-                                    //    $(this).find('video').each(function(){
-                                    //        $(this).on('play playing', function(){
-                                    //            if(!$(this).data('modify')){
-                                    //                $(this).attr('data-modify', true);
-                                    //                this.volume = VIDEO_VOLUME;
-                                    //                logger('(reel) Added video event listener #modify');
-                                    //            }
-                                    //        });
-                                    //    });
-                                    //}
-
-                                    if (USER_SETTING.HTML5_VIDEO_CONTROL) {
-                                        $(this).find('video').each(function () {
-                                            if (!$(this).data('controls')) {
-                                                let $video = $(this);
-
-                                                logger('(reel) Added video html5 contorller #modify');
-
-                                                if (USER_SETTING.MODIFY_VIDEO_VOLUME) {
-                                                    this.volume = state.videoVolume;
-
-                                                    $(this).on('loadstart', function () {
-                                                        this.volume = state.videoVolume;
-                                                    });
-                                                }
-
-                                                // Restore layout to show details interface
-                                                $(this).on('contextmenu', function (e) {
-                                                    e.preventDefault();
-                                                    $video.css('z-index', '-1');
-                                                    $video.removeAttr('controls');
+                            console.log($wrapper.children('div[aria-busy]').children('div[class]'));
+                            $wrapper.children('div[aria-busy]').children('div[class]').each(function () {
+                                if ($(this).find('video').length > 0) {
+                                    const observer_video = new IntersectionObserver((entries) => {
+                                        entries.forEach(entry => {
+                                            let $el = $(entry.target);
+                                            let detectionTimer = null;
+                                            if (entry.isIntersecting) {
+                                                $el.off('mousemove.IG_detect').on('mousemove.IG_detect', function (e) {
+                                                    clearTimeout(detectionTimer);
+                                                    detectionTimer = setTimeout(() => {
+                                                        appendReelsButton($el, e.clientX, e.clientY);
+                                                    }, 50);
                                                 });
-
-                                                // Hide layout to show controller
-                                                $(this).parent().find('video + div div[role="button"]').filter(function () {
-                                                    return $(this).parent('div[role="presentation"]').length > 0 && $(this).css('cursor') === 'pointer' && $(this).attr('style') != null;
-                                                }).first().on('contextmenu', function (e) {
-                                                    e.preventDefault();
-                                                    $video.css('z-index', '2');
-                                                    $video.attr('controls', true);
-                                                });
-
-
-                                                $(this).on('volumechange', function () {
-                                                    // eslint-disable-next-line no-unused-vars
-                                                    let $element_mute_button = $(this).parent().find('video + div > div').find('button[type="button"], div[role="button"]').filter(function (idx) {
-                                                        // This is mute/unmute's icon
-                                                        return $(this).width() <= 64 && $(this).height() <= 64 && $(this).find('svg > path[d^="M16.636 7.028a1.5"], svg > path[d^="M1.5 13.3c-.8"]').length > 0;
-                                                    });
-
-                                                    var is_elelment_muted = $element_mute_button.find('svg > path[d^="M16.636"]').length === 0;
-
-                                                    if (this.muted != is_elelment_muted) {
-                                                        this.volume = state.videoVolume;
-                                                        $element_mute_button?.trigger("click");
-                                                    }
-
-                                                    if ($(this).attr('data-completed')) {
-                                                        state.videoVolume = this.volume;
-                                                        GM_setValue('G_VIDEO_VOLUME', this.volume);
-                                                    }
-
-                                                    if (this.volume == state.videoVolume) {
-                                                        $(this).attr('data-completed', true);
-                                                    }
-                                                });
-
-                                                if (USER_SETTING.SET_INSTAGRAM_LAYOUT_AS_DEFAULT) {
-                                                    $(this).css('z-index', '-1');
-                                                }
-                                                else {
-                                                    $(this).css('z-index', '2');
-                                                    $(this).attr('controls', true);
-                                                }
-
-                                                $(this).css('position', 'relative');
-                                                $(this).attr('data-controls', true);
                                             }
                                         });
-                                    }
+                                    }, {
+                                        root: null,
+                                        threshold: 0.1,
+                                    });
 
-                                    var $videos = $main.find('video');
-                                    var $buttonParent = $(this).find('div[role="presentation"] > div[role="button"] > div').first();
-                                    toggleVolumeSilder($videos, $buttonParent, 'reel');
+                                    observer_video.observe(this);
                                 }
+                            });
+                        }
+                        else {
+                            if (USER_SETTING.SCROLL_BUTTON) {
+                                $('#scrollWrapper').remove();
+                                $('section > main[role="main"]').append('<section id="scrollWrapper"></section>');
+                                $('section > main[role="main"] > #scrollWrapper').append('<div class="button-up"><div></div></div>');
+                                $('section > main[role="main"] > #scrollWrapper').append('<div class="button-down"><div></div></div>');
+
+                                $('section > main[role="main"] > #scrollWrapper > .button-up').on('click', function () {
+                                    $('section > main[role="main"] > div')[0].scrollBy({ top: -30, behavior: "smooth" });
+                                });
+                                $('section > main[role="main"] > #scrollWrapper > .button-down').on('click', function () {
+                                    $('section > main[role="main"] > div')[0].scrollBy({ top: 30, behavior: "smooth" });
+                                });
                             }
-                        });
+
+                            // reels scroll has [tabindex] but header not.
+                            $('section > main[role="main"] > div[tabindex], section > main[role="main"] > div[class]').children('div').each(function () {
+                                if (
+                                    $(this).children().length > 0 &&
+                                    $(this).width() > window.innerWidth * 0.8 &&
+                                    $(this).height() > window.innerHeight * 0.8 &&
+                                    $(this).find('video').length > 0
+                                ) {
+                                    appendReelsButton($(this));
+                                }
+                            });
+                        }
                     }
                 }, 250);
             }
         }
         catch (err) {
             console.error("[reels]", err);
+        }
+    }
+
+    function appendReelsButton($main, clientX, clientY) {
+        if (!$main.children().find('.IG_REELS').length) {
+            $main.children().css('position', 'relative');
+
+            $main.children().append(`<div data-ih-locale-title="DW" title="${_i18n("DW")}" class="IG_REELS">${SVG.DOWNLOAD}</div>`);
+            $main.children().append(`<div data-ih-locale-title="NEW_TAB" title="${_i18n("NEW_TAB")}" class="IG_REELS_NEWTAB">${SVG.NEW_TAB}</div>`);
+            $main.children().append(`<div data-ih-locale-title="VIDEO_THUMBNAIL" title="${_i18n("VIDEO_THUMBNAIL")}" class="IG_REELS_THUMBNAIL">${SVG.THUMBNAIL}</div>`);
+
+            // Disable video autoplay
+            if (USER_SETTING.DISABLE_VIDEO_LOOPING) {
+                $main.find('video').each(function () {
+                    $(this).on('ended', function () {
+                        if (!$(this).data('loop')) {
+                            let $element_play_button = $(this).next().find('div[role="presentation"] > div svg > path[d^="M5.888"]').parents('button[role="button"], div[role="button"]');
+                            if ($element_play_button.length > 0) {
+                                $(this).attr('data-loop', true);
+                                $element_play_button.trigger("click");
+                                logger('Adding video event listener #loop, then paused click()');
+                            }
+                            else {
+                                $(this).attr('data-loop', true);
+                                $(this).parent().find('.xpgaw4o').removeAttr('style');
+                                this.pause();
+                                logger('Adding video event listener #loop, then paused pause()');
+                            }
+                        }
+                    });
+                });
+            }
+
+            if (USER_SETTING.HTML5_VIDEO_CONTROL) {
+                $main.find('video').each(function () {
+                    if (!$(this).data('controls')) {
+                        let $video = $(this);
+
+                        logger('(reel) Added video html5 contorller #modify');
+
+                        if (USER_SETTING.MODIFY_VIDEO_VOLUME) {
+                            this.volume = state.videoVolume;
+
+                            $(this).on('loadstart', function () {
+                                this.volume = state.videoVolume;
+                            });
+                        }
+
+                        let $targets = $(this).parent().find('video + div div[role="button"]').filter(function () {
+                            return $(this).parent('div[role="presentation"]').length > 0 && $(this).css('cursor') === 'pointer' && $(this).attr('style') != null;
+                        }).first();
+
+                        const pointerInfo = getPointerElement($(this), clientX, clientY);
+                        if (!pointerInfo.self) {
+                            let $parent = $(pointerInfo.topElement).parents('div[data-visualcompletion="ignore"]').first();
+                            if ($parent.length > 0) {
+                                $targets = $targets.add($parent);
+                            } else {
+                                $targets = $targets.add(pointerInfo.topElement);
+                            }
+                        }
+
+                        // Restore layout to show details interface
+                        $(this).on('contextmenu', function (e) {
+                            e.preventDefault();
+                            $video.css('z-index', '-1');
+                            $video.removeAttr('controls');
+                            $targets.css('z-index', '1');
+                        });
+
+                        // Hide layout to show controller
+                        $targets.off('contextmenu.IG_videoControl').on('contextmenu.IG_videoControl', function (e) {
+                            e.preventDefault();
+                            e.stopPropagation();
+
+                            $video.css('z-index', '2');
+                            $video.attr('controls', true);
+
+                            $(this).css('z-index', '-10');
+                        });
+
+
+                        $(this).on('volumechange', function () {
+                            // eslint-disable-next-line no-unused-vars
+                            let $element_mute_button = $(this).parent().find('video + div > div').find('button[type="button"], div[role="button"]').filter(function (idx) {
+                                // This is mute/unmute's icon
+                                return $(this).width() <= 64 && $(this).height() <= 64 && $(this).find('svg > path[d^="M16.636 7.028a1.5"], svg > path[d^="M1.5 13.3c-.8"]').length > 0;
+                            });
+
+                            var is_elelment_muted = $element_mute_button.find('svg > path[d^="M16.636"]').length === 0;
+
+                            if (this.muted != is_elelment_muted) {
+                                this.volume = state.videoVolume;
+                                $element_mute_button?.trigger("click");
+                            }
+
+                            if ($(this).attr('data-completed')) {
+                                state.videoVolume = this.volume;
+                                GM_setValue('G_VIDEO_VOLUME', this.volume);
+                            }
+
+                            if (this.volume == state.videoVolume) {
+                                $(this).attr('data-completed', true);
+                            }
+                        });
+
+                        if (USER_SETTING.SET_INSTAGRAM_LAYOUT_AS_DEFAULT) {
+                            $(this).css('z-index', '-1');
+                            $targets.css('z-index', '1');
+                        }
+                        else {
+                            $(this).css('z-index', '2');
+                            $(this).attr('controls', true);
+                            $targets.css('z-index', '-10');
+                        }
+
+                        $(this).css('position', 'relative');
+                        $(this).attr('data-controls', true);
+                    }
+                });
+            }
+
+            var $videos = $main.find('video');
+            var $buttonParent = $main.find('div[role="presentation"] > div[role="button"] > div').first();
+            toggleVolumeSilder($videos, $buttonParent, 'reel');
         }
     }
 
@@ -4749,6 +4852,49 @@
         }
     }
 
+    /**
+     * 
+     * @param {JQuery<HTMLElement>} $target 
+     * @param {number} clientX
+     * @param {number} clientY
+     */
+    function getPointerElement($target, clientX, clientY) {
+        let element = $target.get(0);
+        const rect = element.getBoundingClientRect();
+
+        const viewportWidth = window.innerWidth;
+        const viewportHeight = window.innerHeight;
+
+        const visibleX = Math.max(rect.left, 0) + (Math.min(rect.right, viewportWidth) - Math.max(rect.left, 0)) / 2;
+        const visibleY = Math.max(rect.top, 0) + (Math.min(rect.bottom, viewportHeight) - Math.max(rect.top, 0)) / 2;
+
+        if (visibleX < 0 || visibleX > viewportWidth || visibleY < 0 || visibleY > viewportHeight) {
+            if (clientX == null || clientY == null) {
+                return { self: false, topElement: null, target: $target, error: 'out_of_viewport', rect };
+            }
+        }
+
+        const topElement = document.elementFromPoint(clientX || visibleX, clientY || visibleY);
+
+        if ($(topElement).height() > document.body.clientHeight) {
+            return { self: false, topElement: null, target: $target, error: 'oversize_element', rect };
+        }
+
+        if ($(topElement).width() < 100 || $(topElement).height() < 100) {
+            return { self: false, topElement: null, target: $target, error: 'small_element', rect };
+        }
+
+        if (topElement && topElement !== element && !element.contains(topElement)) {
+            if ($(topElement).find($target).length > 0) {
+                return { self: false, topElement, target: $target };
+            }
+
+            return { self: false, topElement: null, target: $target, error: 'none_of_element_children', rect };
+        } else {
+            return { self: true, topElement, target: $target };
+        }
+    }
+
     var detectMovingViewerTimer = null;
 
     function openImageViewer(imageUrl) {
@@ -5699,10 +5845,25 @@
                                             let $readMoreButton = $videoParent.find('div[class][role="button"]');
                                             $readMoreButton.hide();
 
+                                            let $targets = $video.parent().find('video + div');
+
+                                            const pointerInfo = getPointerElement($(this));
+                                            if (!pointerInfo.self) {
+                                                let $parent = $(pointerInfo.topElement).parents('div[data-visualcompletion="ignore"]').first();
+                                                if ($parent.length > 0) {
+                                                    $targets = $targets.add($parent);
+                                                } else {
+                                                    $targets = $targets.add(pointerInfo.topElement);
+                                                }
+                                            }
+
                                             const hideContextmenu = function (e) {
                                                 e.preventDefault();
+                                                e.stopPropagation();
+
                                                 $video.css('z-index', '2');
                                                 $video.attr('controls', true);
+                                                $targets.css('z-index', '-10');
 
                                                 $readMoreButton.hide();
                                                 $bottomBar.hide();
@@ -5713,15 +5874,17 @@
                                             };
 
                                             // Hide layout to show controller
-                                            $video.parent().find('video + div').on('contextmenu', hideContextmenu);
-                                            $readMoreButton.on('contextmenu', hideContextmenu);
-                                            $bottomBar.on('contextmenu', hideContextmenu);
+                                            $targets.off('contextmenu.IG_videoControl').on('contextmenu.IG_videoControl', hideContextmenu);
+                                            $readMoreButton.off('contextmenu.IG_videoControl').on('contextmenu.IG_videoControl', hideContextmenu);
+                                            $bottomBar.off('contextmenu.IG_videoControl').on('contextmenu.IG_videoControl', hideContextmenu);
 
                                             // Restore layout to show details interface
                                             $video.on('contextmenu', function (e) {
                                                 e.preventDefault();
+
                                                 $video.css('z-index', '-1');
                                                 $video.removeAttr('controls');
+                                                $targets.css('z-index', '1');
 
                                                 $bottomBar.show();
                                                 $readMoreButton.show();
@@ -5756,10 +5919,12 @@
 
                                             if (USER_SETTING.SET_INSTAGRAM_LAYOUT_AS_DEFAULT) {
                                                 $video.css('z-index', '-1');
+                                                $targets.css('z-index', '1');
                                             }
                                             else {
                                                 $video.css('z-index', '2');
                                                 $video.attr('controls', true);
+                                                $targets.css('z-index', '-10');
                                             }
 
                                             $video.css('position', 'absolute');

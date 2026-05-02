@@ -1571,6 +1571,49 @@ export function toggleVolumeSilder($videos, $buttonParent, loggerType, customCla
     }
 }
 
+/**
+ * 
+ * @param {JQuery<HTMLElement>} $target 
+ * @param {number} clientX
+ * @param {number} clientY
+ */
+export function getPointerElement($target, clientX, clientY) {
+    let element = $target.get(0);
+    const rect = element.getBoundingClientRect();
+
+    const viewportWidth = window.innerWidth;
+    const viewportHeight = window.innerHeight;
+
+    const visibleX = Math.max(rect.left, 0) + (Math.min(rect.right, viewportWidth) - Math.max(rect.left, 0)) / 2;
+    const visibleY = Math.max(rect.top, 0) + (Math.min(rect.bottom, viewportHeight) - Math.max(rect.top, 0)) / 2;
+
+    if (visibleX < 0 || visibleX > viewportWidth || visibleY < 0 || visibleY > viewportHeight) {
+        if (clientX == null || clientY == null) {
+            return { self: false, topElement: null, target: $target, error: 'out_of_viewport', rect };
+        }
+    }
+
+    const topElement = document.elementFromPoint(clientX || visibleX, clientY || visibleY);
+
+    if ($(topElement).height() > document.body.clientHeight) {
+        return { self: false, topElement: null, target: $target, error: 'oversize_element', rect };
+    }
+
+    if ($(topElement).width() < 100 || $(topElement).height() < 100) {
+        return { self: false, topElement: null, target: $target, error: 'small_element', rect };
+    }
+
+    if (topElement && topElement !== element && !element.contains(topElement)) {
+        if ($(topElement).find($target).length > 0) {
+            return { self: false, topElement, target: $target };
+        }
+
+        return { self: false, topElement: null, target: $target, error: 'none_of_element_children', rect };
+    } else {
+        return { self: true, topElement, target: $target };
+    }
+}
+
 var detectMovingViewerTimer = null;
 
 export function openImageViewer(imageUrl) {

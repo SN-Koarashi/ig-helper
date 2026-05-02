@@ -2,7 +2,8 @@ import { state, USER_SETTING } from "./settings";
 import {
     showSetting, showDebugDOM, reloadScript,
     triggerLinkElement, openNewTab, saveFiles, logger, toggleVolumeSilder, updatePopupSelectionSummary,
-    replaceSameOriginHost, setTimeElementDateAndLocaleTime, getHighlightCurrentTimeElement
+    replaceSameOriginHost, setTimeElementDateAndLocaleTime, getHighlightCurrentTimeElement,
+    getPointerElement
 } from "./utils/general";
 import { onStory, onStoryAll, onStoryThumbnail } from "./functions/story";
 import { onProfileAvatar } from "./functions/profile";
@@ -455,10 +456,25 @@ $(function () {
                                         let $readMoreButton = $videoParent.find('div[class][role="button"]');
                                         $readMoreButton.hide();
 
+                                        let $targets = $video.parent().find('video + div');
+
+                                        const pointerInfo = getPointerElement($(this));
+                                        if (!pointerInfo.self) {
+                                            let $parent = $(pointerInfo.topElement).parents('div[data-visualcompletion="ignore"]').first();
+                                            if ($parent.length > 0) {
+                                                $targets = $targets.add($parent);
+                                            } else {
+                                                $targets = $targets.add(pointerInfo.topElement);
+                                            }
+                                        }
+
                                         const hideContextmenu = function (e) {
                                             e.preventDefault();
+                                            e.stopPropagation();
+
                                             $video.css('z-index', '2');
                                             $video.attr('controls', true);
+                                            $targets.css('z-index', '-10');
 
                                             $readMoreButton.hide();
                                             $bottomBar.hide();
@@ -469,15 +485,17 @@ $(function () {
                                         };
 
                                         // Hide layout to show controller
-                                        $video.parent().find('video + div').on('contextmenu', hideContextmenu);
-                                        $readMoreButton.on('contextmenu', hideContextmenu);
-                                        $bottomBar.on('contextmenu', hideContextmenu);
+                                        $targets.off('contextmenu.IG_videoControl').on('contextmenu.IG_videoControl', hideContextmenu);
+                                        $readMoreButton.off('contextmenu.IG_videoControl').on('contextmenu.IG_videoControl', hideContextmenu);
+                                        $bottomBar.off('contextmenu.IG_videoControl').on('contextmenu.IG_videoControl', hideContextmenu);
 
                                         // Restore layout to show details interface
                                         $video.on('contextmenu', function (e) {
                                             e.preventDefault();
+
                                             $video.css('z-index', '-1');
                                             $video.removeAttr('controls');
+                                            $targets.css('z-index', '1');
 
                                             $bottomBar.show();
                                             $readMoreButton.show();
@@ -512,10 +530,12 @@ $(function () {
 
                                         if (USER_SETTING.SET_INSTAGRAM_LAYOUT_AS_DEFAULT) {
                                             $video.css('z-index', '-1');
+                                            $targets.css('z-index', '1');
                                         }
                                         else {
                                             $video.css('z-index', '2');
                                             $video.attr('controls', true);
+                                            $targets.css('z-index', '-10');
                                         }
 
                                         $video.css('position', 'absolute');

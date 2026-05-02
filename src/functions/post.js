@@ -5,7 +5,8 @@ import {
     openImageViewer,
     updatePopupSelectionSummary,
     replaceSameOriginHost,
-    setDownloadProgress
+    setDownloadProgress,
+    getPointerElement
 } from "../utils/general";
 import { getBlobMedia } from "../utils/api";
 import { _i18n } from "../utils/i18n";
@@ -60,9 +61,11 @@ export function onReadyMyDW(NoDialog, hasReferrer) {
  * @description Initialize settings related to the video resources in the post.
  *
  * @param  {Object}  $mainElement
+ * @param  {number}  clientX
+ * @param  {number}  clientY
  * @return {Void}
  */
-export function initPostVideoFunction($mainElement) {
+export function initPostVideoFunction($mainElement, clientX, clientY) {
     // Disable video autoplay
     if (USER_SETTING.DISABLE_VIDEO_LOOPING) {
         $mainElement.find('video').each(function () {
@@ -104,18 +107,40 @@ export function initPostVideoFunction($mainElement) {
                     });
                 }
 
+                let $targets = $(this).parent().find('video + div > div').first();
+                const pointerInfo = getPointerElement($(this), clientX, clientY);
+                if (!pointerInfo.self && pointerInfo.topElement != null) {
+                    let $parent = $(pointerInfo.topElement).parents('div[data-visualcompletion="ignore"]').first();
+                    if ($parent.length > 0) {
+                        $targets = $targets.add($parent);
+                    } else {
+                        $targets = $targets.add(pointerInfo.topElement);
+                    }
+                }
+
+                const hideController = function (e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+
+                    $video.css('z-index', '2');
+                    $video.attr('controls', true);
+
+                    $targets.css('z-index', '-10');
+                    $(this).parents('a[href^="/reels/"]').first().attr("draggable", false);
+                };
+
+                // Hide layout to show controller
+                $targets.off('contextmenu.IG_videoControl').on('contextmenu.IG_videoControl', hideController);
+
                 // Restore layout to show details interface
                 $(this).on('contextmenu', function (e) {
                     e.preventDefault();
                     $video.css('z-index', '-1');
                     $video.removeAttr('controls');
-                });
 
-                // Hide layout to show controller
-                $(this).parent().find('video + div > div').first().on('contextmenu', function (e) {
-                    e.preventDefault();
-                    $video.css('z-index', '2');
-                    $video.attr('controls', true);
+                    $targets.css('z-index', '1');
+
+                    $(this).parents('a[href^="/reels/"]').first().removeAttr("draggable");
                 });
 
                 $(this).on('volumechange', function () {
@@ -142,16 +167,33 @@ export function initPostVideoFunction($mainElement) {
                     }
                 });
 
+                $(this).parents('a[href^="/reels/"]').first().on('click', function (e) {
+                    if ($video.attr('controls')) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                    }
+                });
+
                 if (USER_SETTING.SET_INSTAGRAM_LAYOUT_AS_DEFAULT) {
                     $(this).css('z-index', '-1');
+                    $targets.css('z-index', '1');
+
+                    $(this).parents('a[href^="/reels/"]').first().removeAttr("draggable");
                 }
                 else {
                     $(this).css('z-index', '2');
                     $(this).attr('controls', true);
+                    $targets.css('z-index', '-10');
+
+                    $(this).parents('a[href^="/reels/"]').first().attr("draggable", false);
                 }
 
                 $(this).css('position', 'absolute');
                 $(this).attr('data-controls', true);
+
+                if ($targets.length === 0) {
+                    $(this).removeAttr('data-controls');
+                }
             }
         });
     }
@@ -308,7 +350,6 @@ export function createDownloadButton() {
 
                             $triggeredTarget = $targetNode;
                             observer_i.observe(this);
-                            console.log("aaa", this, $targetNode);
                         }
                     });
 
@@ -593,6 +634,27 @@ export function createDownloadButton() {
                     return $(this)?.text()?.length > 0;
                 }).first().text();
 
+
+                const observer_video = new IntersectionObserver((entries) => {
+                    entries.forEach(entry => {
+                        let $el = $(entry.target);
+                        let detectionTimer = null;
+                        if (entry.isIntersecting) {
+                            $el.off('mousemove.IG_detect').on('mousemove.IG_detect', function (e) {
+                                clearTimeout(detectionTimer);
+                                detectionTimer = setTimeout(() => {
+                                    initPostVideoFunction($el, e.clientX, e.clientY);
+                                }, 50);
+                            });
+                        }
+                    });
+                }, {
+                    root: null,
+                    threshold: 0.1,
+                });
+
+                observer_video.observe(this);
+
                 $(this).attr('data-snig', 'canDownload');
                 $(this).attr('data-username', username);
             }
@@ -778,8 +840,9 @@ export function getVisibleNodeIndex($main) {
 
     // a. Locate the "viewport" element: it is the grandparent of ul
     // "_acay" class of <ul> has been removed by Instagram; [class] added to <ul> to get much lesser matches in page
-    // The parent of the parent of ul[class] always has the attribute "role"
-    const $viewport = $main.find('ul[class]').parent().parent('[role]');
+    // The parent of the parent of ul[class] always has the attributes "role"
+    // '*:not([data-pagelet])>*:not([role])>*>*>*[role]>*>ul[class]' is useful for avoiding the homepage stories section and account highlights section.
+    const $viewport = $main.find('*:not([data-pagelet])>*:not([role])>*>*>*[role]>*>ul[class]').parent().parent('[role]');
 
     if ($viewport.length > 0) {
         const viewportRect = $viewport.get(0).getBoundingClientRect();
