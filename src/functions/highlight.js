@@ -3,13 +3,28 @@ import {
     updateLoadingBar, openNewTab, logger,
     setDownloadProgress, saveFiles, getStoryProgress,
     tryHandleDashFromMediaItem, IG_createDM,
-    getHighlightCurrentTimeElement, setTimeElementDateAndLocaleTime
+    getHighlightCurrentTimeElement, setTimeElementDateAndLocaleTime,
+    setStoryProgressIndexText, setStoryProgressIndexByUsername
 } from "../utils/general";
 import { _i18n } from "../utils/i18n";
 import { getHighlightStories, getMediaInfo } from "../utils/api";
 import { createStoryListDOM } from "./story";
 import { getImageFromCache } from "../utils/image_cache";
 /*! ESLINT IMPORT END !*/
+
+/**
+ * getHighlightsStoryUsername
+ * @description Get the current highlight story owner's username.
+ *
+ * @return {?String}
+ */
+function getHighlightsStoryUsername() {
+    let href = $('body > div section:visible a[href^="/"]').filter(function () {
+        return $(this).attr('href').split('/').filter(e => e.length > 0).length === 1
+    }).first().attr('href');
+
+    return href?.split('/').filter(e => e.length > 0).at(0);
+}
 
 /**
  * onHighlightsStoryAll
@@ -108,9 +123,7 @@ export async function onHighlightsStoryAll() {
  * @return {void}
  */
 export async function onHighlightsStory(isDownload, isPreview) {
-    var username = $('body > div section:visible a[href^="/"]').filter(function () {
-        return $(this).attr('href').split('/').filter(e => e.length > 0).length === 1
-    }).first().attr('href').split('/').filter(e => e.length > 0).at(0);
+    var username = getHighlightsStoryUsername();
 
     if (isDownload) {
         let date = new Date().getTime();
@@ -297,6 +310,8 @@ export async function onHighlightsStory(isDownload, isPreview) {
                     $element.append(`<div data-ih-locale-title="DW_ALL" title="${_i18n("DW_ALL")}" class="IG_DWHISTORY_ALL">${SVG.DOWNLOAD_ALL}</div>`);
                 }
 
+                setStoryProgressIndexText($element, $header, 'IG_DWHISTORY_POSITION');
+
                 // replace something times ago format to publish time in first init
                 setTimeElementDateAndLocaleTime(getHighlightCurrentTimeElement($header));
 
@@ -431,6 +446,8 @@ export async function onHighlightsStoryThumbnail(isDownload) {
         updateLoadingBar(false);
     }
     else {
+        setStoryProgressIndexByUsername($('.IG_DWHISTORY').parent(), getHighlightsStoryUsername(), 'IG_DWHISTORY_POSITION');
+
         if ($('body > div section video.xh8yej3').length) {
             // Add the stories thumbnail download button
             if (!$('.IG_DWHISTORY_THUMBNAIL').length) {

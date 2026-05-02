@@ -30,6 +30,7 @@ export function translateText() {
             "ALL_CHECK": "Select All",
             "ITEM_COUNT_SINGULAR": "%COUNT% item",
             "ITEM_COUNT_PLURAL": "%COUNT% items",
+            "ITEM_POSITION": "Item %CURRENT% of %TOTAL%",
             "SELECTED_COUNT_SINGULAR": "%COUNT% selected",
             "SELECTED_COUNT_PLURAL": "%COUNT% selected",
             "BATCH_DOWNLOAD_SELECTED": "Download Selected Resources",
