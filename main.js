@@ -5,7 +5,7 @@
 // @name:ja            IG助手
 // @name:ko            IG조수
 // @namespace          https://github.snkms.com/
-// @version            3.17.5
+// @version            3.17.6
 // @description        Downloading is possible for both photos and videos from posts, as well as for stories, reels or profile picture.
 // @description:zh-TW  一鍵下載對方 Instagram 貼文中的相片、影片甚至是他們的限時動態、連續短片及大頭貼圖片！
 // @description:zh-CN  一键下载对方 Instagram 帖子中的相片、视频甚至是他们的快拍、Reels及头像图片！
@@ -319,6 +319,9 @@
                         if ($('.IG_DWSTORY_THUMBNAIL').length) {
                             $('.IG_DWSTORY_THUMBNAIL').remove();
                         }
+                        if ($('.IG_DWSTORY_POSITION').length) {
+                            $('.IG_DWSTORY_POSITION').remove();
+                        }
 
                         onStory(false);
 
@@ -356,6 +359,9 @@
                     if ($('.IG_DWSTORY_THUMBNAIL').length) {
                         $('.IG_DWSTORY_THUMBNAIL').remove();
                     }
+                    if ($('.IG_DWSTORY_POSITION').length) {
+                        $('.IG_DWSTORY_POSITION').remove();
+                    }
 
                     if ($('.IG_DWHISTORY').length) {
                         $('.IG_DWHISTORY').remove();
@@ -369,6 +375,9 @@
                     if ($('.IG_DWHISTORY_THUMBNAIL').length) {
                         $('.IG_DWHISTORY_THUMBNAIL').remove();
                     }
+                    if ($('.IG_DWHISTORY_POSITION').length) {
+                        $('.IG_DWHISTORY_POSITION').remove();
+                    }
                 }
             }
 
@@ -378,6 +387,20 @@
     }, checkInterval);
 
     /* Main functions */
+
+    /**
+     * getHighlightsStoryUsername
+     * @description Get the current highlight story owner's username.
+     *
+     * @return {?String}
+     */
+    function getHighlightsStoryUsername() {
+        let href = $('body > div section:visible a[href^="/"]').filter(function () {
+            return $(this).attr('href').split('/').filter(e => e.length > 0).length === 1
+        }).first().attr('href');
+
+        return href?.split('/').filter(e => e.length > 0).at(0);
+    }
 
     /**
      * onHighlightsStoryAll
@@ -476,9 +499,7 @@
      * @return {void}
      */
     async function onHighlightsStory(isDownload, isPreview) {
-        var username = $('body > div section:visible a[href^="/"]').filter(function () {
-            return $(this).attr('href').split('/').filter(e => e.length > 0).length === 1
-        }).first().attr('href').split('/').filter(e => e.length > 0).at(0);
+        var username = getHighlightsStoryUsername();
 
         if (isDownload) {
             let date = new Date().getTime();
@@ -665,6 +686,8 @@
                         $element.append(`<div data-ih-locale-title="DW_ALL" title="${_i18n("DW_ALL")}" class="IG_DWHISTORY_ALL">${SVG.DOWNLOAD_ALL}</div>`);
                     }
 
+                    setStoryProgressIndexText($element, $header, 'IG_DWHISTORY_POSITION');
+
                     // replace something times ago format to publish time in first init
                     setTimeElementDateAndLocaleTime(getHighlightCurrentTimeElement($header));
 
@@ -799,6 +822,8 @@
             updateLoadingBar(false);
         }
         else {
+            setStoryProgressIndexByUsername($('.IG_DWHISTORY').parent(), getHighlightsStoryUsername(), 'IG_DWHISTORY_POSITION');
+
             if ($('body > div section video.xh8yej3').length) {
                 // Add the stories thumbnail download button
                 if (!$('.IG_DWHISTORY_THUMBNAIL').length) {
@@ -1665,8 +1690,9 @@
 
         // a. Locate the "viewport" element: it is the grandparent of ul
         // "_acay" class of <ul> has been removed by Instagram; [class] added to <ul> to get much lesser matches in page
-        // The parent of the parent of ul[class] always has the attribute "role"
-        const $viewport = $main.find('ul[class]').parent().parent('[role]');
+        // The parent of the parent of ul[class] always has the attributes "role"
+        // '*:not([data-pagelet])>*:not([role])>*>*>*[role]>*>ul[class]' is useful for avoiding the homepage stories section and account highlights section.
+        const $viewport = $main.find('*:not([data-pagelet])>*:not([role])>*>*>*[role]>*>ul[class]').parent().parent('[role]');
 
         if ($viewport.length > 0) {
             const viewportRect = $viewport.get(0).getBoundingClientRect();
@@ -2697,6 +2723,8 @@
                         $element.first().append(`<div data-ih-locale-title="DW_ALL" title="${_i18n("DW_ALL")}" class="IG_DWSTORY_ALL">${SVG.DOWNLOAD_ALL}</div>`);
                     }
 
+                    setStoryProgressIndexText($element.first(), $header, 'IG_DWSTORY_POSITION');
+
                     // Modify video volume
                     //if(USER_SETTING.MODIFY_VIDEO_VOLUME){
                     //    $element.find('video').each(function(){
@@ -2744,6 +2772,9 @@
                     //    });
                     //});
                 }
+            }
+            else {
+                setStoryProgressIndexByUsername($('.IG_DWSTORY').parent(), username, 'IG_DWSTORY_POSITION');
             }
         }
     }
@@ -3602,6 +3633,95 @@
         return $header.children().filter(function () {
             return $(this).height() < 10
         }).first().children();
+    }
+
+    /**
+     * getStoryProgressIndex
+     * @description Get the current story index and total count from Instagram's progress bar.
+     *
+     * @param  {Object}  $header - Progress bar items returned by getStoryProgress
+     * @return {?Object}
+     */
+    function getStoryProgressIndex($header) {
+        let current = 0;
+        let total = $header.length;
+
+        if (total === 0) {
+            return null;
+        }
+
+        $header.each(function (index) {
+            if ($(this).children().length > 0) {
+                current = index + 1;
+            }
+        });
+
+        if (current === 0) {
+            return null;
+        }
+
+        return { current, total };
+    }
+
+    /**
+     * setStoryProgressIndexText
+     * @description Render the current story index and total count.
+     *
+     * @param  {Object}  $element - Element to append the counter to
+     * @param  {Object}  $header - Progress bar items returned by getStoryProgress
+     * @param  {String}  className - Counter class name
+     * @return {void}
+     */
+    function setStoryProgressIndexText($element, $header, className) {
+        let progress = getStoryProgressIndex($header);
+        let $counter = $element.find('.' + className).first();
+
+        if (progress == null || progress.total < 2) {
+            if ($counter.length > 0) {
+                $counter.remove();
+            }
+            return;
+        }
+
+        let text = progress.current + '/' + progress.total;
+        let title = _i18n('ITEM_POSITION')
+            .replace('%CURRENT%', progress.current)
+            .replace('%TOTAL%', progress.total);
+
+        if ($counter.length === 0) {
+            $counter = $('<div>').addClass(className);
+            $element.append($counter);
+        }
+
+        if ($counter.text() !== text) {
+            $counter.text(text);
+        }
+
+        if ($counter.attr('title') !== title) {
+            $counter.attr('title', title);
+        }
+
+        if ($counter.attr('aria-label') !== title) {
+            $counter.attr('aria-label', title);
+        }
+    }
+
+    /**
+     * setStoryProgressIndexByUsername
+     * @description Render current story index and total count from a username.
+     *
+     * @param  {Object}  $element - Element to append the counter to
+     * @param  {String}  username - Story owner's username
+     * @param  {String}  className - Counter class name
+     * @return {void}
+     */
+    function setStoryProgressIndexByUsername($element, username, className) {
+        if ($element == null || $element.length === 0 || username == null) {
+            return;
+        }
+
+        let $header = getStoryProgress(username);
+        setStoryProgressIndexText($element, $header, className);
     }
 
     /**
@@ -4748,7 +4868,7 @@
         state.GL_registerEventList = [];
 
         $('.button_wrapper').remove();
-        $('.IG_DWPROFILE, .IG_DWPROFILE, .IG_DWSTORY, .IG_DWSTORY_ALL, .IG_DWSTORY_THUMBNAIL, .IG_DWNEWTAB, .IG_DWHISTORY, .IG_DWHISTORY_ALL, .IG_DWHINEWTAB, .IG_DWHISTORY_THUMBNAIL, .IG_REELS, .IG_REELS_NEWTAB, .IG_REELS_THUMBNAIL').remove();
+        $('.IG_DWPROFILE, .IG_DWPROFILE, .IG_DWSTORY, .IG_DWSTORY_ALL, .IG_DWSTORY_THUMBNAIL, .IG_DWSTORY_POSITION, .IG_DWNEWTAB, .IG_DWHISTORY, .IG_DWHISTORY_ALL, .IG_DWHINEWTAB, .IG_DWHISTORY_THUMBNAIL, .IG_DWHISTORY_POSITION, .IG_REELS, .IG_REELS_NEWTAB, .IG_REELS_THUMBNAIL').remove();
         $('[data-snig]').removeAttr('data-snig');
 
         state.pageLoaded = false;
@@ -5267,6 +5387,7 @@
                 "ALL_CHECK": "Select All",
                 "ITEM_COUNT_SINGULAR": "%COUNT% item",
                 "ITEM_COUNT_PLURAL": "%COUNT% items",
+                "ITEM_POSITION": "Item %CURRENT% of %TOTAL%",
                 "SELECTED_COUNT_SINGULAR": "%COUNT% selected",
                 "SELECTED_COUNT_PLURAL": "%COUNT% selected",
                 "BATCH_DOWNLOAD_SELECTED": "Download Selected Resources",
