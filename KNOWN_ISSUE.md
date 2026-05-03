@@ -1,4 +1,5 @@
 - The new Reels page (accessible via the homepage or feed, with a black background and a cinematic glow) still has several issues:
   - The first video after loading fails to correctly insert the HTML5 controller due to React re-rendering; the button group is also lost after the re-render.
-- The new post style (with author information overlapping with the post) on the homepage or feed page sometimes causes HTML5 controllers to malfunction.
 - Volume adjustment issues in posts, stories, and highlights
+  - This is especially true when switching between the "homepage and feeds" and The New Reels page.
+  - Sometimes, the volume mode cannot be switched correctly in the HTML5 Video Controller on the homepage and feeds pages.
