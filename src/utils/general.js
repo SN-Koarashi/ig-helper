@@ -1572,7 +1572,30 @@ export function toggleVolumeSilder($videos, $buttonParent, loggerType, customCla
 }
 
 /**
- * 
+ * @description Trigger React onClick event handler for the given element.
+ * @param {HTMLElement} el 
+ */
+export function triggerReactClickHandler(el) {
+    const reactKey = Object.keys(el).find(k => k.startsWith('__reactProps') || k.startsWith('__reactEventHandlers'));
+    const props = el[reactKey];
+
+    if (props && typeof props.onClick === 'function') {
+        const mockEvent = {
+            target: el,
+            currentTarget: el,
+            preventDefault: () => { },
+            stopPropagation: () => { },
+            nativeEvent: new MouseEvent('click')
+        };
+
+        props.onClick(mockEvent);
+    } else {
+        logger('No React click handler found for the element:', el);
+    }
+};
+
+/**
+ * @description Get the element at the pointer position and check if it is the target element or if it is covered by another element.
  * @param {JQuery<HTMLElement>} $target 
  * @param {number} clientX
  * @param {number} clientY

@@ -5,7 +5,7 @@
 // @name:ja            IG助手
 // @name:ko            IG조수
 // @namespace          https://github.snkms.com/
-// @version            3.17.9
+// @version            3.17.10
 // @description        Downloading is possible for both photos and videos from posts, as well as for stories, reels or profile picture.
 // @description:zh-TW  一鍵下載對方 Instagram 貼文中的相片、影片甚至是他們的限時動態、連續短片及大頭貼圖片！
 // @description:zh-CN  一键下载对方 Instagram 帖子中的相片、视频甚至是他们的快拍、Reels及头像图片！
@@ -1020,18 +1020,14 @@
                             this.volume = state.videoVolume;
 
                             if ($element_mute_button.length === 1) {
-                                $element_mute_button.trigger("click");
+                                triggerReactClickHandler($element_mute_button.first()[0]);
                             }
                             else {
                                 let $firstElementMuteButton = $element_mute_button.filter(function () {
                                     return $(this).closest(state.GL_weakCache.overlay.get(video)).length > 0;
                                 }).first();
 
-                                $element_mute_button.filter(function () {
-                                    return $(this).closest(state.GL_weakCache.overlay.get(video)).length > 0;
-                                });
-
-                                $firstElementMuteButton.trigger("click");
+                                triggerReactClickHandler($firstElementMuteButton.first()[0]);
                             }
                         }
 
@@ -2174,18 +2170,14 @@
                                 this.volume = state.videoVolume;
 
                                 if ($element_mute_button.length === 1) {
-                                    $element_mute_button.trigger("click");
+                                    triggerReactClickHandler($element_mute_button.first()[0]);
                                 }
                                 else {
                                     let $firstElementMuteButton = $element_mute_button.filter(function () {
                                         return $(this).closest(state.GL_weakCache.overlay.get(video)).length > 0;
                                     }).first();
 
-                                    $element_mute_button.filter(function () {
-                                        return $(this).closest(state.GL_weakCache.overlay.get(video)).length > 0;
-                                    });
-
-                                    $firstElementMuteButton.trigger("click");
+                                    triggerReactClickHandler($firstElementMuteButton.first()[0]);
                                 }
                             }
 
@@ -4973,7 +4965,30 @@
     }
 
     /**
-     * 
+     * @description Trigger React onClick event handler for the given element.
+     * @param {HTMLElement} el 
+     */
+    function triggerReactClickHandler(el) {
+        const reactKey = Object.keys(el).find(k => k.startsWith('__reactProps') || k.startsWith('__reactEventHandlers'));
+        const props = el[reactKey];
+
+        if (props && typeof props.onClick === 'function') {
+            const mockEvent = {
+                target: el,
+                currentTarget: el,
+                preventDefault: () => { },
+                stopPropagation: () => { },
+                nativeEvent: new MouseEvent('click')
+            };
+
+            props.onClick(mockEvent);
+        } else {
+            logger('No React click handler found for the element:', el);
+        }
+    };
+
+    /**
+     * @description Get the element at the pointer position and check if it is the target element or if it is covered by another element.
      * @param {JQuery<HTMLElement>} $target 
      * @param {number} clientX
      * @param {number} clientY

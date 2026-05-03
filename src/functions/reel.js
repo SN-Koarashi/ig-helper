@@ -1,5 +1,5 @@
 import { USER_SETTING, SVG, state } from "../settings";
-import { updateLoadingBar, saveFiles, openNewTab, logger, toggleVolumeSilder } from "../utils/general";
+import { updateLoadingBar, saveFiles, openNewTab, logger, toggleVolumeSilder, triggerReactClickHandler } from "../utils/general";
 import { getBlobMedia } from "../utils/api";
 import { filterResourceData } from "./post";
 import { _i18n } from "../utils/i18n";
@@ -248,14 +248,14 @@ function appendReelsButton($main) {
                             this.volume = state.videoVolume;
 
                             if ($element_mute_button.length === 1) {
-                                $element_mute_button.trigger("click");
+                                triggerReactClickHandler($element_mute_button.first()[0]);
                             }
                             else {
                                 let $firstElementMuteButton = $element_mute_button.filter(function () {
                                     return $(this).closest(state.GL_weakCache.overlay.get(video)).length > 0;
                                 }).first();
 
-                                $firstElementMuteButton.trigger("click");
+                                triggerReactClickHandler($firstElementMuteButton.first()[0]);
                             }
                         }
 

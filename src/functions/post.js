@@ -5,7 +5,8 @@ import {
     openImageViewer,
     updatePopupSelectionSummary,
     replaceSameOriginHost,
-    setDownloadProgress
+    setDownloadProgress,
+    triggerReactClickHandler
 } from "../utils/general";
 import { getBlobMedia } from "../utils/api";
 import { _i18n } from "../utils/i18n";
@@ -165,14 +166,14 @@ export function initPostVideoFunction($mainElement) {
                         this.volume = state.videoVolume;
 
                         if ($element_mute_button.length === 1) {
-                            $element_mute_button.trigger("click");
+                            triggerReactClickHandler($element_mute_button.first()[0]);
                         }
                         else {
                             let $firstElementMuteButton = $element_mute_button.filter(function () {
                                 return $(this).closest(state.GL_weakCache.overlay.get(video)).length > 0;
                             }).first();
 
-                            $firstElementMuteButton.trigger("click");
+                            triggerReactClickHandler($firstElementMuteButton.first()[0]);
                         }
                     }
 
