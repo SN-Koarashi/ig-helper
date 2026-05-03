@@ -87,5 +87,9 @@ export var state = {
     }),
     GL_imageCache: GM_getValue(IMAGE_CACHE_KEY, {}),
     GL_mediaDataCache: {},
+    GL_weakCache: {
+        overlay: new WeakMap(),
+        mutedButton: new WeakMap(),
+    }
 };
 /*******************************/

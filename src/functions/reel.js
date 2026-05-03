@@ -176,19 +176,20 @@ function appendReelsButton($main) {
         }
 
         if (USER_SETTING.HTML5_VIDEO_CONTROL) {
-            let $overlayElement = null;
+
             const handleSwitchController = function (e) {
                 e.preventDefault();
                 e.stopPropagation();
+                let $overlayElement = null;
+                if ($overlayElement == null) {
+                    $overlayElement = $(e.target).parents('div[aria-label][data-visualcompletion="ignore"]').first();
+                }
 
                 $main.find('video').each(function () {
                     $(this).css('z-index', '2');
                     $(this).attr('controls', true);
+                    state.GL_weakCache.overlay.set(this, $overlayElement);
                 });
-
-                if ($overlayElement == null) {
-                    $overlayElement = $(e.target).parents('div[aria-label][data-visualcompletion="ignore"]').first();
-                }
 
                 $overlayElement.css('z-index', '-10');
                 $main.find('a[href^="/reels/"]').first().attr("draggable", false);
@@ -209,6 +210,17 @@ function appendReelsButton($main) {
                         });
                     }
 
+                    let $mute_button_wrapper = $(this).parent().find('video + div > div');
+                    $mute_button_wrapper = $mute_button_wrapper.add($main);
+
+                    // eslint-disable-next-line no-unused-vars
+                    let $element_mute_button = $mute_button_wrapper.find('button[type="button"], div[role="button"]').filter(function (idx) {
+                        // This is mute/unmute's icon
+                        return $(this).width() <= 64 && $(this).height() <= 64 && $(this).find('svg > path[d^="M16.636 7.028a1.5"], svg > path[d^="M1.5 13.3c-.8"]').length > 0;
+                    });
+
+                    state.GL_weakCache.mutedButton.set(this, $element_mute_button);
+
                     let $targets = $(this).parent().find('video + div div[role="button"]').filter(function () {
                         return $(this).parent('div[role="presentation"]').length > 0 && $(this).css('cursor') === 'pointer' && $(this).attr('style') != null;
                     }).first();
@@ -221,27 +233,34 @@ function appendReelsButton($main) {
                         $video.css('z-index', '-1');
                         $video.removeAttr('controls');
                         $targets.css('z-index', '1');
-                        $overlayElement?.css('z-index', '1');
+                        state.GL_weakCache.overlay.get(this)?.css('z-index', '1');
                     });
 
                     // Hide layout to show controller
                     $targets.off('contextmenu.IG_videoControl').on('contextmenu.IG_videoControl', handleSwitchController);
 
                     $(this).on('volumechange', function () {
-                        let $mute_button_wrapper = $(this).parent().find('video + div > div');
-                        $mute_button_wrapper = $mute_button_wrapper.add($main);
+                        let video = this;
+                        let $element_mute_button = state.GL_weakCache.mutedButton.get(this) || {};
+                        let is_element_muted = $element_mute_button.find('svg > path[d^="M16.636"]').length === 0;
 
-                        // eslint-disable-next-line no-unused-vars
-                        let $element_mute_button = $mute_button_wrapper.find('button[type="button"], div[role="button"]').filter(function (idx) {
-                            // This is mute/unmute's icon
-                            return $(this).width() <= 64 && $(this).height() <= 64 && $(this).find('svg > path[d^="M16.636 7.028a1.5"], svg > path[d^="M1.5 13.3c-.8"]').length > 0;
-                        });
-
-                        var is_elelment_muted = $element_mute_button.find('svg > path[d^="M16.636"]').length === 0;
-
-                        if (this.muted != is_elelment_muted) {
+                        if (this.muted != is_element_muted) {
                             this.volume = state.videoVolume;
-                            $element_mute_button?.trigger("click");
+
+                            if ($element_mute_button.length === 1) {
+                                $element_mute_button.trigger("click");
+                            }
+                            else {
+                                let $firstElementMuteButton = $element_mute_button.filter(function () {
+                                    return $(this).closest(state.GL_weakCache.overlay.get(video)).length > 0;
+                                }).first();
+
+                                $element_mute_button.filter(function () {
+                                    return $(this).closest(state.GL_weakCache.overlay.get(video)).length > 0;
+                                });
+
+                                $firstElementMuteButton.trigger("click");
+                            }
                         }
 
                         if ($(this).attr('data-completed')) {
