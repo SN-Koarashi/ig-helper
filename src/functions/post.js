@@ -172,10 +172,6 @@ export function initPostVideoFunction($mainElement) {
                                 return $(this).closest(state.GL_weakCache.overlay.get(video)).length > 0;
                             }).first();
 
-                            $element_mute_button.filter(function () {
-                                return $(this).closest(state.GL_weakCache.overlay.get(video)).length > 0;
-                            });
-
                             $firstElementMuteButton.trigger("click");
                         }
                     }
