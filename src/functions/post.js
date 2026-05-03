@@ -90,19 +90,21 @@ export function initPostVideoFunction($mainElement) {
     }
 
     if (USER_SETTING.HTML5_VIDEO_CONTROL) {
-        let $overlayElement = null;
         const handleSwitchController = function (e) {
             e.preventDefault();
             e.stopPropagation();
 
-            $mainElement.find('video').each(function () {
-                $(this).css('z-index', '2');
-                $(this).attr('controls', true);
-            });
+            let $overlayElement = null;
 
             if ($overlayElement == null) {
                 $overlayElement = $(e.target).parents('div[aria-label][data-visualcompletion="ignore"]').first();
             }
+
+            $mainElement.find('video').each(function () {
+                $(this).css('z-index', '2');
+                $(this).attr('controls', true);
+                $(this).data('overlay', $overlayElement);
+            });
 
             $overlayElement.css('z-index', '-10');
             $mainElement.find('a[href^="/reels/"]').first().attr("draggable", false);
@@ -138,8 +140,7 @@ export function initPostVideoFunction($mainElement) {
                     $video.removeAttr('controls');
 
                     $targets.css('z-index', '1');
-                    $overlayElement?.css('z-index', '1');
-
+                    $(this).data('overlay')?.css('z-index', '1');
                     $(this).parents('a[href^="/reels/"]').first().removeAttr("draggable");
                 });
 
