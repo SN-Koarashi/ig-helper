@@ -5,7 +5,7 @@
 // @name:ja            IG助手
 // @name:ko            IG조수
 // @namespace          https://github.snkms.com/
-// @version            3.17.10
+// @version            3.17.11
 // @description        Downloading is possible for both photos and videos from posts, as well as for stories, reels or profile picture.
 // @description:zh-TW  一鍵下載對方 Instagram 貼文中的相片、影片甚至是他們的限時動態、連續短片及大頭貼圖片！
 // @description:zh-CN  一键下载对方 Instagram 帖子中的相片、视频甚至是他们的快拍、Reels及头像图片！
@@ -25,11 +25,11 @@
 // @grant              GM_notification
 // @grant              GM_openInTab
 // @connect            i.instagram.com
-// @connect            raw.githubusercontent.com
+// @connect            cdn.jsdelivr.net
 // @require            https://cdn.jsdelivr.net/npm/mediabunny@1.34.5/dist/bundles/mediabunny.min.cjs#sha256-wUFR+x2bDvpqgMAVGy2CvGvULyjTGvGy4UUAm8rae5U=
 // @require            https://code.jquery.com/jquery-3.7.1.min.js#sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=
-// @resource           INTERNAL_CSS https://raw.githubusercontent.com/SN-Koarashi/ig-helper/master/style.css
-// @resource           LOCALE_MANIFEST https://raw.githubusercontent.com/SN-Koarashi/ig-helper/master/locale/manifest.json
+// @resource           INTERNAL_CSS https://cdn.jsdelivr.net/gh/SN-Koarashi/ig-helper@master/style.css
+// @resource           LOCALE_MANIFEST https://cdn.jsdelivr.net/gh/SN-Koarashi/ig-helper@master/locale/manifest.json
 // @supportURL         https://github.com/SN-Koarashi/ig-helper/
 // @contributionURL    https://ko-fi.com/snkoarashi
 // @icon               https://www.google.com/s2/favicons?domain=www.instagram.com&sz=32
@@ -4655,7 +4655,7 @@
      */
     function callNotification() {
         const currentVersion = GM_info.script.version;
-        const remoteScriptURL = 'https://raw.githubusercontent.com/SN-Koarashi/ig-helper/refs/heads/master/main.js';
+        const remoteScriptURL = 'https://cdn.jsdelivr.net/gh/SN-Koarashi/ig-helper@master/main.js';
 
         GM_xmlhttpRequest({
             method: "GET",
@@ -5493,7 +5493,7 @@
         return new Promise((resolve, reject) => {
             GM_xmlhttpRequest({
                 method: "GET",
-                url: `https://raw.githubusercontent.com/SN-Koarashi/ig-helper/master/locale/translations/${lang}.json`,
+                url: `https://cdn.jsdelivr.net/gh/SN-Koarashi/ig-helper@master/locale/translations/${lang}.json`,
                 onload: function (response) {
                     try {
                         let obj = JSON.parse(response.response);
