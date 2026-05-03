@@ -5,7 +5,7 @@
 // @name:ja            IG助手
 // @name:ko            IG조수
 // @namespace          https://github.snkms.com/
-// @version            3.17.8
+// @version            3.17.9
 // @description        Downloading is possible for both photos and videos from posts, as well as for stories, reels or profile picture.
 // @description:zh-TW  一鍵下載對方 Instagram 貼文中的相片、影片甚至是他們的限時動態、連續短片及大頭貼圖片！
 // @description:zh-CN  一键下载对方 Instagram 帖子中的相片、视频甚至是他们的快拍、Reels及头像图片！
@@ -1076,7 +1076,8 @@
 
                     const $mainElement = $(this);
                     const tagName = this.tagName;
-                    const resourceCountSelector = '._acay ._acaz, ul[class] li[class][tabindex][style]';
+                    // Improve the selector by using the value from the getVisibleNodeIndex function in 'const $viewport'.
+                    const resourceCountSelector = '*:not([data-pagelet])>*:not([role]):not([data-pagelet])>*>*>*[role]>*>ul[class] li[class]';
                     var displayResourceURL;
 
                     // not loop each in single top post
@@ -1670,8 +1671,8 @@
         // a. Locate the "viewport" element: it is the grandparent of ul
         // "_acay" class of <ul> has been removed by Instagram; [class] added to <ul> to get much lesser matches in page
         // The parent of the parent of ul[class] always has the attributes "role"
-        // '*:not([data-pagelet])>*:not([role])>*>*>*[role]>*>ul[class]' is useful for avoiding the homepage stories section and account highlights section.
-        const $viewport = $main.find('*:not([data-pagelet])>*:not([role])>*>*>*[role]>*>ul[class]').parent().parent('[role]');
+        // '*:not([data-pagelet])>*:not([role]):not([data-pagelet])>*>*>*[role]>*>ul[class]' is useful for avoiding the homepage stories section, account highlights section, and notes section in Messages.
+        const $viewport = $main.find('*:not([data-pagelet])>*:not([role]):not([data-pagelet])>*>*>*[role]>*>ul[class]').parent().parent('[role]');
 
         if ($viewport.length > 0) {
             const viewportRect = $viewport.get(0).getBoundingClientRect();
