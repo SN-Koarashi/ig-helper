@@ -3,13 +3,14 @@ import {
     showSetting, showDebugDOM, reloadScript,
     triggerLinkElement, openNewTab, saveFiles, logger, toggleVolumeSilder, updatePopupSelectionSummary,
     replaceSameOriginHost, setTimeElementDateAndLocaleTime, getHighlightCurrentTimeElement,
-    getPointerElement
+    getPointerElement,
+    registerMenuCommand
 } from "./utils/general";
 import { onStory, onStoryAll, onStoryThumbnail } from "./functions/story";
 import { onProfileAvatar } from "./functions/profile";
 import { onHighlightsStory, onHighlightsStoryAll, onHighlightsStoryThumbnail } from "./functions/highlight";
 import { onReels } from "./functions/reel";
-import { _i18n, getTranslationText, repaintingTranslations, registerMenuCommand } from "./utils/i18n";
+import { _i18n, getTranslationText, repaintingTranslations } from "./utils/i18n";
 import { registerPerformanceObserver } from "./utils/image_cache";
 import { batchDownloadPostFiles } from "./functions/post";
 /*! ESLINT IMPORT END !*/

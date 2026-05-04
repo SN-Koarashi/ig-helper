@@ -42,7 +42,7 @@ const processImportedFile = (full_path) => {
             }
 
             /*! ESLINT IMPORT END !*/
-            const cuttingPattern = importedLine.trim().match(/^(\/\*\!)(.*?)(\!\*\/)$/i);
+            const cuttingPattern = importedLine.trim().match(/^(\/\*!)(.*?)(!\*\/)$/i);
             if (!startingCatch && cuttingPattern != null && cuttingPattern.at(2).trim().includes("ESLINT IMPORT END")) {
                 startingCatch = true;
             }
