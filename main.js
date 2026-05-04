@@ -4600,7 +4600,7 @@
             accessKey: "w"
         }));
 
-        state.registerMenuIds.push(GM_registerMenuCommand(_i18n('HOTKEY_SETTINGS_KEY'), () => {
+        state.registerMenuIds.push(GM_registerMenuCommand(_i18n('HOTKEY_KEY_SETTINGS_KEY'), () => {
             showHotkeySetting();
         }, {
             accessKey: "q"
@@ -4742,7 +4742,7 @@
         function createHotkeySetting(name, key, stateKey, storageKey, defaultKeyCode) {
             const currentKeyCode = state[stateKey];
             const $container = $(`
-                <label class="globalSettings hotkey-setting-item" data-hotkey="${name}" style="display: flex; align-items: center; padding-right: 5px;">
+                <label class="globalSettings hotkey-setting-item" data-hotkey="${name}" style="position: relative;display: flex; align-items: center; padding-right: 5px;">
                     <span>${_i18n(key)}</span>
                     <div class="hotkey-select-wrapper" style="display: flex; align-items: center; gap: 8px; justify-content: flex-end; flex: 1;">
                         <select class="hotkey-preset" data-storage="${storageKey}" data-state="${stateKey}" data-default="${defaultKeyCode}" style="padding: 4px 8px; border: 1px solid #ccc; border-radius: 4px; font-size: 13px;">
@@ -4750,8 +4750,8 @@
                             <option value="${defaultKeyCode}" ${currentKeyCode == defaultKeyCode ? 'selected' : ''}>Alt+${String.fromCharCode(defaultKeyCode)}</option>
                         </select>
                         <button class="hotkey-reset" title="${_i18n('HOTKEY_RESET')}" style="padding: 4px 8px; border: 1px solid #ccc; border-radius: 4px; font-size: 13px; color: #1f1f1f; background: #fff; cursor: pointer;">${_i18n('HOTKEY_RESET')}</button>
-                        <span class="hotkey-conflict-warning" style="display: none; font-size: 11px; color: #e74c3c;">${_i18n('HOTKEY_CONFLICT_WARNING')}</span>
                     </div>
+                    <div class="hotkey-conflict-warning" style="pointer-events: none; position: absolute; bottom: -10px; display: none; font-size: 11px; color: #e74c3c;">▲ ${_i18n('HOTKEY_CONFLICT_WARNING')}</div>
                 </label>
             `);
 
