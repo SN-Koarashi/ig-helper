@@ -74,5 +74,12 @@
     "SKIP_SHARED_WITH_YOU_DIALOG_INTRO": "開啟任何 ?igsh= 連結時，在「X 與您分享此內容」對話方塊中自動點選「現在不要」。",
     "MODIFY_RESOURCE_EXIF_INTRO": "修改圖片資源的EXIF屬性，以便將貼文連結放置於其中。",
     "DIRECT_DOWNLOAD_STORY_INTRO": "當你點擊「下載所有資源」時，所有限時動態及精選動態會直接下載，不會顯示資源選擇視窗。",
-    "CAPTURE_IMAGE_VIA_MEDIA_CACHE_INTRO": "使用觀察者捕獲DOM樹中的任何高品質圖像網址到腳本儲存空間中，以便在可用時以及使用者輸入時進行擷取。"
+    "CAPTURE_IMAGE_VIA_MEDIA_CACHE_INTRO": "使用觀察者捕獲DOM樹中的任何高品質圖像網址到腳本儲存空間中，以便在可用時以及使用者輸入時進行擷取。",
+    "HOTKEY_DEBUG_ENABLED": "使用自訂熱鍵",
+    "HOTKEY_DEBUG_ENABLED_INTRO": "啟用時使用自訂熱鍵。停用時使用預設的 Alt+Z。",
+    "HOTKEY_DEBUG_KEY": "偵錯熱鍵",
+    "HOTKEY_DEBUG_KEY_INTRO": "選擇預設組合，或選擇「自訂」來設定你自己的按鍵。",
+    "HOTKEY_CUSTOM": "自訂...",
+    "HOTKEY_PRESS": "按下按鍵並按 Enter 進行設定...",
+    "HOTKEY_CONFLICT_WARNING": "此熱鍵可能會與其他應用程式衝突。"
 }

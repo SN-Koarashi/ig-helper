@@ -74,5 +74,12 @@
     "SKIP_SHARED_WITH_YOU_DIALOG_INTRO": "Ao abrir qualquer link ?igsh=, clica automaticamente em \"Agora não\" na caixa de diálogo \"X compartilhou isso com você\".",
     "MODIFY_RESOURCE_EXIF_INTRO": "Modificar os atributos EXIF do recurso de imagem para colocar o link do post nele.",
     "DIRECT_DOWNLOAD_STORY_INTRO": "Ao clicar em 'Baixar todos os recursos', todas as histórias/destaques são baixadas diretamente, sem exibir a caixa de diálogo de seleção de imagens.",
-    "CAPTURE_IMAGE_VIA_MEDIA_CACHE_INTRO": "Use um observador para capturar quaisquer URLs de imagens de alta qualidade na árvore DOM para o armazenamento do script, de modo que possam ser extraídos quando estiverem disponíveis e a pedido do usuário."
+    "CAPTURE_IMAGE_VIA_MEDIA_CACHE_INTRO": "Use um observador para capturar quaisquer URLs de imagens de alta qualidade na árvore DOM para o armazenamento do script, de modo que possam ser extraídos quando estiverem disponíveis e a pedido do usuário.",
+    "HOTKEY_DEBUG_ENABLED": "Usar tecla de atalho personalizada",
+    "HOTKEY_DEBUG_ENABLED_INTRO": "Quando ativada, usa a tecla de atalho personalizada. Quando desativada, usa Alt+Z padrao.",
+    "HOTKEY_DEBUG_KEY": "Tecla de atalho de depuracao",
+    "HOTKEY_DEBUG_KEY_INTRO": "Selecione um preset ou escolha Personalizado para registrar o seu.",
+    "HOTKEY_CUSTOM": "Personalizado...",
+    "HOTKEY_PRESS": "Pressione uma tecla e Enter para definir...",
+    "HOTKEY_CONFLICT_WARNING": "Esta tecla de atalho pode conflitar com outros aplicativos."
 }
