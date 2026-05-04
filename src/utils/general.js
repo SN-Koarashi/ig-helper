@@ -1269,7 +1269,7 @@ export function checkingScriptUpdate(interval) {
  */
 export function callNotification() {
     const currentVersion = GM_info.script.version;
-    const remoteScriptURL = 'https://cdn.jsdelivr.net/gh/SN-Koarashi/ig-helper@master/main.js';
+    const remoteScriptURL = 'https://raw.githubusercontent.com/SN-Koarashi/ig-helper/refs/heads/master/main.js';
 
     GM_xmlhttpRequest({
         method: "GET",

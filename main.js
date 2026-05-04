@@ -47,6 +47,7 @@
 // @grant              GM_openInTab
 // @connect            i.instagram.com
 // @connect            cdn.jsdelivr.net
+// @connect            raw.githubusercontent.com
 // @require            https://cdn.jsdelivr.net/npm/mediabunny@1.34.5/dist/bundles/mediabunny.min.cjs#sha256-wUFR+x2bDvpqgMAVGy2CvGvULyjTGvGy4UUAm8rae5U=
 // @require            https://code.jquery.com/jquery-3.7.1.min.js#sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=
 // @resource           INTERNAL_CSS https://cdn.jsdelivr.net/gh/SN-Koarashi/ig-helper@master/style.css
@@ -4654,7 +4655,7 @@
      */
     function callNotification() {
         const currentVersion = GM_info.script.version;
-        const remoteScriptURL = 'https://cdn.jsdelivr.net/gh/SN-Koarashi/ig-helper@master/main.js';
+        const remoteScriptURL = 'https://raw.githubusercontent.com/SN-Koarashi/ig-helper/refs/heads/master/main.js';
 
         GM_xmlhttpRequest({
             method: "GET",
