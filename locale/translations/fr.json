@@ -81,5 +81,16 @@
   "HOTKEY_DEBUG_KEY_INTRO": "Selectionnez un preset ou cliquez sur Personnalise pour enregistrer le votre.",
   "HOTKEY_CUSTOM": "Personnalise...",
   "HOTKEY_PRESS": "Appuyez sur une touche et Entree pour definir...",
-  "HOTKEY_CONFLICT_WARNING": "Ce raccourci peut entrer en conflit avec d'autres applications."
+  "HOTKEY_CONFLICT_WARNING": "Ce raccourci peut entrer en conflit avec d'autres applications.",
+  "HOTKEY_LIST_TITLE": "Raccourcis clavier",
+  "HOTKEY_LIST": "ALT+Q - Fermer\nALT+W - Reglages\nALT+Z - Debug\nALT+R - Recharger\nALT+S - Telecharger story",
+  "HOTKEY_SETTINGS_ENABLED": "Personnaliser touche reglages",
+  "HOTKEY_SETTINGS_ENABLED_INTRO": "Active pour utiliser touche personnalisee. Desactivee utilise Alt+W par defaut.",
+  "HOTKEY_SETTINGS_KEY": "Touche reglages",
+  "HOTKEY_SETTINGS_KEY_INTRO": "Selectionnez un preset ou cliquez sur Personnalise pour enregistrer le votre.",
+  "HOTKEY_DOWNLOAD_STORY_ENABLED": "Personnaliser touche telecharger story",
+  "HOTKEY_DOWNLOAD_STORY_ENABLED_INTRO": "Active pour utiliser touche personnalisee. Desactivee utilise Alt+S par defaut.",
+  "HOTKEY_DOWNLOAD_STORY_KEY": "Touche telecharger story",
+  "HOTKEY_DOWNLOAD_STORY_KEY_INTRO": "Selectionnez un preset ou cliquez sur Personnalise pour enregistrer le votre.",
+  "HOTKEY_RESET": "Reinitialiser"
 }

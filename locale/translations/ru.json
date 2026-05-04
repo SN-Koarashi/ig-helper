@@ -81,5 +81,16 @@
   "HOTKEY_DEBUG_KEY_INTRO": "Выберите предустановку или выберите Другое для записи своей.",
   "HOTKEY_CUSTOM": "Другое...",
   "HOTKEY_PRESS": "Нажмите клавишу и Enter для установки...",
-  "HOTKEY_CONFLICT_WARNING": "Эта горячая клавиша может конфликтовать с другими приложениями."
+  "HOTKEY_CONFLICT_WARNING": "Эта горячая клавиша может конфликтовать с другими приложениями.",
+  "HOTKEY_LIST_TITLE": "Горячие клавиши",
+  "HOTKEY_LIST": "ALT+Q - Закрыть\nALT+W - Настройки\nALT+Z - Отладка\nALT+R - Перезагрузить\nALT+S - Скачать историю",
+  "HOTKEY_SETTINGS_ENABLED": "Настроить клавишу настроек",
+  "HOTKEY_SETTINGS_ENABLED_INTRO": "Включить для использования настраиваемой клавиши. Выключено использует Alt+W по умолчанию.",
+  "HOTKEY_SETTINGS_KEY": "Клавиша настроек",
+  "HOTKEY_SETTINGS_KEY_INTRO": "Выберите предустановку или выберите Другое для записи своей.",
+  "HOTKEY_DOWNLOAD_STORY_ENABLED": "Настроить клавишу скачивания истории",
+  "HOTKEY_DOWNLOAD_STORY_ENABLED_INTRO": "Включить для использования настраиваемой клавиши. Выключено использует Alt+S по умолчанию.",
+  "HOTKEY_DOWNLOAD_STORY_KEY": "Клавиша скачивания истории",
+  "HOTKEY_DOWNLOAD_STORY_KEY_INTRO": "Выберите предустановку или выберите Другое для записи своей.",
+  "HOTKEY_RESET": "Сброс"
 }

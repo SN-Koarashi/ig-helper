@@ -81,5 +81,16 @@
   "HOTKEY_DEBUG_KEY_INTRO": "Selecciona un atajo predefinido o elige Personalizado para registrar el tuyo.",
   "HOTKEY_CUSTOM": "Personalizado...",
   "HOTKEY_PRESS": "Presiona la tecla y Enter para establecer...",
-  "HOTKEY_CONFLICT_WARNING": "Este atajo puede entrar en conflicto con otras aplicaciones."
+  "HOTKEY_CONFLICT_WARNING": "Este atajo puede entrar en conflicto con otras aplicaciones.",
+  "HOTKEY_LIST_TITLE": "Atajos de teclado",
+  "HOTKEY_LIST": "ALT+Q - Cerrar\nALT+W - Ajustes\nALT+Z - Depurar\nALT+R - Recargar\nALT+S - Descargar historia",
+  "HOTKEY_SETTINGS_ENABLED": "Personalizar tecla ajustes",
+  "HOTKEY_SETTINGS_ENABLED_INTRO": "Habilita para usar tecla personalizada. Deshabilita usa Alt+W por defecto.",
+  "HOTKEY_SETTINGS_KEY": "Tecla ajustes",
+  "HOTKEY_SETTINGS_KEY_INTRO": "Selecciona un atajo predefinido o elige Personalizado para registrar el tuyo.",
+  "HOTKEY_DOWNLOAD_STORY_ENABLED": "Personalizar tecla descargar historia",
+  "HOTKEY_DOWNLOAD_STORY_ENABLED_INTRO": "Habilita para usa tecla personalizada. Deshabilita usa Alt+S por defecto.",
+  "HOTKEY_DOWNLOAD_STORY_KEY": "Tecla descargar historia",
+  "HOTKEY_DOWNLOAD_STORY_KEY_INTRO": "Selecciona un atajo predefinido o elige Personalizado para registrar el tuyo.",
+  "HOTKEY_RESET": "Restablecer"
 }

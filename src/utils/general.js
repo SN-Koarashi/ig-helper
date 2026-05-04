@@ -1337,116 +1337,106 @@ export function showSetting() {
     const $body = $('.IG_POPUP_DIG .IG_POPUP_DIG_BODY');
 
     const hotkeyOptions = [
+        { value: '81', label: 'Alt+Q' },
+        { value: '87', label: 'Alt+W' },
         { value: '90', label: 'Alt+Z' },
         { value: '88', label: 'Alt+X' },
         { value: '68', label: 'Alt+D' },
         { value: '75', label: 'Alt+K' },
         { value: '67', label: 'Alt+C' },
-        { value: 'custom', label: _i18n('HOTKEY_CUSTOM') }
+        { value: '83', label: 'Alt+S' },
+        { value: '82', label: 'Alt+R' }
     ];
-    let currentKeyCode = state.debugHotkeyKeyCode;
-    let currentHotkeyLabel = hotkeyOptions.find(o => o.value == currentKeyCode)?.label || _i18n('HOTKEY_CUSTOM');
 
-    $body.append(`
-        <div class="hotkey-settings" style="padding: 12px; border-bottom: 1px solid #efefef; margin-bottom: 12px;">
-            <div style="font-weight: 600; margin-bottom: 8px; font-size: 13px;">${_i18n('HOTKEY_DEBUG_KEY')}</div>
-            <label class="globalSettings"
-                  title="${_i18n('HOTKEY_DEBUG_ENABLED_INTRO')}"
-                  data-ih-locale-title="HOTKEY_DEBUG_ENABLED_INTRO">
-                <span data-ih-locale="HOTKEY_DEBUG_ENABLED">${_i18n('HOTKEY_DEBUG_ENABLED')}</span>
-                <input id="HOTKEY_DEBUG_ENABLED" value="box" type="checkbox"
-                       ${USER_SETTING.HOTKEY_DEBUG_ENABLED === true ? 'checked' : ''}>
-                <div class="chbtn"><div class="rounds"></div></div>
-            </label>
-            <div class="hotkey-select-wrapper" style="margin-top: 8px; display: flex; align-items: center; gap: 8px;">
-                <select id="hotkeyPreset" style="padding: 4px 8px; border: 1px solid #ccc; border-radius: 4px; font-size: 13px;">
-                    ${hotkeyOptions.map(o => `<option value="${o.value}" ${o.value == currentKeyCode ? 'selected' : ''}>${o.label}</option>`).join('')}
-                </select>
-                <input id="hotkeyCustomInput" type="text"
-                       placeholder="${_i18n('HOTKEY_PRESS')}"
-                       style="display: none; padding: 4px 8px; border: 1px solid #ccc; border-radius: 4px; font-size: 13px; width: 180px;"
-                       disabled>
-                <span id="hotkeyDisplay" style="font-size: 12px; color: #666;">${currentHotkeyLabel}</span>
+    const hotkeyConfigs = [
+        { name: 'HOTKEY_SETTINGS_ENABLED', key: 'HOTKEY_SETTINGS_KEY', stateKey: 'settingsHotkeyKeyCode', storageKey: 'HOTKEY_SETTINGS_KEYCODE', defaultKeyCode: 87 },
+        { name: 'HOTKEY_DEBUG_ENABLED', key: 'HOTKEY_DEBUG_KEY', stateKey: 'debugHotkeyKeyCode', storageKey: 'HOTKEY_DEBUG_KEYCODE', defaultKeyCode: 90 },
+        { name: 'HOTKEY_DOWNLOAD_STORY_ENABLED', key: 'HOTKEY_DOWNLOAD_STORY_KEY', stateKey: 'downloadStoryHotkeyKeyCode', storageKey: 'HOTKEY_DOWNLOAD_STORY_KEYCODE', defaultKeyCode: 83 }
+    ];
+
+    function checkHotkeyConflict(keyCode, excludeStateKey) {
+        for (const config of hotkeyConfigs) {
+            if (config.stateKey !== excludeStateKey && state[config.stateKey] === keyCode) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    function createHotkeySetting(name, key, stateKey, storageKey, defaultKeyCode, isLast) {
+        const currentKeyCode = state[stateKey];
+        const enabled = USER_SETTING[name];
+        const currentHotkeyLabel = hotkeyOptions.find(o => o.value == currentKeyCode)?.label || _i18n('HOTKEY_CUSTOM');
+        const borderStyle = isLast ? 'padding: 12px; margin-bottom: 8px;' : 'padding: 12px; border-bottom: 1px solid #efefef; margin-bottom: 8px;';
+
+        const $container = $(`
+            <div class="hotkey-setting-item" data-hotkey="${name}" style="${borderStyle}">
+                <div style="font-weight: 600; margin-bottom: 8px; font-size: 13px;">${_i18n(key)}</div>
+                <label class="globalSettings"
+                      title="${_i18n(name + '_INTRO')}"
+                      data-ih-locale-title="${name + '_INTRO'}">
+                    <span data-ih-locale="${name}">${_i18n(name)}</span>
+                    <input id="${name}" value="box" type="checkbox"
+                           ${enabled === true ? 'checked' : ''}>
+                    <div class="chbtn"><div class="rounds"></div></div>
+                </label>
+                <div class="hotkey-select-wrapper" style="margin-top: 8px; display: flex; align-items: center; gap: 8px;">
+                    <select class="hotkey-preset" data-storage="${storageKey}" data-state="${stateKey}" data-default="${defaultKeyCode}" style="padding: 4px 8px; border: 1px solid #ccc; border-radius: 4px; font-size: 13px;">
+                        ${hotkeyOptions.filter(o => o.value != defaultKeyCode.toString()).map(o => `<option value="${o.value}" ${o.value == currentKeyCode ? 'selected' : ''}>${o.label}</option>`).join('')}
+                        <option value="${defaultKeyCode}" ${currentKeyCode == defaultKeyCode ? 'selected' : ''}>Alt+${String.fromCharCode(defaultKeyCode)}</option>
+                    </select>
+                    <button class="hotkey-reset" title="${_i18n('HOTKEY_RESET')}" style="padding: 4px 8px; border: 1px solid #ccc; border-radius: 4px; font-size: 13px; color: #1f1f1f; background: #fff; cursor: pointer;">${_i18n('HOTKEY_RESET')}</button>
+                    <span class="hotkey-conflict-warning" style="display: none; font-size: 11px; color: #e74c3c;">${_i18n('HOTKEY_CONFLICT_WARNING')}</span>
+                </div>
             </div>
-        </div>
-    `);
+        `);
 
-    const $presetSelect = $body.find('#hotkeyPreset');
-    const $customInput = $body.find('#hotkeyCustomInput');
-    const $display = $body.find('#hotkeyDisplay');
-    const $hotkeySettings = $body.find('.hotkey-settings');
+        $container.find('.hotkey-reset').on('click', function() {
+            const defaultCode = parseInt($container.find('.hotkey-preset').data('default'));
+            const stateKeyName = $container.find('.hotkey-preset').data('state');
+            const storage = $container.find('.hotkey-preset').data('storage');
+            const $preset = $container.find('.hotkey-preset');
+            const $display = $container.find('.hotkey-display');
 
-    function getModifierString(e) {
-        let mods = [];
-        if (e.ctrlKey) mods.push('Ctrl');
-        if (e.altKey) mods.push('Alt');
-        if (e.shiftKey) mods.push('Shift');
-        return mods.join('+');
-    }
+            state[stateKeyName] = defaultCode;
+            GM_setValue(storage, defaultCode);
+            $preset.val(defaultCode);
+            $container.find('.hotkey-conflict-warning').hide();
+        });
 
-    function keyCodeToLabel(keyCode, e) {
-        let key = String.fromCharCode(keyCode).toUpperCase();
-        if (keyCode >= 65 && keyCode <= 90) {
-            return getModifierString(e) + '+' + key;
-        }
-        const specialKeys = {
-            81: 'Q', 87: 'W', 69: 'E', 82: 'R', 84: 'T', 89: 'Y', 85: 'U', 73: 'I', 79: 'O', 80: 'P',
-            83: 'S', 68: 'D', 70: 'F', 71: 'G', 72: 'H', 74: 'J', 75: 'K', 76: 'L',
-            86: 'V', 66: 'B', 78: 'N', 77: 'M'
-        };
-        return getModifierString(e) + '+' + (specialKeys[keyCode] || String.fromCharCode(keyCode));
-    }
-
-    $presetSelect.on('change', function() {
-        const val = $(this).val();
-        if (val === 'custom') {
-            $customInput.show().prop('disabled', false).focus();
-            $display.hide();
-        } else {
-            $customInput.hide().prop('disabled', true);
-            $display.show().text($(this).find('option:selected').text());
+        $container.find('.hotkey-preset').on('change', function() {
+            const val = $(this).val();
+            const storage = $(this).data('storage');
+            const stateKeyName = $(this).data('state');
+            const defaultCode = parseInt($(this).data('default'));
             const keyCode = parseInt(val);
-            state.debugHotkeyKeyCode = keyCode;
-            GM_setValue('HOTKEY_DEBUG_KEYCODE', keyCode);
-        }
-    });
 
-    $customInput.on('keydown', function(e) {
-        e.preventDefault();
-        if (e.which >= 65 && e.which <= 90) {
-            const label = keyCodeToLabel(e.which, e);
-            $(this).val(label);
-            $(this).data('keycode', e.which);
-        }
-    });
-
-    $customInput.on('keypress', function(e) {
-        if (e.which === 13) {
-            e.preventDefault();
-            const keyCode = $(this).data('keycode');
-            if (keyCode) {
-                state.debugHotkeyKeyCode = keyCode;
-                GM_setValue('HOTKEY_DEBUG_KEYCODE', keyCode);
-                $display.show().text($(this).val()).hide();
-                $customInput.hide().prop('disabled', true);
+            if (checkHotkeyConflict(keyCode, stateKeyName)) {
+                state[stateKeyName] = defaultCode;
+                GM_setValue(storage, defaultCode);
+                $(this).val(defaultCode);
+                $container.find('.hotkey-conflict-warning').show().delay(2000).fadeOut(500);
+            } else {
+                state[stateKeyName] = keyCode;
+                GM_setValue(storage, keyCode);
+                $container.find('.hotkey-conflict-warning').hide();
             }
-        }
-    });
+        });
 
-    $customInput.on('blur', function() {
-        if ($(this).is(':visible') && $(this).val()) {
-            const keyCode = $(this).data('keycode');
-            if (keyCode) {
-                state.debugHotkeyKeyCode = keyCode;
-                GM_setValue('HOTKEY_DEBUG_KEYCODE', keyCode);
-                $display.show().text($(this).val()).hide();
-                $customInput.hide().prop('disabled', true);
-            }
-        }
+        return $container;
+    }
+
+    $body.append('<div class="hotkey-settings-container" style="margin-bottom: 12px;"></div>');
+
+    hotkeyConfigs.forEach((config, index) => {
+        const isLast = index === hotkeyConfigs.length - 1;
+        $body.find('.hotkey-settings-container').append(
+            createHotkeySetting(config.name, config.key, config.stateKey, config.storageKey, config.defaultKeyCode, isLast)
+        );
     });
 
     for (const name in USER_SETTING) {
-        if (name === 'HOTKEY_DEBUG_ENABLED') continue;
+        if (name.startsWith('HOTKEY_')) continue;
 
         $body.append(`
             <label class="globalSettings"

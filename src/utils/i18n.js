@@ -100,9 +100,25 @@ export function translateText() {
             "CHECK_FOR_UPDATE_INTRO": "Check for updates when the script is triggered (check every 300 seconds).\nUpdate notifications will be sent as desktop notifications through the browser.",
             "SKIP_VIEW_STORY_CONFIRM_INTRO": "Automatically skip when confirmation page is shown in story or highlight.",
             "SKIP_SHARED_WITH_YOU_DIALOG_INTRO": "Automatically click \"Not now\" on the \"X shared this with you\" dialog when opening any ?igsh= links.",
-            "MODIFY_RESOURCE_EXIF_INTRO": "Modify the EXIF ​​attribute of the image resource to include metadata such as post link, shooting date, and author.",
+            "MODIFY_RESOURCE_EXIF_INTRO": "Modify the EXIF attribute of the image resource to include metadata such as post link, shooting date, and author.",
             "DIRECT_DOWNLOAD_STORY_INTRO": "When you click Download All Resources, all stories/highlights are downloaded directly, without showing the image selection dialog.",
-            "CAPTURE_IMAGE_VIA_MEDIA_CACHE_INTRO": "Use a watcher to capture any high-quality image URLs in the DOM tree into the script’s storage so that they can be extracted when available and upon user input."
+            "CAPTURE_IMAGE_VIA_MEDIA_CACHE_INTRO": "Use a watcher to capture any high-quality image URLs in the DOM tree into the script's storage so that they can be extracted when available and upon user input.",
+            "HOTKEY_SETTINGS_ENABLED": "Customize Settings Hotkey",
+            "HOTKEY_SETTINGS_ENABLED_INTRO": "Enable to use custom settings hotkey. Disabled uses default Alt+W.",
+            "HOTKEY_DEBUG_ENABLED": "Customize Debug Hotkey",
+            "HOTKEY_DEBUG_ENABLED_INTRO": "Enable to use custom debug hotkey. Disabled uses default Alt+Z.",
+            "HOTKEY_DOWNLOAD_STORY_ENABLED": "Customize Download Story Hotkey",
+            "HOTKEY_DOWNLOAD_STORY_ENABLED_INTRO": "Enable to use custom download story hotkey. Disabled uses default Alt+S.",
+            "HOTKEY_DEBUG_KEY": "Debug Hotkey",
+            "HOTKEY_DEBUG_KEY_INTRO": "Select a preset hotkey or choose Custom to record your own.",
+            "HOTKEY_SETTINGS_KEY": "Settings Hotkey",
+            "HOTKEY_SETTINGS_KEY_INTRO": "Select a preset hotkey or choose Custom to record your own.",
+            "HOTKEY_DOWNLOAD_STORY_KEY": "Download Story Hotkey",
+            "HOTKEY_DOWNLOAD_STORY_KEY_INTRO": "Select a preset hotkey or choose Custom to record your own.",
+            "HOTKEY_CUSTOM": "Custom...",
+            "HOTKEY_PRESS": "Press hotkey and Enter to set...",
+            "HOTKEY_CONFLICT_WARNING": "This hotkey may conflict with other applications.",
+            "HOTKEY_RESET": "Reset"
         }
     };
 
