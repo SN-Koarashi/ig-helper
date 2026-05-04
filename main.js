@@ -1785,14 +1785,14 @@
             let timestamp = Math.floor(date / 1000);
             let username = location.pathname.replaceAll(/(reels|tagged)\/$/ig, '').split('/').filter(s => s.length > 0).at(-1);
             let userInfo = await getUserId(username);
-
             try {
                 let dataURL = await getUserHighSizeProfile(userInfo.user.pk);
                 saveFiles(dataURL, {
                     username,
                     sourceType: "avatar",
                     timestamp,
-                    filetype: 'jpg'
+                    filetype: 'jpg',
+                    uid: userInfo.user.id
                 });
             }
             // eslint-disable-next-line no-unused-vars
@@ -1801,7 +1801,8 @@
                     username,
                     sourceType: "avatar",
                     timestamp,
-                    filetype: 'jpg'
+                    filetype: 'jpg',
+                    uid: userInfo.user.id
                 });
             }
 
@@ -3782,6 +3783,7 @@
      * @param  {String}  metadata.filetype
      * @param  {String}  metadata.shortcode
      * @param  {Integer|null}  metadata.index
+     * @param  {String|null}  metadata.uid
      * @return {Promise}
      */
     function saveFiles(downloadLink, metadata) {
@@ -4096,10 +4098,11 @@
      * @param  {String}  metadata.filetype
      * @param  {String}  metadata.shortcode
      * @param  {Integer|null}  metadata.index
+     * @param  {String|null}  metadata.uid
      * @return {String}  The generated filename
      */
     function getSaveFileName(downloadLink, metadata) {
-        let { username, sourceType, timestamp, filetype, shortcode, index } = metadata;
+        let { username, sourceType, timestamp, filetype, shortcode, index, uid } = metadata;
         timestamp = parseInt(timestamp.toString().padEnd(13, '0'));
         index = (index != null) ? index : 0;
 
@@ -4121,11 +4124,10 @@
             return `%${content.toUpperCase()}%`;
         });
 
-        var format_shortcode = shortcode ?? "";
         var replacements = {
             '%USERNAME%': username,
             '%SOURCE_TYPE%': sourceType,
-            '%SHORTCODE%': format_shortcode,
+            '%SHORTCODE%': shortcode || '',
             '%YEAR%': year,
             '%2-YEAR%': year.substr(-2),
             '%MONTH%': month,
@@ -4136,11 +4138,16 @@
             '%ORIGINAL_NAME%': original_name,
             '%ORIGINAL_NAME_FIRST%': original_name.split('_').at(0),
             '%INDEX%': index.toString(),
+            '%UID%': uid || '',
         };
 
         // eslint-disable-next-line no-useless-escape
         filename = filename.replace(/%[\w\-]+%/g, function (str) {
-            return replacements[str] || str;
+            if (replacements[str] == null) {
+                return str;
+            }
+
+            return replacements[str];
         });
 
         const originally = username + '_' + original_name + '.' + filetype;
@@ -4163,17 +4170,19 @@
      * @param  {String}  metadata.filetype
      * @param  {String}  metadata.shortcode
      * @param  {Integer|null}  metadata.index
+     * @param  {String|null}  metadata.uid
      * @return {void}
      */
     function createSaveFileElement(downloadLink, object, metadata) {
-        let { username, sourceType, timestamp, filetype, shortcode, index } = metadata;
+        let { username, sourceType, timestamp, filetype, shortcode, index, uid } = metadata;
         const downloadName = getSaveFileName(downloadLink, {
             username,
             sourceType,
             timestamp,
             filetype,
             shortcode,
-            index
+            index,
+            uid
         });
 
         if (USER_SETTING.MODIFY_RESOURCE_EXIF && filetype === 'jpg' && shortcode && sourceType === 'photo' && (object.type === 'image/jpeg' || object.type === 'image/webp')) {
@@ -5454,7 +5463,7 @@
                 "CHECK_FOR_UPDATE_INTRO": "Check for updates when the script is triggered (check every 300 seconds).\nUpdate notifications will be sent as desktop notifications through the browser.",
                 "SKIP_VIEW_STORY_CONFIRM_INTRO": "Automatically skip when confirmation page is shown in story or highlight.",
                 "SKIP_SHARED_WITH_YOU_DIALOG_INTRO": "Automatically click \"Not now\" on the \"X shared this with you\" dialog when opening any ?igsh= links.",
-                "MODIFY_RESOURCE_EXIF_INTRO": "Modify the EXIF properties of the image resource to place the post link in it.",
+                "MODIFY_RESOURCE_EXIF_INTRO": "Modify the EXIF ​​attribute of the image resource to include metadata such as post link, shooting date, and author.",
                 "DIRECT_DOWNLOAD_STORY_INTRO": "When you click Download All Resources, all stories/highlights are downloaded directly, without showing the image selection dialog.",
                 "CAPTURE_IMAGE_VIA_MEDIA_CACHE_INTRO": "Use a watcher to capture any high-quality image URLs in the DOM tree into the script’s storage so that they can be extracted when available and upon user input."
             }

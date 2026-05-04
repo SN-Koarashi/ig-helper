@@ -398,6 +398,7 @@ export function IG_setDM(hasHidden) {
  * @param  {String}  metadata.filetype
  * @param  {String}  metadata.shortcode
  * @param  {Integer|null}  metadata.index
+ * @param  {String|null}  metadata.uid
  * @return {Promise}
  */
 export function saveFiles(downloadLink, metadata) {
@@ -712,10 +713,11 @@ function triggerDownload(blob, filename) {
  * @param  {String}  metadata.filetype
  * @param  {String}  metadata.shortcode
  * @param  {Integer|null}  metadata.index
+ * @param  {String|null}  metadata.uid
  * @return {String}  The generated filename
  */
 export function getSaveFileName(downloadLink, metadata) {
-    let { username, sourceType, timestamp, filetype, shortcode, index } = metadata;
+    let { username, sourceType, timestamp, filetype, shortcode, index, uid } = metadata;
     timestamp = parseInt(timestamp.toString().padEnd(13, '0'));
     index = (index != null) ? index : 0;
 
@@ -737,11 +739,10 @@ export function getSaveFileName(downloadLink, metadata) {
         return `%${content.toUpperCase()}%`;
     });
 
-    var format_shortcode = shortcode ?? "";
     var replacements = {
         '%USERNAME%': username,
         '%SOURCE_TYPE%': sourceType,
-        '%SHORTCODE%': format_shortcode,
+        '%SHORTCODE%': shortcode || '',
         '%YEAR%': year,
         '%2-YEAR%': year.substr(-2),
         '%MONTH%': month,
@@ -752,11 +753,16 @@ export function getSaveFileName(downloadLink, metadata) {
         '%ORIGINAL_NAME%': original_name,
         '%ORIGINAL_NAME_FIRST%': original_name.split('_').at(0),
         '%INDEX%': index.toString(),
+        '%UID%': uid || '',
     };
 
     // eslint-disable-next-line no-useless-escape
     filename = filename.replace(/%[\w\-]+%/g, function (str) {
-        return replacements[str] || str;
+        if (replacements[str] == null) {
+            return str;
+        }
+
+        return replacements[str];
     });
 
     const originally = username + '_' + original_name + '.' + filetype;
@@ -779,17 +785,19 @@ export function getSaveFileName(downloadLink, metadata) {
  * @param  {String}  metadata.filetype
  * @param  {String}  metadata.shortcode
  * @param  {Integer|null}  metadata.index
+ * @param  {String|null}  metadata.uid
  * @return {void}
  */
 export function createSaveFileElement(downloadLink, object, metadata) {
-    let { username, sourceType, timestamp, filetype, shortcode, index } = metadata;
+    let { username, sourceType, timestamp, filetype, shortcode, index, uid } = metadata;
     const downloadName = getSaveFileName(downloadLink, {
         username,
         sourceType,
         timestamp,
         filetype,
         shortcode,
-        index
+        index,
+        uid
     });
 
     if (USER_SETTING.MODIFY_RESOURCE_EXIF && filetype === 'jpg' && shortcode && sourceType === 'photo' && (object.type === 'image/jpeg' || object.type === 'image/webp')) {

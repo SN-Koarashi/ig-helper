@@ -19,14 +19,14 @@ export async function onProfileAvatar(isDownload) {
         let timestamp = Math.floor(date / 1000);
         let username = location.pathname.replaceAll(/(reels|tagged)\/$/ig, '').split('/').filter(s => s.length > 0).at(-1);
         let userInfo = await getUserId(username);
-
         try {
             let dataURL = await getUserHighSizeProfile(userInfo.user.pk);
             saveFiles(dataURL, {
                 username,
                 sourceType: "avatar",
                 timestamp,
-                filetype: 'jpg'
+                filetype: 'jpg',
+                uid: userInfo.user.id
             });
         }
         // eslint-disable-next-line no-unused-vars
@@ -35,7 +35,8 @@ export async function onProfileAvatar(isDownload) {
                 username,
                 sourceType: "avatar",
                 timestamp,
-                filetype: 'jpg'
+                filetype: 'jpg',
+                uid: userInfo.user.id
             });
         }
 
