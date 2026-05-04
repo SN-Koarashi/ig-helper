@@ -1211,7 +1211,7 @@ export function registerMenuCommand() {
         accessKey: "w"
     }));
 
-    state.registerMenuIds.push(GM_registerMenuCommand(_i18n('HOTKEY_SETTINGS_KEY'), () => {
+    state.registerMenuIds.push(GM_registerMenuCommand(_i18n('HOTKEY_KEY_SETTINGS_KEY'), () => {
         showHotkeySetting();
     }, {
         accessKey: "q"
