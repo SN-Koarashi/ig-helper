@@ -5,7 +5,7 @@
 // @name:ja            IG助手
 // @name:ko            IG조수
 // @namespace          https://github.snkms.com/
-// @version            3.17.11
+// @version            3.17.12
 // @description        Downloading is possible for both photos and videos from posts, as well as for stories, reels or profile picture.
 // @description:zh-TW  一鍵下載對方 Instagram 貼文中的相片、影片甚至是他們的限時動態、連續短片及大頭貼圖片！
 // @description:zh-CN  一键下载对方 Instagram 帖子中的相片、视频甚至是他们的快拍、Reels及头像图片！
@@ -1047,21 +1047,6 @@
                             e.stopPropagation();
                         }
                     });
-
-                    // ! Due to technical limitations, this feature may be removed in the future; the default Instagram layout will prevail.
-                    if (USER_SETTING.SET_INSTAGRAM_LAYOUT_AS_DEFAULT) {
-                        $(this).css('z-index', '-1');
-                        $targets.css('z-index', '1');
-
-                        $(this).parents('a[href^="/reels/"]').first().removeAttr("draggable");
-                    }
-                    else {
-                        $(this).css('z-index', '2');
-                        $(this).attr('controls', true);
-                        $targets.css('z-index', '-10');
-
-                        $(this).parents('a[href^="/reels/"]').first().attr("draggable", false);
-                    }
 
                     $(this).css('position', 'absolute');
                     $(this).attr('data-controls', true);
@@ -3001,7 +2986,7 @@
         }
     }
 
-    /* untils */
+    /* utils */
 
     /**
      * getHighlightStories
@@ -4987,54 +4972,89 @@
         }
     };
 
+    // /**
+    //  * @description Get the element at the pointer position and check if it is the target element or if it is covered by another element.
+    //  * @param {JQuery<HTMLElement>} $target 
+    //  * @param {number} clientX
+    //  * @param {number} clientY
+    //  */
+    // export function getPointerElement($target, clientX, clientY) {
+    //     let element = $target.get(0);
+    //     const rect = element.getBoundingClientRect();
+
+    //     const viewportWidth = window.innerWidth;
+    //     const viewportHeight = window.innerHeight;
+
+    //     const visibleX = Math.max(rect.left, 0) + (Math.min(rect.right, viewportWidth) - Math.max(rect.left, 0)) / 2;
+    //     const visibleY = Math.max(rect.top, 0) + (Math.min(rect.bottom, viewportHeight) - Math.max(rect.top, 0)) / 2;
+
+    //     if (visibleX < 0 || visibleX > viewportWidth || visibleY < 0 || visibleY > viewportHeight) {
+    //         if (clientX == null || clientY == null) {
+    //             return { self: false, topElement: null, target: $target, error: 'out_of_viewport', rect };
+    //         }
+    //     }
+
+    //     const topElement = document.elementFromPoint(clientX || visibleX, clientY || visibleY);
+
+    //     if ($(topElement).height() > document.body.clientHeight) {
+    //         return { self: false, topElement: null, target: $target, error: 'oversize_element', rect };
+    //     }
+
+    //     if ($(topElement).width() < 100 || $(topElement).height() < 100) {
+    //         return { self: false, topElement: null, target: $target, error: 'small_element', rect };
+    //     }
+
+    //     if (topElement && topElement !== element && !element.contains(topElement)) {
+    //         if ($(topElement).find($target).length > 0) {
+    //             // return { self: false, topElement, target: $target };
+    //             return { self: false, topElement: null, target: $target, error: 'covered_by_element', rect };
+    //         }
+
+    //         if ($(topElement).width() != $target.width() || $(topElement).height() != $target.height()) {
+    //             return { self: false, topElement: null, target: $target, error: 'different_dimensions', rect };
+    //         }
+
+
+    //         // return { self: false, topElement: null, target: $target, error: 'none_of_element', rect };
+    //         return { self: false, topElement, target: $target };
+    //     } else {
+    //         return { self: true, topElement, target: $target };
+    //     }
+    // }
+
     /**
-     * @description Get the element at the pointer position and check if it is the target element or if it is covered by another element.
-     * @param {JQuery<HTMLElement>} $target 
-     * @param {number} clientX
-     * @param {number} clientY
+     * updatePopupSelectionSummary
+     * @description Update selection summary in popup dialog.
+     *
+     * @param {string|JQuery} root
+     * @return {void}
      */
-    function getPointerElement($target, clientX, clientY) {
-        let element = $target.get(0);
-        const rect = element.getBoundingClientRect();
+    function updatePopupSelectionSummary(root = '.IG_POPUP_DIG') {
+        const $root = (typeof root === 'string') ? $(root) : root;
+        if (!$root || $root.length === 0) return;
 
-        const viewportWidth = window.innerWidth;
-        const viewportHeight = window.innerHeight;
+        const $titleCheckbox = $root.find('.IG_POPUP_DIG_TITLE .checkbox');
+        const $countSpan = $titleCheckbox.find('.item-count');
+        if ($titleCheckbox.length === 0 || $countSpan.length === 0) return;
 
-        const visibleX = Math.max(rect.left, 0) + (Math.min(rect.right, viewportWidth) - Math.max(rect.left, 0)) / 2;
-        const visibleY = Math.max(rect.top, 0) + (Math.min(rect.bottom, viewportHeight) - Math.max(rect.top, 0)) / 2;
+        const $items = $root.find('.IG_POPUP_DIG_BODY .inner_box');
+        const total = $items.length;
+        const selected = $items.filter(':checked').length;
 
-        if (visibleX < 0 || visibleX > viewportWidth || visibleY < 0 || visibleY > viewportHeight) {
-            if (clientX == null || clientY == null) {
-                return { self: false, topElement: null, target: $target, error: 'out_of_viewport', rect };
-            }
-        }
+        $titleCheckbox.find('input').prop('checked', total > 0 && selected === total);
 
-        const topElement = document.elementFromPoint(clientX || visibleX, clientY || visibleY);
+        const formatCount = (count, singularKey, pluralKey) => {
+            const key = count === 1 ? singularKey : pluralKey;
+            const template = _i18n(key);
+            return (typeof template === 'string')
+                ? template.replace('%COUNT%', count)
+                : String(count);
+        };
 
-        if ($(topElement).height() > document.body.clientHeight) {
-            return { self: false, topElement: null, target: $target, error: 'oversize_element', rect };
-        }
+        const totalLabel = formatCount(total, 'ITEM_COUNT_SINGULAR', 'ITEM_COUNT_PLURAL');
+        const selectedLabel = formatCount(selected, 'SELECTED_COUNT_SINGULAR', 'SELECTED_COUNT_PLURAL');
 
-        if ($(topElement).width() < 100 || $(topElement).height() < 100) {
-            return { self: false, topElement: null, target: $target, error: 'small_element', rect };
-        }
-
-        if (topElement && topElement !== element && !element.contains(topElement)) {
-            if ($(topElement).find($target).length > 0) {
-                // return { self: false, topElement, target: $target };
-                return { self: false, topElement: null, target: $target, error: 'covered_by_element', rect };
-            }
-
-            if ($(topElement).width() != $target.width() || $(topElement).height() != $target.height()) {
-                return { self: false, topElement: null, target: $target, error: 'different_dimensions', rect };
-            }
-
-
-            // return { self: false, topElement: null, target: $target, error: 'none_of_element', rect };
-            return { self: false, topElement, target: $target };
-        } else {
-            return { self: true, topElement, target: $target };
-        }
+        $countSpan.text(` (${selectedLabel} / ${totalLabel})`);
     }
 
     var detectMovingViewerTimer = null;
@@ -5240,41 +5260,6 @@
         clearInterval(detectMovingViewerTimer);
         $('#imageViewer').remove();
         $(document).off('mousemove.igHelper');
-    }
-
-    /**
-     * updatePopupSelectionSummary
-     * @description Update selection summary in popup dialog.
-     *
-     * @param {string|JQuery} root
-     * @return {void}
-     */
-    function updatePopupSelectionSummary(root = '.IG_POPUP_DIG') {
-        const $root = (typeof root === 'string') ? $(root) : root;
-        if (!$root || $root.length === 0) return;
-
-        const $titleCheckbox = $root.find('.IG_POPUP_DIG_TITLE .checkbox');
-        const $countSpan = $titleCheckbox.find('.item-count');
-        if ($titleCheckbox.length === 0 || $countSpan.length === 0) return;
-
-        const $items = $root.find('.IG_POPUP_DIG_BODY .inner_box');
-        const total = $items.length;
-        const selected = $items.filter(':checked').length;
-
-        $titleCheckbox.find('input').prop('checked', total > 0 && selected === total);
-
-        const formatCount = (count, singularKey, pluralKey) => {
-            const key = count === 1 ? singularKey : pluralKey;
-            const template = _i18n(key);
-            return (typeof template === 'string')
-                ? template.replace('%COUNT%', count)
-                : String(count);
-        };
-
-        const totalLabel = formatCount(total, 'ITEM_COUNT_SINGULAR', 'ITEM_COUNT_PLURAL');
-        const selectedLabel = formatCount(selected, 'SELECTED_COUNT_SINGULAR', 'SELECTED_COUNT_PLURAL');
-
-        $countSpan.text(` (${selectedLabel} / ${totalLabel})`);
     }
 
     let mediaCacheDirty = false;
@@ -5980,33 +5965,38 @@
                                                 return $(this).attr('class') == null && $(this).attr('style') == null;
                                             }).first();
 
+                                            // This is mute/unmute's icon
+                                            let $element_mute_button = $videoParent.parent().find('svg > path[d^="M1.5 13.3c-.8 0-1.5.7-1.5 1.5v18.4c0"], svg > path[d^="M16.636 7.028a1.5 1.5"]').parents('[role="button"]').first();
+                                            state.GL_weakCache.mutedButton.set($video[0], $element_mute_button);
+
                                             // story bottom bar
                                             let $bottomBar = $videoParent.next();
-                                            $bottomBar.hide();
 
                                             // read more button in center
                                             let $readMoreButton = $videoParent.find('div[class][role="button"]');
-                                            $readMoreButton.hide();
 
                                             let $targets = $video.parent().find('video + div');
-
-                                            const pointerInfo = getPointerElement($(this));
-                                            if (!pointerInfo.self) {
-                                                let $parent = $(pointerInfo.topElement).parents('div[data-visualcompletion="ignore"]').first();
-                                                if ($parent.length > 0) {
-                                                    $targets = $targets.add($parent);
-                                                } else {
-                                                    $targets = $targets.add(pointerInfo.topElement);
-                                                }
-                                            }
 
                                             const hideContextmenu = function (e) {
                                                 e.preventDefault();
                                                 e.stopPropagation();
 
+                                                let $overlayElement = null;
+
+                                                if ($overlayElement == null) {
+                                                    $overlayElement = $(e.target).parent().find('div[aria-label][data-visualcompletion="ignore"]').first();
+
+                                                    if ($overlayElement.length === 0) {
+                                                        $overlayElement = $(e.target).first();
+                                                    }
+                                                }
+
+                                                state.GL_weakCache.overlay.set($video[0], $overlayElement);
+
                                                 $video.css('z-index', '2');
                                                 $video.attr('controls', true);
                                                 $targets.css('z-index', '-10');
+                                                $overlayElement.css('z-index', '-10');
 
                                                 $readMoreButton.hide();
                                                 $bottomBar.hide();
@@ -6020,14 +6010,17 @@
                                             $targets.off('contextmenu.IG_videoControl').on('contextmenu.IG_videoControl', hideContextmenu);
                                             $readMoreButton.off('contextmenu.IG_videoControl').on('contextmenu.IG_videoControl', hideContextmenu);
                                             $bottomBar.off('contextmenu.IG_videoControl').on('contextmenu.IG_videoControl', hideContextmenu);
+                                            $videoParent.off('contextmenu.IG_videoControl').on('contextmenu.IG_videoControl', hideContextmenu);
 
                                             // Restore layout to show details interface
                                             $video.on('contextmenu', function (e) {
                                                 e.preventDefault();
+                                                e.stopPropagation();
 
                                                 $video.css('z-index', '-1');
                                                 $video.removeAttr('controls');
                                                 $targets.css('z-index', '1');
+                                                state.GL_weakCache.overlay.get($video[0])?.css('z-index', '1');
 
                                                 $bottomBar.show();
                                                 $readMoreButton.show();
@@ -6038,14 +6031,13 @@
                                             });
 
                                             $video.on('volumechange', function () {
-                                                // This is mute/unmute's icon
-                                                let $element_mute_button = $videoParent.parent().find('svg > path[d^="M1.5 13.3c-.8 0-1.5.7-1.5 1.5v18.4c0"], svg > path[d^="M16.636 7.028a1.5 1.5"]').parents('[role="button"]').first();
-
-                                                var is_elelment_muted = $element_mute_button.find('svg > path[d^="M16.636"]').length === 0;
+                                                let $element_mute_button = state.GL_weakCache.mutedButton.get(this) || {};
+                                                var is_elelment_muted = $element_mute_button?.find('svg > path[d^="M16.636"]').length === 0;
 
                                                 if (this.muted != is_elelment_muted) {
                                                     this.volume = state.videoVolume;
-                                                    $element_mute_button?.trigger("click");
+
+                                                    triggerReactClickHandler($element_mute_button.first()[0]);
                                                 }
 
                                                 if ($(this).attr('data-completed')) {
@@ -6058,20 +6050,12 @@
                                                 }
                                             });
 
-
-
-                                            if (USER_SETTING.SET_INSTAGRAM_LAYOUT_AS_DEFAULT) {
-                                                $video.css('z-index', '-1');
-                                                $targets.css('z-index', '1');
-                                            }
-                                            else {
-                                                $video.css('z-index', '2');
-                                                $video.attr('controls', true);
-                                                $targets.css('z-index', '-10');
-                                            }
-
                                             $video.css('position', 'absolute');
                                             $video.attr('data-controls', true);
+
+                                            toggleVolumeSilder($video, $video.parents('div[style][class]').filter(function () {
+                                                return $(this).width() == $video.width();
+                                            }).first(), storyType, 'vertical');
                                         }
                                     }
                                     else {

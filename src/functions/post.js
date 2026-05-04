@@ -2,7 +2,6 @@ import { USER_SETTING, SVG, state } from "../settings";
 import {
     updateLoadingBar, openNewTab, logger,
     toggleVolumeSilder, IG_createDM, IG_setDM, triggerLinkElement,
-    openImageViewer,
     updatePopupSelectionSummary,
     replaceSameOriginHost,
     setDownloadProgress,
@@ -10,6 +9,7 @@ import {
 } from "../utils/general";
 import { getBlobMedia } from "../utils/api";
 import { _i18n } from "../utils/i18n";
+import { openImageViewer } from "../utils/image_viewer";
 /*! ESLINT IMPORT END !*/
 
 /**
@@ -193,21 +193,6 @@ export function initPostVideoFunction($mainElement) {
                         e.stopPropagation();
                     }
                 });
-
-                // ! Due to technical limitations, this feature may be removed in the future; the default Instagram layout will prevail.
-                if (USER_SETTING.SET_INSTAGRAM_LAYOUT_AS_DEFAULT) {
-                    $(this).css('z-index', '-1');
-                    $targets.css('z-index', '1');
-
-                    $(this).parents('a[href^="/reels/"]').first().removeAttr("draggable");
-                }
-                else {
-                    $(this).css('z-index', '2');
-                    $(this).attr('controls', true);
-                    $targets.css('z-index', '-10');
-
-                    $(this).parents('a[href^="/reels/"]').first().attr("draggable", false);
-                }
 
                 $(this).css('position', 'absolute');
                 $(this).attr('data-controls', true);

@@ -16,9 +16,10 @@ FS_IMPORT('./metadata.js');
     FS_IMPORT('./functions/reel.js');
     FS_IMPORT('./functions/story.js');
 
-    /* untils */
+    /* utils */
     FS_IMPORT('./utils/api.js');
     FS_IMPORT('./utils/general.js');
+    FS_IMPORT('./utils/image_viewer.js');
     FS_IMPORT('./utils/image_cache.js');
     FS_IMPORT('./utils/i18n.js');
 

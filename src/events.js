@@ -3,13 +3,14 @@ import {
     showSetting, showDebugDOM, reloadScript,
     triggerLinkElement, openNewTab, saveFiles, logger, toggleVolumeSilder, updatePopupSelectionSummary,
     replaceSameOriginHost, setTimeElementDateAndLocaleTime, getHighlightCurrentTimeElement,
-    getPointerElement
+    registerMenuCommand,
+    triggerReactClickHandler
 } from "./utils/general";
 import { onStory, onStoryAll, onStoryThumbnail } from "./functions/story";
 import { onProfileAvatar } from "./functions/profile";
 import { onHighlightsStory, onHighlightsStoryAll, onHighlightsStoryThumbnail } from "./functions/highlight";
 import { onReels } from "./functions/reel";
-import { _i18n, getTranslationText, repaintingTranslations, registerMenuCommand } from "./utils/i18n";
+import { _i18n, getTranslationText, repaintingTranslations } from "./utils/i18n";
 import { registerPerformanceObserver } from "./utils/image_cache";
 import { batchDownloadPostFiles } from "./functions/post";
 /*! ESLINT IMPORT END !*/
@@ -448,33 +449,38 @@ $(function () {
                                             return $(this).attr('class') == null && $(this).attr('style') == null;
                                         }).first();
 
+                                        // This is mute/unmute's icon
+                                        let $element_mute_button = $videoParent.parent().find('svg > path[d^="M1.5 13.3c-.8 0-1.5.7-1.5 1.5v18.4c0"], svg > path[d^="M16.636 7.028a1.5 1.5"]').parents('[role="button"]').first();
+                                        state.GL_weakCache.mutedButton.set($video[0], $element_mute_button);
+
                                         // story bottom bar
                                         let $bottomBar = $videoParent.next();
-                                        $bottomBar.hide();
 
                                         // read more button in center
                                         let $readMoreButton = $videoParent.find('div[class][role="button"]');
-                                        $readMoreButton.hide();
 
                                         let $targets = $video.parent().find('video + div');
-
-                                        const pointerInfo = getPointerElement($(this));
-                                        if (!pointerInfo.self) {
-                                            let $parent = $(pointerInfo.topElement).parents('div[data-visualcompletion="ignore"]').first();
-                                            if ($parent.length > 0) {
-                                                $targets = $targets.add($parent);
-                                            } else {
-                                                $targets = $targets.add(pointerInfo.topElement);
-                                            }
-                                        }
 
                                         const hideContextmenu = function (e) {
                                             e.preventDefault();
                                             e.stopPropagation();
 
+                                            let $overlayElement = null;
+
+                                            if ($overlayElement == null) {
+                                                $overlayElement = $(e.target).parent().find('div[aria-label][data-visualcompletion="ignore"]').first();
+
+                                                if ($overlayElement.length === 0) {
+                                                    $overlayElement = $(e.target).first();
+                                                }
+                                            }
+
+                                            state.GL_weakCache.overlay.set($video[0], $overlayElement);
+
                                             $video.css('z-index', '2');
                                             $video.attr('controls', true);
                                             $targets.css('z-index', '-10');
+                                            $overlayElement.css('z-index', '-10');
 
                                             $readMoreButton.hide();
                                             $bottomBar.hide();
@@ -488,14 +494,17 @@ $(function () {
                                         $targets.off('contextmenu.IG_videoControl').on('contextmenu.IG_videoControl', hideContextmenu);
                                         $readMoreButton.off('contextmenu.IG_videoControl').on('contextmenu.IG_videoControl', hideContextmenu);
                                         $bottomBar.off('contextmenu.IG_videoControl').on('contextmenu.IG_videoControl', hideContextmenu);
+                                        $videoParent.off('contextmenu.IG_videoControl').on('contextmenu.IG_videoControl', hideContextmenu);
 
                                         // Restore layout to show details interface
                                         $video.on('contextmenu', function (e) {
                                             e.preventDefault();
+                                            e.stopPropagation();
 
                                             $video.css('z-index', '-1');
                                             $video.removeAttr('controls');
                                             $targets.css('z-index', '1');
+                                            state.GL_weakCache.overlay.get($video[0])?.css('z-index', '1');
 
                                             $bottomBar.show();
                                             $readMoreButton.show();
@@ -506,14 +515,13 @@ $(function () {
                                         });
 
                                         $video.on('volumechange', function () {
-                                            // This is mute/unmute's icon
-                                            let $element_mute_button = $videoParent.parent().find('svg > path[d^="M1.5 13.3c-.8 0-1.5.7-1.5 1.5v18.4c0"], svg > path[d^="M16.636 7.028a1.5 1.5"]').parents('[role="button"]').first();
-
-                                            var is_elelment_muted = $element_mute_button.find('svg > path[d^="M16.636"]').length === 0;
+                                            let $element_mute_button = state.GL_weakCache.mutedButton.get(this) || {};
+                                            var is_elelment_muted = $element_mute_button?.find('svg > path[d^="M16.636"]').length === 0;
 
                                             if (this.muted != is_elelment_muted) {
                                                 this.volume = state.videoVolume;
-                                                $element_mute_button?.trigger("click");
+
+                                                triggerReactClickHandler($element_mute_button.first()[0]);
                                             }
 
                                             if ($(this).attr('data-completed')) {
@@ -526,20 +534,12 @@ $(function () {
                                             }
                                         });
 
-
-
-                                        if (USER_SETTING.SET_INSTAGRAM_LAYOUT_AS_DEFAULT) {
-                                            $video.css('z-index', '-1');
-                                            $targets.css('z-index', '1');
-                                        }
-                                        else {
-                                            $video.css('z-index', '2');
-                                            $video.attr('controls', true);
-                                            $targets.css('z-index', '-10');
-                                        }
-
                                         $video.css('position', 'absolute');
                                         $video.attr('data-controls', true);
+
+                                        toggleVolumeSilder($video, $video.parents('div[style][class]').filter(function () {
+                                            return $(this).width() == $video.width();
+                                        }).first(), storyType, 'vertical');
                                     }
                                 }
                                 else {

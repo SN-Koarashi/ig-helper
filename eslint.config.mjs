@@ -1,11 +1,16 @@
 import globals from "globals";
 import pluginJs from "@eslint/js";
+import importPlugin from "eslint-plugin-import";
 
 /** @type {import('eslint').Linter.Config[]} */
 export default [
   {
     files: ["**/*.js"],
+    plugins: {
+      import: importPlugin,
+    },
     languageOptions: {
+      sourceType: "module",
       globals: {
         // **
         ...globals.browser,
@@ -24,13 +29,18 @@ export default [
         GM_openInTab: 'readable',
         GM_getResourceURL: 'readable',
         FS_IMPORT: 'readable'
-      },
+      }
+    },
+    rules: {
+      "import/no-unresolved": "error",
+      "import/named": "error",
+      "import/no-duplicates": "warn",
     },
   },
   {
     files: ["build.js"],
-    sourceType: "commonjs",
     languageOptions: {
+      sourceType: "commonjs",
       globals: {
         ...globals.browser,
         ...globals.node
