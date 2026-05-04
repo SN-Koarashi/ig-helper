@@ -16,7 +16,7 @@
 // @name:ru            Помощник IG
 // @name:ar            أداة IG
 // @namespace          https://github.snkms.com/
-// @version            3.17.14
+// @version            3.17.15
 // @description        Download photos and videos from Instagram posts in one click, including Stories, Reels, and profile pictures.
 // @description:zh-TW  一鍵下載 Instagram 貼文中的照片、影片，還包含限時動態、Reels 與大頭貼。
 // @description:zh-CN  一键下载 Instagram 帖子中的照片和视频，还包括快拍、Reels 和头像。
@@ -3067,7 +3067,7 @@
      * @description Get user's id with username.
      *
      * @param  {String}  username
-     * @return {Integer}
+     * @return {Promise<Integer>}
      */
     function getUserId(username) {
         return new Promise((resolve, reject) => {
@@ -3795,9 +3795,9 @@
                 fetch(downloadLink).then(res => {
                     return res.blob().then(dwel => {
                         updateLoadingBar(false);
-                        createSaveFileElement(downloadLink, dwel, metadata);
-
-                        resolve(true);
+                        createSaveFileElement(downloadLink, dwel, metadata).then(() => {
+                            resolve(true);
+                        });
                     });
                 });
             }, 50);
@@ -3987,7 +3987,7 @@
             const mergedBuf = await muxDashVideoAudioToMp4(vBuf, aBuf);
             const mergedBlob = new Blob([mergedBuf], { type: 'video/mp4' });
 
-            createSaveFileElement(videoUrl, mergedBlob, { username, sourceType, timestamp, filetype: 'mp4', shortcode });
+            await createSaveFileElement(videoUrl, mergedBlob, { username, sourceType, timestamp, filetype: 'mp4', shortcode });
             logger('[DASH]', 'Merged MP4 download triggered.');
             return true;
         } catch (e) {
@@ -4108,10 +4108,6 @@
         timestamp = parseInt(timestamp.toString().padEnd(13, '0'));
         index = (index != null) ? index : 0;
 
-        if (USER_SETTING.RENAME_PUBLISH_DATE) {
-            timestamp = parseInt(timestamp.toString().padEnd(13, '0'));
-        }
-
         const date = new Date(timestamp);
 
         const original_name = new URL(downloadLink).pathname.split('/').at(-1).split('.').slice(0, -1).join('.');
@@ -4175,17 +4171,15 @@
      * @param  {String|null}  metadata.uid
      * @return {void}
      */
-    function createSaveFileElement(downloadLink, object, metadata) {
-        let { username, sourceType, timestamp, filetype, shortcode, index, uid } = metadata;
-        const downloadName = getSaveFileName(downloadLink, {
-            username,
-            sourceType,
-            timestamp,
-            filetype,
-            shortcode,
-            index,
-            uid
-        });
+    async function createSaveFileElement(downloadLink, object, metadata) {
+        let { username, sourceType, filetype, shortcode } = metadata;
+
+        if (metadata.uid == null) {
+            const userInfo = await getUserId(username);
+            metadata.uid = userInfo?.user?.id || null;
+        }
+
+        const downloadName = getSaveFileName(downloadLink, metadata);
 
         if (USER_SETTING.MODIFY_RESOURCE_EXIF && filetype === 'jpg' && shortcode && sourceType === 'photo' && (object.type === 'image/jpeg' || object.type === 'image/webp')) {
             changeExifData(object, metadata)
@@ -4211,6 +4205,7 @@
      * @param  {String}  metadata.filetype
      * @param  {String}  metadata.shortcode
      * @param  {Integer|null}  metadata.index
+     * @param  {String}  metadata.uid
      * @return {Blob}
      */
     async function changeExifData(blob, metadata) {
@@ -4281,15 +4276,17 @@
         const exifDateString = `${formatExifDate(metadata.timestamp)}\0`;
         const username = `${(metadata.username || 'unknown').toString()}\0`;
         const url = `https://www.instagram.com/p/${metadata.shortcode}/`;
+        const commentUrl = `https://www.instagram.com/uid/${metadata.uid || 'unknown'}`;
 
         const dateBytes = enc(exifDateString);
         const artistBytes = enc(username);
         const keywordBytes = encUtf16le(`${url}\0`);
+        const xpCommentBytes = encUtf16le(`${commentUrl}\0`);
 
         const exifPrefix = enc('Exif\0\0');
         const tiffHeader = Uint8Array.from([0x49, 0x49, 0x2A, 0x00, 0x08, 0x00, 0x00, 0x00]);
 
-        const ifd0Count = 3;
+        const ifd0Count = 4;
         const exifIfdCount = 1;
 
         const ifd0Size = 2 + (ifd0Count * 12) + 4;
@@ -4299,13 +4296,15 @@
 
         const artistOffset = dataStartOffset;
         const keywordOffset = artistOffset + artistBytes.length;
-        const dateOffset = keywordOffset + keywordBytes.length;
+        const xpCommentOffset = keywordOffset + keywordBytes.length;
+        const dateOffset = xpCommentOffset + xpCommentBytes.length;
 
         const ifd0 = concat(
             u16le(ifd0Count),
-            makeIFDEntry(0x013B, 2, artistBytes.length, artistOffset),
-            makeIFDEntry(0x9C9E, 1, keywordBytes.length, keywordOffset),
-            makeIFDEntry(0x8769, 4, 1, exifIfdOffset),
+            makeIFDEntry(0x013B, 2, artistBytes.length, artistOffset),                 // Artist
+            makeIFDEntry(0x8769, 4, 1, exifIfdOffset),                                 // Exif Offset
+            makeIFDEntry(0x9C9C, 1, xpCommentBytes.length, xpCommentOffset),           // XPComment
+            makeIFDEntry(0x9C9E, 1, keywordBytes.length, keywordOffset),               // XPKeywords
             u32le(0)
         );
 
@@ -4315,7 +4314,7 @@
             u32le(0)
         );
 
-        const tiffBody = concat(tiffHeader, ifd0, exifIfd, artistBytes, keywordBytes, dateBytes);
+        const tiffBody = concat(tiffHeader, ifd0, exifIfd, artistBytes, keywordBytes, xpCommentBytes, dateBytes);
 
         if (isJPEG) {
             const ab = await blob.arrayBuffer();
@@ -4834,6 +4833,8 @@
         });
 
         for (const name in USER_SETTING) {
+            if (name === 'HOTKEY_DEBUG_ENABLED') continue;
+
             $body.append(`
                 <label class="globalSettings"
                        title="${_i18n(name + '_INTRO')}"
@@ -5556,14 +5557,23 @@
                 "SKIP_VIEW_STORY_CONFIRM": "Skip the Confirmation Page for Viewing a Story/Highlight",
                 "SKIP_SHARED_WITH_YOU_DIALOG": "Skip \"shared this with you\" dialog on shared profile links",
                 "CAPTURE_IMAGE_VIA_MEDIA_CACHE": "Capture Image Resource Using Media Cache",
-                "AUTO_RENAME_INTRO": "Auto rename file to custom format:\nCustom Format List: \n%USERNAME% - Username\n%SOURCE_TYPE% - Download Source\n%SHORTCODE% - Post Shortcode\n%YEAR% - Year when downloaded/published\n%2-YEAR% - Year (last two digits) when downloaded/published\n%MONTH% - Month when downloaded/published\n%DAY% - Day when downloaded/published\n%HOUR% - Hour when downloaded/published\n%MINUTE% - Minute when downloaded/published\n%SECOND% - Second when downloaded/published\n%ORIGINAL_NAME% - Original name of downloaded file\n%ORIGINAL_NAME_FIRST% - Original name of downloaded file (first part of name)\n%INDEX% - Resource index\n\nIf set to false, the file name will remain unchanged.\nExample: instagram_321565527_679025940443063_4318007696887450953_n.jpg",
-                "HOTKEY_DEBUG_ENABLED": "Enable Debug Hotkey",
-                "HOTKEY_DEBUG_ENABLED_INTRO": "Enable the keyboard shortcut to open the Debug DOM panel.",
-                "HOTKEY_DEBUG_KEY": "Debug Hotkey",
-                "HOTKEY_DEBUG_KEY_INTRO": "Select a preset hotkey or choose Custom to record your own.",
-                "HOTKEY_CUSTOM": "Custom...",
-                "HOTKEY_PRESS": "Press hotkey and Enter to set...",
-                "HOTKEY_CONFLICT_WARNING": "This hotkey may conflict with other applications.",
+                "AUTO_RENAME_INTRO": `Auto rename file to custom format:\nCustom Format List: \n
+                    %USERNAME% - Username\n
+                    %SOURCE_TYPE% - Download Source\n
+                    %SHORTCODE% - Post Shortcode\n
+                    %YEAR% - Year when downloaded/published\n
+                    %2-YEAR% - Year (last two digits) when downloaded/published\n
+                    %MONTH% - Month when downloaded/published\n
+                    %DAY% - Day when downloaded/published\n
+                    %HOUR% - Hour when downloaded/published\n
+                    %MINUTE% - Minute when downloaded/published\n
+                    %SECOND% - Second when downloaded/published\n
+                    %ORIGINAL_NAME% - Original name of downloaded file\n
+                    %ORIGINAL_NAME_FIRST% - Original name of downloaded file (first part of name)\n
+                    %INDEX% - Resource index\n
+                    %UID% - User account unique ID\n\n
+                    If set to false, the file name will remain unchanged.\n
+                    Example: instagram_321565527_679025940443063_4318007696887450953_n.jpg`,
                 "RENAME_PUBLISH_DATE_INTRO": "Sets the timestamp in the file rename format to the resource publish date (browser time zone).\n\nThis feature only works when [Automatically Rename Files] is set to TRUE.",
                 "RENAME_LOCATE_DATE_INTRO": "Modify the renamed file timestamp date format to the browser's local time, and format it to your preferred regional date format.\n\nThis feature only works when [Automatically Rename Files] is set to TRUE.",
                 "DISABLE_VIDEO_LOOPING_INTRO": "Disable video auto-looping in Reels and posts.",
@@ -5740,14 +5750,19 @@
                 $('.IG_POPUP_DIG').remove();
                 e.preventDefault();
             }
-            // Hot key [Alt+W] to open the settings dialog
+            // Hot key [Alt+W] to open/close the settings dialog
             if (e.which == '87' && e.altKey) {
-                showSetting();
+                if ($('.IG_POPUP_DIG').length > 0 && $('.IG_POPUP_DIG #post_info').text() === 'Preference Settings') {
+                    $('.IG_POPUP_DIG').remove();
+                } else {
+                    showSetting();
+                }
                 e.preventDefault();
             }
 
-            // Hot key [Alt+Z] to open the settings dialog
-            if (USER_SETTING.HOTKEY_DEBUG_ENABLED && e.altKey && e.which == state.debugHotkeyKeyCode) {
+            // Hot key [Alt+Z] to open the debug DOM - use custom keycode if enabled, fallback to default Alt+Z(90)
+            let debugKeyCode = USER_SETTING.HOTKEY_DEBUG_ENABLED ? state.debugHotkeyKeyCode : 90;
+            if (e.altKey && e.which == debugKeyCode) {
                 showDebugDOM();
                 e.preventDefault();
             }
