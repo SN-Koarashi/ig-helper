@@ -16,7 +16,7 @@
 // @name:ru            Помощник IG
 // @name:ar            أداة IG
 // @namespace          https://github.snkms.com/
-// @version            3.17.13
+// @version            3.17.14
 // @description        Download photos and videos from Instagram posts in one click, including Stories, Reels, and profile pictures.
 // @description:zh-TW  一鍵下載 Instagram 貼文中的照片、影片，還包含限時動態、Reels 與大頭貼。
 // @description:zh-CN  一键下载 Instagram 帖子中的照片和视频，还包括快拍、Reels 和头像。
@@ -90,8 +90,7 @@
         'RENAME_PUBLISH_DATE': true,
         'SCROLL_BUTTON': true,
         'SKIP_VIEW_STORY_CONFIRM': false,
-        'SKIP_SHARED_WITH_YOU_DIALOG': false,
-        'SET_INSTAGRAM_LAYOUT_AS_DEFAULT': false,
+        'SKIP_SHARED_WITH_YOU_DIALOG': false
     };
 
     const PARENT_CHILD_MAPPING = {
@@ -102,9 +101,6 @@
             'FALLBACK_TO_BLOB_FETCH_IF_MEDIA_API_THROTTLED',
             'NEW_TAB_ALWAYS_FORCE_MEDIA_IN_POST',
             'PREFER_DASH_MANIFEST'
-        ],
-        'HTML5_VIDEO_CONTROL': [
-            'SET_INSTAGRAM_LAYOUT_AS_DEFAULT'
         ]
     };
     const IMAGE_CACHE_KEY = 'URLS_OF_IMAGES_TEMPORARILY_STORED';
@@ -2196,17 +2192,6 @@
                                 $(this).attr('data-completed', true);
                             }
                         });
-
-                        // ! Due to technical limitations, this feature may be removed in the future; the default Instagram layout will prevail.
-                        if (USER_SETTING.SET_INSTAGRAM_LAYOUT_AS_DEFAULT) {
-                            $(this).css('z-index', '-1');
-                            $targets.css('z-index', '1');
-                        }
-                        else {
-                            $(this).css('z-index', '2');
-                            $(this).attr('controls', true);
-                            $targets.css('z-index', '-10');
-                        }
 
                         $(this).css('position', 'relative');
                         $(this).attr('data-controls', true);
@@ -5451,7 +5436,6 @@
                 "SKIP_VIEW_STORY_CONFIRM": "Skip the Confirmation Page for Viewing a Story/Highlight",
                 "SKIP_SHARED_WITH_YOU_DIALOG": "Skip \"shared this with you\" dialog on shared profile links",
                 "CAPTURE_IMAGE_VIA_MEDIA_CACHE": "Capture Image Resource Using Media Cache",
-                "SET_INSTAGRAM_LAYOUT_AS_DEFAULT": "Set Instagram Layout as Default",
                 "AUTO_RENAME_INTRO": "Auto rename file to custom format:\nCustom Format List: \n%USERNAME% - Username\n%SOURCE_TYPE% - Download Source\n%SHORTCODE% - Post Shortcode\n%YEAR% - Year when downloaded/published\n%2-YEAR% - Year (last two digits) when downloaded/published\n%MONTH% - Month when downloaded/published\n%DAY% - Day when downloaded/published\n%HOUR% - Hour when downloaded/published\n%MINUTE% - Minute when downloaded/published\n%SECOND% - Second when downloaded/published\n%ORIGINAL_NAME% - Original name of downloaded file\n%ORIGINAL_NAME_FIRST% - Original name of downloaded file (first part of name)\n%INDEX% - Resource index\n\nIf set to false, the file name will remain unchanged.\nExample: instagram_321565527_679025940443063_4318007696887450953_n.jpg",
                 "RENAME_PUBLISH_DATE_INTRO": "Sets the timestamp in the file rename format to the resource publish date (browser time zone).\n\nThis feature only works when [Automatically Rename Files] is set to TRUE.",
                 "RENAME_LOCATE_DATE_INTRO": "Modify the renamed file timestamp date format to the browser's local time, and format it to your preferred regional date format.\n\nThis feature only works when [Automatically Rename Files] is set to TRUE.",
@@ -5472,8 +5456,7 @@
                 "SKIP_SHARED_WITH_YOU_DIALOG_INTRO": "Automatically click \"Not now\" on the \"X shared this with you\" dialog when opening any ?igsh= links.",
                 "MODIFY_RESOURCE_EXIF_INTRO": "Modify the EXIF properties of the image resource to place the post link in it.",
                 "DIRECT_DOWNLOAD_STORY_INTRO": "When you click Download All Resources, all stories/highlights are downloaded directly, without showing the image selection dialog.",
-                "CAPTURE_IMAGE_VIA_MEDIA_CACHE_INTRO": "Use a watcher to capture any high-quality image URLs in the DOM tree into the script’s storage so that they can be extracted when available and upon user input.",
-                "SET_INSTAGRAM_LAYOUT_AS_DEFAULT_INTRO": "Set the Instagram web layout as the default layout instead of the HTML5 player layout.",
+                "CAPTURE_IMAGE_VIA_MEDIA_CACHE_INTRO": "Use a watcher to capture any high-quality image URLs in the DOM tree into the script’s storage so that they can be extracted when available and upon user input."
             }
         };
 

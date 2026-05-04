@@ -53,7 +53,6 @@
     "SKIP_VIEW_STORY_CONFIRM": "Pular a página de confirmação ao visualizar uma story ou um destaque",
     "SKIP_SHARED_WITH_YOU_DIALOG": "Ignorar a caixa de diálogo \"Compartilhou isso com você\" em links de perfil compartilhados.",
     "CAPTURE_IMAGE_VIA_MEDIA_CACHE": "Capturar recurso de imagem usando o cache de mídia",
-    "SET_INSTAGRAM_LAYOUT_AS_DEFAULT": "Definir o layout do Instagram como padrão",
     "AUTO_RENAME_INTRO": "Renomear automaticamente os arquivos para um formato personalizado\nLista de formatos personalizados: \n%USERNAME% - Nome de usuário\n%SOURCE_TYPE% - Tipo de fonte\n%SHORTCODE% - Código curto da publicação\n%YEAR% - Ano de download/publicação\n%2-YEAR% - Ano (dois últimos dígitos) de download/publicação\n%MONTH% - Mês de download/publicação\n%DAY% - Dia de download/publicação\n%HOUR% - Hora de download/publicação\n%MINUTE% - Minuto de download/publicação\n%SECOND% - Segundo de download/publicação\n%ORIGINAL_NAME% - Nome original do arquivo baixado\n%ORIGINAL_NAME_FIRST% - Nome original do arquivo baixado (primeira parte do nome)\n\nSe definido como falso, o nome do arquivo permanecerá inalterado.\nExemplo: instagram_321565527_679025940443063_4318007696887450953_n.jpg",
     "RENAME_PUBLISH_DATE_INTRO": "Define o carimbo de data/hora no formato de renomeação de arquivo para a data de publicação do recurso (fuso horário do navegador).\n\nEsse recurso só funciona quando [Renomear arquivos automaticamente] está definido como VERDADEIRO.",
     "RENAME_LOCATE_DATE_INTRO": "Modificar o formato da data do carimbo de data/hora do arquivo renomeado para a hora local do navegador e formatá-lo para o formato de data regional de sua preferência.\n\nEsse recurso só funciona quando [Renomear arquivos automaticamente] está definido como VERDADEIRO.",
@@ -74,6 +73,5 @@
     "SKIP_SHARED_WITH_YOU_DIALOG_INTRO": "Ao abrir qualquer link ?igsh=, clica automaticamente em \"Agora não\" na caixa de diálogo \"X compartilhou isso com você\".",
     "MODIFY_RESOURCE_EXIF_INTRO": "Modificar os atributos EXIF do recurso de imagem para colocar o link do post nele.",
     "DIRECT_DOWNLOAD_STORY_INTRO": "Ao clicar em 'Baixar todos os recursos', todas as histórias/destaques são baixadas diretamente, sem exibir a caixa de diálogo de seleção de imagens.",
-    "CAPTURE_IMAGE_VIA_MEDIA_CACHE_INTRO": "Use um observador para capturar quaisquer URLs de imagens de alta qualidade na árvore DOM para o armazenamento do script, de modo que possam ser extraídos quando estiverem disponíveis e a pedido do usuário.",
-    "SET_INSTAGRAM_LAYOUT_AS_DEFAULT_INTRO": "Defina o layout da web do Instagram como o layout padrão em vez do layout do player HTML5."
+    "CAPTURE_IMAGE_VIA_MEDIA_CACHE_INTRO": "Use um observador para capturar quaisquer URLs de imagens de alta qualidade na árvore DOM para o armazenamento do script, de modo que possam ser extraídos quando estiverem disponíveis e a pedido do usuário."
 }

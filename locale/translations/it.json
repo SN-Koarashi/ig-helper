@@ -53,7 +53,6 @@
     "SKIP_VIEW_STORY_CONFIRM": "Salta la pagina di conferma per visualizzare una storia/un contenuto in evidenza",
     "SKIP_SHARED_WITH_YOU_DIALOG": "Salta la finestra di dialogo \"ha condiviso con te\" nei link profilo condivisi",
     "CAPTURE_IMAGE_VIA_MEDIA_CACHE": "Cattura la risorsa immagine usando la cache dei media",
-    "SET_INSTAGRAM_LAYOUT_AS_DEFAULT": "Imposta il layout di Instagram come predefinito",
     "AUTO_RENAME_INTRO": "Rinomina automaticamente il file con un formato personalizzato:\nElenco dei formati personalizzati: \n%USERNAME% - Nome utente\n%SOURCE_TYPE% - Origine del download\n%SHORTCODE% - Shortcode del post\n%YEAR% - Anno di download/pubblicazione\n%2-YEAR% - Anno (ultime due cifre) di download/pubblicazione\n%MONTH% - Mese di download/pubblicazione\n%DAY% - Giorno di download/pubblicazione\n%HOUR% - Ora di download/pubblicazione\n%MINUTE% - Minuto di download/pubblicazione\n%SECOND% - Secondo di download/pubblicazione\n%ORIGINAL_NAME% - Nome originale del file scaricato\n%ORIGINAL_NAME_FIRST% - Nome originale del file scaricato (prima parte del nome)\n%INDEX% - Indice della risorsa\n\nSe impostato su false, il nome del file rimarrà invariato.\nEsempio: instagram_321565527_679025940443063_4318007696887450953_n.jpg",
     "RENAME_PUBLISH_DATE_INTRO": "Imposta il timestamp nel formato di rinomina del file sulla data di pubblicazione della risorsa (fuso orario del browser).\n\nQuesta funzione funziona solo quando [Rinomina automaticamente i file] è impostato su TRUE.",
     "RENAME_LOCATE_DATE_INTRO": "Modifica il formato della data del timestamp del file rinominato sull'ora locale del browser e lo formatta secondo il formato regionale preferito.\n\nQuesta funzione funziona solo quando [Rinomina automaticamente i file] è impostato su TRUE.",
@@ -74,6 +73,5 @@
     "SKIP_SHARED_WITH_YOU_DIALOG_INTRO": "Clicca automaticamente su \"Non ora\" nella finestra di dialogo \"X ha condiviso con te\" quando apri qualsiasi link ?igsh=.",
     "MODIFY_RESOURCE_EXIF_INTRO": "Modifica le proprietà EXIF della risorsa immagine per inserirvi il link del post.",
     "DIRECT_DOWNLOAD_STORY_INTRO": "Quando clicchi su Scarica tutte le risorse, tutte le storie/i contenuti in evidenza vengono scaricati direttamente, senza mostrare la finestra di selezione delle immagini.",
-    "CAPTURE_IMAGE_VIA_MEDIA_CACHE_INTRO": "Usa un watcher per catturare nella memoria dello script eventuali URL di immagini ad alta qualità presenti nell'albero DOM, in modo che possano essere estratti quando disponibili e su richiesta dell'utente.",
-    "SET_INSTAGRAM_LAYOUT_AS_DEFAULT_INTRO": "Imposta il layout web di Instagram come layout predefinito invece del layout del player HTML5."
+    "CAPTURE_IMAGE_VIA_MEDIA_CACHE_INTRO": "Usa un watcher per catturare nella memoria dello script eventuali URL di immagini ad alta qualità presenti nell'albero DOM, in modo che possano essere estratti quando disponibili e su richiesta dell'utente."
 }
