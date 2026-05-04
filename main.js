@@ -4106,10 +4106,6 @@
         timestamp = parseInt(timestamp.toString().padEnd(13, '0'));
         index = (index != null) ? index : 0;
 
-        if (USER_SETTING.RENAME_PUBLISH_DATE) {
-            timestamp = parseInt(timestamp.toString().padEnd(13, '0'));
-        }
-
         const date = new Date(timestamp);
 
         const original_name = new URL(downloadLink).pathname.split('/').at(-1).split('.').slice(0, -1).join('.');
