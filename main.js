@@ -16,7 +16,7 @@
 // @name:ru            Помощник IG
 // @name:ar            أداة IG
 // @namespace          https://github.snkms.com/
-// @version            3.17.15
+// @version            3.17.16
 // @description        Download photos and videos from Instagram posts in one click, including Stories, Reels, and profile pictures.
 // @description:zh-TW  一鍵下載 Instagram 貼文中的照片、影片，還包含限時動態、Reels 與大頭貼。
 // @description:zh-CN  一键下载 Instagram 帖子中的照片和视频，还包括快拍、Reels 和头像。
@@ -936,6 +936,19 @@
      * @return {Void}
      */
     function initPostVideoFunction($mainElement) {
+        $mainElement.find('video').each(function () {
+            $(this).off('fullscreenchange.IG_videoControl').on('fullscreenchange.IG_videoControl', function () {
+                if ($(this).attr('style').includes('object-fit')) {
+                    if (document.fullscreenElement == this) {
+                        $(this).css('object-fit', 'contain');
+                    }
+                    else {
+                        $(this).css('object-fit', 'cover');
+                    }
+                }
+            });
+        });
+
         // Disable video autoplay
         if (USER_SETTING.DISABLE_VIDEO_LOOPING) {
             $mainElement.find('video').each(function () {
@@ -2078,6 +2091,19 @@
             $main.children().append(`<div data-ih-locale-title="DW" title="${_i18n("DW")}" class="IG_REELS">${SVG.DOWNLOAD}</div>`);
             $main.children().append(`<div data-ih-locale-title="NEW_TAB" title="${_i18n("NEW_TAB")}" class="IG_REELS_NEWTAB">${SVG.NEW_TAB}</div>`);
             $main.children().append(`<div data-ih-locale-title="VIDEO_THUMBNAIL" title="${_i18n("VIDEO_THUMBNAIL")}" class="IG_REELS_THUMBNAIL">${SVG.THUMBNAIL}</div>`);
+
+            $main.find('video').each(function () {
+                $(this).off('fullscreenchange.IG_videoControl').on('fullscreenchange.IG_videoControl', function () {
+                    if ($(this).attr('style').includes('object-fit')) {
+                        if (document.fullscreenElement == this) {
+                            $(this).css('object-fit', 'contain');
+                        }
+                        else {
+                            $(this).css('object-fit', 'cover');
+                        }
+                    }
+                });
+            });
 
             // Disable video autoplay
             if (USER_SETTING.DISABLE_VIDEO_LOOPING) {

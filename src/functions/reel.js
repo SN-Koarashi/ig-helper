@@ -153,6 +153,19 @@ function appendReelsButton($main) {
         $main.children().append(`<div data-ih-locale-title="NEW_TAB" title="${_i18n("NEW_TAB")}" class="IG_REELS_NEWTAB">${SVG.NEW_TAB}</div>`);
         $main.children().append(`<div data-ih-locale-title="VIDEO_THUMBNAIL" title="${_i18n("VIDEO_THUMBNAIL")}" class="IG_REELS_THUMBNAIL">${SVG.THUMBNAIL}</div>`);
 
+        $main.find('video').each(function () {
+            $(this).off('fullscreenchange.IG_videoControl').on('fullscreenchange.IG_videoControl', function () {
+                if ($(this).attr('style').includes('object-fit')) {
+                    if (document.fullscreenElement == this) {
+                        $(this).css('object-fit', 'contain');
+                    }
+                    else {
+                        $(this).css('object-fit', 'cover');
+                    }
+                }
+            });
+        });
+
         // Disable video autoplay
         if (USER_SETTING.DISABLE_VIDEO_LOOPING) {
             $main.find('video').each(function () {
