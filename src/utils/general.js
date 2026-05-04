@@ -1331,7 +1331,13 @@ export function showHotkeySetting() {
         { value: '75', label: 'Alt+K' },
         { value: '67', label: 'Alt+C' },
         { value: '83', label: 'Alt+S' },
-        { value: '82', label: 'Alt+R' }
+        { value: '82', label: 'Alt+R' },
+        { value: '192', label: 'Alt+~' },
+        { value: '49', label: 'Alt+1' },
+        { value: '50', label: 'Alt+2' },
+        { value: '51', label: 'Alt+3' },
+        { value: '52', label: 'Alt+4' },
+        { value: '53', label: 'Alt+5' }
     ];
 
     const hotkeyConfigs = [

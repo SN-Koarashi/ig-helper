@@ -107,9 +107,7 @@ export function translateText() {
             "HOTKEY_SETTINGS_KEY": "Preference Settings",
             "HOTKEY_KEY_SETTINGS_KEY": "Hotkey Settings",
             "HOTKEY_DOWNLOAD_STORY_KEY": "Download Story",
-            "HOTKEY_CUSTOM": "Custom...",
-            "HOTKEY_PRESS": "Press hotkey and Enter to set...",
-            "HOTKEY_CONFLICT_WARNING": "This hotkey may conflict with other applications.",
+            "HOTKEY_CONFLICT_WARNING": "This hotkey may conflict with other settings.",
             "HOTKEY_RESET": "Reset"
         }
     };
