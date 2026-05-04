@@ -71,7 +71,7 @@ export function getStories(userId) {
  * @description Get user's id with username.
  *
  * @param  {String}  username
- * @return {Integer}
+ * @return {Promise<Integer>}
  */
 export function getUserId(username) {
     return new Promise((resolve, reject) => {

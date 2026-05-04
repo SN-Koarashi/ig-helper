@@ -1,6 +1,6 @@
 import { SVG, USER_SETTING, state, locale_manifest, PARENT_CHILD_MAPPING } from "../settings";
 import { _i18n } from "./i18n";
-import { getPostOwner, getMediaInfo } from "./api";
+import { getPostOwner, getMediaInfo, getUserId } from "./api";
 import { getImageFromCache } from "./image_cache";
 /*! ESLINT IMPORT END !*/
 
@@ -408,9 +408,9 @@ export function saveFiles(downloadLink, metadata) {
             fetch(downloadLink).then(res => {
                 return res.blob().then(dwel => {
                     updateLoadingBar(false);
-                    createSaveFileElement(downloadLink, dwel, metadata);
-
-                    resolve(true);
+                    createSaveFileElement(downloadLink, dwel, metadata).then(() => {
+                        resolve(true);
+                    });
                 });
             });
         }, 50);
@@ -600,7 +600,7 @@ async function downloadDashStreams(videoUrl, audioUrl, username, sourceType, tim
         const mergedBuf = await muxDashVideoAudioToMp4(vBuf, aBuf);
         const mergedBlob = new Blob([mergedBuf], { type: 'video/mp4' });
 
-        createSaveFileElement(videoUrl, mergedBlob, { username, sourceType, timestamp, filetype: 'mp4', shortcode });
+        await createSaveFileElement(videoUrl, mergedBlob, { username, sourceType, timestamp, filetype: 'mp4', shortcode });
         logger('[DASH]', 'Merged MP4 download triggered.');
         return true;
     } catch (e) {
@@ -788,17 +788,15 @@ export function getSaveFileName(downloadLink, metadata) {
  * @param  {String|null}  metadata.uid
  * @return {void}
  */
-export function createSaveFileElement(downloadLink, object, metadata) {
-    let { username, sourceType, timestamp, filetype, shortcode, index, uid } = metadata;
-    const downloadName = getSaveFileName(downloadLink, {
-        username,
-        sourceType,
-        timestamp,
-        filetype,
-        shortcode,
-        index,
-        uid
-    });
+export async function createSaveFileElement(downloadLink, object, metadata) {
+    let { username, sourceType, filetype, shortcode } = metadata;
+
+    if (metadata.uid == null) {
+        const userInfo = await getUserId(username);
+        metadata.uid = userInfo?.user?.id || null;
+    }
+
+    const downloadName = getSaveFileName(downloadLink, metadata);
 
     if (USER_SETTING.MODIFY_RESOURCE_EXIF && filetype === 'jpg' && shortcode && sourceType === 'photo' && (object.type === 'image/jpeg' || object.type === 'image/webp')) {
         changeExifData(object, metadata)
@@ -824,6 +822,7 @@ export function createSaveFileElement(downloadLink, object, metadata) {
  * @param  {String}  metadata.filetype
  * @param  {String}  metadata.shortcode
  * @param  {Integer|null}  metadata.index
+ * @param  {String}  metadata.uid
  * @return {Blob}
  */
 async function changeExifData(blob, metadata) {
@@ -894,15 +893,17 @@ async function changeExifData(blob, metadata) {
     const exifDateString = `${formatExifDate(metadata.timestamp)}\0`;
     const username = `${(metadata.username || 'unknown').toString()}\0`;
     const url = `https://www.instagram.com/p/${metadata.shortcode}/`;
+    const commentUrl = `https://www.instagram.com/uid/${metadata.uid || 'unknown'}`;
 
     const dateBytes = enc(exifDateString);
     const artistBytes = enc(username);
     const keywordBytes = encUtf16le(`${url}\0`);
+    const xpCommentBytes = encUtf16le(`${commentUrl}\0`);
 
     const exifPrefix = enc('Exif\0\0');
     const tiffHeader = Uint8Array.from([0x49, 0x49, 0x2A, 0x00, 0x08, 0x00, 0x00, 0x00]);
 
-    const ifd0Count = 3;
+    const ifd0Count = 4;
     const exifIfdCount = 1;
 
     const ifd0Size = 2 + (ifd0Count * 12) + 4;
@@ -912,13 +913,15 @@ async function changeExifData(blob, metadata) {
 
     const artistOffset = dataStartOffset;
     const keywordOffset = artistOffset + artistBytes.length;
-    const dateOffset = keywordOffset + keywordBytes.length;
+    const xpCommentOffset = keywordOffset + keywordBytes.length;
+    const dateOffset = xpCommentOffset + xpCommentBytes.length;
 
     const ifd0 = concat(
         u16le(ifd0Count),
-        makeIFDEntry(0x013B, 2, artistBytes.length, artistOffset),
-        makeIFDEntry(0x9C9E, 1, keywordBytes.length, keywordOffset),
-        makeIFDEntry(0x8769, 4, 1, exifIfdOffset),
+        makeIFDEntry(0x013B, 2, artistBytes.length, artistOffset),                 // Artist
+        makeIFDEntry(0x8769, 4, 1, exifIfdOffset),                                 // Exif Offset
+        makeIFDEntry(0x9C9C, 1, xpCommentBytes.length, xpCommentOffset),           // XPComment
+        makeIFDEntry(0x9C9E, 1, keywordBytes.length, keywordOffset),               // XPKeywords
         u32le(0)
     );
 
@@ -928,7 +931,7 @@ async function changeExifData(blob, metadata) {
         u32le(0)
     );
 
-    const tiffBody = concat(tiffHeader, ifd0, exifIfd, artistBytes, keywordBytes, dateBytes);
+    const tiffBody = concat(tiffHeader, ifd0, exifIfd, artistBytes, keywordBytes, xpCommentBytes, dateBytes);
 
     if (isJPEG) {
         const ab = await blob.arrayBuffer();
