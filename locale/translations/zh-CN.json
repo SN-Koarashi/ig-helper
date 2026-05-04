@@ -74,5 +74,11 @@
     "SKIP_SHARED_WITH_YOU_DIALOG_INTRO": "打开任何 ?igsh= 链接时，在“X 与您分享此内容”对话框中自动点击“暂時不要”。",
     "MODIFY_RESOURCE_EXIF_INTRO": "修改图像资源的 EXIF 属性，以包含帖子链接、拍摄日期和作者等元数据。",
     "DIRECT_DOWNLOAD_STORY_INTRO": "当你点击“下载所有资源”时，所有快拍/精选集会直接下载，不会显示资源选择对话框。",
-    "CAPTURE_IMAGE_VIA_MEDIA_CACHE_INTRO": "使用观察者捕获DOM树中的任何高质量图像网址到脚本储存中，以便在可用时和用户输入时提取。"
+    "CAPTURE_IMAGE_VIA_MEDIA_CACHE_INTRO": "使用观察者捕获DOM树中的任何高质量图像网址到脚本储存中，以便在可用时和用户输入时提取。",
+    "HOTKEY_DEBUG_KEY": "调试窗口",
+    "HOTKEY_SETTINGS_KEY": "偏好设置",
+    "HOTKEY_KEY_SETTINGS_KEY": "快捷键设置",
+    "HOTKEY_DOWNLOAD_STORY_KEY": "下载快拍",
+    "HOTKEY_CONFLICT_WARNING": "此快捷键可能与其他设置冲突。",
+    "HOTKEY_RESET": "重置"
 }

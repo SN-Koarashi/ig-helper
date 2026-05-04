@@ -5,6 +5,9 @@
   "private": true,
   "author": "SN-Koarashi",
   "license": "GPLv3",
+  "scripts": {
+    "build": "node build.js"
+  },
   "devDependencies": {
     "@eslint/js": "^9.17.0",
     "@types/jquery": "^4.0.0",

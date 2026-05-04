@@ -74,5 +74,11 @@
     "SKIP_SHARED_WITH_YOU_DIALOG_INTRO": "Ao abrir qualquer link ?igsh=, clica automaticamente em \"Agora não\" na caixa de diálogo \"X compartilhou isso com você\".",
     "MODIFY_RESOURCE_EXIF_INTRO": "Modificar os atributos EXIF do recurso de imagem para colocar o link do post nele.",
     "DIRECT_DOWNLOAD_STORY_INTRO": "Ao clicar em 'Baixar todos os recursos', todas as histórias/destaques são baixadas diretamente, sem exibir a caixa de diálogo de seleção de imagens.",
-    "CAPTURE_IMAGE_VIA_MEDIA_CACHE_INTRO": "Use um observador para capturar quaisquer URLs de imagens de alta qualidade na árvore DOM para o armazenamento do script, de modo que possam ser extraídos quando estiverem disponíveis e a pedido do usuário."
+    "CAPTURE_IMAGE_VIA_MEDIA_CACHE_INTRO": "Use um observador para capturar quaisquer URLs de imagens de alta qualidade na árvore DOM para o armazenamento do script, de modo que possam ser extraídos quando estiverem disponíveis e a pedido do usuário.",
+    "HOTKEY_DEBUG_KEY": "Janela de depuração",
+    "HOTKEY_SETTINGS_KEY": "Configurações de preferência",
+    "HOTKEY_KEY_SETTINGS_KEY": "Configurações de atalho de teclado",
+    "HOTKEY_DOWNLOAD_STORY_KEY": "Baixar story",
+    "HOTKEY_CONFLICT_WARNING": "Este atalho de teclado pode entrar em conflito com outras configuracoes.",
+    "HOTKEY_RESET": "Redefinir"
 }

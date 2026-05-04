@@ -74,5 +74,11 @@
     "SKIP_SHARED_WITH_YOU_DIALOG_INTRO": "開啟任何 ?igsh= 連結時，在「X 與您分享此內容」對話方塊中自動點選「現在不要」。",
     "MODIFY_RESOURCE_EXIF_INTRO": "修改影像資源的 EXIF 屬性，使其包含貼文連結、拍攝日期和作者等中繼資料。",
     "DIRECT_DOWNLOAD_STORY_INTRO": "當你點擊「下載所有資源」時，所有限時動態及精選動態會直接下載，不會顯示資源選擇視窗。",
-    "CAPTURE_IMAGE_VIA_MEDIA_CACHE_INTRO": "使用觀察者捕獲DOM樹中的任何高品質圖像網址到腳本儲存空間中，以便在可用時以及使用者輸入時進行擷取。"
+    "CAPTURE_IMAGE_VIA_MEDIA_CACHE_INTRO": "使用觀察者捕獲DOM樹中的任何高品質圖像網址到腳本儲存空間中，以便在可用時以及使用者輸入時進行擷取。",
+    "HOTKEY_DEBUG_KEY": "偵錯視窗",
+    "HOTKEY_SETTINGS_KEY": "偏好設定",
+    "HOTKEY_KEY_SETTINGS_KEY": "快捷鍵設定",
+    "HOTKEY_DOWNLOAD_STORY_KEY": "下載限時動態",
+    "HOTKEY_CONFLICT_WARNING": "此快捷鍵可能與其他設定衝突。",
+    "HOTKEY_RESET": "重置"
 }

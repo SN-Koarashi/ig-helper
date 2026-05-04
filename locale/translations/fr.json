@@ -74,5 +74,11 @@
     "SKIP_SHARED_WITH_YOU_DIALOG_INTRO": "Lors de l'ouverture de tout lien ?igsh=, cliquer automatiquement sur « Pas maintenant » dans la boîte de dialogue « X a partagé ceci avec vous ».",
     "MODIFY_RESOURCE_EXIF_INTRO": "Modifier les attributs EXIF de la ressource image afin de placer le lien du post à l'intérieur.",
     "DIRECT_DOWNLOAD_STORY_INTRO": "Lorsque vous cliquez sur « Télécharger toutes les ressources », toutes les stories/à la une sont téléchargées directement, sans afficher la boîte de dialogue de sélection des images.",
-    "CAPTURE_IMAGE_VIA_MEDIA_CACHE_INTRO": "Utilise un watcher pour capturer tous les URL d’images de haute qualité dans l’arbre DOM dans le stockage du script, afin qu’ils puissent être extraits lorsqu’ils sont disponibles et à la demande de l’utilisateur."
+    "CAPTURE_IMAGE_VIA_MEDIA_CACHE_INTRO": "Utilise un watcher pour capturer tous les URL d'images de haute qualité dans l'arbre DOM dans le stockage du script, afin qu'ils puissent être extraits quand ils sont disponibles et à la demande de l'utilisateur.",
+    "HOTKEY_DEBUG_KEY": "Fenêtre de débogage",
+    "HOTKEY_SETTINGS_KEY": "Paramètres de préférences",
+    "HOTKEY_KEY_SETTINGS_KEY": "Paramètres des raccourcis clavier",
+    "HOTKEY_DOWNLOAD_STORY_KEY": "Télécharger la story",
+    "HOTKEY_CONFLICT_WARNING": "Ce raccourci clavier peut entrer en conflit avec d'autres parametres.",
+    "HOTKEY_RESET": "Réinitialiser"
 }

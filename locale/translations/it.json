@@ -74,5 +74,11 @@
     "SKIP_SHARED_WITH_YOU_DIALOG_INTRO": "Clicca automaticamente su \"Non ora\" nella finestra di dialogo \"X ha condiviso con te\" quando apri qualsiasi link ?igsh=.",
     "MODIFY_RESOURCE_EXIF_INTRO": "Modifica le proprietà EXIF della risorsa immagine per inserirvi il link del post.",
     "DIRECT_DOWNLOAD_STORY_INTRO": "Quando clicchi su Scarica tutte le risorse, tutte le storie/i contenuti in evidenza vengono scaricati direttamente, senza mostrare la finestra di selezione delle immagini.",
-    "CAPTURE_IMAGE_VIA_MEDIA_CACHE_INTRO": "Usa un watcher per catturare nella memoria dello script eventuali URL di immagini ad alta qualità presenti nell'albero DOM, in modo che possano essere estratti quando disponibili e su richiesta dell'utente."
+    "CAPTURE_IMAGE_VIA_MEDIA_CACHE_INTRO": "Usa un watcher per catturare nella memoria dello script eventuali URL di immagini ad alta qualità presenti nell'albero DOM, in modo che possano essere estratti quando disponibili e su richiesta dell'utente.",
+    "HOTKEY_DEBUG_KEY": "Finestra di debug",
+    "HOTKEY_SETTINGS_KEY": "Impostazioni preferenze",
+    "HOTKEY_KEY_SETTINGS_KEY": "Impostazioni scorciatoie da tastiera",
+    "HOTKEY_DOWNLOAD_STORY_KEY": "Scarica storia",
+    "HOTKEY_CONFLICT_WARNING": "Questa scorciatoia da tastiera potrebbe entrare in conflitto con altre impostazioni.",
+    "HOTKEY_RESET": "Reimposta"
 }

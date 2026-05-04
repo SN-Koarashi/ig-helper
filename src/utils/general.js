@@ -1219,6 +1219,12 @@ export function registerMenuCommand() {
         accessKey: "w"
     }));
 
+    state.registerMenuIds.push(GM_registerMenuCommand(_i18n('HOTKEY_KEY_SETTINGS_KEY'), () => {
+        showHotkeySetting();
+    }, {
+        accessKey: "q"
+    }));
+
     state.registerMenuIds.push(GM_registerMenuCommand(_i18n('DONATE'), () => {
         GM_openInTab("https://ko-fi.com/snkoarashi", { active: true });
     }, {
@@ -1314,6 +1320,106 @@ export function callNotification() {
                 console.error('Could not find version in the remote script.');
             }
         }
+    });
+}
+
+export function showHotkeySetting() {
+    $('.IG_POPUP_DIG').remove();
+    IG_createDM();
+
+    $('.IG_POPUP_DIG #post_info').text('Hotkey Settings');
+
+    const $body = $('.IG_POPUP_DIG .IG_POPUP_DIG_BODY');
+
+    const hotkeyOptions = [
+        { value: '87', label: 'Alt+W' },
+        { value: '90', label: 'Alt+Z' },
+        { value: '88', label: 'Alt+X' },
+        { value: '68', label: 'Alt+D' },
+        { value: '75', label: 'Alt+K' },
+        { value: '67', label: 'Alt+C' },
+        { value: '83', label: 'Alt+S' },
+        { value: '82', label: 'Alt+R' },
+        { value: '192', label: 'Alt+~' },
+        { value: '49', label: 'Alt+1' },
+        { value: '50', label: 'Alt+2' },
+        { value: '51', label: 'Alt+3' },
+        { value: '52', label: 'Alt+4' },
+        { value: '53', label: 'Alt+5' }
+    ];
+
+    const hotkeyConfigs = [
+        { name: 'HOTKEY_SETTINGS', key: 'HOTKEY_SETTINGS_KEY', stateKey: 'settingsHotkeyKeyCode', storageKey: 'G_HOTKEY_SETTINGS_KEYCODE', defaultKeyCode: 87 },
+        { name: 'HOTKEY_KEY_SETTINGS', key: 'HOTKEY_KEY_SETTINGS_KEY', stateKey: 'keySettingsHotkeyKeyCode', storageKey: 'G_HOTKEY_KEY_SETTINGS_KEYCODE', defaultKeyCode: 67 },
+        { name: 'HOTKEY_DEBUG', key: 'HOTKEY_DEBUG_KEY', stateKey: 'debugHotkeyKeyCode', storageKey: 'G_HOTKEY_DEBUG_KEYCODE', defaultKeyCode: 90 },
+        { name: 'HOTKEY_DOWNLOAD_STORY', key: 'HOTKEY_DOWNLOAD_STORY_KEY', stateKey: 'downloadStoryHotkeyKeyCode', storageKey: 'G_HOTKEY_DOWNLOAD_STORY_KEYCODE', defaultKeyCode: 83 },
+    ];
+
+    function checkHotkeyConflict(keyCode, excludeStateKey) {
+        for (const config of hotkeyConfigs) {
+            if (config.stateKey !== excludeStateKey && state[config.stateKey] === keyCode) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    function createHotkeySetting(name, key, stateKey, storageKey, defaultKeyCode) {
+        const currentKeyCode = state[stateKey];
+        const $container = $(`
+            <label class="globalSettings hotkey-setting-item" data-hotkey="${name}" style="position: relative;display: flex; align-items: center; padding-right: 5px;">
+                <span>${_i18n(key)}</span>
+                <div class="hotkey-select-wrapper" style="display: flex; align-items: center; gap: 8px; justify-content: flex-end; flex: 1;">
+                    <select class="hotkey-preset" data-storage="${storageKey}" data-state="${stateKey}" data-default="${defaultKeyCode}" style="padding: 4px 8px; border: 1px solid #ccc; border-radius: 4px; font-size: 13px;">
+                        ${hotkeyOptions.filter(o => o.value != defaultKeyCode.toString()).map(o => `<option value="${o.value}" ${o.value == currentKeyCode ? 'selected' : ''}>${o.label}</option>`).join('')}
+                        <option value="${defaultKeyCode}" ${currentKeyCode == defaultKeyCode ? 'selected' : ''}>Alt+${String.fromCharCode(defaultKeyCode)}</option>
+                    </select>
+                    <button class="hotkey-reset" title="${_i18n('HOTKEY_RESET')}" style="padding: 4px 8px; border: 1px solid #ccc; border-radius: 4px; font-size: 13px; color: #1f1f1f; background: #fff; cursor: pointer;">${_i18n('HOTKEY_RESET')}</button>
+                </div>
+                <div class="hotkey-conflict-warning" style="pointer-events: none; position: absolute; bottom: -10px; display: none; font-size: 11px; color: #e74c3c;">▲ ${_i18n('HOTKEY_CONFLICT_WARNING')}</div>
+            </label>
+        `);
+
+        $container.find('.hotkey-reset').on('click', function () {
+            const defaultCode = parseInt($container.find('.hotkey-preset').data('default'));
+            const stateKeyName = $container.find('.hotkey-preset').data('state');
+            const storage = $container.find('.hotkey-preset').data('storage');
+            const $preset = $container.find('.hotkey-preset');
+
+            state[stateKeyName] = defaultCode;
+            GM_setValue(storage, defaultCode);
+            $preset.val(defaultCode);
+            $container.find('.hotkey-conflict-warning').hide();
+        });
+
+        $container.find('.hotkey-preset').on('change', function () {
+            const val = $(this).val();
+            const storage = $(this).data('storage');
+            const stateKeyName = $(this).data('state');
+            const defaultCode = parseInt($(this).data('default'));
+            const keyCode = parseInt(val);
+
+            if (checkHotkeyConflict(keyCode, stateKeyName)) {
+                state[stateKeyName] = defaultCode;
+                GM_setValue(storage, defaultCode);
+                $(this).val(defaultCode);
+                $container.find('.hotkey-conflict-warning').show().delay(2000).fadeOut(500);
+            } else {
+                state[stateKeyName] = keyCode;
+                GM_setValue(storage, keyCode);
+                $container.find('.hotkey-conflict-warning').hide();
+            }
+        });
+
+        return $container;
+    }
+
+    $body.append('<span class="hotkey-settings-container"></span>');
+
+    hotkeyConfigs.forEach((config) => {
+        $body.find('.hotkey-settings-container').append(
+            createHotkeySetting(config.name, config.key, config.stateKey, config.storageKey, config.defaultKeyCode)
+        );
     });
 }
 

@@ -16,7 +16,7 @@
 // @name:ru            Помощник IG
 // @name:ar            أداة IG
 // @namespace          https://github.snkms.com/
-// @version            3.17.16
+// @version            3.18.1
 // @description        Download photos and videos from Instagram posts in one click, including Stories, Reels, and profile pictures.
 // @description:zh-TW  一鍵下載 Instagram 貼文中的照片、影片，還包含限時動態、Reels 與大頭貼。
 // @description:zh-CN  一键下载 Instagram 帖子中的照片和视频，还包括快拍、Reels 和头像。
@@ -153,7 +153,11 @@
         GL_weakCache: {
             overlay: new WeakMap(),
             mutedButton: new WeakMap(),
-        }
+        },
+        debugHotkeyKeyCode: (GM_getValue('G_HOTKEY_DEBUG_KEYCODE')) ? GM_getValue('G_HOTKEY_DEBUG_KEYCODE') : 90,
+        settingsHotkeyKeyCode: (GM_getValue('G_HOTKEY_SETTINGS_KEYCODE')) ? GM_getValue('G_HOTKEY_SETTINGS_KEYCODE') : 87,
+        keySettingsHotkeyKeyCode: (GM_getValue('G_HOTKEY_KEY_SETTINGS_KEYCODE')) ? GM_getValue('G_HOTKEY_KEY_SETTINGS_KEYCODE') : 67,
+        downloadStoryHotkeyKeyCode: (GM_getValue('G_HOTKEY_DOWNLOAD_STORY_KEYCODE')) ? GM_getValue('G_HOTKEY_DOWNLOAD_STORY_KEYCODE') : 83
     };
     /*******************************/
 
@@ -4631,6 +4635,12 @@
             accessKey: "w"
         }));
 
+        state.registerMenuIds.push(GM_registerMenuCommand(_i18n('HOTKEY_KEY_SETTINGS_KEY'), () => {
+            showHotkeySetting();
+        }, {
+            accessKey: "q"
+        }));
+
         state.registerMenuIds.push(GM_registerMenuCommand(_i18n('DONATE'), () => {
             GM_openInTab("https://ko-fi.com/snkoarashi", { active: true });
         }, {
@@ -4726,6 +4736,106 @@
                     console.error('Could not find version in the remote script.');
                 }
             }
+        });
+    }
+
+    function showHotkeySetting() {
+        $('.IG_POPUP_DIG').remove();
+        IG_createDM();
+
+        $('.IG_POPUP_DIG #post_info').text('Hotkey Settings');
+
+        const $body = $('.IG_POPUP_DIG .IG_POPUP_DIG_BODY');
+
+        const hotkeyOptions = [
+            { value: '87', label: 'Alt+W' },
+            { value: '90', label: 'Alt+Z' },
+            { value: '88', label: 'Alt+X' },
+            { value: '68', label: 'Alt+D' },
+            { value: '75', label: 'Alt+K' },
+            { value: '67', label: 'Alt+C' },
+            { value: '83', label: 'Alt+S' },
+            { value: '82', label: 'Alt+R' },
+            { value: '192', label: 'Alt+~' },
+            { value: '49', label: 'Alt+1' },
+            { value: '50', label: 'Alt+2' },
+            { value: '51', label: 'Alt+3' },
+            { value: '52', label: 'Alt+4' },
+            { value: '53', label: 'Alt+5' }
+        ];
+
+        const hotkeyConfigs = [
+            { name: 'HOTKEY_SETTINGS', key: 'HOTKEY_SETTINGS_KEY', stateKey: 'settingsHotkeyKeyCode', storageKey: 'G_HOTKEY_SETTINGS_KEYCODE', defaultKeyCode: 87 },
+            { name: 'HOTKEY_KEY_SETTINGS', key: 'HOTKEY_KEY_SETTINGS_KEY', stateKey: 'keySettingsHotkeyKeyCode', storageKey: 'G_HOTKEY_KEY_SETTINGS_KEYCODE', defaultKeyCode: 67 },
+            { name: 'HOTKEY_DEBUG', key: 'HOTKEY_DEBUG_KEY', stateKey: 'debugHotkeyKeyCode', storageKey: 'G_HOTKEY_DEBUG_KEYCODE', defaultKeyCode: 90 },
+            { name: 'HOTKEY_DOWNLOAD_STORY', key: 'HOTKEY_DOWNLOAD_STORY_KEY', stateKey: 'downloadStoryHotkeyKeyCode', storageKey: 'G_HOTKEY_DOWNLOAD_STORY_KEYCODE', defaultKeyCode: 83 },
+        ];
+
+        function checkHotkeyConflict(keyCode, excludeStateKey) {
+            for (const config of hotkeyConfigs) {
+                if (config.stateKey !== excludeStateKey && state[config.stateKey] === keyCode) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        function createHotkeySetting(name, key, stateKey, storageKey, defaultKeyCode) {
+            const currentKeyCode = state[stateKey];
+            const $container = $(`
+                <label class="globalSettings hotkey-setting-item" data-hotkey="${name}" style="position: relative;display: flex; align-items: center; padding-right: 5px;">
+                    <span>${_i18n(key)}</span>
+                    <div class="hotkey-select-wrapper" style="display: flex; align-items: center; gap: 8px; justify-content: flex-end; flex: 1;">
+                        <select class="hotkey-preset" data-storage="${storageKey}" data-state="${stateKey}" data-default="${defaultKeyCode}" style="padding: 4px 8px; border: 1px solid #ccc; border-radius: 4px; font-size: 13px;">
+                            ${hotkeyOptions.filter(o => o.value != defaultKeyCode.toString()).map(o => `<option value="${o.value}" ${o.value == currentKeyCode ? 'selected' : ''}>${o.label}</option>`).join('')}
+                            <option value="${defaultKeyCode}" ${currentKeyCode == defaultKeyCode ? 'selected' : ''}>Alt+${String.fromCharCode(defaultKeyCode)}</option>
+                        </select>
+                        <button class="hotkey-reset" title="${_i18n('HOTKEY_RESET')}" style="padding: 4px 8px; border: 1px solid #ccc; border-radius: 4px; font-size: 13px; color: #1f1f1f; background: #fff; cursor: pointer;">${_i18n('HOTKEY_RESET')}</button>
+                    </div>
+                    <div class="hotkey-conflict-warning" style="pointer-events: none; position: absolute; bottom: -10px; display: none; font-size: 11px; color: #e74c3c;">▲ ${_i18n('HOTKEY_CONFLICT_WARNING')}</div>
+                </label>
+            `);
+
+            $container.find('.hotkey-reset').on('click', function () {
+                const defaultCode = parseInt($container.find('.hotkey-preset').data('default'));
+                const stateKeyName = $container.find('.hotkey-preset').data('state');
+                const storage = $container.find('.hotkey-preset').data('storage');
+                const $preset = $container.find('.hotkey-preset');
+
+                state[stateKeyName] = defaultCode;
+                GM_setValue(storage, defaultCode);
+                $preset.val(defaultCode);
+                $container.find('.hotkey-conflict-warning').hide();
+            });
+
+            $container.find('.hotkey-preset').on('change', function () {
+                const val = $(this).val();
+                const storage = $(this).data('storage');
+                const stateKeyName = $(this).data('state');
+                const defaultCode = parseInt($(this).data('default'));
+                const keyCode = parseInt(val);
+
+                if (checkHotkeyConflict(keyCode, stateKeyName)) {
+                    state[stateKeyName] = defaultCode;
+                    GM_setValue(storage, defaultCode);
+                    $(this).val(defaultCode);
+                    $container.find('.hotkey-conflict-warning').show().delay(2000).fadeOut(500);
+                } else {
+                    state[stateKeyName] = keyCode;
+                    GM_setValue(storage, keyCode);
+                    $container.find('.hotkey-conflict-warning').hide();
+                }
+            });
+
+            return $container;
+        }
+
+        $body.append('<span class="hotkey-settings-container"></span>');
+
+        hotkeyConfigs.forEach((config) => {
+            $body.find('.hotkey-settings-container').append(
+                createHotkeySetting(config.name, config.key, config.stateKey, config.storageKey, config.defaultKeyCode)
+            );
         });
     }
 
@@ -5513,9 +5623,15 @@
                 "CHECK_FOR_UPDATE_INTRO": "Check for updates when the script is triggered (check every 300 seconds).\nUpdate notifications will be sent as desktop notifications through the browser.",
                 "SKIP_VIEW_STORY_CONFIRM_INTRO": "Automatically skip when confirmation page is shown in story or highlight.",
                 "SKIP_SHARED_WITH_YOU_DIALOG_INTRO": "Automatically click \"Not now\" on the \"X shared this with you\" dialog when opening any ?igsh= links.",
-                "MODIFY_RESOURCE_EXIF_INTRO": "Modify the EXIF ​​attribute of the image resource to include metadata such as post link, shooting date, and author.",
+                "MODIFY_RESOURCE_EXIF_INTRO": "Modify the EXIF attribute of the image resource to include metadata such as post link, shooting date, and author.",
                 "DIRECT_DOWNLOAD_STORY_INTRO": "When you click Download All Resources, all stories/highlights are downloaded directly, without showing the image selection dialog.",
-                "CAPTURE_IMAGE_VIA_MEDIA_CACHE_INTRO": "Use a watcher to capture any high-quality image URLs in the DOM tree into the script’s storage so that they can be extracted when available and upon user input."
+                "CAPTURE_IMAGE_VIA_MEDIA_CACHE_INTRO": "Use a watcher to capture any high-quality image URLs in the DOM tree into the script's storage so that they can be extracted when available and upon user input.",
+                "HOTKEY_DEBUG_KEY": "Debug Window",
+                "HOTKEY_SETTINGS_KEY": "Preference Settings",
+                "HOTKEY_KEY_SETTINGS_KEY": "Hotkey Settings",
+                "HOTKEY_DOWNLOAD_STORY_KEY": "Download Story",
+                "HOTKEY_CONFLICT_WARNING": "This hotkey may conflict with other settings.",
+                "HOTKEY_RESET": "Reset"
             }
         };
 
@@ -5667,31 +5783,49 @@
         });
 
         $(window).on('keydown', function (e) {
-            // Hot key [Alt+Q] to close the download dialog
-            if (e.which == '81' && e.altKey) {
+            // Hot key [Alt+Q] to close the download dialog - fixed
+            if (e.altKey && e.which == 81) {
                 $('.IG_POPUP_DIG').remove();
                 e.preventDefault();
             }
-            // Hot key [Alt+W] to open the settings dialog
-            if (e.which == '87' && e.altKey) {
-                showSetting();
+            // Hot key [Alt+W] to open/close the settings dialog - use custom keycode if enabled, fallback to default Alt+W(87)
+            let settingsKeyCode = USER_SETTING.HOTKEY_SETTINGS_ENABLED ? state.settingsHotkeyKeyCode : 87;
+            if (e.altKey && e.which == settingsKeyCode) {
+                if ($('.IG_POPUP_DIG').length > 0 && $('.IG_POPUP_DIG #post_info').text() === 'Preference Settings') {
+                    $('.IG_POPUP_DIG').remove();
+                } else {
+                    showSetting();
+                }
                 e.preventDefault();
             }
 
-            // Hot key [Alt+Z] to open the settings dialog
-            if (e.which == '90' && e.altKey) {
+            // Hot key [Alt+W] to open/close the key settings dialog - use custom keycode if enabled, fallback to default Alt+C(67)
+            let keySettingsHotkeyKeyCode = USER_SETTING.HOTKEY_KEY_SETTINGS_ENABLED ? state.keySettingsHotkeyKeyCode : 67;
+            if (e.altKey && e.which == keySettingsHotkeyKeyCode) {
+                if ($('.IG_POPUP_DIG').length > 0 && $('.IG_POPUP_DIG #post_info').text() === 'Hotkey Settings') {
+                    $('.IG_POPUP_DIG').remove();
+                } else {
+                    showHotkeySetting();
+                }
+                e.preventDefault();
+            }
+
+            // Hot key [Alt+Z] to open the debug DOM - use custom keycode if enabled, fallback to default Alt+Z(90)
+            let debugKeyCode = USER_SETTING.HOTKEY_DEBUG_ENABLED ? state.debugHotkeyKeyCode : 90;
+            if (e.altKey && e.which == debugKeyCode) {
                 showDebugDOM();
                 e.preventDefault();
             }
 
-            // Hot key [Alt+R] to open the settings dialog
+            // Hot key [Alt+R] to reload script (fixed, not customizable)
             if (e.which == '82' && e.altKey) {
                 reloadScript();
                 e.preventDefault();
             }
 
-            // Hot key [Alt+S] to download story/highlights resource
-            if (e.which == '83' && e.altKey) {
+            // Hot key [Alt+S] to download story/highlights resource - use custom keycode if enabled, fallback to default Alt+S(83)
+            let downloadStoryKeyCode = USER_SETTING.HOTKEY_DOWNLOAD_STORY_ENABLED ? state.downloadStoryHotkeyKeyCode : 83;
+            if (e.altKey && e.which == downloadStoryKeyCode) {
                 if (location.href.match(/^(https:\/\/www\.instagram\.com\/stories\/)/ig) && $('.IG_DWSTORY').length > 0) {
                     $('.IG_DWSTORY')?.trigger("click");
                 }
