@@ -93,14 +93,19 @@ $(function () {
             $('.IG_POPUP_DIG').remove();
             e.preventDefault();
         }
-        // Hot key [Alt+W] to open the settings dialog
+        // Hot key [Alt+W] to open/close the settings dialog
         if (e.which == '87' && e.altKey) {
-            showSetting();
+            if ($('.IG_POPUP_DIG').length > 0 && $('.IG_POPUP_DIG #post_info').text() === 'Preference Settings') {
+                $('.IG_POPUP_DIG').remove();
+            } else {
+                showSetting();
+            }
             e.preventDefault();
         }
 
-        // Hot key [Alt+Z] to open the settings dialog
-        if (USER_SETTING.HOTKEY_DEBUG_ENABLED && e.altKey && e.which == state.debugHotkeyKeyCode) {
+        // Hot key [Alt+Z] to open the debug DOM - use custom keycode if enabled, fallback to default Alt+Z(90)
+        let debugKeyCode = USER_SETTING.HOTKEY_DEBUG_ENABLED ? state.debugHotkeyKeyCode : 90;
+        if (e.altKey && e.which == debugKeyCode) {
             showDebugDOM();
             e.preventDefault();
         }

@@ -1447,6 +1447,8 @@ export function showSetting() {
     });
 
     for (const name in USER_SETTING) {
+        if (name === 'HOTKEY_DEBUG_ENABLED') continue;
+
         $body.append(`
             <label class="globalSettings"
                    title="${_i18n(name + '_INTRO')}"
