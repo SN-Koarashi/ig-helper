@@ -24,10 +24,7 @@ export const USER_SETTING = {
     'RENAME_PUBLISH_DATE': true,
     'SCROLL_BUTTON': true,
     'SKIP_VIEW_STORY_CONFIRM': false,
-    'SKIP_SHARED_WITH_YOU_DIALOG': false,
-    'HOTKEY_SETTINGS_ENABLED': true,
-    'HOTKEY_DEBUG_ENABLED': true,
-    'HOTKEY_DOWNLOAD_STORY_ENABLED': true
+    'SKIP_SHARED_WITH_YOU_DIALOG': false
 };
 
 export const PARENT_CHILD_MAPPING = {
@@ -90,8 +87,9 @@ export var state = {
         overlay: new WeakMap(),
         mutedButton: new WeakMap(),
     },
-    debugHotkeyKeyCode: (GM_getValue('HOTKEY_DEBUG_KEYCODE')) ? GM_getValue('HOTKEY_DEBUG_KEYCODE') : 90,
-    settingsHotkeyKeyCode: (GM_getValue('HOTKEY_SETTINGS_KEYCODE')) ? GM_getValue('HOTKEY_SETTINGS_KEYCODE') : 87,
-    downloadStoryHotkeyKeyCode: (GM_getValue('HOTKEY_DOWNLOAD_STORY_KEYCODE')) ? GM_getValue('HOTKEY_DOWNLOAD_STORY_KEYCODE') : 83
+    debugHotkeyKeyCode: (GM_getValue('G_HOTKEY_DEBUG_KEYCODE')) ? GM_getValue('G_HOTKEY_DEBUG_KEYCODE') : 90,
+    settingsHotkeyKeyCode: (GM_getValue('G_HOTKEY_SETTINGS_KEYCODE')) ? GM_getValue('G_HOTKEY_SETTINGS_KEYCODE') : 87,
+    keySettingsHotkeyKeyCode: (GM_getValue('G_HOTKEY_KEY_SETTINGS_KEYCODE')) ? GM_getValue('G_HOTKEY_KEY_SETTINGS_KEYCODE') : 67,
+    downloadStoryHotkeyKeyCode: (GM_getValue('G_HOTKEY_DOWNLOAD_STORY_KEYCODE')) ? GM_getValue('G_HOTKEY_DOWNLOAD_STORY_KEYCODE') : 83
 };
 /*******************************/

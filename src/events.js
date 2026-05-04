@@ -4,7 +4,8 @@ import {
     triggerLinkElement, openNewTab, saveFiles, logger, toggleVolumeSilder, updatePopupSelectionSummary,
     replaceSameOriginHost, setTimeElementDateAndLocaleTime, getHighlightCurrentTimeElement,
     registerMenuCommand,
-    triggerReactClickHandler
+    triggerReactClickHandler,
+    showHotkeySetting
 } from "./utils/general";
 import { onStory, onStoryAll, onStoryThumbnail } from "./functions/story";
 import { onProfileAvatar } from "./functions/profile";
@@ -100,6 +101,17 @@ $(function () {
                 $('.IG_POPUP_DIG').remove();
             } else {
                 showSetting();
+            }
+            e.preventDefault();
+        }
+
+        // Hot key [Alt+W] to open/close the key settings dialog - use custom keycode if enabled, fallback to default Alt+C(67)
+        let keySettingsHotkeyKeyCode = USER_SETTING.HOTKEY_KEY_SETTINGS_ENABLED ? state.keySettingsHotkeyKeyCode : 67;
+        if (e.altKey && e.which == keySettingsHotkeyKeyCode) {
+            if ($('.IG_POPUP_DIG').length > 0 && $('.IG_POPUP_DIG #post_info').text() === 'Hotkey Settings') {
+                $('.IG_POPUP_DIG').remove();
+            } else {
+                showHotkeySetting();
             }
             e.preventDefault();
         }
