@@ -90,7 +90,8 @@
         'RENAME_PUBLISH_DATE': true,
         'SCROLL_BUTTON': true,
         'SKIP_VIEW_STORY_CONFIRM': false,
-        'SKIP_SHARED_WITH_YOU_DIALOG': false
+        'SKIP_SHARED_WITH_YOU_DIALOG': false,
+        'HOTKEY_DEBUG_ENABLED': true
     };
 
     const PARENT_CHILD_MAPPING = {
@@ -152,7 +153,8 @@
         GL_weakCache: {
             overlay: new WeakMap(),
             mutedButton: new WeakMap(),
-        }
+        },
+        debugHotkeyKeyCode: (GM_getValue('HOTKEY_DEBUG_KEYCODE')) ? GM_getValue('HOTKEY_DEBUG_KEYCODE') : 90
     };
     /*******************************/
 
@@ -4722,6 +4724,115 @@
 
         const $body = $('.IG_POPUP_DIG .IG_POPUP_DIG_BODY');
 
+        const hotkeyOptions = [
+            { value: '90', label: 'Alt+Z' },
+            { value: '88', label: 'Alt+X' },
+            { value: '68', label: 'Alt+D' },
+            { value: '75', label: 'Alt+K' },
+            { value: '67', label: 'Alt+C' },
+            { value: 'custom', label: _i18n('HOTKEY_CUSTOM') }
+        ];
+        let currentKeyCode = state.debugHotkeyKeyCode;
+        let currentHotkeyLabel = hotkeyOptions.find(o => o.value == currentKeyCode)?.label || _i18n('HOTKEY_CUSTOM');
+
+        $body.append(`
+            <div class="hotkey-settings" style="padding: 12px; border-bottom: 1px solid #efefef; margin-bottom: 12px;">
+                <div style="font-weight: 600; margin-bottom: 8px; font-size: 13px;">${_i18n('HOTKEY_DEBUG_KEY')}</div>
+                <label class="globalSettings"
+                      title="${_i18n('HOTKEY_DEBUG_ENABLED_INTRO')}"
+                      data-ih-locale-title="HOTKEY_DEBUG_ENABLED_INTRO">
+                    <span data-ih-locale="HOTKEY_DEBUG_ENABLED">${_i18n('HOTKEY_DEBUG_ENABLED')}</span>
+                    <input id="HOTKEY_DEBUG_ENABLED" value="box" type="checkbox"
+                           ${USER_SETTING.HOTKEY_DEBUG_ENABLED === true ? 'checked' : ''}>
+                    <div class="chbtn"><div class="rounds"></div></div>
+                </label>
+                <div class="hotkey-select-wrapper" style="margin-top: 8px; display: flex; align-items: center; gap: 8px;">
+                    <select id="hotkeyPreset" style="padding: 4px 8px; border: 1px solid #ccc; border-radius: 4px; font-size: 13px;">
+                        ${hotkeyOptions.map(o => `<option value="${o.value}" ${o.value == currentKeyCode ? 'selected' : ''}>${o.label}</option>`).join('')}
+                    </select>
+                    <input id="hotkeyCustomInput" type="text"
+                           placeholder="${_i18n('HOTKEY_PRESS')}"
+                           style="display: none; padding: 4px 8px; border: 1px solid #ccc; border-radius: 4px; font-size: 13px; width: 180px;"
+                           disabled>
+                    <span id="hotkeyDisplay" style="font-size: 12px; color: #666;">${currentHotkeyLabel}</span>
+                </div>
+            </div>
+        `);
+
+        const $presetSelect = $body.find('#hotkeyPreset');
+        const $customInput = $body.find('#hotkeyCustomInput');
+        const $display = $body.find('#hotkeyDisplay');
+        const $hotkeySettings = $body.find('.hotkey-settings');
+
+        function getModifierString(e) {
+            let mods = [];
+            if (e.ctrlKey) mods.push('Ctrl');
+            if (e.altKey) mods.push('Alt');
+            if (e.shiftKey) mods.push('Shift');
+            return mods.join('+');
+        }
+
+        function keyCodeToLabel(keyCode, e) {
+            let key = String.fromCharCode(keyCode).toUpperCase();
+            if (keyCode >= 65 && keyCode <= 90) {
+                return getModifierString(e) + '+' + key;
+            }
+            const specialKeys = {
+                81: 'Q', 87: 'W', 69: 'E', 82: 'R', 84: 'T', 89: 'Y', 85: 'U', 73: 'I', 79: 'O', 80: 'P',
+                83: 'S', 68: 'D', 70: 'F', 71: 'G', 72: 'H', 74: 'J', 75: 'K', 76: 'L',
+                86: 'V', 66: 'B', 78: 'N', 77: 'M'
+            };
+            return getModifierString(e) + '+' + (specialKeys[keyCode] || String.fromCharCode(keyCode));
+        }
+
+        $presetSelect.on('change', function() {
+            const val = $(this).val();
+            if (val === 'custom') {
+                $customInput.show().prop('disabled', false).focus();
+                $display.hide();
+            } else {
+                $customInput.hide().prop('disabled', true);
+                $display.show().text($(this).find('option:selected').text());
+                const keyCode = parseInt(val);
+                state.debugHotkeyKeyCode = keyCode;
+                GM_setValue('HOTKEY_DEBUG_KEYCODE', keyCode);
+            }
+        });
+
+        $customInput.on('keydown', function(e) {
+            e.preventDefault();
+            if (e.which >= 65 && e.which <= 90) {
+                const label = keyCodeToLabel(e.which, e);
+                $(this).val(label);
+                $(this).data('keycode', e.which);
+            }
+        });
+
+        $customInput.on('keypress', function(e) {
+            if (e.which === 13) {
+                e.preventDefault();
+                const keyCode = $(this).data('keycode');
+                if (keyCode) {
+                    state.debugHotkeyKeyCode = keyCode;
+                    GM_setValue('HOTKEY_DEBUG_KEYCODE', keyCode);
+                    $display.show().text($(this).val()).hide();
+                    $customInput.hide().prop('disabled', true);
+                }
+            }
+        });
+
+        $customInput.on('blur', function() {
+            if ($(this).is(':visible') && $(this).val()) {
+                const keyCode = $(this).data('keycode');
+                if (keyCode) {
+                    state.debugHotkeyKeyCode = keyCode;
+                    GM_setValue('HOTKEY_DEBUG_KEYCODE', keyCode);
+                    $display.show().text($(this).val()).hide();
+                    $customInput.hide().prop('disabled', true);
+                }
+            }
+        });
+
         for (const name in USER_SETTING) {
             $body.append(`
                 <label class="globalSettings"
@@ -5446,6 +5557,13 @@
                 "SKIP_SHARED_WITH_YOU_DIALOG": "Skip \"shared this with you\" dialog on shared profile links",
                 "CAPTURE_IMAGE_VIA_MEDIA_CACHE": "Capture Image Resource Using Media Cache",
                 "AUTO_RENAME_INTRO": "Auto rename file to custom format:\nCustom Format List: \n%USERNAME% - Username\n%SOURCE_TYPE% - Download Source\n%SHORTCODE% - Post Shortcode\n%YEAR% - Year when downloaded/published\n%2-YEAR% - Year (last two digits) when downloaded/published\n%MONTH% - Month when downloaded/published\n%DAY% - Day when downloaded/published\n%HOUR% - Hour when downloaded/published\n%MINUTE% - Minute when downloaded/published\n%SECOND% - Second when downloaded/published\n%ORIGINAL_NAME% - Original name of downloaded file\n%ORIGINAL_NAME_FIRST% - Original name of downloaded file (first part of name)\n%INDEX% - Resource index\n\nIf set to false, the file name will remain unchanged.\nExample: instagram_321565527_679025940443063_4318007696887450953_n.jpg",
+                "HOTKEY_DEBUG_ENABLED": "Enable Debug Hotkey",
+                "HOTKEY_DEBUG_ENABLED_INTRO": "Enable the keyboard shortcut to open the Debug DOM panel.",
+                "HOTKEY_DEBUG_KEY": "Debug Hotkey",
+                "HOTKEY_DEBUG_KEY_INTRO": "Select a preset hotkey or choose Custom to record your own.",
+                "HOTKEY_CUSTOM": "Custom...",
+                "HOTKEY_PRESS": "Press hotkey and Enter to set...",
+                "HOTKEY_CONFLICT_WARNING": "This hotkey may conflict with other applications.",
                 "RENAME_PUBLISH_DATE_INTRO": "Sets the timestamp in the file rename format to the resource publish date (browser time zone).\n\nThis feature only works when [Automatically Rename Files] is set to TRUE.",
                 "RENAME_LOCATE_DATE_INTRO": "Modify the renamed file timestamp date format to the browser's local time, and format it to your preferred regional date format.\n\nThis feature only works when [Automatically Rename Files] is set to TRUE.",
                 "DISABLE_VIDEO_LOOPING_INTRO": "Disable video auto-looping in Reels and posts.",
@@ -5629,7 +5747,7 @@
             }
 
             // Hot key [Alt+Z] to open the settings dialog
-            if (e.which == '90' && e.altKey) {
+            if (USER_SETTING.HOTKEY_DEBUG_ENABLED && e.altKey && e.which == state.debugHotkeyKeyCode) {
                 showDebugDOM();
                 e.preventDefault();
             }
