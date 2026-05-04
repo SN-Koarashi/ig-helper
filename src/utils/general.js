@@ -1594,55 +1594,55 @@ export function triggerReactClickHandler(el) {
     }
 };
 
-/**
- * @description Get the element at the pointer position and check if it is the target element or if it is covered by another element.
- * @param {JQuery<HTMLElement>} $target 
- * @param {number} clientX
- * @param {number} clientY
- */
-export function getPointerElement($target, clientX, clientY) {
-    let element = $target.get(0);
-    const rect = element.getBoundingClientRect();
+// /**
+//  * @description Get the element at the pointer position and check if it is the target element or if it is covered by another element.
+//  * @param {JQuery<HTMLElement>} $target 
+//  * @param {number} clientX
+//  * @param {number} clientY
+//  */
+// export function getPointerElement($target, clientX, clientY) {
+//     let element = $target.get(0);
+//     const rect = element.getBoundingClientRect();
 
-    const viewportWidth = window.innerWidth;
-    const viewportHeight = window.innerHeight;
+//     const viewportWidth = window.innerWidth;
+//     const viewportHeight = window.innerHeight;
 
-    const visibleX = Math.max(rect.left, 0) + (Math.min(rect.right, viewportWidth) - Math.max(rect.left, 0)) / 2;
-    const visibleY = Math.max(rect.top, 0) + (Math.min(rect.bottom, viewportHeight) - Math.max(rect.top, 0)) / 2;
+//     const visibleX = Math.max(rect.left, 0) + (Math.min(rect.right, viewportWidth) - Math.max(rect.left, 0)) / 2;
+//     const visibleY = Math.max(rect.top, 0) + (Math.min(rect.bottom, viewportHeight) - Math.max(rect.top, 0)) / 2;
 
-    if (visibleX < 0 || visibleX > viewportWidth || visibleY < 0 || visibleY > viewportHeight) {
-        if (clientX == null || clientY == null) {
-            return { self: false, topElement: null, target: $target, error: 'out_of_viewport', rect };
-        }
-    }
+//     if (visibleX < 0 || visibleX > viewportWidth || visibleY < 0 || visibleY > viewportHeight) {
+//         if (clientX == null || clientY == null) {
+//             return { self: false, topElement: null, target: $target, error: 'out_of_viewport', rect };
+//         }
+//     }
 
-    const topElement = document.elementFromPoint(clientX || visibleX, clientY || visibleY);
+//     const topElement = document.elementFromPoint(clientX || visibleX, clientY || visibleY);
 
-    if ($(topElement).height() > document.body.clientHeight) {
-        return { self: false, topElement: null, target: $target, error: 'oversize_element', rect };
-    }
+//     if ($(topElement).height() > document.body.clientHeight) {
+//         return { self: false, topElement: null, target: $target, error: 'oversize_element', rect };
+//     }
 
-    if ($(topElement).width() < 100 || $(topElement).height() < 100) {
-        return { self: false, topElement: null, target: $target, error: 'small_element', rect };
-    }
+//     if ($(topElement).width() < 100 || $(topElement).height() < 100) {
+//         return { self: false, topElement: null, target: $target, error: 'small_element', rect };
+//     }
 
-    if (topElement && topElement !== element && !element.contains(topElement)) {
-        if ($(topElement).find($target).length > 0) {
-            // return { self: false, topElement, target: $target };
-            return { self: false, topElement: null, target: $target, error: 'covered_by_element', rect };
-        }
+//     if (topElement && topElement !== element && !element.contains(topElement)) {
+//         if ($(topElement).find($target).length > 0) {
+//             // return { self: false, topElement, target: $target };
+//             return { self: false, topElement: null, target: $target, error: 'covered_by_element', rect };
+//         }
 
-        if ($(topElement).width() != $target.width() || $(topElement).height() != $target.height()) {
-            return { self: false, topElement: null, target: $target, error: 'different_dimensions', rect };
-        }
+//         if ($(topElement).width() != $target.width() || $(topElement).height() != $target.height()) {
+//             return { self: false, topElement: null, target: $target, error: 'different_dimensions', rect };
+//         }
 
 
-        // return { self: false, topElement: null, target: $target, error: 'none_of_element', rect };
-        return { self: false, topElement, target: $target };
-    } else {
-        return { self: true, topElement, target: $target };
-    }
-}
+//         // return { self: false, topElement: null, target: $target, error: 'none_of_element', rect };
+//         return { self: false, topElement, target: $target };
+//     } else {
+//         return { self: true, topElement, target: $target };
+//     }
+// }
 
 /**
  * updatePopupSelectionSummary

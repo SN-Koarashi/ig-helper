@@ -1,4 +1,5 @@
 import { SVG } from "../settings";
+/*! ESLINT IMPORT END !*/
 
 var detectMovingViewerTimer = null;
 
