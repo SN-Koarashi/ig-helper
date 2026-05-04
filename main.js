@@ -47,6 +47,7 @@
 // @grant              GM_openInTab
 // @connect            i.instagram.com
 // @connect            cdn.jsdelivr.net
+// @connect            raw.githubusercontent.com
 // @require            https://cdn.jsdelivr.net/npm/mediabunny@1.34.5/dist/bundles/mediabunny.min.cjs#sha256-wUFR+x2bDvpqgMAVGy2CvGvULyjTGvGy4UUAm8rae5U=
 // @require            https://code.jquery.com/jquery-3.7.1.min.js#sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=
 // @resource           INTERNAL_CSS https://cdn.jsdelivr.net/gh/SN-Koarashi/ig-helper@master/style.css
@@ -939,6 +940,19 @@
      * @return {Void}
      */
     function initPostVideoFunction($mainElement) {
+        $mainElement.find('video').each(function () {
+            $(this).off('fullscreenchange.IG_videoControl').on('fullscreenchange.IG_videoControl', function () {
+                if ($(this).attr('style').includes('object-fit')) {
+                    if (document.fullscreenElement == this) {
+                        $(this).css('object-fit', 'contain');
+                    }
+                    else {
+                        $(this).css('object-fit', 'cover');
+                    }
+                }
+            });
+        });
+
         // Disable video autoplay
         if (USER_SETTING.DISABLE_VIDEO_LOOPING) {
             $mainElement.find('video').each(function () {
@@ -2081,6 +2095,19 @@
             $main.children().append(`<div data-ih-locale-title="DW" title="${_i18n("DW")}" class="IG_REELS">${SVG.DOWNLOAD}</div>`);
             $main.children().append(`<div data-ih-locale-title="NEW_TAB" title="${_i18n("NEW_TAB")}" class="IG_REELS_NEWTAB">${SVG.NEW_TAB}</div>`);
             $main.children().append(`<div data-ih-locale-title="VIDEO_THUMBNAIL" title="${_i18n("VIDEO_THUMBNAIL")}" class="IG_REELS_THUMBNAIL">${SVG.THUMBNAIL}</div>`);
+
+            $main.find('video').each(function () {
+                $(this).off('fullscreenchange.IG_videoControl').on('fullscreenchange.IG_videoControl', function () {
+                    if ($(this).attr('style').includes('object-fit')) {
+                        if (document.fullscreenElement == this) {
+                            $(this).css('object-fit', 'contain');
+                        }
+                        else {
+                            $(this).css('object-fit', 'cover');
+                        }
+                    }
+                });
+            });
 
             // Disable video autoplay
             if (USER_SETTING.DISABLE_VIDEO_LOOPING) {
@@ -3393,6 +3420,14 @@
         });
     }
 
+    function isMacOS() {
+        return /Macintosh|Mac OS/i.test(navigator.userAgent);
+    }
+
+    function getPlatformModifierKey() {
+        return isMacOS() ? '⌥' : 'Alt';
+    }
+
     /**
      * getStoryId
      * @description Obtain the media id through the resource URL.
@@ -3747,7 +3782,7 @@
     function IG_createDM(hasHidden, hasCheckbox) {
         let isHidden = (hasHidden) ? "hidden" : "";
         $('body').append('<div class="IG_POPUP_DIG ' + isHidden + '"><div class="IG_POPUP_DIG_BG"></div><div class="IG_POPUP_DIG_MAIN"><div class="IG_POPUP_DIG_TITLE"></div><div class="IG_POPUP_DIG_BODY"></div></div></div>');
-        $('.IG_POPUP_DIG .IG_POPUP_DIG_MAIN .IG_POPUP_DIG_TITLE').append(`<div style="position:relative;min-height:36px;text-align:center;margin-bottom: 7px;"><div style="position:absolute;left:0px;line-height: 18px;"><kbd>Alt</kbd>+<kbd>Q</kbd> [<span data-ih-locale="CLOSE">${_i18n("CLOSE")}</span>]</div><div style="line-height: 18px;">IG Helper v${GM_info.script.version}</div><div id="post_info" style="line-height: 14px;font-size:14px;">Post ID: <span id="article-id"></span></div><div class="IG_POPUP_DIG_BTN">${SVG.CLOSE}</div></div>`);
+        $('.IG_POPUP_DIG .IG_POPUP_DIG_MAIN .IG_POPUP_DIG_TITLE').append(`<div style="position:relative;min-height:36px;text-align:center;margin-bottom: 7px;"><div style="position:absolute;left:0px;line-height: 18px;"><kbd>${getPlatformModifierKey()}</kbd>+<kbd>Q</kbd> [<span data-ih-locale="CLOSE">${_i18n("CLOSE")}</span>]</div><div style="line-height: 18px;">IG Helper v${GM_info.script.version}</div><div id="post_info" style="line-height: 14px;font-size:14px;">Post ID: <span id="article-id"></span></div><div class="IG_POPUP_DIG_BTN">${SVG.CLOSE}</div></div>`);
 
         if (hasCheckbox) {
             $('.IG_POPUP_DIG .IG_POPUP_DIG_MAIN .IG_POPUP_DIG_TITLE').append(`<div style="text-align: center;" id="button_group"></div>`);
@@ -4664,7 +4699,7 @@
      */
     function callNotification() {
         const currentVersion = GM_info.script.version;
-        const remoteScriptURL = 'https://cdn.jsdelivr.net/gh/SN-Koarashi/ig-helper@master/main.js';
+        const remoteScriptURL = 'https://raw.githubusercontent.com/SN-Koarashi/ig-helper/refs/heads/master/main.js';
 
         GM_xmlhttpRequest({
             method: "GET",

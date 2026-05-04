@@ -64,6 +64,19 @@ export function onReadyMyDW(NoDialog, hasReferrer) {
  * @return {Void}
  */
 export function initPostVideoFunction($mainElement) {
+    $mainElement.find('video').each(function () {
+        $(this).off('fullscreenchange.IG_videoControl').on('fullscreenchange.IG_videoControl', function () {
+            if ($(this).attr('style').includes('object-fit')) {
+                if (document.fullscreenElement == this) {
+                    $(this).css('object-fit', 'contain');
+                }
+                else {
+                    $(this).css('object-fit', 'cover');
+                }
+            }
+        });
+    });
+
     // Disable video autoplay
     if (USER_SETTING.DISABLE_VIDEO_LOOPING) {
         $mainElement.find('video').each(function () {
