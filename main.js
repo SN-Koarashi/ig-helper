@@ -16,7 +16,7 @@
 // @name:ru            Помощник IG
 // @name:ar            أداة IG
 // @namespace          https://github.snkms.com/
-// @version            3.18.1
+// @version            3.18.2
 // @description        Download photos and videos from Instagram posts in one click, including Stories, Reels, and profile pictures.
 // @description:zh-TW  一鍵下載 Instagram 貼文中的照片、影片，還包含限時動態、Reels 與大頭貼。
 // @description:zh-CN  一键下载 Instagram 帖子中的照片和视频，还包括快拍、Reels 和头像。
@@ -4755,7 +4755,6 @@
             { value: '75', label: 'Alt+K' },
             { value: '67', label: 'Alt+C' },
             { value: '83', label: 'Alt+S' },
-            { value: '82', label: 'Alt+R' },
             { value: '192', label: 'Alt+~' },
             { value: '49', label: 'Alt+1' },
             { value: '50', label: 'Alt+2' },
@@ -5789,7 +5788,7 @@
                 e.preventDefault();
             }
             // Hot key [Alt+W] to open/close the settings dialog - use custom keycode if enabled, fallback to default Alt+W(87)
-            let settingsKeyCode = USER_SETTING.HOTKEY_SETTINGS_ENABLED ? state.settingsHotkeyKeyCode : 87;
+            let settingsKeyCode = state.settingsHotkeyKeyCode || 87;
             if (e.altKey && e.which == settingsKeyCode) {
                 if ($('.IG_POPUP_DIG').length > 0 && $('.IG_POPUP_DIG #post_info').text() === 'Preference Settings') {
                     $('.IG_POPUP_DIG').remove();
@@ -5800,7 +5799,7 @@
             }
 
             // Hot key [Alt+W] to open/close the key settings dialog - use custom keycode if enabled, fallback to default Alt+C(67)
-            let keySettingsHotkeyKeyCode = USER_SETTING.HOTKEY_KEY_SETTINGS_ENABLED ? state.keySettingsHotkeyKeyCode : 67;
+            let keySettingsHotkeyKeyCode = state.keySettingsHotkeyKeyCode || 67;
             if (e.altKey && e.which == keySettingsHotkeyKeyCode) {
                 if ($('.IG_POPUP_DIG').length > 0 && $('.IG_POPUP_DIG #post_info').text() === 'Hotkey Settings') {
                     $('.IG_POPUP_DIG').remove();
@@ -5811,7 +5810,7 @@
             }
 
             // Hot key [Alt+Z] to open the debug DOM - use custom keycode if enabled, fallback to default Alt+Z(90)
-            let debugKeyCode = USER_SETTING.HOTKEY_DEBUG_ENABLED ? state.debugHotkeyKeyCode : 90;
+            let debugKeyCode = state.debugHotkeyKeyCode || 90;
             if (e.altKey && e.which == debugKeyCode) {
                 showDebugDOM();
                 e.preventDefault();
@@ -5824,7 +5823,7 @@
             }
 
             // Hot key [Alt+S] to download story/highlights resource - use custom keycode if enabled, fallback to default Alt+S(83)
-            let downloadStoryKeyCode = USER_SETTING.HOTKEY_DOWNLOAD_STORY_ENABLED ? state.downloadStoryHotkeyKeyCode : 83;
+            let downloadStoryKeyCode = state.downloadStoryHotkeyKeyCode || 83;
             if (e.altKey && e.which == downloadStoryKeyCode) {
                 if (location.href.match(/^(https:\/\/www\.instagram\.com\/stories\/)/ig) && $('.IG_DWSTORY').length > 0) {
                     $('.IG_DWSTORY')?.trigger("click");

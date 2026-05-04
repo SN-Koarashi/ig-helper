@@ -95,7 +95,7 @@ $(function () {
             e.preventDefault();
         }
         // Hot key [Alt+W] to open/close the settings dialog - use custom keycode if enabled, fallback to default Alt+W(87)
-        let settingsKeyCode = USER_SETTING.HOTKEY_SETTINGS_ENABLED ? state.settingsHotkeyKeyCode : 87;
+        let settingsKeyCode = state.settingsHotkeyKeyCode || 87;
         if (e.altKey && e.which == settingsKeyCode) {
             if ($('.IG_POPUP_DIG').length > 0 && $('.IG_POPUP_DIG #post_info').text() === 'Preference Settings') {
                 $('.IG_POPUP_DIG').remove();
@@ -106,7 +106,7 @@ $(function () {
         }
 
         // Hot key [Alt+W] to open/close the key settings dialog - use custom keycode if enabled, fallback to default Alt+C(67)
-        let keySettingsHotkeyKeyCode = USER_SETTING.HOTKEY_KEY_SETTINGS_ENABLED ? state.keySettingsHotkeyKeyCode : 67;
+        let keySettingsHotkeyKeyCode = state.keySettingsHotkeyKeyCode || 67;
         if (e.altKey && e.which == keySettingsHotkeyKeyCode) {
             if ($('.IG_POPUP_DIG').length > 0 && $('.IG_POPUP_DIG #post_info').text() === 'Hotkey Settings') {
                 $('.IG_POPUP_DIG').remove();
@@ -117,7 +117,7 @@ $(function () {
         }
 
         // Hot key [Alt+Z] to open the debug DOM - use custom keycode if enabled, fallback to default Alt+Z(90)
-        let debugKeyCode = USER_SETTING.HOTKEY_DEBUG_ENABLED ? state.debugHotkeyKeyCode : 90;
+        let debugKeyCode = state.debugHotkeyKeyCode || 90;
         if (e.altKey && e.which == debugKeyCode) {
             showDebugDOM();
             e.preventDefault();
@@ -130,7 +130,7 @@ $(function () {
         }
 
         // Hot key [Alt+S] to download story/highlights resource - use custom keycode if enabled, fallback to default Alt+S(83)
-        let downloadStoryKeyCode = USER_SETTING.HOTKEY_DOWNLOAD_STORY_ENABLED ? state.downloadStoryHotkeyKeyCode : 83;
+        let downloadStoryKeyCode = state.downloadStoryHotkeyKeyCode || 83;
         if (e.altKey && e.which == downloadStoryKeyCode) {
             if (location.href.match(/^(https:\/\/www\.instagram\.com\/stories\/)/ig) && $('.IG_DWSTORY').length > 0) {
                 $('.IG_DWSTORY')?.trigger("click");
