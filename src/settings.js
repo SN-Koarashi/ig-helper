@@ -24,7 +24,8 @@ export const USER_SETTING = {
     'RENAME_PUBLISH_DATE': true,
     'SCROLL_BUTTON': true,
     'SKIP_VIEW_STORY_CONFIRM': false,
-    'SKIP_SHARED_WITH_YOU_DIALOG': false
+    'SKIP_SHARED_WITH_YOU_DIALOG': false,
+    'HOTKEY_DEBUG_ENABLED': true
 };
 
 export const PARENT_CHILD_MAPPING = {
@@ -86,6 +87,7 @@ export var state = {
     GL_weakCache: {
         overlay: new WeakMap(),
         mutedButton: new WeakMap(),
-    }
+    },
+    debugHotkeyKeyCode: (GM_getValue('HOTKEY_DEBUG_KEYCODE')) ? GM_getValue('HOTKEY_DEBUG_KEYCODE') : 90
 };
 /*******************************/

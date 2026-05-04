@@ -100,7 +100,7 @@ $(function () {
         }
 
         // Hot key [Alt+Z] to open the settings dialog
-        if (e.which == '90' && e.altKey) {
+        if (USER_SETTING.HOTKEY_DEBUG_ENABLED && e.altKey && e.which == state.debugHotkeyKeyCode) {
             showDebugDOM();
             e.preventDefault();
         }
