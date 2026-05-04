@@ -16,7 +16,7 @@
 // @name:ru            Помощник IG
 // @name:ar            أداة IG
 // @namespace          https://github.snkms.com/
-// @version            3.17.17
+// @version            3.18.1
 // @description        Download photos and videos from Instagram posts in one click, including Stories, Reels, and profile pictures.
 // @description:zh-TW  一鍵下載 Instagram 貼文中的照片、影片，還包含限時動態、Reels 與大頭貼。
 // @description:zh-CN  一键下载 Instagram 帖子中的照片和视频，还包括快拍、Reels 和头像。
@@ -5585,10 +5585,10 @@
                 "MODIFY_RESOURCE_EXIF_INTRO": "Modify the EXIF attribute of the image resource to include metadata such as post link, shooting date, and author.",
                 "DIRECT_DOWNLOAD_STORY_INTRO": "When you click Download All Resources, all stories/highlights are downloaded directly, without showing the image selection dialog.",
                 "CAPTURE_IMAGE_VIA_MEDIA_CACHE_INTRO": "Use a watcher to capture any high-quality image URLs in the DOM tree into the script's storage so that they can be extracted when available and upon user input.",
-                "HOTKEY_DEBUG_KEY": "Debug Hotkey",
-                "HOTKEY_SETTINGS_KEY": "Settings Hotkey",
-                "HOTKEY_KEY_SETTINGS_KEY": "Hotkey Settings Hotkey",
-                "HOTKEY_DOWNLOAD_STORY_KEY": "Download Story Hotkey",
+                "HOTKEY_DEBUG_KEY": "Debug Window",
+                "HOTKEY_SETTINGS_KEY": "Preference Settings",
+                "HOTKEY_KEY_SETTINGS_KEY": "Hotkey Settings",
+                "HOTKEY_DOWNLOAD_STORY_KEY": "Download Story",
                 "HOTKEY_CUSTOM": "Custom...",
                 "HOTKEY_PRESS": "Press hotkey and Enter to set...",
                 "HOTKEY_CONFLICT_WARNING": "This hotkey may conflict with other applications.",
