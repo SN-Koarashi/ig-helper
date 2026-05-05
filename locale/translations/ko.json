@@ -1,0 +1,100 @@
+{
+    "NOTICE_UPDATE_TITLE": "Wololo! 새 버전이 출시되었습니다.",
+    "NOTICE_UPDATE_CONTENT": "IG-Helper의 새 버전이 출시되었습니다. 업데이트하려면 여기를 클릭하세요.",
+    "CHECK_FOR_UPDATE": "스크립트 업데이트 확인",
+    "RELOAD_SCRIPT": "스크립트 다시 불러오기",
+    "DONATE": "기부",
+    "FEEDBACK": "피드백",
+    "IMAGE_VIEWER": "뷰어에서 이미지 열기",
+    "NEW_TAB": "새 탭에서 열기",
+    "SHOW_DOM_TREE": "DOM 트리 표시",
+    "SELECT_AND_COPY": "입력 상자에서 모두 선택하고 복사",
+    "DOWNLOAD_DOM_TREE": "DOM 트리를 텍스트 파일로 다운로드",
+    "REPORT_GITHUB": "GitHub에 문제 보고",
+    "REPORT_DISCORD": "Discord 지원 서버에 문제 보고",
+    "REPORT_FORK": "Greasy Fork에 문제 보고",
+    "DEBUG": "디버그 창",
+    "CLOSE": "닫기",
+    "ALL_CHECK": "모두 선택",
+    "ITEM_COUNT_SINGULAR": "%COUNT%개 항목",
+    "ITEM_COUNT_PLURAL": "%COUNT%개 항목",
+    "ITEM_POSITION": "%TOTAL%개 중 %CURRENT%번째 항목",
+    "SELECTED_COUNT_SINGULAR": "%COUNT%개 선택됨",
+    "SELECTED_COUNT_PLURAL": "%COUNT%개 선택됨",
+    "BATCH_DOWNLOAD_SELECTED": "선택한 리소스 다운로드",
+    "BATCH_DOWNLOAD_DIRECT": "모든 리소스 다운로드",
+    "IMG": "이미지",
+    "VID": "동영상",
+    "DW": "다운로드",
+    "DW_ALL": "모든 리소스 다운로드",
+    "VIDEO_THUMBNAIL": "동영상 썸네일 다운로드",
+    "LOAD_BLOB_ONE": "Blob 미디어를 불러오는 중...",
+    "LOAD_BLOB_MULTIPLE": "Blob 미디어 및 기타 항목을 불러오는 중...",
+    "LOAD_BLOB_RELOAD": "Blob 미디어 감지 중, 다시 불러오는 중...",
+    "NO_CHECK_RESOURCE": "다운로드할 리소스를 선택해야 합니다.",
+    "NO_VID_URL": "동영상 URL을 찾을 수 없습니다.",
+    "SETTING": "설정",
+    "AUTO_RENAME": "파일 자동 이름 변경(마우스 오른쪽 버튼으로 설정)",
+    "RENAME_PUBLISH_DATE": "이름이 변경된 파일의 타임스탬프를 리소스 게시일로 설정",
+    "RENAME_LOCATE_DATE": "이름이 변경된 파일 타임스탬프의 날짜 형식 수정(마우스 오른쪽 버튼으로 설정)",
+    "DISABLE_VIDEO_LOOPING": "동영상 자동 반복 재생 비활성화",
+    "HTML5_VIDEO_CONTROL": "HTML5 동영상 컨트롤러 표시",
+    "REDIRECT_CLICK_USER_STORY_PICTURE": "사용자의 스토리 사진을 클릭할 때 리디렉션",
+    "FORCE_FETCH_ALL_RESOURCES": "게시물의 모든 리소스 강제 가져오기",
+    "DIRECT_DOWNLOAD_VISIBLE_RESOURCE": "게시물의 표시된 리소스 직접 다운로드",
+    "DIRECT_DOWNLOAD_ALL": "게시물의 모든 리소스 직접 다운로드",
+    "DIRECT_DOWNLOAD_STORY": "스토리/하이라이트의 모든 리소스 직접 다운로드",
+    "MODIFY_VIDEO_VOLUME": "동영상 볼륨 수정(마우스 오른쪽 버튼으로 설정)",
+    "MODIFY_RESOURCE_EXIF": "리소스 EXIF 속성 수정",
+    "SCROLL_BUTTON": "릴스 페이지의 스크롤 버튼 활성화",
+    "FORCE_RESOURCE_VIA_MEDIA": "Media API를 통해 리소스 강제 가져오기",
+    "PREFER_DASH_MANIFEST": "DASH 매니페스트 선호(Media API를 통한 더 높은 품질의 동영상)",
+    "FALLBACK_TO_BLOB_FETCH_IF_MEDIA_API_THROTTLED": "Media API에 접근할 수 없을 때 대체 방법으로 다운로드",
+    "NEW_TAB_ALWAYS_FORCE_MEDIA_IN_POST": "게시물의 [새 탭에서 열기]에 항상 Media API 사용",
+    "SKIP_VIEW_STORY_CONFIRM": "스토리/하이라이트 보기 확인 페이지 건너뛰기",
+    "SKIP_SHARED_WITH_YOU_DIALOG": "공유된 프로필 링크에서 “회원님과 공유했습니다” 대화 상자 건너뛰기",
+    "CAPTURE_IMAGE_VIA_MEDIA_CACHE": "Media Cache를 사용하여 이미지 리소스 캡처",
+    "AUTO_RENAME_INTRO": `파일을 사용자 지정 형식으로 자동 이름 변경:\n사용자 지정 형식 목록: \n
+        %USERNAME% - 사용자 이름\n
+        %SOURCE_TYPE% - 다운로드 소스\n
+        %SHORTCODE% - 게시물 숏코드\n
+        %YEAR% - 다운로드/게시된 연도\n
+        %2-YEAR% - 다운로드/게시된 연도(마지막 두 자리)\n
+        %MONTH% - 다운로드/게시된 월\n
+        %DAY% - 다운로드/게시된 일\n
+        %HOUR% - 다운로드/게시된 시\n
+        %MINUTE% - 다운로드/게시된 분\n
+        %SECOND% - 다운로드/게시된 초\n
+        %ORIGINAL_NAME% - 다운로드한 파일의 원래 이름\n
+        %ORIGINAL_NAME_FIRST% - 다운로드한 파일의 원래 이름(이름의 첫 부분)\n
+        %INDEX% - 리소스 인덱스\n
+        %UID% - 사용자 계정 고유 ID\n\n
+        false로 설정하면 파일 이름이 변경되지 않습니다.\n
+        예: instagram_321565527_679025940443063_4318007696887450953_n.jpg`,
+    "RENAME_PUBLISH_DATE_INTRO": "파일 이름 변경 형식의 타임스탬프를 리소스 게시일(브라우저 시간대)로 설정합니다.\n\n이 기능은 [파일 자동 이름 변경]이 TRUE로 설정된 경우에만 작동합니다.",
+    "RENAME_LOCATE_DATE_INTRO": "이름이 변경된 파일 타임스탬프의 날짜 형식을 브라우저의 현지 시간으로 수정하고, 원하는 지역 날짜 형식으로 지정합니다.\n\n이 기능은 [파일 자동 이름 변경]이 TRUE로 설정된 경우에만 작동합니다.",
+    "DISABLE_VIDEO_LOOPING_INTRO": "릴스와 게시물에서 동영상 자동 반복 재생을 비활성화합니다.",
+    "HTML5_VIDEO_CONTROL_INTRO": "동영상 리소스에 HTML5 동영상 컨트롤러를 표시합니다.\n\n이렇게 하면 사용자 지정 동영상 볼륨 슬라이더가 숨겨지고 HTML5 컨트롤러로 대체됩니다. 동영상을 마우스 오른쪽 버튼으로 클릭하여 원래 세부 정보를 표시하면 HTML5 컨트롤러를 숨길 수 있습니다.",
+    "REDIRECT_CLICK_USER_STORY_PICTURE_INTRO": "홈페이지의 스토리 영역에서 사용자의 아바타를 마우스 오른쪽 버튼으로 클릭하면 해당 사용자의 프로필 페이지로 리디렉션합니다.\n마우스 가운데 버튼으로 클릭하면 새 탭에서 열립니다.",
+    "FORCE_FETCH_ALL_RESOURCES_INTRO": "Instagram API를 통해 게시물의 모든 리소스(사진 및 동영상)를 강제로 가져와 게시물당 리소스 3개 제한을 제거합니다.",
+    "DIRECT_DOWNLOAD_VISIBLE_RESOURCE_INTRO": "게시물에서 현재 사용할 수 있는 리소스를 직접 다운로드합니다.",
+    "DIRECT_DOWNLOAD_ALL_INTRO": "다운로드 버튼을 클릭하면 게시물의 모든 리소스를 강제로 가져와 다운로드합니다.",
+    "MODIFY_VIDEO_VOLUME_INTRO": "릴스와 게시물의 동영상 재생 볼륨을 수정합니다(마우스 오른쪽 버튼으로 볼륨 설정 슬라이더 열기).",
+    "SCROLL_BUTTON_INTRO": "릴스 페이지의 오른쪽 아래 모서리에 스크롤 버튼을 활성화합니다.",
+    "FORCE_RESOURCE_VIA_MEDIA_INTRO": "Media API는 가능한 한 가장 높은 품질의 사진 또는 동영상을 가져오려고 하지만, 불러오는 데 시간이 더 걸릴 수 있습니다.",
+    "PREFER_DASH_MANIFEST_INTRO": "Media API를 통한 동영상 리소스에 DASH 매니페스트를 우선 사용합니다. DASH 매니페스트를 사용할 수 있으면 최상의 품질을 위해 동영상과 오디오 스트림을 별도로 다운로드합니다.",
+    "FALLBACK_TO_BLOB_FETCH_IF_MEDIA_API_THROTTLED_INTRO": "Media API가 속도 제한에 도달했거나 다른 이유로 사용할 수 없는 경우, Forced Fetch API를 사용하여 리소스를 다운로드합니다(리소스 품질이 약간 낮을 수 있음).",
+    "NEW_TAB_ALWAYS_FORCE_MEDIA_IN_POST_INTRO": "게시물의 [새 탭에서 열기] 버튼은 고해상도 리소스를 가져오기 위해 항상 Media API를 사용합니다.",
+    "CHECK_FOR_UPDATE_INTRO": "스크립트가 트리거될 때 업데이트를 확인합니다(300초마다 확인).\n업데이트 알림은 브라우저를 통해 데스크톱 알림으로 전송됩니다.",
+    "SKIP_VIEW_STORY_CONFIRM_INTRO": "스토리 또는 하이라이트에서 확인 페이지가 표시되면 자동으로 건너뜁니다.",
+    "SKIP_SHARED_WITH_YOU_DIALOG_INTRO": "?igsh= 링크를 열 때 “X님이 회원님과 공유했습니다” 대화 상자에서 “나중에”를 자동으로 클릭합니다.",
+    "MODIFY_RESOURCE_EXIF_INTRO": "이미지 리소스의 EXIF 속성을 수정하여 게시물 링크, 촬영 날짜, 작성자 등의 메타데이터를 포함합니다.",
+    "DIRECT_DOWNLOAD_STORY_INTRO": "[모든 리소스 다운로드]를 클릭하면 이미지 선택 대화 상자를 표시하지 않고 모든 스토리/하이라이트가 직접 다운로드됩니다.",
+    "CAPTURE_IMAGE_VIA_MEDIA_CACHE_INTRO": "감시자를 사용하여 DOM 트리의 고품질 이미지 URL을 스크립트 저장소에 캡처하여, 사용 가능할 때와 사용자 입력 시 추출할 수 있도록 합니다.",
+    "HOTKEY_DEBUG_KEY": "디버그 창",
+    "HOTKEY_SETTINGS_KEY": "환경 설정",
+    "HOTKEY_KEY_SETTINGS_KEY": "단축키 설정",
+    "HOTKEY_DOWNLOAD_STORY_KEY": "스토리 다운로드",
+    "HOTKEY_CONFLICT_WARNING": "이 단축키는 다른 설정과 충돌할 수 있습니다.",
+    "HOTKEY_RESET": "초기화"
+}

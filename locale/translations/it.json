@@ -50,11 +50,27 @@
     "FORCE_RESOURCE_VIA_MEDIA": "Forza il recupero della risorsa tramite Media API",
     "PREFER_DASH_MANIFEST": "Preferisci il manifest DASH (video di qualità superiore tramite Media API)",
     "FALLBACK_TO_BLOB_FETCH_IF_MEDIA_API_THROTTLED": "Usa metodi alternativi di download quando la Media API non è accessibile",
-    "NEW_TAB_ALWAYS_FORCE_MEDIA_IN_POST": "Usa sempre la Media API per 'Apri in una nuova scheda' nei post",
+    "NEW_TAB_ALWAYS_FORCE_MEDIA_IN_POST": "Usa sempre la Media API per [Apri in una nuova scheda] nei post",
     "SKIP_VIEW_STORY_CONFIRM": "Salta la pagina di conferma per visualizzare una storia/un contenuto in evidenza",
     "SKIP_SHARED_WITH_YOU_DIALOG": "Salta la finestra di dialogo \"ha condiviso con te\" nei link profilo condivisi",
     "CAPTURE_IMAGE_VIA_MEDIA_CACHE": "Cattura la risorsa immagine usando la cache dei media",
-    "AUTO_RENAME_INTRO": "Rinomina automaticamente il file con un formato personalizzato:\nElenco dei formati personalizzati: \n%USERNAME% - Nome utente\n%SOURCE_TYPE% - Origine del download\n%SHORTCODE% - Shortcode del post\n%YEAR% - Anno di download/pubblicazione\n%2-YEAR% - Anno (ultime due cifre) di download/pubblicazione\n%MONTH% - Mese di download/pubblicazione\n%DAY% - Giorno di download/pubblicazione\n%HOUR% - Ora di download/pubblicazione\n%MINUTE% - Minuto di download/pubblicazione\n%SECOND% - Secondo di download/pubblicazione\n%ORIGINAL_NAME% - Nome originale del file scaricato\n%ORIGINAL_NAME_FIRST% - Nome originale del file scaricato (prima parte del nome)\n%INDEX% - Indice della risorsa\n%UID% - ID univoco dell'account utente\n\nSe impostato su false, il nome del file rimarrà invariato.\nEsempio: instagram_321565527_679025940443063_4318007696887450953_n.jpg",
+    "AUTO_RENAME_INTRO": `Rinomina automaticamente il file con un formato personalizzato:\nElenco dei formati personalizzati: \n
+        %USERNAME% - Nome utente\n
+        %SOURCE_TYPE% - Origine del download\n
+        %SHORTCODE% - Shortcode del post\n
+        %YEAR% - Anno di download/pubblicazione\n
+        %2-YEAR% - Anno (ultime due cifre) di download/pubblicazione\n
+        %MONTH% - Mese di download/pubblicazione\n
+        %DAY% - Giorno di download/pubblicazione\n
+        %HOUR% - Ora di download/pubblicazione\n
+        %MINUTE% - Minuto di download/pubblicazione\n
+        %SECOND% - Secondo di download/pubblicazione\n
+        %ORIGINAL_NAME% - Nome originale del file scaricato\n
+        %ORIGINAL_NAME_FIRST% - Nome originale del file scaricato (prima parte del nome)\n
+        %INDEX% - Indice della risorsa\n
+        %UID% - ID univoco dell'account utente\n\n
+        Se impostato su false, il nome del file rimarrà invariato.\n
+        Esempio: instagram_321565527_679025940443063_4318007696887450953_n.jpg`,
     "RENAME_PUBLISH_DATE_INTRO": "Imposta il timestamp nel formato di rinomina del file sulla data di pubblicazione della risorsa (fuso orario del browser).\n\nQuesta funzione funziona solo quando [Rinomina automaticamente i file] è impostato su TRUE.",
     "RENAME_LOCATE_DATE_INTRO": "Modifica il formato della data del timestamp del file rinominato sull'ora locale del browser e lo formatta secondo il formato regionale preferito.\n\nQuesta funzione funziona solo quando [Rinomina automaticamente i file] è impostato su TRUE.",
     "DISABLE_VIDEO_LOOPING_INTRO": "Disabilita il loop automatico dei video nei Reels e nei post.",
@@ -72,8 +88,8 @@
     "CHECK_FOR_UPDATE_INTRO": "Controlla gli aggiornamenti quando lo script viene attivato (controllo ogni 300 secondi).\nLe notifiche di aggiornamento verranno inviate come notifiche desktop tramite il browser.",
     "SKIP_VIEW_STORY_CONFIRM_INTRO": "Salta automaticamente la pagina di conferma quando viene mostrata in una storia o in un contenuto in evidenza.",
     "SKIP_SHARED_WITH_YOU_DIALOG_INTRO": "Clicca automaticamente su \"Non ora\" nella finestra di dialogo \"X ha condiviso con te\" quando apri qualsiasi link ?igsh=.",
-    "MODIFY_RESOURCE_EXIF_INTRO": "Modifica le proprietà EXIF della risorsa immagine per inserirvi il link del post.",
-    "DIRECT_DOWNLOAD_STORY_INTRO": "Quando clicchi su Scarica tutte le risorse, tutte le storie/i contenuti in evidenza vengono scaricati direttamente, senza mostrare la finestra di selezione delle immagini.",
+    "MODIFY_RESOURCE_EXIF_INTRO": "Modifica gli attributi EXIF della risorsa immagine per includere metadati come il link del post, la data dello scatto e l'autore.",
+    "DIRECT_DOWNLOAD_STORY_INTRO": "Quando clicchi su [Scarica tutte le risorse], tutte le storie/i contenuti in evidenza vengono scaricati direttamente, senza mostrare la finestra di selezione delle immagini.",
     "CAPTURE_IMAGE_VIA_MEDIA_CACHE_INTRO": "Usa un watcher per catturare nella memoria dello script eventuali URL di immagini ad alta qualità presenti nell'albero DOM, in modo che possano essere estratti quando disponibili e su richiesta dell'utente.",
     "HOTKEY_DEBUG_KEY": "Finestra di debug",
     "HOTKEY_SETTINGS_KEY": "Impostazioni preferenze",

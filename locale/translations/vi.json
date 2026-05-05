@@ -1,0 +1,100 @@
+{
+    "NOTICE_UPDATE_TITLE": "Wololo! Đã phát hành phiên bản mới.",
+    "NOTICE_UPDATE_CONTENT": "IG-Helper đã phát hành phiên bản mới, nhấp vào đây để cập nhật.",
+    "CHECK_FOR_UPDATE": "Kiểm tra cập nhật script",
+    "RELOAD_SCRIPT": "Tải lại script",
+    "DONATE": "Quyên góp",
+    "FEEDBACK": "Phản hồi",
+    "IMAGE_VIEWER": "Mở hình ảnh trong trình xem",
+    "NEW_TAB": "Mở trong thẻ mới",
+    "SHOW_DOM_TREE": "Hiển thị cây DOM",
+    "SELECT_AND_COPY": "Chọn tất cả và sao chép từ hộp nhập",
+    "DOWNLOAD_DOM_TREE": "Tải cây DOM xuống dưới dạng tệp văn bản",
+    "REPORT_GITHUB": "Báo cáo sự cố trên GitHub",
+    "REPORT_DISCORD": "Báo cáo sự cố trên máy chủ hỗ trợ Discord",
+    "REPORT_FORK": "Báo cáo sự cố trên Greasy Fork",
+    "DEBUG": "Cửa sổ gỡ lỗi",
+    "CLOSE": "Đóng",
+    "ALL_CHECK": "Chọn tất cả",
+    "ITEM_COUNT_SINGULAR": "%COUNT% mục",
+    "ITEM_COUNT_PLURAL": "%COUNT% mục",
+    "ITEM_POSITION": "Mục %CURRENT% trên %TOTAL%",
+    "SELECTED_COUNT_SINGULAR": "Đã chọn %COUNT% mục",
+    "SELECTED_COUNT_PLURAL": "Đã chọn %COUNT% mục",
+    "BATCH_DOWNLOAD_SELECTED": "Tải xuống các tài nguyên đã chọn",
+    "BATCH_DOWNLOAD_DIRECT": "Tải xuống tất cả tài nguyên",
+    "IMG": "Hình ảnh",
+    "VID": "Video",
+    "DW": "Tải xuống",
+    "DW_ALL": "Tải xuống tất cả tài nguyên",
+    "VIDEO_THUMBNAIL": "Tải xuống hình thu nhỏ của video",
+    "LOAD_BLOB_ONE": "Đang tải phương tiện Blob...",
+    "LOAD_BLOB_MULTIPLE": "Đang tải phương tiện Blob và các nội dung khác...",
+    "LOAD_BLOB_RELOAD": "Đang phát hiện phương tiện Blob, đang tải lại...",
+    "NO_CHECK_RESOURCE": "Bạn cần chọn một tài nguyên để tải xuống.",
+    "NO_VID_URL": "Không tìm thấy URL video.",
+    "SETTING": "Cài đặt",
+    "AUTO_RENAME": "Tự động đổi tên tệp (nhấp chuột phải để đặt)",
+    "RENAME_PUBLISH_DATE": "Đặt dấu thời gian của tệp đã đổi tên thành ngày đăng tài nguyên",
+    "RENAME_LOCATE_DATE": "Sửa đổi định dạng ngày của dấu thời gian cho tệp đã đổi tên (nhấp chuột phải để đặt)",
+    "DISABLE_VIDEO_LOOPING": "Tắt tự động lặp video",
+    "HTML5_VIDEO_CONTROL": "Hiển thị bộ điều khiển video HTML5",
+    "REDIRECT_CLICK_USER_STORY_PICTURE": "Chuyển hướng khi nhấp vào ảnh tin của người dùng",
+    "FORCE_FETCH_ALL_RESOURCES": "Buộc lấy tất cả tài nguyên trong bài viết",
+    "DIRECT_DOWNLOAD_VISIBLE_RESOURCE": "Tải trực tiếp các tài nguyên hiển thị trong bài viết",
+    "DIRECT_DOWNLOAD_ALL": "Tải trực tiếp tất cả tài nguyên trong bài viết",
+    "DIRECT_DOWNLOAD_STORY": "Tải trực tiếp tất cả tài nguyên trong tin/tin nổi bật",
+    "MODIFY_VIDEO_VOLUME": "Sửa đổi âm lượng video (nhấp chuột phải để đặt)",
+    "MODIFY_RESOURCE_EXIF": "Sửa đổi thuộc tính EXIF của tài nguyên",
+    "SCROLL_BUTTON": "Bật nút cuộn cho trang Reels",
+    "FORCE_RESOURCE_VIA_MEDIA": "Buộc lấy tài nguyên qua Media API",
+    "PREFER_DASH_MANIFEST": "Ưu tiên DASH Manifest (video chất lượng cao hơn qua Media API)",
+    "FALLBACK_TO_BLOB_FETCH_IF_MEDIA_API_THROTTLED": "Dùng các phương thức thay thế để tải xuống khi không thể truy cập Media API",
+    "NEW_TAB_ALWAYS_FORCE_MEDIA_IN_POST": "Luôn dùng Media API cho「Mở trong thẻ mới」trong bài viết",
+    "SKIP_VIEW_STORY_CONFIRM": "Bỏ qua trang xác nhận khi xem tin/tin nổi bật",
+    "SKIP_SHARED_WITH_YOU_DIALOG": "Bỏ qua hộp thoại “đã chia sẻ nội dung này với bạn” trên liên kết hồ sơ được chia sẻ",
+    "CAPTURE_IMAGE_VIA_MEDIA_CACHE": "Chụp tài nguyên hình ảnh bằng bộ nhớ đệm phương tiện",
+    "AUTO_RENAME_INTRO": `Tự động đổi tên tệp theo định dạng tùy chỉnh:\nDanh sách định dạng tùy chỉnh: \n
+        %USERNAME% - Tên người dùng\n
+        %SOURCE_TYPE% - Nguồn tải xuống\n
+        %SHORTCODE% - Mã ngắn của bài viết\n
+        %YEAR% - Năm tải xuống/đăng\n
+        %2-YEAR% - Năm (hai chữ số cuối) tải xuống/đăng\n
+        %MONTH% - Tháng tải xuống/đăng\n
+        %DAY% - Ngày tải xuống/đăng\n
+        %HOUR% - Giờ tải xuống/đăng\n
+        %MINUTE% - Phút tải xuống/đăng\n
+        %SECOND% - Giây tải xuống/đăng\n
+        %ORIGINAL_NAME% - Tên gốc của tệp đã tải xuống\n
+        %ORIGINAL_NAME_FIRST% - Tên gốc của tệp đã tải xuống (phần đầu của tên)\n
+        %INDEX% - Chỉ mục tài nguyên\n
+        %UID% - ID duy nhất của tài khoản người dùng\n\n
+        Nếu đặt thành false, tên tệp sẽ giữ nguyên.\n
+        Ví dụ: instagram_321565527_679025940443063_4318007696887450953_n.jpg`,
+    "RENAME_PUBLISH_DATE_INTRO": "Đặt dấu thời gian trong định dạng đổi tên tệp thành ngày đăng tài nguyên (múi giờ của trình duyệt).\n\nTính năng này chỉ hoạt động khi「Tự động đổi tên tệp」được đặt thành TRUE.",
+    "RENAME_LOCATE_DATE_INTRO": "Sửa đổi định dạng ngày của dấu thời gian cho tệp đã đổi tên sang giờ địa phương của trình duyệt và định dạng theo kiểu ngày khu vực bạn muốn.\n\nTính năng này chỉ hoạt động khi「Tự động đổi tên tệp」được đặt thành TRUE.",
+    "DISABLE_VIDEO_LOOPING_INTRO": "Tắt tự động lặp video trong Reels và bài viết.",
+    "HTML5_VIDEO_CONTROL_INTRO": "Hiển thị bộ điều khiển video HTML5 trong tài nguyên video.\n\nThao tác này sẽ ẩn thanh trượt âm lượng tùy chỉnh và thay bằng bộ điều khiển HTML5. Có thể ẩn bộ điều khiển HTML5 bằng cách nhấp chuột phải vào video để hiển thị chi tiết ban đầu.",
+    "REDIRECT_CLICK_USER_STORY_PICTURE_INTRO": "Chuyển hướng đến trang hồ sơ của người dùng khi nhấp chuột phải vào ảnh đại diện của họ trong khu vực tin trên trang chủ.\nNếu bạn dùng nút giữa của chuột để nhấp, trang sẽ mở trong thẻ mới.",
+    "FORCE_FETCH_ALL_RESOURCES_INTRO": "Buộc lấy tất cả tài nguyên (ảnh và video) trong bài viết qua API Instagram để loại bỏ giới hạn ba tài nguyên cho mỗi bài viết.",
+    "DIRECT_DOWNLOAD_VISIBLE_RESOURCE_INTRO": "Tải trực tiếp các tài nguyên hiện có trong bài viết.",
+    "DIRECT_DOWNLOAD_ALL_INTRO": "Khi bạn nhấp vào nút tải xuống, tất cả tài nguyên trong bài viết sẽ được buộc lấy và tải xuống.",
+    "MODIFY_VIDEO_VOLUME_INTRO": "Sửa đổi âm lượng phát video trong Reels và bài viết (nhấp chuột phải để mở thanh trượt cài đặt âm lượng).",
+    "SCROLL_BUTTON_INTRO": "Bật các nút cuộn ở góc dưới bên phải của trang Reels.",
+    "FORCE_RESOURCE_VIA_MEDIA_INTRO": "Media API sẽ cố gắng lấy ảnh hoặc video có chất lượng cao nhất có thể, nhưng có thể mất nhiều thời gian hơn để tải.",
+    "PREFER_DASH_MANIFEST_INTRO": "Ưu tiên DASH Manifest cho tài nguyên video qua Media API. Nếu có DASH Manifest, luồng video và âm thanh sẽ được tải xuống RIÊNG BIỆT để đạt chất lượng tốt nhất có thể.",
+    "FALLBACK_TO_BLOB_FETCH_IF_MEDIA_API_THROTTLED_INTRO": "Khi Media API đạt giới hạn tốc độ hoặc không thể dùng vì lý do khác, Forced Fetch API sẽ được dùng để tải xuống tài nguyên (chất lượng tài nguyên có thể thấp hơn một chút).",
+    "NEW_TAB_ALWAYS_FORCE_MEDIA_IN_POST_INTRO": "Nút「Mở trong thẻ mới」trong bài viết sẽ luôn dùng Media API để lấy tài nguyên có độ phân giải cao.",
+    "CHECK_FOR_UPDATE_INTRO": "Kiểm tra cập nhật khi script được kích hoạt (kiểm tra mỗi 300 giây).\nThông báo cập nhật sẽ được gửi dưới dạng thông báo trên màn hình nền qua trình duyệt.",
+    "SKIP_VIEW_STORY_CONFIRM_INTRO": "Tự động bỏ qua khi trang xác nhận được hiển thị trong tin hoặc tin nổi bật.",
+    "SKIP_SHARED_WITH_YOU_DIALOG_INTRO": "Tự động nhấp vào “Không phải bây giờ” trong hộp thoại “X đã chia sẻ nội dung này với bạn” khi mở bất kỳ liên kết ?igsh= nào.",
+    "MODIFY_RESOURCE_EXIF_INTRO": "Sửa đổi thuộc tính EXIF của tài nguyên hình ảnh để bao gồm siêu dữ liệu như liên kết bài viết, ngày chụp và tác giả.",
+    "DIRECT_DOWNLOAD_STORY_INTRO": "Khi bạn nhấp vào「Tải xuống tất cả tài nguyên」, tất cả tin/tin nổi bật sẽ được tải xuống trực tiếp mà không hiển thị hộp thoại chọn tài nguyên.",
+    "CAPTURE_IMAGE_VIA_MEDIA_CACHE_INTRO": "Dùng trình theo dõi để chụp mọi URL hình ảnh chất lượng cao trong cây DOM vào bộ nhớ của script, để có thể trích xuất chúng khi có sẵn và theo thao tác của người dùng.",
+    "HOTKEY_DEBUG_KEY": "Cửa sổ gỡ lỗi",
+    "HOTKEY_SETTINGS_KEY": "Cài đặt tùy chọn",
+    "HOTKEY_KEY_SETTINGS_KEY": "Cài đặt phím tắt",
+    "HOTKEY_DOWNLOAD_STORY_KEY": "Tải xuống tin",
+    "HOTKEY_CONFLICT_WARNING": "Phím tắt này có thể xung đột với các cài đặt khác.",
+    "HOTKEY_RESET": "Đặt lại"
+}

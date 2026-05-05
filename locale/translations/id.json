@@ -1,0 +1,100 @@
+{
+    "NOTICE_UPDATE_TITLE": "Wololo! Versi baru telah dirilis.",
+    "NOTICE_UPDATE_CONTENT": "IG-Helper telah merilis versi baru, klik di sini untuk memperbarui.",
+    "CHECK_FOR_UPDATE": "Periksa pembaruan skrip",
+    "RELOAD_SCRIPT": "Muat ulang skrip",
+    "DONATE": "Donasi",
+    "FEEDBACK": "Umpan balik",
+    "IMAGE_VIEWER": "Buka gambar di penampil",
+    "NEW_TAB": "Buka di tab baru",
+    "SHOW_DOM_TREE": "Tampilkan pohon DOM",
+    "SELECT_AND_COPY": "Pilih semua dan salin dari kotak input",
+    "DOWNLOAD_DOM_TREE": "Unduh pohon DOM sebagai file teks",
+    "REPORT_GITHUB": "Laporkan masalah di GitHub",
+    "REPORT_DISCORD": "Laporkan masalah di server dukungan Discord",
+    "REPORT_FORK": "Laporkan masalah di Greasy Fork",
+    "DEBUG": "Jendela debug",
+    "CLOSE": "Tutup",
+    "ALL_CHECK": "Pilih semua",
+    "ITEM_COUNT_SINGULAR": "%COUNT% item",
+    "ITEM_COUNT_PLURAL": "%COUNT% item",
+    "ITEM_POSITION": "Item %CURRENT% dari %TOTAL%",
+    "SELECTED_COUNT_SINGULAR": "%COUNT% dipilih",
+    "SELECTED_COUNT_PLURAL": "%COUNT% dipilih",
+    "BATCH_DOWNLOAD_SELECTED": "Unduh sumber daya yang dipilih",
+    "BATCH_DOWNLOAD_DIRECT": "Unduh semua sumber daya",
+    "IMG": "Gambar",
+    "VID": "Video",
+    "DW": "Unduh",
+    "DW_ALL": "Unduh semua sumber daya",
+    "VIDEO_THUMBNAIL": "Unduh thumbnail video",
+    "LOAD_BLOB_ONE": "Memuat media Blob...",
+    "LOAD_BLOB_MULTIPLE": "Memuat media Blob dan lainnya...",
+    "LOAD_BLOB_RELOAD": "Mendeteksi media Blob, memuat ulang...",
+    "NO_CHECK_RESOURCE": "Kamu harus memilih sumber daya untuk diunduh.",
+    "NO_VID_URL": "Tidak dapat menemukan URL video.",
+    "SETTING": "Pengaturan",
+    "AUTO_RENAME": "Ganti nama file secara otomatis (klik kanan untuk mengatur)",
+    "RENAME_PUBLISH_DATE": "Atur stempel waktu file yang diganti namanya ke tanggal publikasi sumber daya",
+    "RENAME_LOCATE_DATE": "Ubah format tanggal stempel waktu file yang diganti namanya (klik kanan untuk mengatur)",
+    "DISABLE_VIDEO_LOOPING": "Nonaktifkan pemutaran video berulang otomatis",
+    "HTML5_VIDEO_CONTROL": "Tampilkan kontrol video HTML5",
+    "REDIRECT_CLICK_USER_STORY_PICTURE": "Alihkan saat mengklik foto cerita pengguna",
+    "FORCE_FETCH_ALL_RESOURCES": "Paksa pengambilan semua sumber daya dalam postingan",
+    "DIRECT_DOWNLOAD_VISIBLE_RESOURCE": "Unduh langsung sumber daya yang terlihat dalam postingan",
+    "DIRECT_DOWNLOAD_ALL": "Unduh langsung semua sumber daya dalam postingan",
+    "DIRECT_DOWNLOAD_STORY": "Unduh langsung semua sumber daya dalam cerita/sorotan",
+    "MODIFY_VIDEO_VOLUME": "Ubah volume video (klik kanan untuk mengatur)",
+    "MODIFY_RESOURCE_EXIF": "Ubah properti EXIF sumber daya",
+    "SCROLL_BUTTON": "Aktifkan tombol gulir untuk halaman Reels",
+    "FORCE_RESOURCE_VIA_MEDIA": "Paksa pengambilan sumber daya melalui Media API",
+    "PREFER_DASH_MANIFEST": "Utamakan manifes DASH (video berkualitas lebih tinggi melalui Media API)",
+    "FALLBACK_TO_BLOB_FETCH_IF_MEDIA_API_THROTTLED": "Gunakan metode alternatif untuk mengunduh saat Media API tidak dapat diakses",
+    "NEW_TAB_ALWAYS_FORCE_MEDIA_IN_POST": "Selalu gunakan Media API untuk [Buka di tab baru] dalam postingan",
+    "SKIP_VIEW_STORY_CONFIRM": "Lewati halaman konfirmasi untuk melihat cerita/sorotan",
+    "SKIP_SHARED_WITH_YOU_DIALOG": "Lewati dialog \"membagikan ini denganmu\" pada tautan profil yang dibagikan",
+    "CAPTURE_IMAGE_VIA_MEDIA_CACHE": "Tangkap sumber daya gambar menggunakan cache media",
+    "AUTO_RENAME_INTRO": `Ganti nama file secara otomatis ke format khusus:\nDaftar format khusus: \n
+        %USERNAME% - Nama pengguna\n
+        %SOURCE_TYPE% - Sumber unduhan\n
+        %SHORTCODE% - Shortcode postingan\n
+        %YEAR% - Tahun saat diunduh/dipublikasikan\n
+        %2-YEAR% - Tahun (dua digit terakhir) saat diunduh/dipublikasikan\n
+        %MONTH% - Bulan saat diunduh/dipublikasikan\n
+        %DAY% - Hari saat diunduh/dipublikasikan\n
+        %HOUR% - Jam saat diunduh/dipublikasikan\n
+        %MINUTE% - Menit saat diunduh/dipublikasikan\n
+        %SECOND% - Detik saat diunduh/dipublikasikan\n
+        %ORIGINAL_NAME% - Nama asli file yang diunduh\n
+        %ORIGINAL_NAME_FIRST% - Nama asli file yang diunduh (bagian pertama nama)\n
+        %INDEX% - Indeks sumber daya\n
+        %UID% - ID unik akun pengguna\n\n
+        Jika diatur ke false, nama file akan tetap tidak berubah.\n
+        Contoh: instagram_321565527_679025940443063_4318007696887450953_n.jpg`,
+    "RENAME_PUBLISH_DATE_INTRO": "Mengatur stempel waktu dalam format penggantian nama file ke tanggal publikasi sumber daya (zona waktu browser).\n\nFitur ini hanya berfungsi saat [Ganti nama file secara otomatis] diatur ke TRUE.",
+    "RENAME_LOCATE_DATE_INTRO": "Mengubah format tanggal stempel waktu file yang diganti namanya ke waktu lokal browser dan memformatnya ke format tanggal regional yang kamu inginkan.\n\nFitur ini hanya berfungsi saat [Ganti nama file secara otomatis] diatur ke TRUE.",
+    "DISABLE_VIDEO_LOOPING_INTRO": "Nonaktifkan pemutaran video berulang otomatis di Reels dan postingan.",
+    "HTML5_VIDEO_CONTROL_INTRO": "Tampilkan kontrol video HTML5 pada sumber daya video.\n\nIni akan menyembunyikan penggeser volume khusus dan menggantinya dengan kontrol HTML5. Kontrol HTML5 dapat disembunyikan dengan mengklik kanan video untuk menampilkan detail asli.",
+    "REDIRECT_CLICK_USER_STORY_PICTURE_INTRO": "Alihkan ke halaman profil pengguna saat kamu mengklik kanan avatar mereka di area cerita pada beranda.\nJika kamu menggunakan tombol tengah mouse untuk mengklik, itu akan terbuka di tab baru.",
+    "FORCE_FETCH_ALL_RESOURCES_INTRO": "Paksa pengambilan semua sumber daya (foto dan video) dalam postingan melalui API Instagram untuk menghapus batas tiga sumber daya per postingan.",
+    "DIRECT_DOWNLOAD_VISIBLE_RESOURCE_INTRO": "Unduh langsung sumber daya yang saat ini tersedia dalam postingan.",
+    "DIRECT_DOWNLOAD_ALL_INTRO": "Saat kamu mengklik tombol unduh, semua sumber daya dalam postingan akan diambil dan diunduh secara paksa.",
+    "MODIFY_VIDEO_VOLUME_INTRO": "Ubah volume pemutaran video di Reels dan postingan (klik kanan untuk membuka penggeser pengaturan volume).",
+    "SCROLL_BUTTON_INTRO": "Aktifkan tombol gulir di sudut kanan bawah halaman Reels.",
+    "FORCE_RESOURCE_VIA_MEDIA_INTRO": "Media API akan mencoba mendapatkan foto atau video dengan kualitas setinggi mungkin, tetapi pemuatannya mungkin memerlukan waktu lebih lama.",
+    "PREFER_DASH_MANIFEST_INTRO": "Utamakan manifes DASH untuk sumber daya video melalui Media API. Jika manifes DASH tersedia, aliran video dan audio akan diunduh SECARA TERPISAH untuk mendapatkan kualitas terbaik yang memungkinkan.",
+    "FALLBACK_TO_BLOB_FETCH_IF_MEDIA_API_THROTTLED_INTRO": "Saat Media API mencapai batas laju permintaan atau tidak dapat digunakan karena alasan lain, Forced Fetch API akan digunakan untuk mengunduh sumber daya (kualitas sumber daya mungkin sedikit lebih rendah).",
+    "NEW_TAB_ALWAYS_FORCE_MEDIA_IN_POST_INTRO": "Tombol [Buka di tab baru] dalam postingan akan selalu menggunakan Media API untuk mendapatkan sumber daya beresolusi tinggi.",
+    "CHECK_FOR_UPDATE_INTRO": "Periksa pembaruan saat skrip dipicu (periksa setiap 300 detik).\nNotifikasi pembaruan akan dikirim sebagai notifikasi desktop melalui browser.",
+    "SKIP_VIEW_STORY_CONFIRM_INTRO": "Lewati secara otomatis saat halaman konfirmasi ditampilkan dalam cerita atau sorotan.",
+    "SKIP_SHARED_WITH_YOU_DIALOG_INTRO": "Klik otomatis \"Tidak sekarang\" pada dialog \"X membagikan ini denganmu\" saat membuka tautan ?igsh= apa pun.",
+    "MODIFY_RESOURCE_EXIF_INTRO": "Ubah atribut EXIF sumber daya gambar untuk menyertakan metadata seperti tautan postingan, tanggal pengambilan, dan penulis.",
+    "DIRECT_DOWNLOAD_STORY_INTRO": "Saat kamu mengklik [Unduh semua sumber daya], semua cerita/sorotan diunduh langsung tanpa menampilkan dialog pemilihan gambar.",
+    "CAPTURE_IMAGE_VIA_MEDIA_CACHE_INTRO": "Gunakan pemantau untuk menangkap URL gambar berkualitas tinggi apa pun di pohon DOM ke penyimpanan skrip, sehingga dapat diekstrak saat tersedia dan atas input pengguna.",
+    "HOTKEY_DEBUG_KEY": "Jendela debug",
+    "HOTKEY_SETTINGS_KEY": "Pengaturan preferensi",
+    "HOTKEY_KEY_SETTINGS_KEY": "Pengaturan tombol pintas",
+    "HOTKEY_DOWNLOAD_STORY_KEY": "Unduh cerita",
+    "HOTKEY_CONFLICT_WARNING": "Tombol pintas ini mungkin bertentangan dengan pengaturan lain.",
+    "HOTKEY_RESET": "Atur ulang"
+}

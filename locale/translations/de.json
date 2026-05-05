@@ -1,0 +1,100 @@
+{
+    "NOTICE_UPDATE_TITLE": "Wololo! Eine neue Version wurde veröffentlicht.",
+    "NOTICE_UPDATE_CONTENT": "IG-Helper hat eine neue Version veröffentlicht, klicke hier, um zu aktualisieren.",
+    "CHECK_FOR_UPDATE": "Nach Skript-Updates suchen",
+    "RELOAD_SCRIPT": "Skript neu laden",
+    "DONATE": "Spenden",
+    "FEEDBACK": "Feedback",
+    "IMAGE_VIEWER": "Bild im Betrachter öffnen",
+    "NEW_TAB": "In neuem Tab öffnen",
+    "SHOW_DOM_TREE": "DOM-Baum anzeigen",
+    "SELECT_AND_COPY": "Alles auswählen und aus dem Eingabefeld kopieren",
+    "DOWNLOAD_DOM_TREE": "DOM-Baum als Textdatei herunterladen",
+    "REPORT_GITHUB": "Problem auf GitHub melden",
+    "REPORT_DISCORD": "Problem auf dem Discord-Supportserver melden",
+    "REPORT_FORK": "Problem auf Greasy Fork melden",
+    "DEBUG": "Debug-Fenster",
+    "CLOSE": "Schließen",
+    "ALL_CHECK": "Alle auswählen",
+    "ITEM_COUNT_SINGULAR": "%COUNT% Element",
+    "ITEM_COUNT_PLURAL": "%COUNT% Elemente",
+    "ITEM_POSITION": "Element %CURRENT% von %TOTAL%",
+    "SELECTED_COUNT_SINGULAR": "%COUNT% ausgewählt",
+    "SELECTED_COUNT_PLURAL": "%COUNT% ausgewählt",
+    "BATCH_DOWNLOAD_SELECTED": "Ausgewählte Ressourcen herunterladen",
+    "BATCH_DOWNLOAD_DIRECT": "Alle Ressourcen herunterladen",
+    "IMG": "Bild",
+    "VID": "Video",
+    "DW": "Herunterladen",
+    "DW_ALL": "Alle Ressourcen herunterladen",
+    "VIDEO_THUMBNAIL": "Video-Miniaturansicht herunterladen",
+    "LOAD_BLOB_ONE": "Blob-Medien werden geladen...",
+    "LOAD_BLOB_MULTIPLE": "Blob-Medien und andere Ressourcen werden geladen...",
+    "LOAD_BLOB_RELOAD": "Blob-Medien werden erkannt, wird neu geladen...",
+    "NO_CHECK_RESOURCE": "Du musst eine Ressource zum Herunterladen auswählen.",
+    "NO_VID_URL": "Video-URL kann nicht gefunden werden.",
+    "SETTING": "Einstellungen",
+    "AUTO_RENAME": "Dateien automatisch umbenennen (Rechtsklick zum Festlegen)",
+    "RENAME_PUBLISH_DATE": "Zeitstempel der umbenannten Datei auf das Veröffentlichungsdatum der Ressource setzen",
+    "RENAME_LOCATE_DATE": "Datumsformat des Zeitstempels umbenannter Dateien ändern (Rechtsklick zum Festlegen)",
+    "DISABLE_VIDEO_LOOPING": "Automatische Videowiedergabe in Schleife deaktivieren",
+    "HTML5_VIDEO_CONTROL": "HTML5-Videosteuerung anzeigen",
+    "REDIRECT_CLICK_USER_STORY_PICTURE": "Beim Klicken auf das Story-Bild des Benutzers weiterleiten",
+    "FORCE_FETCH_ALL_RESOURCES": "Abruf aller Ressourcen im Beitrag erzwingen",
+    "DIRECT_DOWNLOAD_VISIBLE_RESOURCE": "Sichtbare Ressourcen im Beitrag direkt herunterladen",
+    "DIRECT_DOWNLOAD_ALL": "Alle Ressourcen im Beitrag direkt herunterladen",
+    "DIRECT_DOWNLOAD_STORY": "Alle Ressourcen in der Story/im Highlight direkt herunterladen",
+    "MODIFY_VIDEO_VOLUME": "Videolautstärke ändern (Rechtsklick zum Festlegen)",
+    "MODIFY_RESOURCE_EXIF": "EXIF-Eigenschaften der Ressource ändern",
+    "SCROLL_BUTTON": "Scroll-Schaltflächen für die Reels-Seite aktivieren",
+    "FORCE_RESOURCE_VIA_MEDIA": "Abruf der Ressource über die Media API erzwingen",
+    "PREFER_DASH_MANIFEST": "DASH-Manifest bevorzugen (Video in höherer Qualität über die Media API)",
+    "FALLBACK_TO_BLOB_FETCH_IF_MEDIA_API_THROTTLED": "Alternative Download-Methoden verwenden, wenn die Media API nicht zugänglich ist",
+    "NEW_TAB_ALWAYS_FORCE_MEDIA_IN_POST": "Für [In neuem Tab öffnen] in Beiträgen immer die Media API verwenden",
+    "SKIP_VIEW_STORY_CONFIRM": "Bestätigungsseite beim Ansehen einer Story/eines Highlights überspringen",
+    "SKIP_SHARED_WITH_YOU_DIALOG": "Dialog „hat dies mit dir geteilt“ bei geteilten Profillinks überspringen",
+    "CAPTURE_IMAGE_VIA_MEDIA_CACHE": "Bildressource über den Mediencache erfassen",
+    "AUTO_RENAME_INTRO": `Dateien automatisch in ein benutzerdefiniertes Format umbenennen:\nListe benutzerdefinierter Formate: \n
+        %USERNAME% - Benutzername\n
+        %SOURCE_TYPE% - Download-Quelle\n
+        %SHORTCODE% - Kurzcode des Beitrags\n
+        %YEAR% - Jahr des Downloads/der Veröffentlichung\n
+        %2-YEAR% - Jahr (letzte zwei Ziffern) des Downloads/der Veröffentlichung\n
+        %MONTH% - Monat des Downloads/der Veröffentlichung\n
+        %DAY% - Tag des Downloads/der Veröffentlichung\n
+        %HOUR% - Stunde des Downloads/der Veröffentlichung\n
+        %MINUTE% - Minute des Downloads/der Veröffentlichung\n
+        %SECOND% - Sekunde des Downloads/der Veröffentlichung\n
+        %ORIGINAL_NAME% - Ursprünglicher Name der heruntergeladenen Datei\n
+        %ORIGINAL_NAME_FIRST% - Ursprünglicher Name der heruntergeladenen Datei (erster Teil des Namens)\n
+        %INDEX% - Index der Ressource\n
+        %UID% - Eindeutige ID des Benutzerkontos\n\n
+        Wenn auf falsch gesetzt, bleibt der Dateiname unverändert.\n
+        Beispiel: instagram_321565527_679025940443063_4318007696887450953_n.jpg`,
+    "RENAME_PUBLISH_DATE_INTRO": "Setzt den Zeitstempel im Dateiumbenennungsformat auf das Veröffentlichungsdatum der Ressource (Zeitzone des Browsers).\n\nDiese Funktion funktioniert nur, wenn [Dateien automatisch umbenennen] auf WAHR gesetzt ist.",
+    "RENAME_LOCATE_DATE_INTRO": "Ändert das Datumsformat des Zeitstempels der umbenannten Datei auf die lokale Zeit des Browsers und formatiert es in dein bevorzugtes regionales Datumsformat.\n\nDiese Funktion funktioniert nur, wenn [Dateien automatisch umbenennen] auf WAHR gesetzt ist.",
+    "DISABLE_VIDEO_LOOPING_INTRO": "Deaktiviert die automatische Videowiedergabe in Schleife in Reels und Beiträgen.",
+    "HTML5_VIDEO_CONTROL_INTRO": "Zeigt die HTML5-Videosteuerung in der Videoressource an.\n\nDadurch wird der benutzerdefinierte Lautstärkeregler ausgeblendet und durch die HTML5-Steuerung ersetzt. Die HTML5-Steuerung kann ausgeblendet werden, indem du mit der rechten Maustaste auf das Video klickst, um die ursprünglichen Details anzuzeigen.",
+    "REDIRECT_CLICK_USER_STORY_PICTURE_INTRO": "Leitet zur Profilseite eines Benutzers weiter, wenn du mit der rechten Maustaste auf dessen Avatar im Story-Bereich der Startseite klickst.\nWenn du mit der mittleren Maustaste klickst, wird die Seite in einem neuen Tab geöffnet.",
+    "FORCE_FETCH_ALL_RESOURCES_INTRO": "Erzwingt den Abruf aller Ressourcen (Fotos und Videos) in einem Beitrag über die Instagram-API, um die Begrenzung auf drei Ressourcen pro Beitrag zu entfernen.",
+    "DIRECT_DOWNLOAD_VISIBLE_RESOURCE_INTRO": "Lädt die aktuell im Beitrag verfügbaren Ressourcen direkt herunter.",
+    "DIRECT_DOWNLOAD_ALL_INTRO": "Wenn du auf die Download-Schaltfläche klickst, werden alle Ressourcen im Beitrag zwangsweise abgerufen und heruntergeladen.",
+    "MODIFY_VIDEO_VOLUME_INTRO": "Ändert die Wiedergabelautstärke von Videos in Reels und Beiträgen (Rechtsklick, um den Lautstärkeregler zu öffnen).",
+    "SCROLL_BUTTON_INTRO": "Aktiviert Scroll-Schaltflächen in der unteren rechten Ecke der Reels-Seite.",
+    "FORCE_RESOURCE_VIA_MEDIA_INTRO": "Die Media API versucht, Fotos oder Videos in der höchstmöglichen Qualität zu erhalten, das Laden kann jedoch länger dauern.",
+    "PREFER_DASH_MANIFEST_INTRO": "Bevorzugt das DASH-Manifest für Videoressourcen über die Media API. Wenn ein DASH-Manifest verfügbar ist, werden die Video- und Audiostreams SEPARAT heruntergeladen, um die bestmögliche Qualität zu erhalten.",
+    "FALLBACK_TO_BLOB_FETCH_IF_MEDIA_API_THROTTLED_INTRO": "Wenn die Media API ihre Ratenbegrenzung erreicht oder aus anderen Gründen nicht verwendet werden kann, wird die Forced Fetch API zum Herunterladen der Ressourcen verwendet (die Ressourcenqualität kann etwas niedriger sein).",
+    "NEW_TAB_ALWAYS_FORCE_MEDIA_IN_POST_INTRO": "Die Schaltfläche [In neuem Tab öffnen] in Beiträgen verwendet immer die Media API, um hochauflösende Ressourcen zu erhalten.",
+    "CHECK_FOR_UPDATE_INTRO": "Sucht nach Updates, wenn das Skript ausgelöst wird (Überprüfung alle 300 Sekunden).\nUpdate-Benachrichtigungen werden als Desktopbenachrichtigungen über den Browser gesendet.",
+    "SKIP_VIEW_STORY_CONFIRM_INTRO": "Überspringt automatisch, wenn die Bestätigungsseite in einer Story oder einem Highlight angezeigt wird.",
+    "SKIP_SHARED_WITH_YOU_DIALOG_INTRO": "Klickt beim Öffnen beliebiger ?igsh=-Links automatisch auf „Jetzt nicht“ im Dialog „X hat dies mit dir geteilt“.",
+    "MODIFY_RESOURCE_EXIF_INTRO": "Ändert die EXIF-Attribute der Bildressource, um Metadaten wie Beitragslink, Aufnahmedatum und Autor einzuschließen.",
+    "DIRECT_DOWNLOAD_STORY_INTRO": "Wenn du auf [Alle Ressourcen herunterladen] klickst, werden alle Storys/Highlights direkt heruntergeladen, ohne den Bildauswahldialog anzuzeigen.",
+    "CAPTURE_IMAGE_VIA_MEDIA_CACHE_INTRO": "Verwendet einen Beobachter, um alle URLs hochwertiger Bilder aus dem DOM-Baum im Speicher des Skripts zu erfassen, damit sie extrahiert werden können, sobald sie verfügbar sind und der Benutzer dies anfordert.",
+    "HOTKEY_DEBUG_KEY": "Debug-Fenster",
+    "HOTKEY_SETTINGS_KEY": "Voreinstellungen",
+    "HOTKEY_KEY_SETTINGS_KEY": "Tastenkürzel-Einstellungen",
+    "HOTKEY_DOWNLOAD_STORY_KEY": "Story herunterladen",
+    "HOTKEY_CONFLICT_WARNING": "Dieses Tastenkürzel kann mit anderen Einstellungen in Konflikt stehen.",
+    "HOTKEY_RESET": "Zurücksetzen"
+}
