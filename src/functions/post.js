@@ -1,7 +1,7 @@
 import { USER_SETTING, SVG, state } from "../settings";
 import {
     updateLoadingBar, openNewTab, logger,
-    toggleVolumeSilder, IG_createDM, IG_setDM, triggerLinkElement,
+    toggleVolumeSilder, triggerLinkElement,
     updatePopupSelectionSummary,
     replaceSameOriginHost,
     setDownloadProgress,
@@ -10,6 +10,7 @@ import {
 import { getBlobMedia } from "../utils/api";
 import { _i18n } from "../utils/i18n";
 import { openImageViewer } from "../utils/image_viewer";
+import { IG_createDM, IG_setDM } from "../utils/dialog";
 /*! ESLINT IMPORT END !*/
 
 /**

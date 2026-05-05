@@ -1,11 +1,9 @@
 import { state, USER_SETTING } from "./settings";
 import {
-    showSetting, showDebugDOM, reloadScript,
+    reloadScript,
     triggerLinkElement, openNewTab, saveFiles, logger, toggleVolumeSilder, updatePopupSelectionSummary,
     replaceSameOriginHost, setTimeElementDateAndLocaleTime, getHighlightCurrentTimeElement,
-    registerMenuCommand,
-    triggerReactClickHandler,
-    showHotkeySetting
+    triggerReactClickHandler
 } from "./utils/general";
 import { onStory, onStoryAll, onStoryThumbnail } from "./functions/story";
 import { onProfileAvatar } from "./functions/profile";
@@ -14,6 +12,7 @@ import { onReels } from "./functions/reel";
 import { _i18n, getTranslationText, repaintingTranslations } from "./utils/i18n";
 import { registerPerformanceObserver } from "./utils/image_cache";
 import { batchDownloadPostFiles } from "./functions/post";
+import { registerMenuCommand, showDebugDOM, showHotkeySetting, showSetting } from "./utils/dialog";
 /*! ESLINT IMPORT END !*/
 
 // Running if document is ready

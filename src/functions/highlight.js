@@ -2,7 +2,7 @@ import { USER_SETTING, SVG, state } from "../settings";
 import {
     updateLoadingBar, openNewTab, logger,
     setDownloadProgress, saveFiles, getStoryProgress,
-    tryHandleDashFromMediaItem, IG_createDM,
+    tryHandleDashFromMediaItem,
     getHighlightCurrentTimeElement, setTimeElementDateAndLocaleTime,
     setStoryProgressIndexText, setStoryProgressIndexByUsername
 } from "../utils/general";
@@ -10,6 +10,7 @@ import { _i18n } from "../utils/i18n";
 import { getHighlightStories, getMediaInfo } from "../utils/api";
 import { createStoryListDOM } from "./story";
 import { getImageFromCache } from "../utils/image_cache";
+import { IG_createDM } from "../utils/dialog";
 /*! ESLINT IMPORT END !*/
 
 /**

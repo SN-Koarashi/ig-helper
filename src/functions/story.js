@@ -4,7 +4,6 @@ import {
     saveFiles, getStoryProgress, openNewTab, logger,
     getStoryId,
     tryHandleDashFromMediaItem,
-    IG_createDM,
     updatePopupSelectionSummary,
     setStoryProgressIndexText,
     setStoryProgressIndexByUsername
@@ -12,6 +11,7 @@ import {
 import { getUserId, getStories, getMediaInfo } from "../utils/api";
 import { _i18n } from "../utils/i18n";
 import { getImageFromCache } from "../utils/image_cache";
+import { IG_createDM } from "../utils/dialog";
 /*! ESLINT IMPORT END !*/
 
 /**
