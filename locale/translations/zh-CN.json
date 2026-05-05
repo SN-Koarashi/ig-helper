@@ -1,9 +1,9 @@
 {
     "NOTICE_UPDATE_TITLE": "呜噜噜！新版本已发布。",
-    "NOTICE_UPDATE_CONTENT": "IG-Helper 已发布新版本，点击此处更新。",
+    "NOTICE_UPDATE_CONTENT": "IG小助手已发布新版本，点击此处更新。",
     "CHECK_FOR_UPDATE": "检查脚本更新",
     "RELOAD_SCRIPT": "重新加载脚本",
-    "DONATE": "捐助",
+    "DONATE": "捐款",
     "FEEDBACK": "反馈",
     "IMAGE_VIEWER": "在查看器中打开图片",
     "NEW_TAB": "在新选项卡中打开",
@@ -94,11 +94,11 @@
     "SKIP_SHARED_WITH_YOU_DIALOG_INTRO": "打开任何 ?igsh= 链接时，在“X 已与你分享此内容”对话框中自动点击“不用了”。",
     "MODIFY_RESOURCE_EXIF_INTRO": "修改图片资源的 EXIF 属性，以包含帖子链接、拍摄日期和作者等元数据。",
     "DIRECT_DOWNLOAD_STORY_INTRO": "当你点击「下载全部资源」时，所有快拍/精选都会直接下载，不显示资源选择对话框。",
-    "CAPTURE_IMAGE_VIA_MEDIA_CACHE_INTRO": "使用监视器将 DOM 树中的任何高质量图片 URL 捕获到脚本存储中，以便在可用时以及根据用户输入进行提取。",
+    "CAPTURE_IMAGE_VIA_MEDIA_CACHE_INTRO": "使用观察者将 DOM 树中的任何高质量图片 URL 捕获到脚本存储中，以便在可用时以及根据用户输入进行提取。",
     "HOTKEY_DEBUG_KEY": "调试窗口",
     "HOTKEY_SETTINGS_KEY": "偏好设置",
     "HOTKEY_KEY_SETTINGS_KEY": "快捷键设置",
     "HOTKEY_DOWNLOAD_STORY_KEY": "下载快拍",
     "HOTKEY_CONFLICT_WARNING": "此快捷键可能与其他设置冲突。",
-    "HOTKEY_RESET": "重置"
+    "HOTKEY_RESET": "重设"
 }
