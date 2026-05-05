@@ -124,7 +124,22 @@ export function translateText() {
         }, {}
     );
 
-    return resultSorted;
+    var result = Object.assign({}, resultSorted);
+    for (const lang in result) {
+        const translations = result[lang];
+        if (!translations || typeof translations !== "object") {
+            continue;
+        }
+
+        Object.keys(translations).forEach((key) => {
+            const value = translations[key];
+            if (Array.isArray(value)) {
+                translations[key] = value.join("\n");
+            }
+        });
+    }
+
+    return result;
 }
 
 /**
