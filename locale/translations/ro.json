@@ -54,23 +54,27 @@
     "SKIP_VIEW_STORY_CONFIRM": "Omite pagina de confirmare pentru vizualizarea unui story/highlight",
     "SKIP_SHARED_WITH_YOU_DIALOG": "Omite caseta de dialog „a partajat asta cu tine” la linkurile de profil partajate",
     "CAPTURE_IMAGE_VIA_MEDIA_CACHE": "Capturează resursele de tip imagine folosind cache-ul media",
-    "AUTO_RENAME_INTRO": `Redenumește automat fișierele într-un format personalizat:\nListă de formaturi personalizate: \n
-        %USERNAME% - Numele de utilizator\n
-        %SOURCE_TYPE% - Sursa descărcării\n
-        %SHORTCODE% - Codul scurt al postării\\n
-        %YEAR% - Anul descărcării/publicării\n
-        %2-YEAR% - Anul (ultimele două cifre) descărcării/publicării\n
-        %MONTH% - Luna descărcării/publicării\n
-        %DAY% - Ziua descărcării/publicării\n
-        %HOUR% - Ora descărcării/publicării\n
-        %MINUTE% - Minutul descărcării/publicării\n
-        %SECOND% - Secunda descărcării/publicării\n
-        %ORIGINAL_NAME% - Numele original al fișierului descărcat\n
-        %ORIGINAL_NAME_FIRST% - Numele original al fișierului descărcat (prima parte a numelui)\n
-        %INDEX% - Indexul resursei\n
-        %UID% - ID-ul unic al contului de utilizator\n\n
-        Dacă este setat pe fals, numele fișierului va rămâne neschimbat.\n
-        Exemplu: instagram_321565527_679025940443063_4318007696887450953_n.jpg`,
+    "AUTO_RENAME_INTRO": [
+        "Redenumește automat fișierele într-un format personalizat:",
+        "Listă de formaturi personalizate:",
+        "%USERNAME% - Numele de utilizator",
+        "%SOURCE_TYPE% - Sursa descărcării",
+        "%SHORTCODE% - Codul scurt al postării\\",
+        "%YEAR% - Anul descărcării/publicării",
+        "%2-YEAR% - Anul (ultimele două cifre) descărcării/publicării",
+        "%MONTH% - Luna descărcării/publicării",
+        "%DAY% - Ziua descărcării/publicării",
+        "%HOUR% - Ora descărcării/publicării",
+        "%MINUTE% - Minutul descărcării/publicării",
+        "%SECOND% - Secunda descărcării/publicării",
+        "%ORIGINAL_NAME% - Numele original al fișierului descărcat",
+        "%ORIGINAL_NAME_FIRST% - Numele original al fișierului descărcat (prima parte a numelui)",
+        "%INDEX% - Indexul resursei",
+        "%UID% - ID-ul unic al contului de utilizator",
+        "",
+        "Dacă este setat pe fals, numele fișierului va rămâne neschimbat.",
+        "Exemplu: instagram_321565527_679025940443063_4318007696887450953_n.jpg"
+    ],
     "RENAME_PUBLISH_DATE_INTRO": "Setează marcajul de timp din formatul de redenumire a fișierelor la data publicării resurselor (fusul orar al browserului).\n\nAceastă funcție funcționează numai când [Redenumește automat fișierele] este setată pe ADEVĂRAT.",
     "RENAME_LOCATE_DATE_INTRO": "Modifică formatul datei marcajului de timp al fișierelor redenumite la ora locală a browserului și formateaz-o în formatul regional de dată preferat.\n\nAceastă funcție funcționează numai când [Redenumește automat fișierele] este setată pe ADEVĂRAT.",
     "DISABLE_VIDEO_LOOPING_INTRO": "Dezactivează redarea automată în buclă a videoclipurilor din Reels și postări.",

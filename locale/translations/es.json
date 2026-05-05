@@ -54,23 +54,27 @@
     "SKIP_VIEW_STORY_CONFIRM": "Omitir la página de confirmación al ver una historia/destacado",
     "SKIP_SHARED_WITH_YOU_DIALOG": "Omitir el diálogo \"compartió esto contigo\" en enlaces de perfil compartidos",
     "CAPTURE_IMAGE_VIA_MEDIA_CACHE": "Capturar recursos de imagen usando la caché multimedia",
-    "AUTO_RENAME_INTRO": `Renombrar archivos automáticamente a un formato personalizado:\nLista de formatos personalizados: \n
-        %USERNAME% - Nombre de usuario\n
-        %SOURCE_TYPE% - Fuente de la descarga\n
-        %SHORTCODE% - Código corto de la publicación\n
-        %YEAR% - Año de descarga/publicación\n
-        %2-YEAR% - Año (últimos dos dígitos) de descarga/publicación\n
-        %MONTH% - Mes de descarga/publicación\n
-        %DAY% - Día de descarga/publicación\n
-        %HOUR% - Hora de descarga/publicación\n
-        %MINUTE% - Minuto de descarga/publicación\n
-        %SECOND% - Segundo de descarga/publicación\n
-        %ORIGINAL_NAME% - Nombre original del archivo descargado\n
-        %ORIGINAL_NAME_FIRST% - Nombre original del archivo descargado (primera parte del nombre)\n
-        %INDEX% - Índice del recurso\n
-        %UID% - ID único de la cuenta de usuario\n\n
-        Si se establece en falso, el nombre del archivo permanecerá sin cambios.\n
-        Ejemplo: instagram_321565527_679025940443063_4318007696887450953_n.jpg`,
+    "AUTO_RENAME_INTRO": [
+        "Renombrar archivos automáticamente a un formato personalizado:",
+        "Lista de formatos personalizados:",
+        "%USERNAME% - Nombre de usuario",
+        "%SOURCE_TYPE% - Fuente de la descarga",
+        "%SHORTCODE% - Código corto de la publicación",
+        "%YEAR% - Año de descarga/publicación",
+        "%2-YEAR% - Año (últimos dos dígitos) de descarga/publicación",
+        "%MONTH% - Mes de descarga/publicación",
+        "%DAY% - Día de descarga/publicación",
+        "%HOUR% - Hora de descarga/publicación",
+        "%MINUTE% - Minuto de descarga/publicación",
+        "%SECOND% - Segundo de descarga/publicación",
+        "%ORIGINAL_NAME% - Nombre original del archivo descargado",
+        "%ORIGINAL_NAME_FIRST% - Nombre original del archivo descargado (primera parte del nombre)",
+        "%INDEX% - Índice del recurso",
+        "%UID% - ID único de la cuenta de usuario",
+        "",
+        "Si se establece en falso, el nombre del archivo permanecerá sin cambios.",
+        "Ejemplo: instagram_321565527_679025940443063_4318007696887450953_n.jpg"
+    ],
     "RENAME_PUBLISH_DATE_INTRO": "Establece la marca de tiempo en el formato de renombramiento de archivos en la fecha de publicación de los recursos (zona horaria del navegador).\n\nEsta función solo funciona cuando [Renombrar archivos automáticamente] está establecido en VERDADERO.",
     "RENAME_LOCATE_DATE_INTRO": "Modifica el formato de fecha de la marca de tiempo de los archivos renombrados a la hora local del navegador y dale el formato regional de fecha que prefieras.\n\nEsta función solo funciona cuando [Renombrar archivos automáticamente] está establecido en VERDADERO.",
     "DISABLE_VIDEO_LOOPING_INTRO": "Desactiva la reproducción automática en bucle de los vídeos en Reels y publicaciones.",

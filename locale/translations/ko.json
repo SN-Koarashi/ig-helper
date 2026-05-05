@@ -54,23 +54,27 @@
     "SKIP_VIEW_STORY_CONFIRM": "스토리/하이라이트 보기 확인 페이지 건너뛰기",
     "SKIP_SHARED_WITH_YOU_DIALOG": "공유된 프로필 링크에서 “회원님과 공유했습니다” 대화 상자 건너뛰기",
     "CAPTURE_IMAGE_VIA_MEDIA_CACHE": "Media Cache를 사용하여 이미지 리소스 캡처",
-    "AUTO_RENAME_INTRO": `파일을 사용자 지정 형식으로 자동 이름 변경:\n사용자 지정 형식 목록: \n
-        %USERNAME% - 사용자 이름\n
-        %SOURCE_TYPE% - 다운로드 소스\n
-        %SHORTCODE% - 게시물 숏코드\n
-        %YEAR% - 다운로드/게시된 연도\n
-        %2-YEAR% - 다운로드/게시된 연도(마지막 두 자리)\n
-        %MONTH% - 다운로드/게시된 월\n
-        %DAY% - 다운로드/게시된 일\n
-        %HOUR% - 다운로드/게시된 시\n
-        %MINUTE% - 다운로드/게시된 분\n
-        %SECOND% - 다운로드/게시된 초\n
-        %ORIGINAL_NAME% - 다운로드한 파일의 원래 이름\n
-        %ORIGINAL_NAME_FIRST% - 다운로드한 파일의 원래 이름(이름의 첫 부분)\n
-        %INDEX% - 리소스 인덱스\n
-        %UID% - 사용자 계정 고유 ID\n\n
-        false로 설정하면 파일 이름이 변경되지 않습니다.\n
-        예: instagram_321565527_679025940443063_4318007696887450953_n.jpg`,
+    "AUTO_RENAME_INTRO": [
+        "파일을 사용자 지정 형식으로 자동 이름 변경:",
+        "사용자 지정 형식 목록:",
+        "%USERNAME% - 사용자 이름",
+        "%SOURCE_TYPE% - 다운로드 소스",
+        "%SHORTCODE% - 게시물 숏코드",
+        "%YEAR% - 다운로드/게시된 연도",
+        "%2-YEAR% - 다운로드/게시된 연도(마지막 두 자리)",
+        "%MONTH% - 다운로드/게시된 월",
+        "%DAY% - 다운로드/게시된 일",
+        "%HOUR% - 다운로드/게시된 시",
+        "%MINUTE% - 다운로드/게시된 분",
+        "%SECOND% - 다운로드/게시된 초",
+        "%ORIGINAL_NAME% - 다운로드한 파일의 원래 이름",
+        "%ORIGINAL_NAME_FIRST% - 다운로드한 파일의 원래 이름(이름의 첫 부분)",
+        "%INDEX% - 리소스 인덱스",
+        "%UID% - 사용자 계정 고유 ID",
+        "",
+        "false로 설정하면 파일 이름이 변경되지 않습니다.",
+        "예: instagram_321565527_679025940443063_4318007696887450953_n.jpg"
+    ],
     "RENAME_PUBLISH_DATE_INTRO": "파일 이름 변경 형식의 타임스탬프를 리소스 게시일(브라우저 시간대)로 설정합니다.\n\n이 기능은 [파일 자동 이름 변경]이 TRUE로 설정된 경우에만 작동합니다.",
     "RENAME_LOCATE_DATE_INTRO": "이름이 변경된 파일 타임스탬프의 날짜 형식을 브라우저의 현지 시간으로 수정하고, 원하는 지역 날짜 형식으로 지정합니다.\n\n이 기능은 [파일 자동 이름 변경]이 TRUE로 설정된 경우에만 작동합니다.",
     "DISABLE_VIDEO_LOOPING_INTRO": "릴스와 게시물에서 동영상 자동 반복 재생을 비활성화합니다.",

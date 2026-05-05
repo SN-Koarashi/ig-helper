@@ -54,23 +54,27 @@
     "SKIP_VIEW_STORY_CONFIRM": "Bestätigungsseite beim Ansehen einer Story/eines Highlights überspringen",
     "SKIP_SHARED_WITH_YOU_DIALOG": "Dialog „hat dies mit dir geteilt“ bei geteilten Profillinks überspringen",
     "CAPTURE_IMAGE_VIA_MEDIA_CACHE": "Bildressource über den Mediencache erfassen",
-    "AUTO_RENAME_INTRO": `Dateien automatisch in ein benutzerdefiniertes Format umbenennen:\nListe benutzerdefinierter Formate: \n
-        %USERNAME% - Benutzername\n
-        %SOURCE_TYPE% - Download-Quelle\n
-        %SHORTCODE% - Kurzcode des Beitrags\n
-        %YEAR% - Jahr des Downloads/der Veröffentlichung\n
-        %2-YEAR% - Jahr (letzte zwei Ziffern) des Downloads/der Veröffentlichung\n
-        %MONTH% - Monat des Downloads/der Veröffentlichung\n
-        %DAY% - Tag des Downloads/der Veröffentlichung\n
-        %HOUR% - Stunde des Downloads/der Veröffentlichung\n
-        %MINUTE% - Minute des Downloads/der Veröffentlichung\n
-        %SECOND% - Sekunde des Downloads/der Veröffentlichung\n
-        %ORIGINAL_NAME% - Ursprünglicher Name der heruntergeladenen Datei\n
-        %ORIGINAL_NAME_FIRST% - Ursprünglicher Name der heruntergeladenen Datei (erster Teil des Namens)\n
-        %INDEX% - Index der Ressource\n
-        %UID% - Eindeutige ID des Benutzerkontos\n\n
-        Wenn auf falsch gesetzt, bleibt der Dateiname unverändert.\n
-        Beispiel: instagram_321565527_679025940443063_4318007696887450953_n.jpg`,
+    "AUTO_RENAME_INTRO": [
+        "Dateien automatisch in ein benutzerdefiniertes Format umbenennen:",
+        "Liste benutzerdefinierter Formate:",
+        "%USERNAME% - Benutzername",
+        "%SOURCE_TYPE% - Download-Quelle",
+        "%SHORTCODE% - Kurzcode des Beitrags",
+        "%YEAR% - Jahr des Downloads/der Veröffentlichung",
+        "%2-YEAR% - Jahr (letzte zwei Ziffern) des Downloads/der Veröffentlichung",
+        "%MONTH% - Monat des Downloads/der Veröffentlichung",
+        "%DAY% - Tag des Downloads/der Veröffentlichung",
+        "%HOUR% - Stunde des Downloads/der Veröffentlichung",
+        "%MINUTE% - Minute des Downloads/der Veröffentlichung",
+        "%SECOND% - Sekunde des Downloads/der Veröffentlichung",
+        "%ORIGINAL_NAME% - Ursprünglicher Name der heruntergeladenen Datei",
+        "%ORIGINAL_NAME_FIRST% - Ursprünglicher Name der heruntergeladenen Datei (erster Teil des Namens)",
+        "%INDEX% - Index der Ressource",
+        "%UID% - Eindeutige ID des Benutzerkontos",
+        "",
+        "Wenn auf falsch gesetzt, bleibt der Dateiname unverändert.",
+        "Beispiel: instagram_321565527_679025940443063_4318007696887450953_n.jpg"
+    ],
     "RENAME_PUBLISH_DATE_INTRO": "Setzt den Zeitstempel im Dateiumbenennungsformat auf das Veröffentlichungsdatum der Ressource (Zeitzone des Browsers).\n\nDiese Funktion funktioniert nur, wenn [Dateien automatisch umbenennen] auf WAHR gesetzt ist.",
     "RENAME_LOCATE_DATE_INTRO": "Ändert das Datumsformat des Zeitstempels der umbenannten Datei auf die lokale Zeit des Browsers und formatiert es in dein bevorzugtes regionales Datumsformat.\n\nDiese Funktion funktioniert nur, wenn [Dateien automatisch umbenennen] auf WAHR gesetzt ist.",
     "DISABLE_VIDEO_LOOPING_INTRO": "Deaktiviert die automatische Videowiedergabe in Schleife in Reels und Beiträgen.",

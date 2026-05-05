@@ -54,23 +54,27 @@
     "SKIP_VIEW_STORY_CONFIRM": "Bir hikayeyi/öne çıkanı görüntüleme onay sayfasını atla",
     "SKIP_SHARED_WITH_YOU_DIALOG": "Paylaşılan profil bağlantılarında \"bunu seninle paylaştı\" iletişim kutusunu atla",
     "CAPTURE_IMAGE_VIA_MEDIA_CACHE": "Medya önbelleğini kullanarak görsel kaynağını yakala",
-    "AUTO_RENAME_INTRO": `Dosyayı otomatik olarak özel bir biçimle yeniden adlandır:\nÖzel biçim listesi: \n
-        %USERNAME% - Kullanıcı adı\n
-        %SOURCE_TYPE% - İndirme kaynağı\n
-        %SHORTCODE% - Gönderi kısa kodu\n
-        %YEAR% - İndirme/yayımlanma yılı\n
-        %2-YEAR% - İndirme/yayımlanma yılı (son iki basamak)\n
-        %MONTH% - İndirme/yayımlanma ayı\n
-        %DAY% - İndirme/yayımlanma günü\n
-        %HOUR% - İndirme/yayımlanma saati\n
-        %MINUTE% - İndirme/yayımlanma dakikası\n
-        %SECOND% - İndirme/yayımlanma saniyesi\n
-        %ORIGINAL_NAME% - İndirilen dosyanın özgün adı\n
-        %ORIGINAL_NAME_FIRST% - İndirilen dosyanın özgün adı (adın ilk bölümü)\n
-        %INDEX% - Kaynak dizini\n
-        %UID% - Kullanıcı hesabının benzersiz kimliği\n\n
-        false olarak ayarlanırsa dosya adı değişmeden kalır.\n
-        Örnek: instagram_321565527_679025940443063_4318007696887450953_n.jpg`,
+    "AUTO_RENAME_INTRO": [
+        "Dosyayı otomatik olarak özel bir biçimle yeniden adlandır:",
+        "Özel biçim listesi:",
+        "%USERNAME% - Kullanıcı adı",
+        "%SOURCE_TYPE% - İndirme kaynağı",
+        "%SHORTCODE% - Gönderi kısa kodu",
+        "%YEAR% - İndirme/yayımlanma yılı",
+        "%2-YEAR% - İndirme/yayımlanma yılı (son iki basamak)",
+        "%MONTH% - İndirme/yayımlanma ayı",
+        "%DAY% - İndirme/yayımlanma günü",
+        "%HOUR% - İndirme/yayımlanma saati",
+        "%MINUTE% - İndirme/yayımlanma dakikası",
+        "%SECOND% - İndirme/yayımlanma saniyesi",
+        "%ORIGINAL_NAME% - İndirilen dosyanın özgün adı",
+        "%ORIGINAL_NAME_FIRST% - İndirilen dosyanın özgün adı (adın ilk bölümü)",
+        "%INDEX% - Kaynak dizini",
+        "%UID% - Kullanıcı hesabının benzersiz kimliği",
+        "",
+        "false olarak ayarlanırsa dosya adı değişmeden kalır.",
+        "Örnek: instagram_321565527_679025940443063_4318007696887450953_n.jpg"
+    ],
     "RENAME_PUBLISH_DATE_INTRO": "Dosya yeniden adlandırma biçimindeki zaman damgasını kaynağın yayımlanma tarihine ayarlar (tarayıcı saat dilimi).\n\nBu özellik yalnızca [Dosyaları otomatik olarak yeniden adlandır] TRUE olarak ayarlandığında çalışır.",
     "RENAME_LOCATE_DATE_INTRO": "Yeniden adlandırılan dosyanın zaman damgası tarih biçimini tarayıcının yerel saatine göre değiştirir ve tercih ettiğin bölgesel tarih biçimine göre biçimlendirir.\n\nBu özellik yalnızca [Dosyaları otomatik olarak yeniden adlandır] TRUE olarak ayarlandığında çalışır.",
     "DISABLE_VIDEO_LOOPING_INTRO": "Reels ve gönderilerde videoların otomatik döngüye alınmasını devre dışı bırakır.",

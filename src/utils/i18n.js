@@ -66,23 +66,27 @@ export function translateText() {
             "SKIP_VIEW_STORY_CONFIRM": "Skip the Confirmation Page for Viewing a Story/Highlight",
             "SKIP_SHARED_WITH_YOU_DIALOG": "Skip \"shared this with you\" dialog on shared profile links",
             "CAPTURE_IMAGE_VIA_MEDIA_CACHE": "Capture Image Resource Using Media Cache",
-            "AUTO_RENAME_INTRO": `Auto rename file to custom format:\nCustom Format List: \n
-                %USERNAME% - Username\n
-                %SOURCE_TYPE% - Download Source\n
-                %SHORTCODE% - Post Shortcode\n
-                %YEAR% - Year when downloaded/published\n
-                %2-YEAR% - Year (last two digits) when downloaded/published\n
-                %MONTH% - Month when downloaded/published\n
-                %DAY% - Day when downloaded/published\n
-                %HOUR% - Hour when downloaded/published\n
-                %MINUTE% - Minute when downloaded/published\n
-                %SECOND% - Second when downloaded/published\n
-                %ORIGINAL_NAME% - Original name of downloaded file\n
-                %ORIGINAL_NAME_FIRST% - Original name of downloaded file (first part of name)\n
-                %INDEX% - Resource index\n
-                %UID% - User account unique ID\n\n
-                If set to false, the file name will remain unchanged.\n
-                Example: instagram_321565527_679025940443063_4318007696887450953_n.jpg`,
+            "AUTO_RENAME_INTRO": [
+                "Auto rename file to custom format:",
+                "Custom Format List:",
+                "%USERNAME% - Username",
+                "%SOURCE_TYPE% - Download Source",
+                "%SHORTCODE% - Post Shortcode",
+                "%YEAR% - Year when downloaded/published",
+                "%2-YEAR% - Year (last two digits) when downloaded/published",
+                "%MONTH% - Month when downloaded/published",
+                "%DAY% - Day when downloaded/published",
+                "%HOUR% - Hour when downloaded/published",
+                "%MINUTE% - Minute when downloaded/published",
+                "%SECOND% - Second when downloaded/published",
+                "%ORIGINAL_NAME% - Original name of downloaded file",
+                "%ORIGINAL_NAME_FIRST% - Original name of downloaded file (first part of name)",
+                "%INDEX% - Resource index",
+                "%UID% - User account unique ID",
+                "",
+                "If set to false, the file name will remain unchanged.",
+                "Example: instagram_321565527_679025940443063_4318007696887450953_n.jpg"
+            ],
             "RENAME_PUBLISH_DATE_INTRO": "Sets the timestamp in the file rename format to the resource publish date (browser time zone).\n\nThis feature only works when [Automatically Rename Files] is set to TRUE.",
             "RENAME_LOCATE_DATE_INTRO": "Modify the renamed file timestamp date format to the browser's local time, and format it to your preferred regional date format.\n\nThis feature only works when [Automatically Rename Files] is set to TRUE.",
             "DISABLE_VIDEO_LOOPING_INTRO": "Disable video auto-looping in Reels and posts.",

@@ -54,23 +54,27 @@
     "SKIP_VIEW_STORY_CONFIRM": "略過檢視限時動態／精選動態的確認頁面",
     "SKIP_SHARED_WITH_YOU_DIALOG": "略過共享個人檔案連結上的「已與您分享此內容」對話框",
     "CAPTURE_IMAGE_VIA_MEDIA_CACHE": "使用 Media Cache 擷取圖片資源",
-    "AUTO_RENAME_INTRO": `自動將檔案重新命名為自訂格式：\n自訂格式列表： \n
-        %USERNAME% - 使用者名稱\n
-        %SOURCE_TYPE% - 下載來源\n
-        %SHORTCODE% - 貼文短碼\n
-        %YEAR% - 下載／發布年份\n
-        %2-YEAR% - 下載／發布年份（後兩位）\n
-        %MONTH% - 下載／發布月份\n
-        %DAY% - 下載／發布日期\n
-        %HOUR% - 下載／發布小時\n
-        %MINUTE% - 下載／發布分鐘\n
-        %SECOND% - 下載／發布秒\n
-        %ORIGINAL_NAME% - 已下載檔案的原始名稱\n
-        %ORIGINAL_NAME_FIRST% - 已下載檔案的原始名稱（名稱的第一部分）\n
-        %INDEX% - 資源索引\n
-        %UID% - 使用者帳號唯一 ID\n\n
-        若設定為 false，檔名將維持不變。\n
-        範例： instagram_321565527_679025940443063_4318007696887450953_n.jpg`,
+    "AUTO_RENAME_INTRO": [
+        "自動將檔案重新命名為自訂格式：",
+        "自訂格式列表：",
+        "%USERNAME% - 使用者名稱",
+        "%SOURCE_TYPE% - 下載來源",
+        "%SHORTCODE% - 貼文短碼",
+        "%YEAR% - 下載／發布年份",
+        "%2-YEAR% - 下載／發布年份（後兩位）",
+        "%MONTH% - 下載／發布月份",
+        "%DAY% - 下載／發布日期",
+        "%HOUR% - 下載／發布小時",
+        "%MINUTE% - 下載／發布分鐘",
+        "%SECOND% - 下載／發布秒",
+        "%ORIGINAL_NAME% - 已下載檔案的原始名稱",
+        "%ORIGINAL_NAME_FIRST% - 已下載檔案的原始名稱（名稱的第一部分）",
+        "%INDEX% - 資源索引",
+        "%UID% - 使用者帳號唯一 ID",
+        "",
+        "若設定為 false，檔名將維持不變。",
+        "範例： instagram_321565527_679025940443063_4318007696887450953_n.jpg"
+    ],
     "RENAME_PUBLISH_DATE_INTRO": "將檔案重新命名格式中的時間戳設定為資源發布日期（瀏覽器時區）。\n\n此功能僅在「自動重新命名檔案」設定為 TRUE 時有效。",
     "RENAME_LOCATE_DATE_INTRO": "將重新命名檔案的時間戳日期格式修改為瀏覽器當地時間，並將其格式化為您偏好的地區日期格式。\n\n此功能僅在「自動重新命名檔案」設定為 TRUE 時有效。",
     "DISABLE_VIDEO_LOOPING_INTRO": "停用 Reels 和貼文中的影片自動循環播放。",

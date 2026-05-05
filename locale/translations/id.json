@@ -54,23 +54,27 @@
     "SKIP_VIEW_STORY_CONFIRM": "Lewati halaman konfirmasi untuk melihat cerita/sorotan",
     "SKIP_SHARED_WITH_YOU_DIALOG": "Lewati dialog \"membagikan ini denganmu\" pada tautan profil yang dibagikan",
     "CAPTURE_IMAGE_VIA_MEDIA_CACHE": "Tangkap sumber daya gambar menggunakan cache media",
-    "AUTO_RENAME_INTRO": `Ganti nama file secara otomatis ke format khusus:\nDaftar format khusus: \n
-        %USERNAME% - Nama pengguna\n
-        %SOURCE_TYPE% - Sumber unduhan\n
-        %SHORTCODE% - Shortcode postingan\n
-        %YEAR% - Tahun saat diunduh/dipublikasikan\n
-        %2-YEAR% - Tahun (dua digit terakhir) saat diunduh/dipublikasikan\n
-        %MONTH% - Bulan saat diunduh/dipublikasikan\n
-        %DAY% - Hari saat diunduh/dipublikasikan\n
-        %HOUR% - Jam saat diunduh/dipublikasikan\n
-        %MINUTE% - Menit saat diunduh/dipublikasikan\n
-        %SECOND% - Detik saat diunduh/dipublikasikan\n
-        %ORIGINAL_NAME% - Nama asli file yang diunduh\n
-        %ORIGINAL_NAME_FIRST% - Nama asli file yang diunduh (bagian pertama nama)\n
-        %INDEX% - Indeks sumber daya\n
-        %UID% - ID unik akun pengguna\n\n
-        Jika diatur ke false, nama file akan tetap tidak berubah.\n
-        Contoh: instagram_321565527_679025940443063_4318007696887450953_n.jpg`,
+    "AUTO_RENAME_INTRO": [
+        "Ganti nama file secara otomatis ke format khusus:",
+        "Daftar format khusus:",
+        "%USERNAME% - Nama pengguna",
+        "%SOURCE_TYPE% - Sumber unduhan",
+        "%SHORTCODE% - Shortcode postingan",
+        "%YEAR% - Tahun saat diunduh/dipublikasikan",
+        "%2-YEAR% - Tahun (dua digit terakhir) saat diunduh/dipublikasikan",
+        "%MONTH% - Bulan saat diunduh/dipublikasikan",
+        "%DAY% - Hari saat diunduh/dipublikasikan",
+        "%HOUR% - Jam saat diunduh/dipublikasikan",
+        "%MINUTE% - Menit saat diunduh/dipublikasikan",
+        "%SECOND% - Detik saat diunduh/dipublikasikan",
+        "%ORIGINAL_NAME% - Nama asli file yang diunduh",
+        "%ORIGINAL_NAME_FIRST% - Nama asli file yang diunduh (bagian pertama nama)",
+        "%INDEX% - Indeks sumber daya",
+        "%UID% - ID unik akun pengguna",
+        "",
+        "Jika diatur ke false, nama file akan tetap tidak berubah.",
+        "Contoh: instagram_321565527_679025940443063_4318007696887450953_n.jpg"
+    ],
     "RENAME_PUBLISH_DATE_INTRO": "Mengatur stempel waktu dalam format penggantian nama file ke tanggal publikasi sumber daya (zona waktu browser).\n\nFitur ini hanya berfungsi saat [Ganti nama file secara otomatis] diatur ke TRUE.",
     "RENAME_LOCATE_DATE_INTRO": "Mengubah format tanggal stempel waktu file yang diganti namanya ke waktu lokal browser dan memformatnya ke format tanggal regional yang kamu inginkan.\n\nFitur ini hanya berfungsi saat [Ganti nama file secara otomatis] diatur ke TRUE.",
     "DISABLE_VIDEO_LOOPING_INTRO": "Nonaktifkan pemutaran video berulang otomatis di Reels dan postingan.",

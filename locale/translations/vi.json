@@ -54,23 +54,27 @@
     "SKIP_VIEW_STORY_CONFIRM": "Bỏ qua trang xác nhận khi xem tin/tin nổi bật",
     "SKIP_SHARED_WITH_YOU_DIALOG": "Bỏ qua hộp thoại “đã chia sẻ nội dung này với bạn” trên liên kết hồ sơ được chia sẻ",
     "CAPTURE_IMAGE_VIA_MEDIA_CACHE": "Chụp tài nguyên hình ảnh bằng bộ nhớ đệm phương tiện",
-    "AUTO_RENAME_INTRO": `Tự động đổi tên tệp theo định dạng tùy chỉnh:\nDanh sách định dạng tùy chỉnh: \n
-        %USERNAME% - Tên người dùng\n
-        %SOURCE_TYPE% - Nguồn tải xuống\n
-        %SHORTCODE% - Mã ngắn của bài viết\n
-        %YEAR% - Năm tải xuống/đăng\n
-        %2-YEAR% - Năm (hai chữ số cuối) tải xuống/đăng\n
-        %MONTH% - Tháng tải xuống/đăng\n
-        %DAY% - Ngày tải xuống/đăng\n
-        %HOUR% - Giờ tải xuống/đăng\n
-        %MINUTE% - Phút tải xuống/đăng\n
-        %SECOND% - Giây tải xuống/đăng\n
-        %ORIGINAL_NAME% - Tên gốc của tệp đã tải xuống\n
-        %ORIGINAL_NAME_FIRST% - Tên gốc của tệp đã tải xuống (phần đầu của tên)\n
-        %INDEX% - Chỉ mục tài nguyên\n
-        %UID% - ID duy nhất của tài khoản người dùng\n\n
-        Nếu đặt thành false, tên tệp sẽ giữ nguyên.\n
-        Ví dụ: instagram_321565527_679025940443063_4318007696887450953_n.jpg`,
+    "AUTO_RENAME_INTRO": [
+        "Tự động đổi tên tệp theo định dạng tùy chỉnh:",
+        "Danh sách định dạng tùy chỉnh:",
+        "%USERNAME% - Tên người dùng",
+        "%SOURCE_TYPE% - Nguồn tải xuống",
+        "%SHORTCODE% - Mã ngắn của bài viết",
+        "%YEAR% - Năm tải xuống/đăng",
+        "%2-YEAR% - Năm (hai chữ số cuối) tải xuống/đăng",
+        "%MONTH% - Tháng tải xuống/đăng",
+        "%DAY% - Ngày tải xuống/đăng",
+        "%HOUR% - Giờ tải xuống/đăng",
+        "%MINUTE% - Phút tải xuống/đăng",
+        "%SECOND% - Giây tải xuống/đăng",
+        "%ORIGINAL_NAME% - Tên gốc của tệp đã tải xuống",
+        "%ORIGINAL_NAME_FIRST% - Tên gốc của tệp đã tải xuống (phần đầu của tên)",
+        "%INDEX% - Chỉ mục tài nguyên",
+        "%UID% - ID duy nhất của tài khoản người dùng",
+        "",
+        "Nếu đặt thành false, tên tệp sẽ giữ nguyên.",
+        "Ví dụ: instagram_321565527_679025940443063_4318007696887450953_n.jpg"
+    ],
     "RENAME_PUBLISH_DATE_INTRO": "Đặt dấu thời gian trong định dạng đổi tên tệp thành ngày đăng tài nguyên (múi giờ của trình duyệt).\n\nTính năng này chỉ hoạt động khi「Tự động đổi tên tệp」được đặt thành TRUE.",
     "RENAME_LOCATE_DATE_INTRO": "Sửa đổi định dạng ngày của dấu thời gian cho tệp đã đổi tên sang giờ địa phương của trình duyệt và định dạng theo kiểu ngày khu vực bạn muốn.\n\nTính năng này chỉ hoạt động khi「Tự động đổi tên tệp」được đặt thành TRUE.",
     "DISABLE_VIDEO_LOOPING_INTRO": "Tắt tự động lặp video trong Reels và bài viết.",
