@@ -134,7 +134,7 @@ export async function getTranslationText(lang) {
     return new Promise((resolve, reject) => {
         GM_xmlhttpRequest({
             method: "GET",
-            url: `https://cdn.jsdelivr.net/gh/SN-Koarashi/ig-helper@master/locale/translations/${lang}.json`,
+            url: `https://cdn.jsdelivr.net/gh/SN-Koarashi/ig-helper@master/locale/translations/${lang}.json?v${GM_info.script.version}`,
             onload: function (response) {
                 try {
                     let obj = JSON.parse(response.response);
