@@ -188,7 +188,7 @@ export function showHotkeySetting() {
         return $container;
     }
 
-    $body.append('<span style="margin-bottom: 15px;" class="hotkey-settings-container"></span>');
+    $body.append('<span style="display: block; margin-bottom: 15px;" class="hotkey-settings-container"></span>');
 
     hotkeyConfigs.forEach((config) => {
         $body.find('.hotkey-settings-container').append(
