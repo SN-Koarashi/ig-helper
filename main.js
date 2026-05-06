@@ -1,52 +1,54 @@
 // ==UserScript==
 // @name               IG Helper
-// @name:zh-TW         IG小精靈
-// @name:zh-CN         IG小助手
+// @name:ar            أداة IG
+// @name:de            IG-Helfer
+// @name:es            Ayudante de IG
+// @name:fr            Assistant IG
+// @name:id            Asisten IG
+// @name:it            Assistente IG
 // @name:ja            IG助手
 // @name:ko            IG조수
-// @name:ro            Asistent IG
-// @name:es            Ayudante de IG
 // @name:pt-BR         Assistente do IG
-// @name:fr            Assistant IG
-// @name:de            IG-Helfer
-// @name:tr            IG Yardımcısı
-// @name:id            Asisten IG
-// @name:th            ตัวช่วย IG
-// @name:vi            Trợ lý IG
+// @name:ro            IG Helper
 // @name:ru            Помощник IG
-// @name:ar            أداة IG
+// @name:th            ตัวช่วย IG
+// @name:tr            IG Yardımcısı
+// @name:vi            Trợ lý IG
+// @name:zh-CN         IG小助手
+// @name:zh-TW         IG小精靈
 // @namespace          https://github.snkms.com/
-// @version            3.18.3
+// @version            3.19.1
 // @description        Download photos and videos from Instagram posts in one click, including Stories, Reels, and profile pictures.
-// @description:zh-TW  一鍵下載 Instagram 貼文中的照片、影片，還包含限時動態、Reels 與大頭貼。
-// @description:zh-CN  一键下载 Instagram 帖子中的照片和视频，还包括快拍、Reels 和头像。
-// @description:ja     投稿の写真や動画をワンクリックでダウンロード。ストーリー、リール、プロフィール画像にも対応。
-// @description:ko     한 번의 클릭으로 Instagram 게시물의 사진과 동영상을 다운로드하고, 스토리, 릴, 프로필 사진도 지원합니다.
-// @description:ro     Descarcă cu un singur click fotografii și videoclipuri din postările Instagram, inclusiv story-uri, reels și poze de profil.
-// @description:es     Descarga fotos y videos de publicaciones de Instagram con un clic, incluyendo Stories, Reels y fotos de perfil.
-// @description:pt-BR  Baixe fotos e vídeos de publicações do Instagram com um clique, incluindo Stories, Reels e fotos de perfil.
-// @description:fr     Téléchargez en un clic les photos et vidéos des publications Instagram, y compris les Stories, les Reels et les photos de profil.
+// @description:ar     نزّل صورًا ومقاطع فيديو من منشورات Instagram بنقرة واحدة، بما في ذلك القصص وReels وصور الملف الشخصي.
 // @description:de     Lade Fotos und Videos aus Instagram-Beiträgen mit einem Klick herunter, einschließlich Stories, Reels und Profilbildern.
-// @description:tr     Instagram gönderilerindeki fotoğraf ve videoları tek tıkla indirin; Hikayeler, Reels ve profil fotoğrafları da dahildir.
+// @description:es     Descarga fotos y videos de publicaciones de Instagram con un clic, incluyendo Stories, Reels y fotos de perfil.
+// @description:fr     Téléchargez en un clic les photos et vidéos des publications Instagram, y compris les Stories, les Reels et les photos de profil.
 // @description:id     Unduh foto dan video dari postingan Instagram dalam satu klik, termasuk Stories, Reels, dan foto profil.
-// @description:th     ดาวน์โหลดรูปภาพและวิดีโอจากโพสต์ Instagram ได้ในคลิกเดียว รวมถึง Stories, Reels และรูปโปรไฟล์
-// @description:vi     Tải xuống ảnh và video từ bài viết trên Instagram chỉ với một cú nhấp, bao gồm Stories, Reels và ảnh đại diện.
+// @description:it     Scarica foto e video dai post di Instagram con un solo clic, incluse Storie, Reels e foto del profilo.
+// @description:ja     Instagramの投稿の写真や動画をワンクリックでダウンロード。ストーリー、リール、プロフィール写真にも対応。
+// @description:ko     한 번의 클릭으로 Instagram 게시물의 사진과 동영상을 다운로드하고, 스토리, 릴스, 프로필 사진도 지원합니다.
+// @description:pt-BR  Baixe fotos e vídeos de publicações do Instagram com um clique, incluindo Stories, Reels e fotos de perfil.
+// @description:ro     Descarcă cu un singur clic fotografii și videoclipuri din postările Instagram, inclusiv storyuri, reels și fotografii de profil.
 // @description:ru     Скачивайте фото и видео из публикаций Instagram в один клик, включая Stories, Reels и фото профиля.
-// @description:ar     نزّل صور ومقاطع فيديو من منشورات Instagram بنقرة واحدة، بما في ذلك القصص وReels وصور الملف الشخصي.
+// @description:th     ดาวน์โหลดรูปภาพและวิดีโอจากโพสต์ Instagram ได้ในคลิกเดียว รวมถึง Stories, Reels และรูปโปรไฟล์.
+// @description:tr     Instagram gönderilerindeki fotoğraf ve videoları tek tıkla indirin; Hikayeler, Reels ve profil fotoğrafları da dahildir.
+// @description:vi     Tải xuống ảnh và video từ bài viết trên Instagram chỉ với một cú nhấp, bao gồm Stories, Reels và ảnh đại diện.
+// @description:zh-CN  一键下载 Instagram 帖子中的照片和视频，还包括快拍、Reels 和头像。
+// @description:zh-TW  一鍵下載 Instagram 貼文中的照片、影片，還包含限時動態、Reels 與大頭貼。
 // @author             SN-Koarashi (5026)
 // @match              https://*.instagram.com/*
-// @grant              GM_info
 // @grant              GM_addStyle
-// @grant              GM_setValue
-// @grant              GM_getValue
-// @grant              GM_xmlhttpRequest
-// @grant              GM_registerMenuCommand
-// @grant              GM_unregisterMenuCommand
 // @grant              GM_getResourceText
+// @grant              GM_getValue
+// @grant              GM_info
 // @grant              GM_notification
 // @grant              GM_openInTab
-// @connect            i.instagram.com
+// @grant              GM_registerMenuCommand
+// @grant              GM_setValue
+// @grant              GM_unregisterMenuCommand
+// @grant              GM_xmlhttpRequest
 // @connect            cdn.jsdelivr.net
+// @connect            i.instagram.com
 // @connect            raw.githubusercontent.com
 // @require            https://cdn.jsdelivr.net/npm/mediabunny@1.34.5/dist/bundles/mediabunny.min.cjs#sha256-wUFR+x2bDvpqgMAVGy2CvGvULyjTGvGy4UUAm8rae5U=
 // @require            https://code.jquery.com/jquery-3.7.1.min.js#sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=
@@ -55,9 +57,9 @@
 // @supportURL         https://github.com/SN-Koarashi/ig-helper/
 // @contributionURL    https://ko-fi.com/snkoarashi
 // @icon               https://www.google.com/s2/favicons?domain=www.instagram.com&sz=32
-// @compatible         firefox >= 100
 // @compatible         chrome >= 100
 // @compatible         edge >= 100
+// @compatible         firefox >= 100
 // @license            GPL-3.0-only
 // @run-at             document-idle
 // ==/UserScript==
@@ -5584,27 +5586,31 @@
                 "FORCE_RESOURCE_VIA_MEDIA": "Force Fetch Resource via Media API",
                 "PREFER_DASH_MANIFEST": "Prefer DASH Manifest (Higher-Quality Video via Media API)",
                 "FALLBACK_TO_BLOB_FETCH_IF_MEDIA_API_THROTTLED": "Use Alternative Methods to Download When the Media API is Not Accessible",
-                "NEW_TAB_ALWAYS_FORCE_MEDIA_IN_POST": "Always Use Media API for 'Open in New Tab' in Posts",
+                "NEW_TAB_ALWAYS_FORCE_MEDIA_IN_POST": "Always Use Media API for [Open in New Tab] in Posts",
                 "SKIP_VIEW_STORY_CONFIRM": "Skip the Confirmation Page for Viewing a Story/Highlight",
                 "SKIP_SHARED_WITH_YOU_DIALOG": "Skip \"shared this with you\" dialog on shared profile links",
                 "CAPTURE_IMAGE_VIA_MEDIA_CACHE": "Capture Image Resource Using Media Cache",
-                "AUTO_RENAME_INTRO": `Auto rename file to custom format:\nCustom Format List: \n
-                    %USERNAME% - Username\n
-                    %SOURCE_TYPE% - Download Source\n
-                    %SHORTCODE% - Post Shortcode\n
-                    %YEAR% - Year when downloaded/published\n
-                    %2-YEAR% - Year (last two digits) when downloaded/published\n
-                    %MONTH% - Month when downloaded/published\n
-                    %DAY% - Day when downloaded/published\n
-                    %HOUR% - Hour when downloaded/published\n
-                    %MINUTE% - Minute when downloaded/published\n
-                    %SECOND% - Second when downloaded/published\n
-                    %ORIGINAL_NAME% - Original name of downloaded file\n
-                    %ORIGINAL_NAME_FIRST% - Original name of downloaded file (first part of name)\n
-                    %INDEX% - Resource index\n
-                    %UID% - User account unique ID\n\n
-                    If set to false, the file name will remain unchanged.\n
-                    Example: instagram_321565527_679025940443063_4318007696887450953_n.jpg`,
+                "AUTO_RENAME_INTRO": [
+                    "Auto rename file to custom format:",
+                    "Custom Format List:",
+                    "%USERNAME% - Username",
+                    "%SOURCE_TYPE% - Download Source",
+                    "%SHORTCODE% - Post Shortcode",
+                    "%YEAR% - Year when downloaded/published",
+                    "%2-YEAR% - Year (last two digits) when downloaded/published",
+                    "%MONTH% - Month when downloaded/published",
+                    "%DAY% - Day when downloaded/published",
+                    "%HOUR% - Hour when downloaded/published",
+                    "%MINUTE% - Minute when downloaded/published",
+                    "%SECOND% - Second when downloaded/published",
+                    "%ORIGINAL_NAME% - Original name of downloaded file",
+                    "%ORIGINAL_NAME_FIRST% - Original name of downloaded file (first part of name)",
+                    "%INDEX% - Resource index",
+                    "%UID% - User account unique ID",
+                    "",
+                    "If set to false, the file name will remain unchanged.",
+                    "Example: instagram_321565527_679025940443063_4318007696887450953_n.jpg"
+                ],
                 "RENAME_PUBLISH_DATE_INTRO": "Sets the timestamp in the file rename format to the resource publish date (browser time zone).\n\nThis feature only works when [Automatically Rename Files] is set to TRUE.",
                 "RENAME_LOCATE_DATE_INTRO": "Modify the renamed file timestamp date format to the browser's local time, and format it to your preferred regional date format.\n\nThis feature only works when [Automatically Rename Files] is set to TRUE.",
                 "DISABLE_VIDEO_LOOPING_INTRO": "Disable video auto-looping in Reels and posts.",
@@ -5623,7 +5629,7 @@
                 "SKIP_VIEW_STORY_CONFIRM_INTRO": "Automatically skip when confirmation page is shown in story or highlight.",
                 "SKIP_SHARED_WITH_YOU_DIALOG_INTRO": "Automatically click \"Not now\" on the \"X shared this with you\" dialog when opening any ?igsh= links.",
                 "MODIFY_RESOURCE_EXIF_INTRO": "Modify the EXIF attribute of the image resource to include metadata such as post link, shooting date, and author.",
-                "DIRECT_DOWNLOAD_STORY_INTRO": "When you click Download All Resources, all stories/highlights are downloaded directly, without showing the image selection dialog.",
+                "DIRECT_DOWNLOAD_STORY_INTRO": "When you click [Download All Resources], all stories/highlights are downloaded directly, without showing the image selection dialog.",
                 "CAPTURE_IMAGE_VIA_MEDIA_CACHE_INTRO": "Use a watcher to capture any high-quality image URLs in the DOM tree into the script's storage so that they can be extracted when available and upon user input.",
                 "HOTKEY_DEBUG_KEY": "Debug Window",
                 "HOTKEY_SETTINGS_KEY": "Preference Settings",
@@ -5642,7 +5648,22 @@
             }, {}
         );
 
-        return resultSorted;
+        var result = Object.assign({}, resultSorted);
+        for (const lang in result) {
+            const translations = result[lang];
+            if (!translations || typeof translations !== "object") {
+                continue;
+            }
+
+            Object.keys(translations).forEach((key) => {
+                const value = translations[key];
+                if (Array.isArray(value)) {
+                    translations[key] = value.join("\n");
+                }
+            });
+        }
+
+        return result;
     }
 
     /**
