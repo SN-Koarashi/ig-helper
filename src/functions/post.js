@@ -291,6 +291,19 @@ export function createDownloadButton() {
 
                 $childElement.find(".button_wrapper").append(NewTabElement);
 
+                let $resourceLayout = $childElement.filter(function () {
+                    return $(this).width() > 100 && $(this).height() > 100;
+                }).first();
+
+                let $isNewPostStyleLayout = $resourceLayout.find(`a[role="link"][tabindex="0"][href^="/"]`).filter(function () {
+                    return !$(this).attr('href').startsWith("/p/") && !$(this).attr('href').startsWith("/reels/");
+                }).length > 0;
+
+                // Make sure the button wrapper doesn't cover the "More Options" button.
+                if ($isNewPostStyleLayout) {
+                    $childElement.find(".button_wrapper").css('top', '45px');
+                }
+
                 setTimeout(() => {
                     // eslint-disable-next-line no-unused-vars
                     const checkNodeCallback = (entries, observer) => {
