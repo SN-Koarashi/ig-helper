@@ -412,7 +412,7 @@ $(function () {
                             $videos.each(function () {
                                 $(this).on('play playing', function () {
                                     if (!$(this).data('modify')) {
-                                        $(this).attr('data-modify', true);
+                                        $(this).data('modify', true);
                                         this.volume = state.videoVolume;
                                         logger('(audio_observer) Added video event listener #modify');
                                     }
@@ -431,7 +431,7 @@ $(function () {
                                         if ($video.parents('div[style][class]').filter(function () {
                                             return $(this).width() == $video.width();
                                         }).find('.IG_DWSTORY_THUMBNAIL, .IG_DWHISTORY_THUMBNAIL').length === 0) {
-                                            $(this).attr('data-modify-thumbnail', true);
+                                            $(this).data('modify-thumbnail', true);
 
                                             if (isHighlight) {
                                                 onHighlightsStoryThumbnail(false);
@@ -443,7 +443,7 @@ $(function () {
                                             logger(`(${storyType})`, 'Manually inserting thumbnail button');
                                         }
                                         else {
-                                            $(this).attr('data-modify-thumbnail', true);
+                                            $(this).data('modify-thumbnail', true);
                                             logger(`(${storyType})`, 'Thumbnail button already inserted');
                                         }
                                     }
@@ -542,18 +542,18 @@ $(function () {
                                                 triggerReactClickHandler($element_mute_button.first()[0]);
                                             }
 
-                                            if ($(this).attr('data-completed')) {
+                                            if ($(this).data('completed')) {
                                                 state.videoVolume = this.volume;
                                                 GM_setValue('G_VIDEO_VOLUME', this.volume);
                                             }
 
                                             if (this.volume == state.videoVolume) {
-                                                $(this).attr('data-completed', true);
+                                                $(this).data('completed', true);
                                             }
                                         });
 
                                         $video.css('position', 'absolute');
-                                        $video.attr('data-controls', true);
+                                        $video.data('controls', true);
 
                                         toggleVolumeSilder($video, $video.parents('div[style][class]').filter(function () {
                                             return $(this).width() == $video.width();
@@ -573,8 +573,16 @@ $(function () {
         }
     });
 
-    element_observer.observe($('div[id^="mount"]')[0], {
-        childList: true,
-        subtree: true,
-    });
+    (function installElementObserver(attempts) {
+        const mountRoot = $('div[id^="mount"]')[0];
+        if (mountRoot) {
+            element_observer.observe(mountRoot, { childList: true, subtree: true });
+            logger('[element_observer] installed on mount root');
+        } else if (attempts > 0) {
+            setTimeout(() => installElementObserver(attempts - 1), 250);
+            logger('[element_observer] mount root not ready, retrying...');
+        } else {
+            logger('[element_observer] mount root not found after multiple retries');
+        }
+    })(20);
 });

@@ -53,7 +53,7 @@ export async function createStoryListDOM(obj, type) {
             $(this).before('<label class="inner_box_wrapper"><input class="inner_box" type="checkbox"><span></span></label>');
             $(this).after(`<div data-ih-locale-title="NEW_TAB" title="${_i18n("NEW_TAB")}" class="newTab">${SVG.NEW_TAB}</div>`);
 
-            if ($(this).attr('data-type') == 'mp4') {
+            if ($(this).data('type') == 'mp4') {
                 $(this).after(`<div data-ih-locale-title="VIDEO_THUMBNAIL" title="${_i18n("VIDEO_THUMBNAIL")}" class="videoThumbnail">${SVG.THUMBNAIL}</div>`);
             }
         });
@@ -522,7 +522,7 @@ export async function onStory(isDownload, isForce, isPreview) {
                 //    $element.find('video').each(function(){
                 //        $(this).on('play playing', function(){
                 //            if(!$(this).data('modify')){
-                //                $(this).attr('data-modify', true);
+                //                $(this).data('modify', true);
                 //                this.volume = VIDEO_VOLUME;
                 //                logger('(story) Added video event listener #modify');
                 //            }
@@ -535,12 +535,12 @@ export async function onStory(isDownload, isForce, isPreview) {
                     $(this).on('load', function () {
                         if (!$(this).data('remove-thumbnail')) {
                             if ($element.find('.IG_DWSTORY_THUMBNAIL').length === 0) {
-                                $(this).attr('data-remove-thumbnail', true);
+                                $(this).data('remove-thumbnail', true);
                                 $('.IG_DWSTORY_THUMBNAIL').remove();
                                 logger('(story) Manually removing thumbnail button');
                             }
                             else {
-                                $(this).attr('data-remove-thumbnail', true);
+                                $(this).data('remove-thumbnail', true);
                                 logger('(story) Thumbnail button is not present for this picture');
                             }
                         }
@@ -552,12 +552,12 @@ export async function onStory(isDownload, isForce, isPreview) {
                 //    $(this).on('timeupdate',function(){
                 //        if(!$(this).data('modify-thumbnail')){
                 //            if($element.find('.IG_DWSTORY_THUMBNAIL').length === 0){
-                //                $(this).attr('data-modify-thumbnail', true);
+                //                $(this).data('modify-thumbnail', true);
                 //                onStoryThumbnail(false);
                 //                logger('(story) Manually inserting thumbnail button');
                 //            }
                 //            else{
-                //                $(this).attr('data-modify-thumbnail', true);
+                //                $(this).data('modify-thumbnail', true);
                 //                logger('(story) Thumbnail button already inserted');
                 //            }
                 //        }

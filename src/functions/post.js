@@ -83,7 +83,7 @@ export function initPostVideoFunction($mainElement) {
         $mainElement.find('video').each(function () {
             $(this).on('ended', function () {
                 if (!$(this).data('loop')) {
-                    $(this).attr('data-loop', true);
+                    $(this).data('loop', true);
                     this.pause();
                     logger('(post) Added video event listener #loop');
                 }
@@ -96,7 +96,7 @@ export function initPostVideoFunction($mainElement) {
         $mainElement.find('video').each(function () {
             $(this).on('play playing', function () {
                 if (!$(this).data('modify')) {
-                    $(this).attr('data-modify', true);
+                    $(this).data('modify', true);
                     this.volume = state.videoVolume;
                     logger('(post) Added video event listener #modify');
                 }
@@ -191,13 +191,13 @@ export function initPostVideoFunction($mainElement) {
                         }
                     }
 
-                    if ($(this).attr('data-completed')) {
+                    if ($(this).data('completed')) {
                         state.videoVolume = this.volume;
                         GM_setValue('G_VIDEO_VOLUME', this.volume);
                     }
 
                     if (this.volume == state.videoVolume) {
-                        $(this).attr('data-completed', true);
+                        $(this).data('completed', true);
                     }
                 });
 
@@ -209,7 +209,7 @@ export function initPostVideoFunction($mainElement) {
                 });
 
                 $(this).css('position', 'absolute');
-                $(this).attr('data-controls', true);
+                $(this).data('controls', true);
             }
         });
     }
@@ -236,7 +236,7 @@ export function createDownloadButton() {
         .each(function (index) {
             // If it is have not download icon
             // class x1iyjqo2 mean user profile pages post list container
-            if (!$(this).attr('data-snig') && !$(this).hasClass('x1iyjqo2') && !$(this).children('article')?.hasClass('x1iyjqo2') && $(this).parents('div#scrollview').length === 0) {
+            if (!$(this).data('snig') && !$(this).hasClass('x1iyjqo2') && !$(this).children('article')?.hasClass('x1iyjqo2') && $(this).parents('div#scrollview').length === 0) {
                 logger("Found post container", $(this));
 
                 const $mainElement = $(this);
@@ -425,7 +425,7 @@ export function createDownloadButton() {
                 $(this).on('click', '.IG_THUMBNAIL_MAIN', function () {
                     updateLoadingBar(true);
 
-                    state.GL_username = $mainElement.attr('data-username');
+                    state.GL_username = $mainElement.data('username');
                     state.GL_postPath = location.pathname.replace(/\/$/, '').split('/').at(-1) || $mainElement.find('a[href^="/p/"]').first().attr("href").split("/").at(2) || $(this).parent().parent().parent().children("div:last-child").children("div").children("div:last-child").find('a[href^="/p/"]').last().attr("href").split("/").at(2);
 
                     var index = getVisibleNodeIndex($mainElement);
@@ -455,7 +455,7 @@ export function createDownloadButton() {
                 $(this).on('click', '.IG_NEWTAB_MAIN', function () {
                     updateLoadingBar(true);
 
-                    state.GL_username = $mainElement.attr('data-username');
+                    state.GL_username = $mainElement.data('username');
                     state.GL_postPath = location.pathname.replace(/\/$/, '').split('/').at(-1) || $mainElement.find('a[href^="/p/"]').first().attr("href").split("/").at(2) || $(this).parent().parent().parent().children("div:last-child").children("div").children("div:last-child").find('a[href^="/p/"]').last().attr("href").split("/").at(2);
 
                     var index = getVisibleNodeIndex($mainElement);
@@ -472,7 +472,7 @@ export function createDownloadButton() {
                                     triggerLinkElement($linkElement.first()[0], true);
                                 }
                                 else {
-                                    let href = $linkElement?.attr('data-href');
+                                    let href = $linkElement?.data('href');
                                     if (href) {
                                         openNewTab(replaceSameOriginHost(href));
                                     }
@@ -490,7 +490,7 @@ export function createDownloadButton() {
 
                 // Running if user click the download all icon
                 $(this).on('click', '.IG_DW_ALL_MAIN', async function () {
-                    state.GL_username = $mainElement.attr('data-username');
+                    state.GL_username = $mainElement.data('username');
                     state.GL_postPath = location.pathname.replace(/\/$/, '').split('/').at(-1) || $mainElement.find('a[href^="/p/"]').first().attr("href").split("/").at(2) || $(this).parent().parent().parent().children("div:last-child").children("div").children("div:last-child").find('a[href^="/p/"]').last().attr("href").split("/").at(2);
 
                     // Create element that download dailog
@@ -503,7 +503,7 @@ export function createDownloadButton() {
                         $(this).before('<label class="inner_box_wrapper"><input class="inner_box" type="checkbox"><span></span></label>');
                         $(this).after(`<div data-ih-locale-title="NEW_TAB" title="${_i18n("NEW_TAB")}" class="newTab">${SVG.NEW_TAB}</div>`);
 
-                        if ($(this).attr('data-name') == 'video') {
+                        if ($(this).data('name') == 'video') {
                             $(this).after(`<div data-ih-locale-title="VIDEO_THUMBNAIL" title="${_i18n("VIDEO_THUMBNAIL")}" class="videoThumbnail">${SVG.THUMBNAIL}</div>`);
                         }
                     });
@@ -525,7 +525,7 @@ export function createDownloadButton() {
 
                 // Running if user click the download icon
                 $(this).on('click', '.IG_DW_MAIN', async function () {
-                    state.GL_username = $mainElement.attr('data-username');
+                    state.GL_username = $mainElement.data('username');
                     state.GL_postPath = location.pathname.replace(/\/$/, '').split('/').at(-1) || $mainElement.find('a[href^="/p/"]').first().attr("href").split("/").at(2) || $(this).parent().parent().parent().children("div:last-child").children("div").children("div:last-child").find('a[href^="/p/"]').last().attr("href").split("/").at(2);
 
                     // Create element that download dailog
@@ -543,7 +543,7 @@ export function createDownloadButton() {
                             let checkBlob = setInterval(() => {
                                 if ($('.IG_POPUP_DIG .IG_POPUP_DIG_MAIN .IG_POPUP_DIG_BODY a').length > 0) {
                                     clearInterval(checkBlob);
-                                    var href = $('.IG_POPUP_DIG .IG_POPUP_DIG_BODY a[data-globalindex="' + (index + 1) + '"]')?.attr('data-href');
+                                    var href = $('.IG_POPUP_DIG .IG_POPUP_DIG_BODY a[data-globalindex="' + (index + 1) + '"]')?.data('href');
 
                                     if (href) {
                                         updateLoadingBar(false);
@@ -634,7 +634,7 @@ export function createDownloadButton() {
                         $(this).before('<label class="inner_box_wrapper"><input class="inner_box" type="checkbox"><span></span></label>');
                         $(this).after(`<div data-ih-locale-title="NEW_TAB" title="${_i18n("NEW_TAB")}" class="newTab">${SVG.NEW_TAB}</div>`);
 
-                        if ($(this).attr('data-name') == 'video') {
+                        if ($(this).data('name') == 'video') {
                             $(this).after(`<div data-ih-locale-title="VIDEO_THUMBNAIL" title="${_i18n("VIDEO_THUMBNAIL")}" class="videoThumbnail">${SVG.THUMBNAIL}</div>`);
                         }
                     });
@@ -663,8 +663,8 @@ export function createDownloadButton() {
                     return $(this)?.text()?.length > 0;
                 }).first().text();
 
-                $(this).attr('data-snig', 'canDownload');
-                $(this).attr('data-username', username);
+                $(this).data('snig', 'canDownload');
+                $(this).data('username', username);
             }
         });
 }
@@ -815,7 +815,7 @@ export async function createMediaListDOM(postURL, selector, message) {
             $(this).before('<label class="inner_box_wrapper"><input class="inner_box" type="checkbox"><span></span></label>');
             $(this).after(`<div data-ih-locale-title="NEW_TAB" title="${_i18n("NEW_TAB")}" class="newTab">${SVG.NEW_TAB}</div>`);
 
-            if ($(this).attr('data-name') == 'video') {
+            if ($(this).data('name') == 'video') {
                 $(this).after(`<div data-ih-locale-title="VIDEO_THUMBNAIL" title="${_i18n("VIDEO_THUMBNAIL")}" class="videoThumbnail">${SVG.THUMBNAIL}</div>`);
             }
         });

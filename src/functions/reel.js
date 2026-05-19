@@ -173,12 +173,12 @@ function appendReelsButton($main) {
                     if (!$(this).data('loop')) {
                         let $element_play_button = $(this).next().find('div[role="presentation"] > div svg > path[d^="M5.888"]').parents('button[role="button"], div[role="button"]');
                         if ($element_play_button.length > 0) {
-                            $(this).attr('data-loop', true);
+                            $(this).data('loop', true);
                             $element_play_button.trigger("click");
                             logger('Adding video event listener #loop, then paused click()');
                         }
                         else {
-                            $(this).attr('data-loop', true);
+                            $(this).data('loop', true);
                             $(this).parent().find('.xpgaw4o').removeAttr('style');
                             this.pause();
                             logger('Adding video event listener #loop, then paused pause()');
@@ -272,18 +272,18 @@ function appendReelsButton($main) {
                             }
                         }
 
-                        if ($(this).attr('data-completed')) {
+                        if ($(this).data('completed')) {
                             state.videoVolume = this.volume;
                             GM_setValue('G_VIDEO_VOLUME', this.volume);
                         }
 
                         if (this.volume == state.videoVolume) {
-                            $(this).attr('data-completed', true);
+                            $(this).data('completed', true);
                         }
                     });
 
                     $(this).css('position', 'relative');
-                    $(this).attr('data-controls', true);
+                    $(this).data('controls', true);
                 }
             });
         }

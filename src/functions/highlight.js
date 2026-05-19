@@ -321,7 +321,7 @@ export async function onHighlightsStory(isDownload, isPreview) {
                 //    $element.find('video').each(function(){
                 //        $(this).on('play playing', function(){
                 //            if(!$(this).data('modify')){
-                //                $(this).attr('data-modify', true);
+                //                $(this).data('modify', true);
                 //                this.volume = VIDEO_VOLUME;
                 //                logger('(highlight) Added video event listener #modify');
                 //            }
@@ -334,12 +334,12 @@ export async function onHighlightsStory(isDownload, isPreview) {
                     $(this).on('load', function () {
                         if (!$(this).data('remove-thumbnail')) {
                             if ($element.find('.IG_DWHISTORY_THUMBNAIL').length === 0) {
-                                $(this).attr('data-remove-thumbnail', true);
+                                $(this).data('remove-thumbnail', true);
                                 $('.IG_DWHISTORY_THUMBNAIL').remove();
                                 logger('(highlight) Manually removing thumbnail button');
                             }
                             else {
-                                $(this).attr('data-remove-thumbnail', true);
+                                $(this).data('remove-thumbnail', true);
                                 logger('(highlight) Thumbnail button is not present for this picture');
                             }
                         }
@@ -351,12 +351,12 @@ export async function onHighlightsStory(isDownload, isPreview) {
                 //    $(this).on('timeupdate',function(){
                 //        if(!$(this).data('modify-thumbnail')){
                 //            if($element.find('.IG_DWHISTORY_THUMBNAIL').length === 0){
-                //                $(this).attr('data-modify-thumbnail', true);
+                //                $(this).data('modify-thumbnail', true);
                 //                onHighlightsStoryThumbnail(false);
                 //                logger('(highlight) Manually inserting thumbnail button');
                 //            }
                 //            else{
-                //                $(this).attr('data-modify-thumbnail', true);
+                //                $(this).data('modify-thumbnail', true);
                 //                logger('(highlight) Thumbnail button already inserted');
                 //            }
                 //        }
