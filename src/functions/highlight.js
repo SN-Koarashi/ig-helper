@@ -406,6 +406,21 @@ export async function onHighlightsStoryThumbnail(isDownload) {
         if (USER_SETTING.RENAME_PUBLISH_DATE) {
             timestamp = target.taken_at_timestamp;
         }
+		
+        if (USER_SETTING.CAPTURE_IMAGE_VIA_MEDIA_CACHE) {
+            const cached = getImageFromCache(target.id);
+            if (cached) {
+                logger("[Restore Cached onHighlightsStoryThumbnail]", target.id);
+                saveFiles(cached, {
+                    username,
+                    sourceType: "highlights",
+                    timestamp,
+                    filetype: 'jpg',
+                    shortcode: target.id
+                });
+                return;
+            }
+        }
 
         if (USER_SETTING.FORCE_RESOURCE_VIA_MEDIA && !state.tempFetchRateLimit) {
             let result = await getMediaInfo(target.id);

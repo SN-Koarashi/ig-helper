@@ -694,6 +694,21 @@ export async function onStoryThumbnail(isDownload, isForce) {
             if (mediaId == null) {
                 mediaId = location.pathname.split('/').filter(s => s.length > 0 && s.match(/^([0-9]{10,})$/)).at(-1);
             }
+			
+            if (USER_SETTING.CAPTURE_IMAGE_VIA_MEDIA_CACHE) {
+                const cached = getImageFromCache(mediaId);
+                if (cached) {
+                    logger("[Restore Cached onStoryThumbnail]", mediaId);
+                    saveFiles(cached, {
+                        username,
+                        sourceType: "stories",
+                        timestamp,
+                        filetype: 'jpg',
+                        shortcode: mediaId
+                    });
+                    return;
+                }
+            }
 
             let result = await getMediaInfo(mediaId);
 
