@@ -28,6 +28,7 @@ export var timer = setInterval(function () {
         state.pageLoaded = false;
         state.firstStarted = true;
         state.currentURL = location.href;
+		clearTimeout(state.homepageObserverDebounce);
         state.GL_observer.disconnect();
 
         // Auto-skip "X shared this with you" dialog on any ?igsh= link
@@ -63,15 +64,17 @@ export var timer = setInterval(function () {
                 // section:visible > main > div > div > article > div > div > div > div > div > header (is the same as above, except that this is on the route of the /{username}/p/{shortcode} structure)
                 // section:visible > main > div > div.xdt5ytf << (former CSS selector for single foreground post in page, non-floating) >>
                 // <hr> is much more unique element than "div.xdt5ytf"
-                if ($(`body > div[class]:not([id^="mount"]) div div[role="dialog"] article,
-                            section:visible > main > div > div > div > div > div > hr,
-                            body > div[id^="mount"] section nav + div > article,
-                            section:visible > main > div > div > article > div > div > div > div > div > header
-                        `).length > 0) {
+                if ($('body > div[class]:not([id^="mount"]) div div[role="dialog"] article, \
+                    section:visible > main > div > div > div > div > div > hr, \
+                    body > div[id^="mount"] section nav + div > article, \
+                    section:visible > main > div > div > article > div > div > div > div > div > header'
+                ).length > 0) {
                     clearInterval(dialogTimer);
 
                     // This is to prevent the detection of the "Modify Video Volume" setting from being too slow.
                     setTimeout(() => {
+                        clearInterval(state.GLrepeat);
+                        state.GLrepeat = null;
                         onReadyMyDW(false);
                     }, 15);
                 }
@@ -100,9 +103,8 @@ export var timer = setInterval(function () {
 
                 const element = $('div[id^="mount"] > div > div div > section > main div:not([class]):not([style]) > div > article')?.parent()[0];
                 if (element) {
-                    state.GL_observer.observe(element, {
-                        childList: true
-                    });
+                    state.GL_observer.disconnect();
+                    state.GL_observer.observe(element, { childList: true });
                 }
             }, 150);
 

@@ -25,5 +25,6 @@ getTranslationText(state.lang).then((res) => {
 });
 
 logger('Script Loaded', GM_info.script.name, 'version:', GM_info.script.version);
+registerPostClickHandlers();
 purgeCache();
 /*******************************/

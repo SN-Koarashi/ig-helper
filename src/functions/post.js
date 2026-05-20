@@ -25,25 +25,33 @@ export function onReadyMyDW(NoDialog, hasReferrer) {
     if (hasReferrer === true) {
         logger('hasReferrer', 'regenerated');
         $('article[data-snig="canDownload"], div[data-snig="canDownload"]').filter(function () {
-            return $(this).find('.IG_DW_MAIN').length === 0
+            return $(this).find('.IG_DW_MAIN').length === 0;
         }).removeAttr('data-snig');
     }
+
+    clearInterval(state.GL_repeat);
+    state.GL_repeat = null;
 
     // Whether is Instagram dialog?
     if (NoDialog == false) {
         const maxCall = 100;
         let i = 0;
-        var repeat = setInterval(() => {
+        state.GL_repeat = setInterval(() => {
             // section:visible > main > div > div[data-snig="canDownload"] > div > div > div > hr << (single foreground post in page, non-floating // <hr> element here is literally the line beneath poster's username) >>
             // section:visible > main > div > div.xdt5ytf[data-snig="canDownload"] << (former CSS selector for single foreground post in page, non-floating) >>
             // <hr> is much more unique element than "div.xdt5ytf"
-            if (i > maxCall || $('article[data-snig="canDownload"], section:visible > main > div > div[data-snig="canDownload"] > div > div > div > hr, div[id^="mount"] > div > div > div.x1n2onr6.x1vjfegm div[data-snig="canDownload"]').length > 0) {
-                clearInterval(repeat);
+            if (i > maxCall || $(`article[data-snig="canDownload"],
+                section:visible > main > div > div[data-snig="canDownload"] > div > div > div > hr,
+                div[id^="mount"] div div div.x1n2onr6.x1vjfegm div[data-snig="canDownload"]
+            `).length > 0) {
+                clearInterval(state.GL_repeat);
+                state.GL_repeat = null;
 
                 if (i > maxCall) {
                     //alert('Trying to call button creation method reached to maximum try times. If you want to re-register method, please open script menu and press "Reload Script" button or hotkey "R" to reload main timer.');
                     console.warn('onReadyMyDW() Timer', 'maximum number of repetitions reached, terminated');
                 }
+                return;
             }
 
             logger('onReadyMyDW() Timer', 'repeating to call detection createDownloadButton()');
@@ -224,6 +232,15 @@ export function initPostVideoFunction($mainElement) {
  * @description Create a download button in the upper right corner of each post.
  *
  * @return {void}
+ *
+ * FIX: All per-article $(this).on('click', ...) handlers have been removed.
+ * They are now registered once as body-level delegated handlers in
+ * registerPostClickHandlers(), which holds zero strong references to article
+ * DOM nodes, allowing the GC to collect unmounted posts freely.
+ *
+ * The displayResourceURL closure variable is replaced by storing the URL on the
+ * article element via $mainElement.data('igHelper_displayResourceURL', url).
+ * jQuery 3.x backs .data() with a WeakMap, so this does not prevent GC.
  */
 export function createDownloadButton() {
     // Add download icon per each posts
@@ -241,9 +258,6 @@ export function createDownloadButton() {
 
                 const $mainElement = $(this);
                 const tagName = this.tagName;
-                // Improve the selector by using the value from the getVisibleNodeIndex function in 'const $viewport'.
-                const resourceCountSelector = '*:not([data-pagelet])>*:not([role]):not([data-pagelet])>*>*>*[role]>*>ul[class] li[class]';
-                var displayResourceURL;
 
                 // not loop each in single top post
                 if (tagName === "DIV" && index != 0) {
@@ -251,6 +265,11 @@ export function createDownloadButton() {
                 }
 
                 const $childElement = $mainElement.children("div").children("div");
+
+                if ($mainElement.find('> .button_wrapper, .button_wrapper').length > 0) {
+                    $mainElement.attr('data-snig', 'canDownload');
+                    return;
+                }
 
                 if ($childElement.length === 0) return;
 
@@ -316,6 +335,9 @@ export function createDownloadButton() {
 
                                 // Check if video?
                                 if ($targetNode.find('video').length > 0) {
+                                    // FIX: clear any stale image URL when the visible item is a video
+                                    $mainElement.removeData('igHelper_displayResourceURL');
+
                                     if ($childElement.find('.IG_THUMBNAIL_MAIN').length === 0) {
                                         $childElement.find(".button_wrapper").append(ThumbnailElement);
                                     }
@@ -324,7 +346,11 @@ export function createDownloadButton() {
                                 }
                                 // is Image
                                 else {
-                                    displayResourceURL = $targetNode.find('img').attr('src');
+                                    // FIX: store per-article instead of a closure variable so that the
+                                    // body-level delegated handler (.IG_IMAGE_VIEWER) can read it without
+                                    // capturing a strong reference to the article node.
+                                    const imgSrc = $targetNode.find('img').attr('src');
+                                    $mainElement.data('igHelper_displayResourceURL', imgSrc);
                                     $childElement.find(".button_wrapper").append(ViewerElement);
                                 }
                             }
@@ -357,8 +383,8 @@ export function createDownloadButton() {
                             ? $(this).find('video')?.first()
                             : $(this).find('img')?.first();
 
-                        // Check if the node is visible and has size, 
-                        // and not the same node as last triggered one to avoid duplicated trigger 
+                        // Check if the node is visible and has size,
+                        // and not the same node as last triggered one to avoid duplicated trigger
                         // when switching resources with same container
                         if (
                             $targetNode.length > 0 &&
@@ -369,7 +395,7 @@ export function createDownloadButton() {
                             this.getBoundingClientRect().height > 64 &&
                             $triggeredTarget?.get(0) != $targetNode?.get(0)
                         ) {
-                            // ignore the image without alt attribute, 
+                            // ignore the image without alt attribute,
                             // because it is usually used for video thumbnail
                             if (
                                 $targetNode.get(0).tagName === "IMG" &&
@@ -384,279 +410,25 @@ export function createDownloadButton() {
                     });
 
                     const listRoot =
-                        $childElement.find('.button_wrapper').parent().find('ul li, div[role="button"] > div').first().parent()[0];
+                        $childElement.find('.button_wrapper').parent().find('ul li, div[role="button"] > div').first().parent()[0] ||
+                        $childElement.find('.button_wrapper').parent().find('ul').first()[0];
 
                     if (listRoot) {
                         observer.observe(listRoot, {
                             attributes: true,
                             childList: true,
                         });
-                    }
-                    else {
+                    } else {
                         initPostVideoFunction($mainElement);
                         logger("Cannot find resource list root element, thumbnail and viewer button may not work.");
                     }
 
                 }, 50);
 
-
                 $childElement.css('position', 'relative');
-
-                state.GL_registerEventList.push({
-                    element: this,
-                    trigger: [
-                        '.IG_THUMBNAIL_MAIN',
-                        '.IG_NEWTAB_MAIN',
-                        '.IG_DW_ALL_MAIN',
-                        '.IG_DW_MAIN',
-                        '.IG_IMAGE_VIEWER'
-                    ]
-                });
-
-                $(this).on('click', '.IG_IMAGE_VIEWER', function () {
-                    if (displayResourceURL != null) {
-                        openImageViewer(displayResourceURL);
-                    }
-                    else {
-                        alert("Cannot find resource url.");
-                    }
-                });
-
-                $(this).on('click', '.IG_THUMBNAIL_MAIN', function () {
-                    updateLoadingBar(true);
-
-                    state.GL_username = $mainElement.attr('data-username');
-                    state.GL_postPath = location.pathname.replace(/\/$/, '').split('/').at(-1) || $mainElement.find('a[href^="/p/"]').first().attr("href").split("/").at(2) || $(this).parent().parent().parent().children("div:last-child").children("div").children("div:last-child").find('a[href^="/p/"]').last().attr("href").split("/").at(2);
-
-                    var index = getVisibleNodeIndex($mainElement);
-
-                    IG_createDM(true, false);
-
-                    createMediaListDOM(state.GL_postPath, ".IG_POPUP_DIG .IG_POPUP_DIG_MAIN .IG_POPUP_DIG_BODY", "").then(() => {
-                        let checkBlob = setInterval(() => {
-                            if ($('.IG_POPUP_DIG .IG_POPUP_DIG_MAIN .IG_POPUP_DIG_BODY a').length > 0) {
-                                clearInterval(checkBlob);
-                                var $videoThumbnail = $('.IG_POPUP_DIG .IG_POPUP_DIG_BODY a[data-globalindex="' + (index + 1) + '"]')?.parent().find('.videoThumbnail')?.first();
-
-                                if ($videoThumbnail != null && $videoThumbnail.length > 0) {
-                                    $videoThumbnail.trigger("click");
-                                }
-                                else {
-                                    alert('Cannot find thumbnail URL.');
-                                }
-
-                                updateLoadingBar(false);
-                                $('.IG_POPUP_DIG').remove();
-                            }
-                        }, 250);
-                    });
-                });
-
-                $(this).on('click', '.IG_NEWTAB_MAIN', function () {
-                    updateLoadingBar(true);
-
-                    state.GL_username = $mainElement.attr('data-username');
-                    state.GL_postPath = location.pathname.replace(/\/$/, '').split('/').at(-1) || $mainElement.find('a[href^="/p/"]').first().attr("href").split("/").at(2) || $(this).parent().parent().parent().children("div:last-child").children("div").children("div:last-child").find('a[href^="/p/"]').last().attr("href").split("/").at(2);
-
-                    var index = getVisibleNodeIndex($mainElement);
-
-                    IG_createDM(true, false);
-
-                    createMediaListDOM(state.GL_postPath, ".IG_POPUP_DIG .IG_POPUP_DIG_MAIN .IG_POPUP_DIG_BODY", "").then(() => {
-                        let checkBlob = setInterval(() => {
-                            if ($('.IG_POPUP_DIG .IG_POPUP_DIG_MAIN .IG_POPUP_DIG_BODY a').length > 0) {
-                                clearInterval(checkBlob);
-                                var $linkElement = $('.IG_POPUP_DIG .IG_POPUP_DIG_BODY a[data-globalindex="' + (index + 1) + '"]');
-
-                                if (USER_SETTING.FORCE_RESOURCE_VIA_MEDIA && USER_SETTING.NEW_TAB_ALWAYS_FORCE_MEDIA_IN_POST) {
-                                    triggerLinkElement($linkElement.first()[0], true);
-                                }
-                                else {
-                                    let href = $linkElement?.attr('data-href');
-                                    if (href) {
-                                        openNewTab(replaceSameOriginHost(href));
-                                    }
-                                    else {
-                                        alert('Cannot find open tab URL.');
-                                    }
-                                }
-
-                                updateLoadingBar(false);
-                                $('.IG_POPUP_DIG').remove();
-                            }
-                        }, 250);
-                    });
-                });
-
-                // Running if user click the download all icon
-                $(this).on('click', '.IG_DW_ALL_MAIN', async function () {
-                    state.GL_username = $mainElement.attr('data-username');
-                    state.GL_postPath = location.pathname.replace(/\/$/, '').split('/').at(-1) || $mainElement.find('a[href^="/p/"]').first().attr("href").split("/").at(2) || $(this).parent().parent().parent().children("div:last-child").children("div").children("div:last-child").find('a[href^="/p/"]').last().attr("href").split("/").at(2);
-
-                    // Create element that download dailog
-                    IG_createDM(USER_SETTING.DIRECT_DOWNLOAD_ALL, true);
-
-                    $("#article-id").html(`<a href="https://www.instagram.com/p/${state.GL_postPath}">${state.GL_postPath}</a>`);
-
-                    $('.IG_POPUP_DIG .IG_POPUP_DIG_MAIN .IG_POPUP_DIG_BODY a').each(function () {
-                        $(this).wrap('<div></div>');
-                        $(this).before('<label class="inner_box_wrapper"><input class="inner_box" type="checkbox"><span></span></label>');
-                        $(this).after(`<div data-ih-locale-title="NEW_TAB" title="${_i18n("NEW_TAB")}" class="newTab">${SVG.NEW_TAB}</div>`);
-
-                        if ($(this).attr('data-name') == 'video') {
-                            $(this).after(`<div data-ih-locale-title="VIDEO_THUMBNAIL" title="${_i18n("VIDEO_THUMBNAIL")}" class="videoThumbnail">${SVG.THUMBNAIL}</div>`);
-                        }
-                    });
-
-
-                    createMediaListDOM(state.GL_postPath, ".IG_POPUP_DIG .IG_POPUP_DIG_MAIN .IG_POPUP_DIG_BODY", _i18n("LOAD_BLOB_MULTIPLE")).then(() => {
-                        let checkBlob = setInterval(() => {
-                            if ($('.IG_POPUP_DIG .IG_POPUP_DIG_MAIN .IG_POPUP_DIG_BODY a').length > 0) {
-                                clearInterval(checkBlob);
-                                $('.IG_POPUP_DIG .IG_POPUP_DIG_MAIN .IG_POPUP_DIG_BODY a').each(function () {
-                                    $(this).trigger("click");
-                                });
-
-                                $('.IG_POPUP_DIG').remove();
-                            }
-                        }, 250);
-                    });
-                });
-
-                // Running if user click the download icon
-                $(this).on('click', '.IG_DW_MAIN', async function () {
-                    state.GL_username = $mainElement.attr('data-username');
-                    state.GL_postPath = location.pathname.replace(/\/$/, '').split('/').at(-1) || $mainElement.find('a[href^="/p/"]').first().attr("href").split("/").at(2) || $(this).parent().parent().parent().children("div:last-child").children("div").children("div:last-child").find('a[href^="/p/"]').last().attr("href").split("/").at(2);
-
-                    // Create element that download dailog
-                    IG_createDM(USER_SETTING.DIRECT_DOWNLOAD_ALL, true);
-
-                    $("#article-id").html(`<a href="https://www.instagram.com/p/${state.GL_postPath}">${state.GL_postPath}</a>`);
-
-                    if (USER_SETTING.DIRECT_DOWNLOAD_VISIBLE_RESOURCE) {
-                        updateLoadingBar(true);
-                        IG_setDM(true);
-
-                        var index = getVisibleNodeIndex($(this).parent().parent().parent());
-
-                        createMediaListDOM(state.GL_postPath, ".IG_POPUP_DIG .IG_POPUP_DIG_MAIN .IG_POPUP_DIG_BODY", "").then(() => {
-                            let checkBlob = setInterval(() => {
-                                if ($('.IG_POPUP_DIG .IG_POPUP_DIG_MAIN .IG_POPUP_DIG_BODY a').length > 0) {
-                                    clearInterval(checkBlob);
-                                    var href = $('.IG_POPUP_DIG .IG_POPUP_DIG_BODY a[data-globalindex="' + (index + 1) + '"]')?.attr('data-href');
-
-                                    if (href) {
-                                        updateLoadingBar(false);
-                                        $('.IG_POPUP_DIG .IG_POPUP_DIG_BODY a[data-globalindex="' + (index + 1) + '"]')?.trigger("click");
-                                    }
-                                    else {
-                                        alert('Cannot find download URL.');
-                                    }
-
-                                    $('.IG_POPUP_DIG').remove();
-                                }
-                            }, 250);
-                        });
-
-                        return;
-                    }
-
-                    if (!USER_SETTING.DIRECT_DOWNLOAD_ALL) {
-                        // Find video/image element and add the download icon
-                        var s = 0;
-                        var multiple = $(this).parent().parent().find(resourceCountSelector).length;
-                        var blob = USER_SETTING.FORCE_FETCH_ALL_RESOURCES;
-                        var publish_time = new Date(
-                            $(this).parent().parent().parent().find('a[href] time[datetime]').filter(function () {
-                                let href = $(this).parents("a[href]").attr("href");
-                                return href?.startsWith("/p/") || href?.match(/\/([\w.\-_]+)\/p\//ig) != null;
-                            }).first().attr('datetime')
-                        ).getTime();
-
-                        // If posts have more than one images or videos.
-                        if (multiple) {
-                            $(this).parent().parent().find(resourceCountSelector).each(function () {
-                                let element_videos = $(this).parent().parent().parent().find('video');
-                                //if(element_videos && element_videos.attr('src') && element_videos.attr('src').match(/^blob:/ig)){
-                                if (element_videos && element_videos.attr('src')) {
-                                    blob = true;
-                                }
-                            });
-
-
-                            if (blob || USER_SETTING.FORCE_RESOURCE_VIA_MEDIA) {
-                                createMediaListDOM(state.GL_postPath, ".IG_POPUP_DIG .IG_POPUP_DIG_MAIN .IG_POPUP_DIG_BODY", _i18n("LOAD_BLOB_MULTIPLE"));
-                            }
-                            else {
-                                $(this).parent().parent().find(resourceCountSelector).each(function () {
-                                    s++;
-                                    let element_videos = $(this).find('video');
-                                    let element_images = $(this).find('._aagv img');
-                                    let imgLink = (element_images.attr('srcset')) ? element_images.attr('srcset').split(" ")[0] : element_images.attr('src');
-
-                                    if (element_videos && element_videos.attr('src')) {
-                                        blob = true;
-                                    }
-                                    if (element_images && imgLink) {
-                                        $('.IG_POPUP_DIG .IG_POPUP_DIG_MAIN .IG_POPUP_DIG_BODY').append(`<a datetime="${publish_time}" data-needed="direct" data-path="${state.GL_postPath}" data-name="photo" data-type="jpg" data-globalIndex="${s}" href="javascript:;" data-href="${imgLink}"><img width="100" src="${imgLink}" /><br/>- <span data-ih-locale="IMG">${_i18n("IMG")}</span> ${s} -</a>`);
-                                    }
-
-                                });
-
-                                if (blob) {
-                                    createMediaListDOM(state.GL_postPath, ".IG_POPUP_DIG .IG_POPUP_DIG_MAIN .IG_POPUP_DIG_BODY", _i18n("LOAD_BLOB_RELOAD"));
-                                }
-                            }
-                        }
-                        else {
-                            if (USER_SETTING.FORCE_RESOURCE_VIA_MEDIA) {
-                                createMediaListDOM(state.GL_postPath, ".IG_POPUP_DIG .IG_POPUP_DIG_MAIN .IG_POPUP_DIG_BODY", _i18n("LOAD_BLOB_MULTIPLE"));
-                            }
-                            else {
-                                s++;
-                                let element_videos = $(this).parent().parent().parent().find('video');
-                                let element_images = $(this).parent().parent().parent().find('._aagv img');
-                                let imgLink = (element_images.attr('srcset')) ? element_images.attr('srcset').split(" ")[0] : element_images.attr('src');
-
-
-                                if (element_videos && element_videos.attr('src')) {
-                                    createMediaListDOM(state.GL_postPath, ".IG_POPUP_DIG .IG_POPUP_DIG_MAIN .IG_POPUP_DIG_BODY", _i18n("LOAD_BLOB_ONE"));
-                                }
-                                if (element_images && imgLink) {
-                                    $('.IG_POPUP_DIG .IG_POPUP_DIG_MAIN .IG_POPUP_DIG_BODY').append(`<a datetime="${publish_time}" data-needed="direct" data-path="${state.GL_postPath}" data-name="photo" data-type="jpg" data-globalIndex="${s}" href="javascript:;" href="" data-href="${imgLink}"><img width="100" src="${imgLink}" /><br/>- <span data-ih-locale="IMG">${_i18n("IMG")}</span> ${s} -</a>`);
-                                }
-                            }
-                        }
-                    }
-
-                    $('.IG_POPUP_DIG .IG_POPUP_DIG_MAIN .IG_POPUP_DIG_BODY a').each(function () {
-                        $(this).wrap('<div></div>');
-                        $(this).before('<label class="inner_box_wrapper"><input class="inner_box" type="checkbox"><span></span></label>');
-                        $(this).after(`<div data-ih-locale-title="NEW_TAB" title="${_i18n("NEW_TAB")}" class="newTab">${SVG.NEW_TAB}</div>`);
-
-                        if ($(this).attr('data-name') == 'video') {
-                            $(this).after(`<div data-ih-locale-title="VIDEO_THUMBNAIL" title="${_i18n("VIDEO_THUMBNAIL")}" class="videoThumbnail">${SVG.THUMBNAIL}</div>`);
-                        }
-                    });
-
-                    if (USER_SETTING.DIRECT_DOWNLOAD_ALL) {
-                        createMediaListDOM(state.GL_postPath, ".IG_POPUP_DIG .IG_POPUP_DIG_MAIN .IG_POPUP_DIG_BODY", _i18n("LOAD_BLOB_MULTIPLE")).then(() => {
-                            let checkBlob = setInterval(() => {
-                                if ($('.IG_POPUP_DIG .IG_POPUP_DIG_MAIN .IG_POPUP_DIG_BODY a').length > 0) {
-                                    clearInterval(checkBlob);
-                                    let links = [];
-                                    $('.IG_POPUP_DIG .IG_POPUP_DIG_MAIN .IG_POPUP_DIG_BODY a').each(function () {
-                                        links.push($(this));
-                                    });
-
-                                    batchDownloadPostFiles(links).then(() => {
-                                        $('.IG_POPUP_DIG').remove();
-                                    });
-                                }
-                            }, 250);
-                        });
-                    }
-                });
+				
+                // FIX: No longer push into GL_registerEventList. The per-article
+                // click handlers are gone; body-level delegation handles everything.
 
                 // Add the mark that download is ready
                 var username = $(this).find("header > div:last-child > div:first-child span a").first().text() || $(this).find('a[href^="/"]').filter(function () {
@@ -667,6 +439,358 @@ export function createDownloadButton() {
                 $(this).attr('data-username', username);
             }
         });
+}
+
+
+/**
+ * getPostContextFromButton
+ * @description Resolve the current post container and shortcode safely across
+ * homepage, dialog, /p/, /reel/, and changing Instagram layouts.
+ *
+ * @param {HTMLElement|JQuery} target
+ * @return {{ $article: JQuery<HTMLElement>, postPath: (string|null) }}
+ */
+export function getPostContextFromButton(target) {
+    const $article = $(target).closest('[data-snig="canDownload"], article, div[data-snig]');
+    if ($article.length === 0) {
+        return { $article: $(), postPath: null };
+    }
+
+    const candidates = [];
+    const pushHref = (href) => {
+        if (typeof href === 'string' && href.trim().length > 0) {
+            candidates.push(href.trim());
+        }
+    };
+
+    pushHref($article.find('a[href^="/p/"]').first().attr('href'));
+    pushHref($article.find('a[href^="/reel/"]').first().attr('href'));
+    pushHref($article.find('a[href*="/p/"]').first().attr('href'));
+    pushHref($article.find('a[href*="/reel/"]').first().attr('href'));
+
+    $article.find('a[role="link"][href], a[href]').each(function () {
+        const href = $(this).attr('href') || '';
+        if (href.startsWith('/p/') || href.startsWith('/reel/') || href.match(/^\/[^/]+\/(p|reel)\//i)) {
+            pushHref(href);
+            return false;
+        }
+    });
+
+    let postPath = null;
+    for (const href of candidates) {
+        const parts = href.split('/').filter(Boolean);
+        const idx = parts.findIndex(p => p === 'p' || p === 'reel');
+        if (idx >= 0 && parts[idx + 1]) {
+            postPath = parts[idx + 1];
+            break;
+        }
+        if ((href.startsWith('/p/') || href.startsWith('/reel/')) && parts[1]) {
+            postPath = parts[1];
+            break;
+        }
+    }
+
+    if (!postPath) {
+        const pathParts = location.pathname.replace(/\/$/, '').split('/').filter(Boolean);
+        if ((pathParts[0] === 'p' || pathParts[0] === 'reel') && pathParts[1]) {
+            postPath = pathParts[1];
+        }
+        else {
+            const routeIndex = pathParts.findIndex(p => p === 'p' || p === 'reel');
+            if (routeIndex >= 0 && pathParts[routeIndex + 1]) {
+                postPath = pathParts[routeIndex + 1];
+            }
+        }
+    }
+
+    return { $article, postPath };
+}
+
+/**
+ * registerPostClickHandlers
+ *
+ * FIX: Registers all post-button click handlers exactly once on $('body') using
+ * the event namespace ".igHelperPost". Body-level delegation means jQuery stores
+ * only a single handler object per event type (not one per article), and the
+ * handlers themselves never hold strong references to article DOM nodes —
+ * they resolve the relevant article at click-time via $(this).closest().
+ *
+ * Cleanup is a single $('body').off('.igHelperPost') call in reloadScript().
+*/
+export function registerPostClickHandlers() {
+    if (state.bodyEventsRegistered) return;
+    state.bodyEventsRegistered = true;
+
+    $('body').on('click.igHelperPost', '.IG_IMAGE_VIEWER', function () {
+        const { $article } = getPostContextFromButton(this);
+        let url = $article.data('igHelper_displayResourceURL');
+
+        if (!url) {
+            url = $article.find('img:visible').filter(function () {
+                return (($(this).attr('alt') || '').length > 0) && (($(this).attr('src') || '').length > 0);
+            }).first().attr('src');
+        }
+
+        if (url) {
+            openImageViewer(url);
+        } else {
+            alert("Cannot find resource url.");
+        }
+    });
+
+    $('body').on('click.igHelperPost', '.IG_THUMBNAIL_MAIN', function () {
+        updateLoadingBar(true);
+
+        const { $article, postPath } = getPostContextFromButton(this);
+        if ($article.length === 0 || !postPath) {
+            updateLoadingBar(false);
+            alert('Cannot determine post path.');
+            return;
+        }
+
+        state.GL_username = $article.data('username');
+        state.GL_postPath = postPath;
+        var index = getVisibleNodeIndex($article);
+
+        IG_createDM(true, false);
+
+        createMediaListDOM(state.GL_postPath, ".IG_POPUP_DIG .IG_POPUP_DIG_MAIN .IG_POPUP_DIG_BODY", "").then(() => {
+            let checkBlob = setInterval(() => {
+                if ($('.IG_POPUP_DIG .IG_POPUP_DIG_MAIN .IG_POPUP_DIG_BODY a').length > 0) {
+                    clearInterval(checkBlob);
+                    var $videoThumbnail = $('.IG_POPUP_DIG .IG_POPUP_DIG_BODY a[data-globalindex="' + (index + 1) + '"]')?.parent().find('.videoThumbnail')?.first();
+
+                    if ($videoThumbnail != null && $videoThumbnail.length > 0) {
+                        $videoThumbnail.trigger("click");
+                    }
+                    else {
+                        alert('Cannot find thumbnail URL.');
+                    }
+
+                    updateLoadingBar(false);
+                    $('.IG_POPUP_DIG').remove();
+                }
+            }, 250);
+        });
+    });
+
+    $('body').on('click.igHelperPost', '.IG_NEWTAB_MAIN', function () {
+        updateLoadingBar(true);
+
+        const { $article, postPath } = getPostContextFromButton(this);
+        if ($article.length === 0 || !postPath) {
+            updateLoadingBar(false);
+            alert('Cannot determine post path.');
+            return;
+        }
+
+        state.GL_username = $article.data('username');
+        state.GL_postPath = postPath;
+        var index = getVisibleNodeIndex($article);
+
+        IG_createDM(true, false);
+
+        createMediaListDOM(state.GL_postPath, ".IG_POPUP_DIG .IG_POPUP_DIG_MAIN .IG_POPUP_DIG_BODY", "").then(() => {
+            let checkBlob = setInterval(() => {
+                if ($('.IG_POPUP_DIG .IG_POPUP_DIG_MAIN .IG_POPUP_DIG_BODY a').length > 0) {
+                    clearInterval(checkBlob);
+                    var $linkElement = $('.IG_POPUP_DIG .IG_POPUP_DIG_BODY a[data-globalindex="' + (index + 1) + '"]');
+
+                    if (USER_SETTING.FORCE_RESOURCE_VIA_MEDIA && USER_SETTING.NEW_TAB_ALWAYS_FORCE_MEDIA_IN_POST) {
+                        triggerLinkElement($linkElement.first()[0], true);
+                    }
+                    else {
+                        let href = $linkElement?.data('href');
+                        if (href) {
+                            openNewTab(replaceSameOriginHost(href));
+                        }
+                        else {
+                            alert('Cannot find open tab URL.');
+                        }
+                    }
+
+                    updateLoadingBar(false);
+                    $('.IG_POPUP_DIG').remove();
+                }
+            }, 250);
+        });
+    });
+
+    // Running if user click the download all icon
+    $('body').on('click.igHelperPost', '.IG_DW_ALL_MAIN', async function () {
+        const { $article, postPath } = getPostContextFromButton(this);
+        if ($article.length === 0 || !postPath) {
+            alert('Cannot determine post path.');
+            return;
+        }
+
+        state.GL_username = $article.data('username');
+        state.GL_postPath = postPath;
+
+        // Create and show the download dialog
+        IG_createDM(USER_SETTING.DIRECT_DOWNLOAD_ALL, true);
+        $("#article-id").html(`<a href="https://www.instagram.com/p/${state.GL_postPath}">${state.GL_postPath}</a>`);
+
+        $('.IG_POPUP_DIG .IG_POPUP_DIG_MAIN .IG_POPUP_DIG_BODY a').each(function () {
+            $(this).wrap('<div></div>');
+            $(this).before('<label class="inner_box_wrapper"><input class="inner_box" type="checkbox"><span></span></label>');
+            $(this).after(`<div data-ih-locale-title="NEW_TAB" title="${_i18n("NEW_TAB")}" class="newTab">${SVG.NEW_TAB}</div>`);
+
+            if ($(this).data('name') == 'video') {
+                $(this).after(`<div data-ih-locale-title="VIDEO_THUMBNAIL" title="${_i18n("VIDEO_THUMBNAIL")}" class="videoThumbnail">${SVG.THUMBNAIL}</div>`);
+            }
+        });
+
+        createMediaListDOM(state.GL_postPath, ".IG_POPUP_DIG .IG_POPUP_DIG_MAIN .IG_POPUP_DIG_BODY", _i18n("LOAD_BLOB_MULTIPLE")).then(() => {
+            let checkBlob = setInterval(() => {
+                if ($('.IG_POPUP_DIG .IG_POPUP_DIG_MAIN .IG_POPUP_DIG_BODY a').length > 0) {
+                    clearInterval(checkBlob);
+                    $('.IG_POPUP_DIG .IG_POPUP_DIG_MAIN .IG_POPUP_DIG_BODY a').each(function () {
+                        $(this).trigger("click");
+                    });
+
+                    $('.IG_POPUP_DIG').remove();
+                }
+            }, 250);
+        });
+    });
+
+    // Running if user click the download icon
+    $('body').on('click.igHelperPost', '.IG_DW_MAIN', async function () {
+        const { $article, postPath } = getPostContextFromButton(this);
+        if ($article.length === 0 || !postPath) {
+            alert('Cannot determine post path.');
+            return;
+        }
+
+        state.GL_username = $article.data('username');
+        state.GL_postPath = postPath;
+
+        // Create and show the download dialog
+        IG_createDM(USER_SETTING.DIRECT_DOWNLOAD_ALL, true);
+        $("#article-id").html(`<a href="https://www.instagram.com/p/${state.GL_postPath}">${state.GL_postPath}</a>`);
+
+        if (USER_SETTING.DIRECT_DOWNLOAD_VISIBLE_RESOURCE) {
+            updateLoadingBar(true);
+            IG_setDM(true);
+
+            var index = getVisibleNodeIndex($article);
+
+            createMediaListDOM(state.GL_postPath, ".IG_POPUP_DIG .IG_POPUP_DIG_MAIN .IG_POPUP_DIG_BODY", "").then(() => {
+                let checkBlob = setInterval(() => {
+                    if ($('.IG_POPUP_DIG .IG_POPUP_DIG_MAIN .IG_POPUP_DIG_BODY a').length > 0) {
+                        clearInterval(checkBlob);
+                        var href = $('.IG_POPUP_DIG .IG_POPUP_DIG_BODY a[data-globalindex="' + (index + 1) + '"]')?.data('href');
+
+                        if (href) {
+                            updateLoadingBar(false);
+                            $('.IG_POPUP_DIG .IG_POPUP_DIG_BODY a[data-globalindex="' + (index + 1) + '"]')?.trigger("click");
+                        }
+                        else {
+                            alert('Cannot find download URL.');
+                        }
+
+                        $('.IG_POPUP_DIG').remove();
+                    }
+                }, 250);
+            });
+
+            return;
+        }
+
+        if (!USER_SETTING.DIRECT_DOWNLOAD_ALL) {
+			// Find video/image element and add the download icon
+            var s = 0;
+            var multiple = $article.find(resourceCountSelector).length;
+            var blob = USER_SETTING.FORCE_FETCH_ALL_RESOURCES;
+            var publish_time = new Date(
+                $article.find('a[href] time[datetime]').filter(function () {
+                    let href = $(this).parents("a[href]").attr("href");
+                    return href?.startsWith("/p/") || href?.match(/\/([\w.\-_]+)\/(p|reel)\//ig) != null;
+                }).first().attr('datetime')
+            ).getTime();
+
+            // If posts have more than one images or videos
+            if (multiple) {
+                $article.find(resourceCountSelector).each(function () {
+                    let element_videos = $(this).parent().parent().parent().find('video');
+					//if(element_videos && element_videos.attr('src') && element_videos.attr('src').match(/^blob:/ig)){
+                    if (element_videos && element_videos.attr('src')) {
+                        blob = true;
+                    }
+                });
+
+                if (blob || USER_SETTING.FORCE_RESOURCE_VIA_MEDIA) {
+                    createMediaListDOM(state.GL_postPath, ".IG_POPUP_DIG .IG_POPUP_DIG_MAIN .IG_POPUP_DIG_BODY", _i18n("LOAD_BLOB_MULTIPLE"));
+                }
+                else {
+                    $article.find(resourceCountSelector).each(function () {
+                        s++;
+                        let element_videos = $(this).find('video');
+                        let element_images = $(this).find('._aagv img');
+                        let imgLink = (element_images.attr('srcset')) ? element_images.attr('srcset').split(" ")[0] : element_images.attr('src');
+
+                        if (element_videos && element_videos.attr('src')) {
+                            blob = true;
+                        }
+                        if (element_images && imgLink) {
+                            $('.IG_POPUP_DIG .IG_POPUP_DIG_MAIN .IG_POPUP_DIG_BODY').append(`<a datetime="${publish_time}" data-needed="direct" data-path="${state.GL_postPath}" data-name="photo" data-type="jpg" data-globalIndex="${s}" href="javascript:;" data-href="${imgLink}"><img width="100" src="${imgLink}" /><br/>- <span data-ih-locale="IMG">${_i18n("IMG")}</span> ${s} -</a>`);
+                        }
+                    });
+
+                    if (blob) {
+                        createMediaListDOM(state.GL_postPath, ".IG_POPUP_DIG .IG_POPUP_DIG_MAIN .IG_POPUP_DIG_BODY", _i18n("LOAD_BLOB_RELOAD"));
+                    }
+                }
+            }
+            else {
+                if (USER_SETTING.FORCE_RESOURCE_VIA_MEDIA) {
+                    createMediaListDOM(state.GL_postPath, ".IG_POPUP_DIG .IG_POPUP_DIG_MAIN .IG_POPUP_DIG_BODY", _i18n("LOAD_BLOB_MULTIPLE"));
+                }
+                else {
+                    s++;
+                    let element_videos = $article.find('video');
+                    let element_images = $article.find('._aagv img');
+                    let imgLink = (element_images.attr('srcset')) ? element_images.attr('srcset').split(" ")[0] : element_images.attr('src');
+
+                    if (element_videos && element_videos.attr('src')) {
+                        createMediaListDOM(state.GL_postPath, ".IG_POPUP_DIG .IG_POPUP_DIG_MAIN .IG_POPUP_DIG_BODY", _i18n("LOAD_BLOB_ONE"));
+                    }
+                    if (element_images && imgLink) {
+                        $('.IG_POPUP_DIG .IG_POPUP_DIG_MAIN .IG_POPUP_DIG_BODY').append(`<a datetime="${publish_time}" data-needed="direct" data-path="${state.GL_postPath}" data-name="photo" data-type="jpg" data-globalIndex="${s}" href="javascript:;" href="" data-href="${imgLink}"><img width="100" src="${imgLink}" /><br/>- <span data-ih-locale="IMG">${_i18n("IMG")}</span> ${s} -</a>`);
+                    }
+                }
+            }
+        }
+
+        $('.IG_POPUP_DIG .IG_POPUP_DIG_MAIN .IG_POPUP_DIG_BODY a').each(function () {
+            $(this).wrap('<div></div>');
+            $(this).before('<label class="inner_box_wrapper"><input class="inner_box" type="checkbox"><span></span></label>');
+            $(this).after(`<div data-ih-locale-title="NEW_TAB" title="${_i18n("NEW_TAB")}" class="newTab">${SVG.NEW_TAB}</div>`);
+
+            if ($(this).data('name') == 'video') {
+                $(this).after(`<div data-ih-locale-title="VIDEO_THUMBNAIL" title="${_i18n("VIDEO_THUMBNAIL")}" class="videoThumbnail">${SVG.THUMBNAIL}</div>`);
+            }
+        });
+
+        if (USER_SETTING.DIRECT_DOWNLOAD_ALL) {
+            createMediaListDOM(state.GL_postPath, ".IG_POPUP_DIG .IG_POPUP_DIG_MAIN .IG_POPUP_DIG_BODY", _i18n("LOAD_BLOB_MULTIPLE")).then(() => {
+                let checkBlob = setInterval(() => {
+                    if ($('.IG_POPUP_DIG .IG_POPUP_DIG_MAIN .IG_POPUP_DIG_BODY a').length > 0) {
+                        clearInterval(checkBlob);
+                        let links = [];
+                        $('.IG_POPUP_DIG .IG_POPUP_DIG_MAIN .IG_POPUP_DIG_BODY a').each(function () {
+                            links.push($(this));
+                        });
+
+                        batchDownloadPostFiles(links).then(() => {
+                            $('.IG_POPUP_DIG').remove();
+                        });
+                    }
+                }, 250);
+            });
+        }
+    });
 }
 
 
