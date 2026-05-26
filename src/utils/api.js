@@ -166,7 +166,7 @@ export function getUserIdWithAgent(username) {
  */
 export function getUserHighSizeProfile(userId) {
     return new Promise((resolve, reject) => {
-        let getURL = `https://i.instagram.com/api/v1/users/${userId}/info/`;
+        let getURL = `https://www.instagram.com/api/v1/users/${userId}/info/`;
 
         GM_xmlhttpRequest({
             method: "GET",
