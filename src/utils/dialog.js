@@ -1,4 +1,4 @@
-import { locale_manifest, PARENT_CHILD_MAPPING, state, SVG, USER_SETTING } from "../settings";
+import { locale_manifest, PARENT_CHILD_MAPPING, state, SVG, USER_SETTING, $body } from "../settings";
 import { callNotification, getPlatformModifierKey, logger, reloadScript } from "./general";
 import { _i18n } from "./i18n";
 /*! ESLINT IMPORT END !*/
@@ -13,14 +13,17 @@ import { _i18n } from "./i18n";
  */
 export function IG_createDM(hasHidden, hasCheckbox) {
     let isHidden = (hasHidden) ? "hidden" : "";
-    $('body').append('<div class="IG_POPUP_DIG ' + isHidden + '"><div class="IG_POPUP_DIG_BG"></div><div class="IG_POPUP_DIG_MAIN"><div class="IG_POPUP_DIG_TITLE"></div><div class="IG_POPUP_DIG_BODY"></div></div></div>');
-    $('.IG_POPUP_DIG .IG_POPUP_DIG_MAIN .IG_POPUP_DIG_TITLE').append(`<div style="position:relative;min-height:36px;text-align:center;margin-bottom: 7px;"><div style="position:absolute;left:0px;line-height: 18px;"><kbd>${getPlatformModifierKey()}</kbd>+<kbd>Q</kbd> [<span data-ih-locale="CLOSE">${_i18n("CLOSE")}</span>]</div><div style="line-height: 18px;">IG Helper v${GM_info.script.version}</div><div id="post_info" style="line-height: 14px;font-size:14px;">Post ID: <span id="article-id"></span></div><div class="IG_POPUP_DIG_BTN">${SVG.CLOSE}</div></div>`);
+    $body.append('<div class="IG_POPUP_DIG ' + isHidden + '"><div class="IG_POPUP_DIG_BG"></div><div class="IG_POPUP_DIG_MAIN"><div class="IG_POPUP_DIG_TITLE"></div><div class="IG_POPUP_DIG_BODY"></div></div></div>');
+    // OPTIMIZATION: cache popup title element used 3+ times in this function
+    const $title = $('.IG_POPUP_DIG .IG_POPUP_DIG_MAIN .IG_POPUP_DIG_TITLE');
+    $title.append(`<div style="position:relative;min-height:36px;text-align:center;margin-bottom: 7px;"><div style="position:absolute;left:0px;line-height: 18px;"><kbd>${getPlatformModifierKey()}</kbd>+<kbd>Q</kbd> [<span data-ih-locale="CLOSE">${_i18n("CLOSE")}</span>]</div><div style="line-height: 18px;">IG Helper v${GM_info.script.version}</div><div id="post_info" style="line-height: 14px;font-size:14px;">Post ID: <span id="article-id"></span></div><div class="IG_POPUP_DIG_BTN">${SVG.CLOSE}</div></div>`);
 
     if (hasCheckbox) {
-        $('.IG_POPUP_DIG .IG_POPUP_DIG_MAIN .IG_POPUP_DIG_TITLE').append(`<div style="text-align: center;" id="button_group"></div>`);
-        $('.IG_POPUP_DIG .IG_POPUP_DIG_MAIN .IG_POPUP_DIG_TITLE > div#button_group').append(`<button id="batch_download_selected" data-ih-locale="BATCH_DOWNLOAD_SELECTED">${_i18n('BATCH_DOWNLOAD_SELECTED')}</button>`);
-        $('.IG_POPUP_DIG .IG_POPUP_DIG_MAIN .IG_POPUP_DIG_TITLE > div#button_group').append(`<button id="batch_download_direct" data-ih-locale="BATCH_DOWNLOAD_DIRECT">${_i18n('BATCH_DOWNLOAD_DIRECT')}</button>`);
-        $('.IG_POPUP_DIG .IG_POPUP_DIG_MAIN .IG_POPUP_DIG_TITLE').append(`<label class="checkbox"><input value="yes" type="checkbox" /><span data-ih-locale="ALL_CHECK">${_i18n('ALL_CHECK')}</span><span class="item-count"></span></label>`);
+        $title.append(`<div style="text-align: center;" id="button_group"></div>`);
+        const $btnGroup = $title.find('> div#button_group');
+        $btnGroup.append(`<button id="batch_download_selected" data-ih-locale="BATCH_DOWNLOAD_SELECTED">${_i18n('BATCH_DOWNLOAD_SELECTED')}</button>`);
+        $btnGroup.append(`<button id="batch_download_direct" data-ih-locale="BATCH_DOWNLOAD_DIRECT">${_i18n('BATCH_DOWNLOAD_DIRECT')}</button>`);
+        $title.append(`<label class="checkbox"><input value="yes" type="checkbox" /><span data-ih-locale="ALL_CHECK">${_i18n('ALL_CHECK')}</span><span class="item-count"></span></label>`);
     }
 }
 
@@ -32,12 +35,13 @@ export function IG_createDM(hasHidden, hasCheckbox) {
  * @return {void}
  */
 export function IG_setDM(hasHidden) {
-    if ($('.IG_POPUP_DIG').length) {
+    const $popup = $('.IG_POPUP_DIG');
+    if ($popup.length) {
         if (hasHidden) {
-            $('.IG_POPUP_DIG').addClass("hidden");
+            $popup.addClass("hidden");
         }
         else {
-            $('.IG_POPUP_DIG').removeClass("hidden");
+            $popup.removeClass("hidden");
         }
     }
 }
@@ -104,7 +108,7 @@ export function showHotkeySetting() {
 
     $('.IG_POPUP_DIG #post_info').text('Hotkey Settings');
 
-    const $body = $('.IG_POPUP_DIG .IG_POPUP_DIG_BODY');
+    const $popupBody = $('.IG_POPUP_DIG .IG_POPUP_DIG_BODY');
 
     const hotkeyOptions = [
         { value: '87', label: 'Alt+W' },
@@ -155,10 +159,10 @@ export function showHotkeySetting() {
         `);
 
         $container.find('.hotkey-reset').on('click', function () {
-            const defaultCode = parseInt($container.find('.hotkey-preset').data('default'));
-            const stateKeyName = $container.find('.hotkey-preset').data('state');
-            const storage = $container.find('.hotkey-preset').data('storage');
             const $preset = $container.find('.hotkey-preset');
+            const defaultCode = parseInt($preset.data('default'));
+            const stateKeyName = $preset.data('state');
+            const storage = $preset.data('storage');
 
             state[stateKeyName] = defaultCode;
             GM_setValue(storage, defaultCode);
@@ -167,16 +171,17 @@ export function showHotkeySetting() {
         });
 
         $container.find('.hotkey-preset').on('change', function () {
-            const val = $(this).val();
-            const storage = $(this).data('storage');
-            const stateKeyName = $(this).data('state');
-            const defaultCode = parseInt($(this).data('default'));
+            const $this = $(this);
+            const val = $this.val();
+            const storage = $this.data('storage');
+            const stateKeyName = $this.data('state');
+            const defaultCode = parseInt($this.data('default'));
             const keyCode = parseInt(val);
 
             if (checkHotkeyConflict(keyCode, stateKeyName)) {
                 state[stateKeyName] = defaultCode;
                 GM_setValue(storage, defaultCode);
-                $(this).val(defaultCode);
+                $this.val(defaultCode);
                 $container.find('.hotkey-conflict-warning').show().delay(2000).fadeOut(500);
             } else {
                 state[stateKeyName] = keyCode;
@@ -188,10 +193,11 @@ export function showHotkeySetting() {
         return $container;
     }
 
-    $body.append('<span style="display: block; margin-bottom: 15px;" class="hotkey-settings-container"></span>');
+    $popupBody.append('<span style="display: block; margin-bottom: 15px;" class="hotkey-settings-container"></span>');
+    const $container = $popupBody.find('.hotkey-settings-container');
 
     hotkeyConfigs.forEach((config) => {
-        $body.find('.hotkey-settings-container').append(
+        $container.append(
             createHotkeySetting(config.name, config.key, config.stateKey, config.storageKey, config.defaultKeyCode)
         );
     });
@@ -216,16 +222,18 @@ export function showSetting() {
             </div>
         `);
 
+    // OPTIMIZATION: cache the lang select once
+    const $langSelect = $('#langSelect');
     for (const o in locale_manifest) {
-        $('#langSelect').append(
+        $langSelect.append(
             `<option value="${o}" ${(state.lang === o) ? 'selected' : ''}>${locale_manifest[o]}</option>`
         );
     }
 
-    const $body = $('.IG_POPUP_DIG .IG_POPUP_DIG_BODY');
+    const $popupBody = $('.IG_POPUP_DIG .IG_POPUP_DIG_BODY');
 
     for (const name in USER_SETTING) {
-        $body.append(`
+        $popupBody.append(`
             <label class="globalSettings"
                    title="${_i18n(name + '_INTRO')}"
                    data-ih-locale-title="${name + '_INTRO'}">
@@ -238,10 +246,11 @@ export function showSetting() {
         );
 
         if (name === 'MODIFY_VIDEO_VOLUME') {
-            $body.find(`input[id="${name}"]`).parent('label').on('contextmenu', function (e) {
+            $popupBody.find(`input[id="${name}"]`).parent('label').on('contextmenu', function (e) {
                 e.preventDefault();
-                if (!$(this).find('#tempWrapper').length) {
-                    $(this).append('<div id="tempWrapper"></div>')
+                const $this = $(this);
+                if (!$this.find('#tempWrapper').length) {
+                    $this.append('<div id="tempWrapper"></div>')
                         .children('#tempWrapper')
                         .append(`<input value="${state.videoVolume}" type="range" min="0" max="1" step="0.05" />`)
                         .append(`<input value="${state.videoVolume}" step="0.05" type="number" />`)
@@ -251,10 +260,11 @@ export function showSetting() {
         }
 
         if (name === 'AUTO_RENAME') {
-            $body.find(`input[id="${name}"]`).parent('label').on('contextmenu', function (e) {
+            $popupBody.find(`input[id="${name}"]`).parent('label').on('contextmenu', function (e) {
                 e.preventDefault();
-                if (!$(this).find('#tempWrapper').length) {
-                    $(this).append('<div id="tempWrapper"></div>')
+                const $this = $(this);
+                if (!$this.find('#tempWrapper').length) {
+                    $this.append('<div id="tempWrapper"></div>')
                         .children('#tempWrapper')
                         .append(`<input id="date_format" value="${state.fileRenameFormat}" />`)
                         .append(`<div class="IG_POPUP_DIG_BTN">${SVG.CLOSE}</div>`);
@@ -299,13 +309,16 @@ export function showDebugDOM() {
     IG_createDM();
     $('.IG_POPUP_DIG #post_info').text('IG Debug DOM Tree');
 
-    $('.IG_POPUP_DIG .IG_POPUP_DIG_BODY').append(`<textarea style="font-family: monospace;width:100%;box-sizing: border-box;height:300px;background: transparent;" readonly></textarea>`);
-    $('.IG_POPUP_DIG .IG_POPUP_DIG_BODY').append(`<span style="display:block;text-align:center;">`);
-    $('.IG_POPUP_DIG .IG_POPUP_DIG_BODY span').append(`<button style="margin: 3px;" class="IG_DISPLAY_DOM_TREE"><a>${_i18n('SHOW_DOM_TREE')}</a></button>`);
-    $('.IG_POPUP_DIG .IG_POPUP_DIG_BODY span').append(`<button style="margin: 3px;" class="IG_SELECT_DOM_TREE"><a>${_i18n('SELECT_AND_COPY')}</a></button>`);
-    $('.IG_POPUP_DIG .IG_POPUP_DIG_BODY span').append(`<button style="margin: 3px;" class="IG_DOWNLOAD_DOM_TREE"><a>${_i18n('DOWNLOAD_DOM_TREE')}</a></button><br/>`);
-    $('.IG_POPUP_DIG .IG_POPUP_DIG_BODY span').append(`<button style="margin: 3px;" class="IG_REPORT_GITHUB"><a href="https://github.com/SN-Koarashi/ig-helper/issues" target="_blank">${_i18n('REPORT_GITHUB')}</a></button>`);
-    $('.IG_POPUP_DIG .IG_POPUP_DIG_BODY span').append(`<button style="margin: 3px;" class="IG_REPORT_DISCORD"><a href="https://discord.gg/q3KT4hdq8x" target="_blank">${_i18n('REPORT_DISCORD')}</a></button>`);
+    // OPTIMIZATION: cache popup body
+    const $popupBody = $('.IG_POPUP_DIG .IG_POPUP_DIG_BODY');
+    $popupBody.append(`<textarea style="font-family: monospace;width:100%;box-sizing: border-box;height:300px;background: transparent;" readonly></textarea>`);
+    $popupBody.append(`<span style="display:block;text-align:center;">`);
+    const $span = $popupBody.find('span').last();
+    $span.append(`<button style="margin: 3px;" class="IG_DISPLAY_DOM_TREE"><a>${_i18n('SHOW_DOM_TREE')}</a></button>`);
+    $span.append(`<button style="margin: 3px;" class="IG_SELECT_DOM_TREE"><a>${_i18n('SELECT_AND_COPY')}</a></button>`);
+    $span.append(`<button style="margin: 3px;" class="IG_DOWNLOAD_DOM_TREE"><a>${_i18n('DOWNLOAD_DOM_TREE')}</a></button><br/>`);
+    $span.append(`<button style="margin: 3px;" class="IG_REPORT_GITHUB"><a href="https://github.com/SN-Koarashi/ig-helper/issues" target="_blank">${_i18n('REPORT_GITHUB')}</a></button>`);
+    $span.append(`<button style="margin: 3px;" class="IG_REPORT_DISCORD"><a href="https://discord.gg/q3KT4hdq8x" target="_blank">${_i18n('REPORT_DISCORD')}</a></button>`);
 }
 
 /**
@@ -319,8 +332,10 @@ export function showFeedbackDOM() {
     IG_createDM();
     $('.IG_POPUP_DIG #post_info').text('Feedback Options');
 
-    $('.IG_POPUP_DIG .IG_POPUP_DIG_BODY').append(`<span style="display:block;text-align:center;">`);
-    $('.IG_POPUP_DIG .IG_POPUP_DIG_BODY span').append(`<button style="margin: 3px;" class="IG_REPORT_FORK"><a href="https://greasyfork.org/en/scripts/404535-ig-helper/feedback" target="_blank">${_i18n('REPORT_FORK')}</a></button>`);
-    $('.IG_POPUP_DIG .IG_POPUP_DIG_BODY span').append(`<button style="margin: 3px;" class="IG_REPORT_GITHUB"><a href="https://github.com/SN-Koarashi/ig-helper/issues" target="_blank">${_i18n('REPORT_GITHUB')}</a></button>`);
-    $('.IG_POPUP_DIG .IG_POPUP_DIG_BODY span').append(`<button style="margin: 3px;" class="IG_REPORT_DISCORD"><a href="https://discord.gg/q3KT4hdq8x" target="_blank">${_i18n('REPORT_DISCORD')}</a></button>`);
+    const $popupBody = $('.IG_POPUP_DIG .IG_POPUP_DIG_BODY');
+    $popupBody.append(`<span style="display:block;text-align:center;">`);
+    const $span = $popupBody.find('span').last();
+    $span.append(`<button style="margin: 3px;" class="IG_REPORT_FORK"><a href="https://greasyfork.org/en/scripts/404535-ig-helper/feedback" target="_blank">${_i18n('REPORT_FORK')}</a></button>`);
+    $span.append(`<button style="margin: 3px;" class="IG_REPORT_GITHUB"><a href="https://github.com/SN-Koarashi/ig-helper/issues" target="_blank">${_i18n('REPORT_GITHUB')}</a></button>`);
+    $span.append(`<button style="margin: 3px;" class="IG_REPORT_DISCORD"><a href="https://discord.gg/q3KT4hdq8x" target="_blank">${_i18n('REPORT_DISCORD')}</a></button>`);
 }

@@ -3,6 +3,7 @@ import { getTranslationText, repaintingTranslations } from "./utils/i18n";
 import { style, state } from "./settings";
 import { purgeCache } from "./utils/image_cache";
 import { registerMenuCommand } from "./utils/dialog";
+import { registerPostClickHandlers } from "./functions/post";
 /*! ESLINT IMPORT END !*/
 
 // initialization script
@@ -25,5 +26,6 @@ getTranslationText(state.lang).then((res) => {
 });
 
 logger('Script Loaded', GM_info.script.name, 'version:', GM_info.script.version);
+registerPostClickHandlers();
 purgeCache();
 /*******************************/

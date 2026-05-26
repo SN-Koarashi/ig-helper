@@ -6,7 +6,7 @@ var detectMovingViewerTimer = null;
 export function openImageViewer(imageUrl) {
     removeImageViewer();
 
-    $('body').append(
+    $body.append(
         `<div id="imageViewer">
 	<div id="iv_header">
 		<div style="flex:1;">Image Viewer</div>
