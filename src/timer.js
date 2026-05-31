@@ -28,6 +28,7 @@ export var timer = setInterval(function () {
         state.pageLoaded = false;
         state.firstStarted = true;
         state.currentURL = location.href;
+        clearTimeout(state.homepageObserverDebounce);
         state.GL_observer.disconnect();
 
         // Auto-skip "X shared this with you" dialog on any ?igsh= link
@@ -72,6 +73,8 @@ export var timer = setInterval(function () {
 
                     // This is to prevent the detection of the "Modify Video Volume" setting from being too slow.
                     setTimeout(() => {
+                        clearInterval(state.GL_repeat);
+                        state.GL_repeat = null;
                         onReadyMyDW(false);
                     }, 15);
                 }
@@ -100,6 +103,7 @@ export var timer = setInterval(function () {
 
                 const element = $('div[id^="mount"] > div > div div > section > main div:not([class]):not([style]) > div > article')?.parent()[0];
                 if (element) {
+                    state.GL_observer.disconnect();
                     state.GL_observer.observe(element, {
                         childList: true
                     });
@@ -196,37 +200,10 @@ export var timer = setInterval(function () {
             else {
                 state.pageLoaded = false;
                 // Remove icons
-                if ($('.IG_DWSTORY').length) {
-                    $('.IG_DWSTORY').remove();
-                }
-                if ($('.IG_DWSTORY_ALL').length) {
-                    $('.IG_DWSTORY_ALL').remove();
-                }
-                if ($('.IG_DWNEWTAB').length) {
-                    $('.IG_DWNEWTAB').remove();
-                }
-                if ($('.IG_DWSTORY_THUMBNAIL').length) {
-                    $('.IG_DWSTORY_THUMBNAIL').remove();
-                }
-                if ($('.IG_DWSTORY_POSITION').length) {
-                    $('.IG_DWSTORY_POSITION').remove();
-                }
-
-                if ($('.IG_DWHISTORY').length) {
-                    $('.IG_DWHISTORY').remove();
-                }
-                if ($('.IG_DWHISTORY_ALL').length) {
-                    $('.IG_DWHISTORY_ALL').remove();
-                }
-                if ($('.IG_DWHINEWTAB').length) {
-                    $('.IG_DWHINEWTAB').remove();
-                }
-                if ($('.IG_DWHISTORY_THUMBNAIL').length) {
-                    $('.IG_DWHISTORY_THUMBNAIL').remove();
-                }
-                if ($('.IG_DWHISTORY_POSITION').length) {
-                    $('.IG_DWHISTORY_POSITION').remove();
-                }
+                // OPTIMIZATION: Single combined selector + .remove() — replaces 8 separate
+                // $('.CLASS').length checks + removes. Behavior is identical because
+                // .remove() is a no-op on an empty set.
+                $('.IG_DWSTORY, .IG_DWSTORY_ALL, .IG_DWNEWTAB, .IG_DWSTORY_THUMBNAIL, .IG_DWSTORY_POSITION, .IG_DWHISTORY, .IG_DWHISTORY_ALL, .IG_DWHINEWTAB, .IG_DWHISTORY_THUMBNAIL, .IG_DWHISTORY_POSITION').remove();
             }
         }
 

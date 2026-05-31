@@ -1,4 +1,4 @@
-import { USER_SETTING, state } from "../settings";
+import { USER_SETTING, state, userIdCache, $body } from "../settings";
 import { _i18n } from "./i18n";
 import { getPostOwner, getMediaInfo, getUserId } from "./api";
 import { getImageFromCache } from "./image_cache";
@@ -34,15 +34,17 @@ export function getStoryId(url) {
  * getAppID
  * @description Get Instagram App ID.
  *
- * @return {?integer}
+ * @return {?string}
  */
 export function getAppID() {
     let result = null;
     $('script[type="application/json"]').each(function () {
         const regexp = /"APP_ID":"([0-9]+)"/ig;
-        const matcher = $(this).text().match(regexp);
+        const $this = $(this);
+        const text = $this.text();
+        const matcher = text.match(regexp);
         if (matcher != null && result == null) {
-            result = [...$(this).text().matchAll(regexp)];
+            result = [...text.matchAll(regexp)];
         }
     })
 
@@ -164,7 +166,7 @@ export function setTimeElementDateAndLocaleTime($time) {
  */
 export function getHighlightCurrentTimeElement($element) {
     if ($element == null || $element.length === 0) {
-        $element = $('body');
+        $element = $body;
     }
 
     let $section = $element.closest('section:visible');
@@ -201,13 +203,15 @@ export function getHighlightCurrentTimeElement($element) {
  * @return {void}
  */
 export function updateLoadingBar(isLoading) {
+    // OPTIMIZATION: cache the mount root selection (called every time)
+    const $mountDiv = $('div[id^="mount"] > div > div > div:first');
     if (isLoading) {
-        $('div[id^="mount"] > div > div > div:first').removeClass('x1s85apg');
-        $('div[id^="mount"] > div > div > div:first').css('z-index', '20000');
+        $mountDiv.removeClass('x1s85apg');
+        $mountDiv.css('z-index', '20000');
     }
     else {
-        $('div[id^="mount"] > div > div > div:first').addClass('x1s85apg');
-        $('div[id^="mount"] > div > div > div:first').css('z-index', '');
+        $mountDiv.addClass('x1s85apg');
+        $mountDiv.css('z-index', '');
     }
 }
 
@@ -219,10 +223,12 @@ export function updateLoadingBar(isLoading) {
  * @return {Object}
  */
 export function getStoryProgress(username) {
+    const lowerUsername = username?.toLowerCase();
     let $header = $('body > div section:visible a[href^="/' + (username) + '"] span').filter(function () {
-        return $(this).children().length === 0 && $(this).find('svg').length === 0 && $(this).text()?.toLowerCase() === username?.toLowerCase();
+        const $this = $(this);
+        return $this.children().length === 0 && $this.find('svg').length === 0 && $this.text()?.toLowerCase() === lowerUsername;
     }).parents('div:not([class]):not([style])').filter(function () {
-        return $(this).text()?.toLowerCase() !== username?.toLowerCase()
+        return $(this).text()?.toLowerCase() !== lowerUsername
     }).filter(function () {
         return $(this).children().length > 1
     }).first();
@@ -231,7 +237,7 @@ export function getStoryProgress(username) {
         $header = $('body > div section:visible a[href^="/' + (username) + '"]').filter(function () {
             return $(this).find('img').length > 0
         }).parents('div:not([class]):not([style])').filter(function () {
-            return $(this).text()?.toLowerCase() !== username?.toLowerCase()
+            return $(this).text()?.toLowerCase() !== lowerUsername
         }).filter(function () {
             return $(this).children().length > 1
         }).first();
@@ -340,17 +346,19 @@ export function setStoryProgressIndexByUsername($element, username, className) {
  * @return {Void}
  */
 export function setDownloadProgress(now, total) {
-    if ($('.circle_wrapper').length) {
-        $('.circle_wrapper span').text(`${now}/${total}`);
+    // OPTIMIZATION: cache the circle wrapper lookup
+    const $circle = $('.circle_wrapper');
+    if ($circle.length) {
+        $circle.find('span').text(`${now}/${total}`);
 
         if (now >= total) {
-            $('.circle_wrapper').fadeOut(250, function () {
+            $circle.fadeOut(250, function () {
                 $(this).remove();
             });
         }
     }
     else {
-        $('body').append(`<div class="circle_wrapper"><circle></circle><span>${now}/${total}</span></div>`);
+        $body.append(`<div class="circle_wrapper"><circle></circle><span>${now}/${total}</span></div>`);
     }
 }
 
@@ -373,14 +381,18 @@ export function saveFiles(downloadLink, metadata) {
     return new Promise((resolve) => {
         setTimeout(() => {
             updateLoadingBar(true);
-            fetch(downloadLink).then(res => {
-                return res.blob().then(dwel => {
+            fetch(downloadLink)
+                .then(res => res.blob())
+                .then(dwel => {
                     updateLoadingBar(false);
-                    createSaveFileElement(downloadLink, dwel, metadata).then(() => {
-                        resolve(true);
-                    });
+                    return createSaveFileElement(downloadLink, dwel, metadata);
+                })
+                .then(() => resolve(true))
+                .catch(err => {
+                    updateLoadingBar(false);
+                    console.error('saveFiles failed:', err);
+                    resolve(false);
                 });
-            });
         }, 50);
     });
 }
@@ -656,17 +668,21 @@ export async function tryHandleDashFromMediaItem({
 }
 
 /**
+ * triggerDownload
  * @description Trigger download from Blob with filename.
  * 
  * @param {Blob} blob
  * @param {string} filename
  */
 function triggerDownload(blob, filename) {
-    const link = document.createElement('a');
-    link.href = URL.createObjectURL(blob);
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
     link.download = filename;
+    document.body.appendChild(link);
     link.click();
-    link.remove();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
 }
 
 /**
@@ -755,23 +771,41 @@ export function getSaveFileName(downloadLink, metadata) {
 export async function createSaveFileElement(downloadLink, object, metadata) {
     let { username, sourceType, filetype, shortcode } = metadata;
 
-    if (metadata.uid == null) {
-        const userInfo = await getUserId(username);
-        metadata.uid = userInfo?.user?.id || null;
+    if (metadata.uid == null && username) {
+        if (!userIdCache.has(username)) {
+            userIdCache.set(username, getUserId(username));
+        }
+
+        try {
+            const userInfo = await userIdCache.get(username);
+            metadata.uid = userInfo?.user?.id || null;
+        } catch (err) {
+            userIdCache.delete(username);
+            metadata.uid = null;
+        }
     }
 
     const downloadName = getSaveFileName(downloadLink, metadata);
 
-    if (USER_SETTING.MODIFY_RESOURCE_EXIF && filetype === 'jpg' && shortcode && sourceType === 'photo' && (object.type === 'image/jpeg' || object.type === 'image/webp')) {
-        changeExifData(object, metadata)
-            .then(newBlob => triggerDownload(newBlob, downloadName))
-            .catch(err => {
-                console.error('Failed to strip EXIF and/or attach post URL to EXIF.', err);
-                triggerDownload(object, downloadName);
-            });
+    if (
+        USER_SETTING.MODIFY_RESOURCE_EXIF &&
+        filetype === 'jpg' &&
+        shortcode &&
+        sourceType === 'photo' &&
+        (object.type === 'image/jpeg' || object.type === 'image/webp')
+    ) {
+        try {
+            const newBlob = await changeExifData(object, metadata);
+            triggerDownload(newBlob, downloadName);
+        } catch (err) {
+            console.error('Failed to strip EXIF and/or attach post URL to EXIF.', err);
+            triggerDownload(object, downloadName);
+        }
     } else {
         triggerDownload(object, downloadName);
     }
+	
+    await new Promise(r => setTimeout(r, 500));
 }
 
 /**
@@ -978,63 +1012,77 @@ async function changeExifData(blob, metadata) {
 
 /**
  * triggerLinkElement
- * @description Trigger the link element to start downloading the resource.
+ * @description Trigger the link element to start downloading or previewing the resource.
  *
- * @param  {Object}  element
+ * @param  {Object}   element     - The element containing resource link metadata.
+ * @param  {Boolean}  [isPreview] - True to preview in a new tab instead of downloading.
  * @return {void}
  */
-export async function triggerLinkElement(element, isPreview) {
+export async function triggerLinkElement($element, isPreview = false) {
     try {
+        const $el = $($element);
+
         let date = new Date().getTime();
         let timestamp = Math.floor(date / 1000);
-        let username = ($(element).attr('data-username')) ? $(element).attr('data-username') : state.GL_username;
-        let index = $(element).attr('data-globalindex') || 0;
+        let username = $el.data('username') ? $el.data('username') : state.GLusername;
+        let index = parseInt($el.attr('data-globalindex') || 0, 10) || 0;
 
-        if (!username && $(element).attr('data-path')) {
-            logger('catching owner name from shortcode:', $(element).attr('data-href'));
-            username = await getPostOwner($(element).attr('data-path')).catch(err => {
-                logger('get username failed, replace with default string, error message:', err.message);
+        if (!username && $el.data('path')) {
+            logger('catching owner name from shortcode', $el.data('href'));
+            username = await getPostOwner($el.data('path')).catch(err => {
+                logger('get username failed, replace with default string, error message', err?.message);
+                return null;
             });
-
-            if (username == null) {
-                username = "NONE";
-            }
         }
 
-        if (USER_SETTING.RENAME_PUBLISH_DATE && $(element).attr('datetime')) {
-            timestamp = parseInt($(element).attr('datetime'));
+        if (username == null) username = 'NONE';
+
+        if (USER_SETTING.RENAME_PUBLISH_DATE && $el.attr('datetime')) {
+            timestamp = parseInt($el.attr('datetime'), 10) || timestamp;
         }
 
-        let mediaId = $(element).attr('media-id');
+        const mediaId = $el.attr('media-id') || $el.attr('data-media-id') || null;
+        const sourceType = $el.data('name');
+        const filetype = $el.data('type') || 'jpg';
+        const shortcode = $el.data('path');
+        const href = $el.data('href');
 
-        if (USER_SETTING.PREFER_DASH_MANIFEST && state.GL_mediaDataCache[mediaId] && !isPreview) {
-            logger('[Video Dash Stream]', 'Processing video with DASH manifest, mediaId:', mediaId);
-            const handled = await tryHandleDashFromMediaItem({
-                mediaItem: state.GL_mediaDataCache[mediaId],
+        const downloadOnly = !isPreview;
+
+        if (!isPreview && index < 0) {
+            alert(i18nNOCHECKRESOURCE);
+            return;
+        }
+
+        if (USER_SETTING.PREFER_DASH_MANIFEST && state.GL_mediaDataCache[mediaId]) {
+            logger('Video Dash Stream, Processing video with DASH manifest', 'mediaId', mediaId);
+
+            const handled = await tryHandleDashFromMediaItem(
+                state.GL_mediaDataCache[mediaId],
                 username,
-                sourceType: $(element).data('name'),
+                sourceType,
                 timestamp,
-                shortcode: $(element).data('path'),
-                isPreview: false,
+                shortcode,
+                downloadOnly ? false : isPreview,
                 index
-            });
-            if (handled) {
-                return;
-            }
+            );
+
+            if (handled) return;
         }
 
         if (USER_SETTING.CAPTURE_IMAGE_VIA_MEDIA_CACHE) {
             const cached = getImageFromCache(mediaId);
-            if (cached && $(element).data('type') != "mp4") {
-                if (isPreview) {
+
+            if (cached && filetype !== 'mp4') {
+                if (!downloadOnly && isPreview) {
                     openNewTab(cached);
                 } else {
-                    saveFiles(cached, {
+                    await saveFiles(cached, {
                         username,
-                        sourceType: $(element).data('name'),
+                        sourceType,
                         timestamp,
-                        filetype: $(element).data('type') || 'jpg',
-                        shortcode: $(element).data('path'),
+                        filetype: filetype || 'jpg',
+                        shortcode,
                         index
                     });
                 }
@@ -1042,105 +1090,96 @@ export async function triggerLinkElement(element, isPreview) {
             }
         }
 
-        if (USER_SETTING.FORCE_RESOURCE_VIA_MEDIA) {
+        if (USER_SETTING.FORCE_RESOURCE_VIA_MEDIA && mediaId) {
             updateLoadingBar(true);
-            let result = await getMediaInfo($(element).attr('media-id'));
+            let result = await getMediaInfo(mediaId);
             updateLoadingBar(false);
 
-            if (result.status === 'ok') {
-                var resource_url = null;
-                if (result.items[0].video_versions) {
-                    resource_url = result.items[0].video_versions[0].url;
-                }
-                else {
-                    result.items[0].image_versions2.candidates.sort(function (a, b) {
+            if (result?.status === 'ok') {
+                let resource_url = null;
+                // OPTIMIZATION: cache result.items[0]
+                const mediaItem = result.items?.[0];
+
+                if (mediaItem?.video_versions?.length) {
+                    resource_url = mediaItem.video_versions[0].url;
+                } else if (mediaItem?.image_versions2?.candidates?.length) {
+                    mediaItem.image_versions2.candidates.sort(function (a, b) {
                         let aSTP = new URL(a.url).searchParams.get('stp');
                         let bSTP = new URL(b.url).searchParams.get('stp');
 
                         if (aSTP && bSTP) {
                             if (aSTP.length > bSTP.length) return 1;
                             if (aSTP.length < bSTP.length) return -1;
-                        }
-                        else {
-                            if (a.width < b.width) return 1;
-                            if (a.width > b.width) return -1;
+                        } else {
+                            if ((a.width || 0) > (b.width || 0)) return 1;
+                            if ((a.width || 0) < (b.width || 0)) return -1;
                         }
 
                         return 0;
                     });
 
-                    resource_url = result.items[0].image_versions2.candidates[0].url;
-
-                    const getWidthFromURL = function (obj) {
-                        if (obj.width != null) {
-                            return obj.width;
-                        }
-
-                        const url = new URL(obj.url);
-                        const stp = url.searchParams.get('stp');
-
-                        if (stp != null) {
-                            return parseInt(stp.match(/_p([0-9]+)x([0-9]+)_/i)?.at(1) || -1);
-                        }
-                        else {
-                            return 0;
-                        }
-                    }
-
-                    const resourceWidth = getWidthFromURL(result.items[0].image_versions2.candidates[0]);
-                    if (
-                        result.items[0].original_width !== resourceWidth &&
-                        resourceWidth !== -1
-                    ) {
-                        // alert();
-                    }
+                    resource_url = mediaItem.image_versions2.candidates[0].url;
                 }
 
-                if (isPreview) {
+                if (!resource_url) {
+                    alert('Cannot find download URL.');
+                    return;
+                }
+
+                if (!downloadOnly && isPreview) {
                     openNewTab(replaceSameOriginHost(resource_url));
-                }
-                else {
-                    saveFiles(resource_url, {
+                } else {
+                    await saveFiles(resource_url, {
                         username,
-                        sourceType: $(element).attr('data-name'),
+                        sourceType,
                         timestamp,
-                        filetype: $(element).attr('data-type'),
-                        shortcode: $(element).attr('data-path')
+                        filetype,
+                        shortcode,
+                        index
                     });
                 }
+                return;
             }
-            else {
-                if (USER_SETTING.FALLBACK_TO_BLOB_FETCH_IF_MEDIA_API_THROTTLED) {
-                    if (isPreview) {
-                        openNewTab(replaceSameOriginHost($(element).attr('data-href')));
-                    }
-                    else {
-                        saveFiles($(element).attr('data-href'), {
-                            username,
-                            sourceType: $(element).attr('data-name'),
-                            timestamp,
-                            filetype: $(element).attr('data-type'),
-                            shortcode: $(element).attr('data-path')
-                        });
-                    }
+
+            if (USER_SETTING.FALLBACK_TO_BLOB_FETCH_IF_MEDIA_API_THROTTLED && href) {
+                if (!downloadOnly && isPreview) {
+                    openNewTab(replaceSameOriginHost(href));
+                } else {
+                    await saveFiles(href, {
+                        username,
+                        sourceType,
+                        timestamp,
+                        filetype,
+                        shortcode,
+                        index
+                    });
                 }
-                else {
-                    alert('Fetch failed from Media API. API response message: ' + result.message);
-                }
-                logger(result);
+                return;
             }
+
+            alert(`Fetch failed from Media API. API response message: ${result?.message}`);
+            logger(result);
+            return;
         }
-        else {
-            saveFiles($(element).attr('data-href'), {
-                username,
-                sourceType: $(element).attr('data-name'),
-                timestamp,
-                filetype: $(element).attr('data-type'),
-                shortcode: $(element).attr('data-path')
-            });
+
+        if (href) {
+            if (!downloadOnly && isPreview) {
+                openNewTab(replaceSameOriginHost(href));
+            } else {
+                await saveFiles(href, {
+                    username,
+                    sourceType,
+                    timestamp,
+                    filetype,
+                    shortcode,
+                    index
+                });
+            }
+            return;
         }
-    }
-    catch (err) {
+
+        alert('Cannot find download URL.');
+    } catch (err) {
         console.error('Occur error in triggerLinkElement:', err);
         logger('Occur error in triggerLinkElement:', err);
     }
@@ -1209,7 +1248,7 @@ export function callNotification() {
                         highlight: true,
                         timeout: 5000,
                         zombieTimeout: 5000,
-                        image: "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a5/Instagram_icon.png/64px-Instagram_icon.png",
+                        image: "https://t3.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://www.instagram.com&size=64",
                         onclick: (event) => {
                             event?.preventDefault();
                             var w = GM_openInTab(GM_info.script.downloadURL);
@@ -1256,13 +1295,9 @@ export function openNewTab(link) {
 export function reloadScript() {
     clearInterval(state.GL_repeat);
 
-    // unregister event in post element
-    state.GL_registerEventList.forEach(item => {
-        item.trigger.forEach(bindElement => {
-            $(item.element).off('click', bindElement);
-        });
-    });
-    state.GL_registerEventList = [];
+    // OPTIMIZATION: use cached $body and combine .off() calls
+    $body.off('.igHelperPost');
+    state.bodyEventsRegistered = false;
 
     $('.button_wrapper').remove();
     $('.IG_DWPROFILE, .IG_DWPROFILE, .IG_DWSTORY, .IG_DWSTORY_ALL, .IG_DWSTORY_THUMBNAIL, .IG_DWSTORY_POSITION, .IG_DWNEWTAB, .IG_DWHISTORY, .IG_DWHISTORY_ALL, .IG_DWHINEWTAB, .IG_DWHISTORY_THUMBNAIL, .IG_DWHISTORY_POSITION, .IG_REELS, .IG_REELS_NEWTAB, .IG_REELS_THUMBNAIL').remove();
@@ -1271,7 +1306,7 @@ export function reloadScript() {
     state.pageLoaded = false;
     state.firstStarted = false;
     state.currentURL = location.href;
-    state.GL_observer.disconnect();
+    state.GL_observer?.disconnect();
 
     logger('main timer re-register completed');
 }
@@ -1329,17 +1364,22 @@ export function initSettings() {
  * @return {void}
  */
 export function toggleVolumeSilder($videos, $buttonParent, loggerType, customClass = "") {
-    if ($buttonParent.find('div.volume_slider').length === 0) {
+    // OPTIMIZATION: cache the volume_slider lookup
+    let $existingSlider = $buttonParent.find('div.volume_slider');
+    if ($existingSlider.length === 0) {
         $buttonParent.append(`<div class="volume_slider ${customClass}" />`);
-        $buttonParent.find('div.volume_slider').append(`<div><input type="range" max="1" min="0" step="0.05" value="${state.videoVolume}" /></div>`);
-        $buttonParent.find('div.volume_slider input').attr('style', `--ig-track-progress: ${(state.videoVolume * 100) + '%'}`);
-        $buttonParent.find('div.volume_slider input').on('input', function () {
-            var percent = ($(this).val() * 100) + '%';
+        const $newSlider = $buttonParent.find('div.volume_slider');
+        $newSlider.append(`<div><input type="range" max="1" min="0" step="0.05" value="${state.videoVolume}" /></div>`);
+        const $sliderInput = $newSlider.find('input');
+        $sliderInput.attr('style', `--ig-track-progress: ${(state.videoVolume * 100) + '%'}`);
+        $sliderInput.on('input', function () {
+            const $this = $(this);
+            var percent = ($this.val() * 100) + '%';
 
-            state.videoVolume = $(this).val();
-            GM_setValue('G_VIDEO_VOLUME', $(this).val());
+            state.videoVolume = $this.val();
+            GM_setValue('G_VIDEO_VOLUME', $this.val());
 
-            $(this).attr('style', `--ig-track-progress: ${percent}`);
+            $this.attr('style', `--ig-track-progress: ${percent}`);
 
             $videos.each(function () {
                 logger(`(${loggerType})`, 'video volume changed #slider');
@@ -1347,10 +1387,11 @@ export function toggleVolumeSilder($videos, $buttonParent, loggerType, customCla
             });
         });
 
-        $buttonParent.find('div.volume_slider input').on('mouseenter', function () {
+        $sliderInput.on('mouseenter', function () {
+            const $this = $(this);
             var percent = (state.videoVolume * 100) + '%';
-            $(this).attr('style', `--ig-track-progress: ${percent}`);
-            $(this).val(state.videoVolume);
+            $this.attr('style', `--ig-track-progress: ${percent}`);
+            $this.val(state.videoVolume);
 
 
             $videos.each(function () {
@@ -1359,13 +1400,13 @@ export function toggleVolumeSilder($videos, $buttonParent, loggerType, customCla
             });
         });
 
-        $buttonParent.find('div.volume_slider').on('click', function (e) {
+        $newSlider.on('click', function (e) {
             e.stopPropagation();
             e.preventDefault();
         });
     }
     else {
-        $buttonParent.find('div.volume_slider').remove();
+        $existingSlider.remove();
     }
 }
 

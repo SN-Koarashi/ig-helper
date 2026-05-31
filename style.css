@@ -15,6 +15,12 @@
     display: none;
 }
 
+.IG_POPUP_DIG button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
 .IG_POPUP_DIG_BG {
     position: fixed;
     left: 0px;
