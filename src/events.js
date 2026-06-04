@@ -10,7 +10,7 @@ import { onProfileAvatar } from "./functions/profile";
 import { onHighlightsStory, onHighlightsStoryAll, onHighlightsStoryThumbnail } from "./functions/highlight";
 import { onReels } from "./functions/reel";
 import { _i18n, getTranslationText, repaintingTranslations } from "./utils/i18n";
-import { registerPerformanceObserver } from "./utils/image_cache";
+import { getImageFromCache, registerPerformanceObserver } from "./utils/image_cache";
 import { batchDownloadPostFiles } from "./functions/post";
 import { registerMenuCommand, showDebugDOM, showHotkeySetting, showSetting } from "./utils/dialog";
 /*! ESLINT IMPORT END !*/
@@ -223,7 +223,7 @@ $(function () {
         }
 
         let postPath = $(this).parent().children('a').attr('data-path') ?? $('#article-id').text();
-		
+
         if (USER_SETTING.CAPTURE_IMAGE_VIA_MEDIA_CACHE) {
             const mediaId = $(this).parent().children('a').first().attr('media-id');
             const cached = getImageFromCache(mediaId);

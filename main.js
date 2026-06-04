@@ -17,7 +17,7 @@
 // @name:zh-CN         IG小助手
 // @name:zh-TW         IG小精靈
 // @namespace          https://github.snkms.com/
-// @version            3.19.2
+// @version            3.20.1
 // @description        Download photos and videos from Instagram posts in one click, including Stories, Reels, and profile pictures.
 // @description:ar     نزّل صورًا ومقاطع فيديو من منشورات Instagram بنقرة واحدة، بما في ذلك القصص وReels وصور الملف الشخصي.
 // @description:de     Lade Fotos und Videos aus Instagram-Beiträgen mit einem Klick herunter, einschließlich Stories, Reels und Profilbildern.
@@ -808,6 +808,21 @@
 
             if (USER_SETTING.RENAME_PUBLISH_DATE) {
                 timestamp = target.taken_at_timestamp;
+            }
+
+            if (USER_SETTING.CAPTURE_IMAGE_VIA_MEDIA_CACHE) {
+                const cached = getImageFromCache(target.id);
+                if (cached) {
+                    logger("[Restore Cached onHighlightsStoryThumbnail]", target.id);
+                    saveFiles(cached, {
+                        username,
+                        sourceType: "highlights",
+                        timestamp,
+                        filetype: 'jpg',
+                        shortcode: target.id
+                    });
+                    return;
+                }
             }
 
             if (USER_SETTING.FORCE_RESOURCE_VIA_MEDIA && !state.tempFetchRateLimit) {
@@ -2370,6 +2385,54 @@
     }
 
     /**
+     * resolveStoryMediaIdByTimestamp
+     * @description Identifies the currently visible story by comparing the
+     *              <time datetime> element in the viewer with taken_at_timestamp
+     *              from the API items array. More reliable than index-based DOM
+     *              mapping because it does not depend on CSS class names or
+     *              progress-bar structure.
+     *
+     * @param  {Object}  stories  - Full getStories() / getHighlightStories() response
+     * @return {?String}          - Best-matching item id, or null if undetermined
+     */
+    function resolveStoryMediaIdByTimestamp(stories) {
+        const items = stories?.data?.reels_media?.[0]?.items;
+        if (!items || items.length === 0) return null;
+
+        // Reuse the same multi-layout time-element selection that the rest of the
+        // script already relies on; exclude highlight-nav links and role="button"
+        // to avoid picking up unrelated timestamps.
+        const $time = $(
+            'body > div section:visible time[datetime]'
+        ).filter(function () {
+            return (
+                $(this).is(':visible') &&
+                $(this).closest('a[href^="/stories/highlights/"]').length === 0 &&
+                $(this).closest('[role="button"]').length === 0
+            );
+        }).first();
+
+        if ($time.length === 0) return null;
+
+        const visibleTs = Math.floor(new Date($time.attr('datetime')).getTime() / 1000);
+        if (!Number.isFinite(visibleTs) || visibleTs === 0) return null;
+
+        let bestId = null;
+        let minDiff = Infinity;
+
+        items.forEach(item => {
+            const diff = Math.abs((item.taken_at_timestamp || 0) - visibleTs);
+            if (diff < minDiff) {
+                minDiff = diff;
+                bestId = item.id;
+            }
+        });
+
+        logger('[resolveStoryMediaIdByTimestamp]', 'best match:', bestId, 'diff(s):', minDiff);
+        return bestId;  // always return best match — better than any index heuristic
+    }
+
+    /**
      * onStory
      * @description Trigger user's story download event or button display event.
      *
@@ -2418,6 +2481,11 @@
                         mediaId = item.id;
                     }
                 });
+
+                // FIX: timestamp-based match before fragile index/CSS fallbacks
+                if (mediaId == null) {
+                    mediaId = resolveStoryMediaIdByTimestamp(stories);
+                }
 
                 if (mediaId == null) {
                     let $header = getStoryProgress(username);
@@ -2843,6 +2911,11 @@
                     }
                 });
 
+                // FIX: timestamp-based match before fragile index/CSS fallbacks
+                if (mediaId == null) {
+                    mediaId = resolveStoryMediaIdByTimestamp(stories);
+                }
+
                 if (mediaId == null) {
                     let $header = getStoryProgress(username);
 
@@ -2873,6 +2946,21 @@
 
                 if (mediaId == null) {
                     mediaId = location.pathname.split('/').filter(s => s.length > 0 && s.match(/^([0-9]{10,})$/)).at(-1);
+                }
+
+                if (USER_SETTING.CAPTURE_IMAGE_VIA_MEDIA_CACHE) {
+                    const cached = getImageFromCache(mediaId);
+                    if (cached) {
+                        logger("[Restore Cached onStoryThumbnail]", mediaId);
+                        saveFiles(cached, {
+                            username,
+                            sourceType: "stories",
+                            timestamp,
+                            filetype: 'jpg',
+                            shortcode: mediaId
+                        });
+                        return;
+                    }
                 }
 
                 let result = await getMediaInfo(mediaId);
@@ -3206,7 +3294,7 @@
      */
     function getUserHighSizeProfile(userId) {
         return new Promise((resolve, reject) => {
-            let getURL = `https://i.instagram.com/api/v1/users/${userId}/info/`;
+            let getURL = `https://www.instagram.com/api/v1/users/${userId}/info/`;
 
             GM_xmlhttpRequest({
                 method: "GET",
@@ -5530,7 +5618,13 @@
                 if (entry.initiatorType === 'img') {
                     const u = entry.name;
 
-                    if (!(u.includes('_e35') || u.includes('_e15') || u.includes('.webp?')) || u.match(/_[sp](\d+)x\1(?!\d)/)) return;
+                    if (!(u.includes('_e35') || u.includes('_e15') || u.includes('.webp?')) ||
+                        u.includes('_e35_s') || 
+                        u.match(/_[sp](\d+)x\1(?!\d)/)
+                    ) {
+                        return;
+                    }
+
                     const id = mediaIdFromURL(u);
                     if (id && !state.GL_imageCache[id]) putInCache(id, u);
                 }
@@ -5951,6 +6045,22 @@
             }
 
             let postPath = $(this).parent().children('a').attr('data-path') ?? $('#article-id').text();
+
+            if (USER_SETTING.CAPTURE_IMAGE_VIA_MEDIA_CACHE) {
+                const mediaId = $(this).parent().children('a').first().attr('media-id');
+                const cached = getImageFromCache(mediaId);
+                if (cached) {
+                    logger("[Restore Cached postThumbnail]", mediaId);
+                    saveFiles(cached, {
+                        username: $(this).parent().children('a').attr('data-username'),
+                        sourceType: 'thumbnail',
+                        timestamp,
+                        filetype: 'jpg',
+                        shortcode: postPath
+                    });
+                    return;
+                }
+            }
 
             saveFiles(
                 $(this).parent().children('a').find('img').first().attr('src'),
