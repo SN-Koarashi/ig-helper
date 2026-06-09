@@ -24,11 +24,17 @@ export async function createStoryListDOM(obj, type) {
     try {
         $('.IG_POPUP_DIG #post_info').text(`${type} ID: ${obj.data.reels_media[0].id}`);
         const selector = '.IG_POPUP_DIG .IG_POPUP_DIG_MAIN .IG_POPUP_DIG_BODY';
+        // OPTIMIZATION: cache target once
+        const $selector = $(selector);
 
-        obj.data.reels_media[0].items.forEach((item, idx) => {
+        // OPTIMIZATION: cache reels_media[0] reference
+        const reel = obj.data.reels_media[0];
+        const items = reel.items;
+
+        items.forEach((item, idx) => {
             let date = new Date().getTime();
             let timestamp = Math.floor(date / 1000);
-            let username = obj.data.reels_media[0]?.user?.username || obj.data.reels_media[0]?.owner?.username;
+            let username = reel?.user?.username || reel?.owner?.username;
 
             if (USER_SETTING.RENAME_PUBLISH_DATE) {
                 timestamp = item.taken_at_timestamp;
@@ -41,20 +47,21 @@ export async function createStoryListDOM(obj, type) {
             });
 
             if (item.is_video) {
-                $(selector).append(`<a media-id="${item.id}" datetime="${timestamp}" data-blob="true" data-needed="direct" data-name="${type}" data-type="mp4" data-username="${username}" data-path="${item.id}" data-globalIndex="${idx + 1}" href="javascript:;" data-href="${item.video_resources[0].src}"><img width="100" src="${item.display_resources[0].src}" /><br/>- <span data-ih-locale-title="VID">${_i18n("VID")}</span> ${idx} -</a>`);
+                $selector.append(`<a media-id="${item.id}" datetime="${timestamp}" data-blob="true" data-needed="direct" data-name="${type}" data-type="mp4" data-username="${username}" data-path="${item.id}" data-globalIndex="${idx + 1}" href="javascript:;" data-href="${item.video_resources[0].src}"><img width="100" src="${item.display_resources[0].src}" /><br/>- <span data-ih-locale-title="VID">${_i18n("VID")}</span> ${idx} -</a>`);
             }
             else {
-                $(selector).append(`<a media-id="${item.id}" datetime="${timestamp}" data-blob="true" data-needed="direct" data-name="${type}" data-type="jpg" data-username="${username}" data-path="${item.id}" data-globalIndex="${idx + 1}" href="javascript:;" data-href="${item.display_resources[0].src}"><img width="100" src="${item.display_resources[0].src}" /><br/>- <span data-ih-locale-title="IMG">${_i18n("IMG")}</span> ${idx} -</a>`);
+                $selector.append(`<a media-id="${item.id}" datetime="${timestamp}" data-blob="true" data-needed="direct" data-name="${type}" data-type="jpg" data-username="${username}" data-path="${item.id}" data-globalIndex="${idx + 1}" href="javascript:;" data-href="${item.display_resources[0].src}"><img width="100" src="${item.display_resources[0].src}" /><br/>- <span data-ih-locale-title="IMG">${_i18n("IMG")}</span> ${idx} -</a>`);
             }
         });
 
-        $('.IG_POPUP_DIG .IG_POPUP_DIG_MAIN .IG_POPUP_DIG_BODY a').each(function () {
-            $(this).wrap('<div></div>');
-            $(this).before('<label class="inner_box_wrapper"><input class="inner_box" type="checkbox"><span></span></label>');
-            $(this).after(`<div data-ih-locale-title="NEW_TAB" title="${_i18n("NEW_TAB")}" class="newTab">${SVG.NEW_TAB}</div>`);
+        $selector.find('a').each(function () {
+            const $a = $(this);
+            $a.wrap('<div></div>');
+            $a.before('<label class="inner_box_wrapper"><input class="inner_box" type="checkbox"><span></span></label>');
+            $a.after(`<div data-ih-locale-title="NEW_TAB" title="${_i18n("NEW_TAB")}" class="newTab">${SVG.NEW_TAB}</div>`);
 
-            if ($(this).attr('data-type') == 'mp4') {
-                $(this).after(`<div data-ih-locale-title="VIDEO_THUMBNAIL" title="${_i18n("VIDEO_THUMBNAIL")}" class="videoThumbnail">${SVG.THUMBNAIL}</div>`);
+            if ($a.data('type') == 'mp4') {
+                $a.after(`<div data-ih-locale-title="VIDEO_THUMBNAIL" title="${_i18n("VIDEO_THUMBNAIL")}" class="videoThumbnail">${SVG.THUMBNAIL}</div>`);
             }
         });
 
@@ -85,9 +92,12 @@ export async function onStoryAll() {
 
     if (USER_SETTING.DIRECT_DOWNLOAD_STORY) {
         let complete = 0;
-        setDownloadProgress(complete, stories.data.reels_media[0].items.length);
+        // OPTIMIZATION: cache items array — repeatedly accessed inside setTimeout closures
+        const items = stories.data.reels_media[0].items;
+        const totalItems = items.length;
+        setDownloadProgress(complete, totalItems);
 
-        stories.data.reels_media[0].items.forEach((item, idx) => {
+        items.forEach((item, idx) => {
             setTimeout(() => {
                 if (USER_SETTING.RENAME_PUBLISH_DATE) {
                     timestamp = item.taken_at_timestamp;
@@ -108,7 +118,7 @@ export async function onStoryAll() {
                             filetype: 'mp4',
                             shortcode: item.id
                         }).then(() => {
-                            setDownloadProgress(++complete, stories.data.reels_media[0].items.length);
+                            setDownloadProgress(++complete, totalItems);
                         });
                 }
                 else {
@@ -119,7 +129,7 @@ export async function onStoryAll() {
                         filetype: 'jpg',
                         shortcode: item.id
                     }).then(() => {
-                        setDownloadProgress(++complete, stories.data.reels_media[0].items.length);
+                        setDownloadProgress(++complete, totalItems);
                     });
                 }
             }, 100 * idx);
@@ -142,7 +152,7 @@ export async function onStoryAll() {
  * @param  {Object}  stories  - Full getStories() / getHighlightStories() response
  * @return {?String}          - Best-matching item id, or null if undetermined
  */
-function resolveStoryMediaIdByTimestamp(stories) {
+export function resolveStoryMediaIdByTimestamp(stories) {
     const items = stories?.data?.reels_media?.[0]?.items;
     if (!items || items.length === 0) return null;
 
@@ -152,10 +162,11 @@ function resolveStoryMediaIdByTimestamp(stories) {
     const $time = $(
         'body > div section:visible time[datetime]'
     ).filter(function () {
+        const $this = $(this);
         return (
-            $(this).is(':visible') &&
-            $(this).closest('a[href^="/stories/highlights/"]').length === 0 &&
-            $(this).closest('[role="button"]').length === 0
+            $this.is(':visible') &&
+            $this.closest('a[href^="/stories/highlights/"]').length === 0 &&
+            $this.closest('[role="button"]').length === 0
         );
     }).first();
 
@@ -203,27 +214,10 @@ export async function onStory(isDownload, isForce, isPreview) {
             let stories = await getStories(userId);
             let urlID = location.pathname.split('/').filter(s => s.length > 0 && s.match(/^([0-9]{10,})$/)).at(-1);
 
-            /*
-            let latest_reel_media = stories.data.reels_media[0].latest_reel_media;
-            let last_seen = stories.data.reels_media[0].seen;
-            logger(stories);
+            // OPTIMIZATION: cache items reference (used 4+ times)
+            const items = stories.data.reels_media[0].items;
 
-            if(urlID == null){
-                mediaId = stories.data.reels_media[0].items.filter(function(item, index){
-                    return item.taken_at_timestamp === last_seen && item.taken_at_timestamp !== latest_reel_media || last_seen === latest_reel_media && index === 0;
-                })?.at(0)?.id;
-                logger('nula', mediaId);
-            }
-            else{
-                stories.data.reels_media[0].items.forEach(item => {
-                    if(item.id == urlID){
-                        mediaId = item.id;
-                    }
-                });
-            }
-            */
-
-            stories.data.reels_media[0].items.forEach(item => {
+            items.forEach(item => {
                 if (item.id == urlID) {
                     mediaId = item.id;
                 }
@@ -239,7 +233,7 @@ export async function onStory(isDownload, isForce, isPreview) {
 
                 $header.each(function (index) {
                     if ($(this).children().length > 0) {
-                        mediaId = stories.data.reels_media[0].items[index].id;
+                        mediaId = items[index].id;
                     }
                 });
             }
@@ -247,9 +241,10 @@ export async function onStory(isDownload, isForce, isPreview) {
             if (mediaId == null) {
                 // appear in from profile page to story page
                 $('body > div section:visible div.x1ned7t2.x78zum5 > div').each(function (index) {
-                    if ($(this).hasClass('x1lix1fw')) {
-                        if ($(this).children().length > 0) {
-                            mediaId = stories.data.reels_media[0].items[index].id;
+                    const $this = $(this);
+                    if ($this.hasClass('x1lix1fw')) {
+                        if ($this.children().length > 0) {
+                            mediaId = items[index].id;
                         }
                     }
                 });
@@ -257,7 +252,7 @@ export async function onStory(isDownload, isForce, isPreview) {
                 // appear in from home page to story page
                 $('body > div section:visible ._ac0k > ._ac3r > div').each(function (index) {
                     if ($(this).children().hasClass('_ac3q')) {
-                        mediaId = stories.data.reels_media[0].items[index].id;
+                        mediaId = items[index].id;
                     }
                 });
             }
@@ -268,7 +263,7 @@ export async function onStory(isDownload, isForce, isPreview) {
 
             if (USER_SETTING.CAPTURE_IMAGE_VIA_MEDIA_CACHE) {
                 const cached = getImageFromCache(mediaId);
-                if (cached && !stories.data.reels_media[0].items.filter(item => item.id === mediaId).at(0).is_video) {
+                if (cached && !items.filter(item => item.id === mediaId).at(0).is_video) {
                     logger("[Restore Cached onStory]", mediaId);
                     if (isPreview) {
                         openNewTab(cached);
@@ -293,9 +288,11 @@ export async function onStory(isDownload, isForce, isPreview) {
             }
 
             if (result.status === 'ok') {
-                if (result.items[0].video_versions) {
+                // OPTIMIZATION: cache result.items[0]
+                const mediaItem = result.items[0];
+                if (mediaItem.video_versions) {
                     const handled = await tryHandleDashFromMediaItem({
-                        mediaItem: result.items[0],
+                        mediaItem: mediaItem,
                         username,
                         sourceType: "stories",
                         timestamp,
@@ -308,10 +305,10 @@ export async function onStory(isDownload, isForce, isPreview) {
                     }
 
                     if (isPreview) {
-                        openNewTab(result.items[0].video_versions[0].url);
+                        openNewTab(mediaItem.video_versions[0].url);
                     }
                     else {
-                        saveFiles(result.items[0].video_versions[0].url, {
+                        saveFiles(mediaItem.video_versions[0].url, {
                             username,
                             sourceType: "stories",
                             timestamp,
@@ -322,10 +319,10 @@ export async function onStory(isDownload, isForce, isPreview) {
                 }
                 else {
                     if (isPreview) {
-                        openNewTab(result.items[0].image_versions2.candidates[0].url);
+                        openNewTab(mediaItem.image_versions2.candidates[0].url);
                     }
                     else {
-                        saveFiles(result.items[0].image_versions2.candidates[0].url, {
+                        saveFiles(mediaItem.image_versions2.candidates[0].url, {
                             username,
                             sourceType: "stories",
                             timestamp,
@@ -379,8 +376,10 @@ export async function onStory(isDownload, isForce, isPreview) {
                 let userInfo = await getUserId(username);
                 let userId = userInfo.user.pk;
                 let stories = await getStories(userId);
+                // OPTIMIZATION: cache items
+                const items = stories.data.reels_media[0].items;
 
-                stories.data.reels_media[0].items.forEach(item => {
+                items.forEach(item => {
                     if (item.id == targetURL) {
                         videoURL = item.video_resources[0].src;
                         if (USER_SETTING.RENAME_PUBLISH_DATE) {
@@ -397,10 +396,10 @@ export async function onStory(isDownload, isForce, isPreview) {
 
                     $header.each(function (index) {
                         if ($(this).children().length > 0) {
-                            videoURL = stories.data.reels_media[0].items[index].video_resources[0].src;
+                            videoURL = items[index].video_resources[0].src;
                             if (USER_SETTING.RENAME_PUBLISH_DATE) {
-                                timestamp = stories.data.reels_media[0].items[index].taken_at_timestamp;
-                                mediaId = stories.data.reels_media[0].items[index].id;
+                                timestamp = items[index].taken_at_timestamp;
+                                mediaId = items[index].id;
                             }
                         }
                     });
@@ -409,12 +408,13 @@ export async function onStory(isDownload, isForce, isPreview) {
                     if (videoURL.length == 0) {
                         // appear in from profile page to story page
                         $('body > div section:visible div.x1ned7t2.x78zum5 > div').each(function (index) {
-                            if ($(this).hasClass('x1lix1fw')) {
-                                if ($(this).children().length > 0) {
-                                    videoURL = stories.data.reels_media[0].items[index].video_resources[0].src;
+                            const $this = $(this);
+                            if ($this.hasClass('x1lix1fw')) {
+                                if ($this.children().length > 0) {
+                                    videoURL = items[index].video_resources[0].src;
                                     if (USER_SETTING.RENAME_PUBLISH_DATE) {
-                                        timestamp = stories.data.reels_media[0].items[index].taken_at_timestamp;
-                                        mediaId = stories.data.reels_media[0].items[index].id;
+                                        timestamp = items[index].taken_at_timestamp;
+                                        mediaId = items[index].id;
                                     }
                                 }
                             }
@@ -423,10 +423,10 @@ export async function onStory(isDownload, isForce, isPreview) {
                         // appear in from home page to story page
                         $('body > div section:visible ._ac0k > ._ac3r > div').each(function (index) {
                             if ($(this).children().hasClass('_ac3q')) {
-                                videoURL = stories.data.reels_media[0].items[index].video_resources[0].src;
+                                videoURL = items[index].video_resources[0].src;
                                 if (USER_SETTING.RENAME_PUBLISH_DATE) {
-                                    timestamp = stories.data.reels_media[0].items[index].taken_at_timestamp;
-                                    mediaId = stories.data.reels_media[0].items[index].id;
+                                    timestamp = items[index].taken_at_timestamp;
+                                    mediaId = items[index].id;
                                 }
                             }
                         });
@@ -458,7 +458,8 @@ export async function onStory(isDownload, isForce, isPreview) {
             // Download stories if it is image
             let srcset = $('body > div section:visible img[referrerpolicy][class], body > div section:visible img[crossorigin][class]:not([alt])').attr('srcset')?.split(',')[0]?.split(' ')[0];
             let link = (srcset) ? srcset : $('body > div section:visible img[referrerpolicy][class], body > div section:visible img[crossorigin][class]:not([alt])').filter(function () {
-                return $(this).parents('a').length === 0 && $(this).width() === $(this).parent().width();
+                const $this = $(this);
+                return $this.parents('a').length === 0 && $this.width() === $this.parent().width();
             }).attr('src');
 
             if (!link) {
@@ -550,32 +551,36 @@ export async function onStory(isDownload, isForce, isPreview) {
                 let nowSize = 0;
 
                 $$element.each(function () {
-                    if ($(this).width() > nowSize) {
-                        nowSize = $(this).width();
-                        $element = $(this).children('div').first();
+                    const $this = $(this);
+                    const width = $this.width();
+                    if (width > nowSize) {
+                        nowSize = width;
+                        $element = $this.children('div').first();
                     }
                 });
             }
 
 
             if ($element != null) {
-                $element.first().css('position', 'relative');
-                $element.first().append(`<div data-ih-locale-title="DW" title="${_i18n("DW")}" class="IG_DWSTORY">${SVG.DOWNLOAD}</div>`);
-                $element.first().append(`<div data-ih-locale-title="NEW_TAB" title="${_i18n("NEW_TAB")}" class="IG_DWNEWTAB">${SVG.NEW_TAB}</div>`);
+                // OPTIMIZATION: cache .first() once
+                const $firstEl = $element.first();
+                $firstEl.css('position', 'relative');
+                $firstEl.append(`<div data-ih-locale-title="DW" title="${_i18n("DW")}" class="IG_DWSTORY">${SVG.DOWNLOAD}</div>`);
+                $firstEl.append(`<div data-ih-locale-title="NEW_TAB" title="${_i18n("NEW_TAB")}" class="IG_DWNEWTAB">${SVG.NEW_TAB}</div>`);
 
                 let $header = getStoryProgress(username);
                 if ($header.length > 1) {
-                    $element.first().append(`<div data-ih-locale-title="DW_ALL" title="${_i18n("DW_ALL")}" class="IG_DWSTORY_ALL">${SVG.DOWNLOAD_ALL}</div>`);
+                    $firstEl.append(`<div data-ih-locale-title="DW_ALL" title="${_i18n("DW_ALL")}" class="IG_DWSTORY_ALL">${SVG.DOWNLOAD_ALL}</div>`);
                 }
 
-                setStoryProgressIndexText($element.first(), $header, 'IG_DWSTORY_POSITION');
+                setStoryProgressIndexText($firstEl, $header, 'IG_DWSTORY_POSITION');
 
                 // Modify video volume
                 //if(USER_SETTING.MODIFY_VIDEO_VOLUME){
                 //    $element.find('video').each(function(){
                 //        $(this).on('play playing', function(){
                 //            if(!$(this).data('modify')){
-                //                $(this).attr('data-modify', true);
+                //                $(this).data('modify', true);
                 //                this.volume = VIDEO_VOLUME;
                 //                logger('(story) Added video event listener #modify');
                 //            }
@@ -586,14 +591,15 @@ export async function onStory(isDownload, isForce, isPreview) {
                 // Make sure to first remove thumbnail button if still exists and story is a picture
                 $element.find('img[referrerpolicy]').each(function () {
                     $(this).on('load', function () {
-                        if (!$(this).data('remove-thumbnail')) {
+                        const $img = $(this);
+                        if (!$img.data('remove-thumbnail')) {
                             if ($element.find('.IG_DWSTORY_THUMBNAIL').length === 0) {
-                                $(this).attr('data-remove-thumbnail', true);
+                                $img.data('remove-thumbnail', true);
                                 $('.IG_DWSTORY_THUMBNAIL').remove();
                                 logger('(story) Manually removing thumbnail button');
                             }
                             else {
-                                $(this).attr('data-remove-thumbnail', true);
+                                $img.data('remove-thumbnail', true);
                                 logger('(story) Thumbnail button is not present for this picture');
                             }
                         }
@@ -605,12 +611,12 @@ export async function onStory(isDownload, isForce, isPreview) {
                 //    $(this).on('timeupdate',function(){
                 //        if(!$(this).data('modify-thumbnail')){
                 //            if($element.find('.IG_DWSTORY_THUMBNAIL').length === 0){
-                //                $(this).attr('data-modify-thumbnail', true);
+                //                $(this).data('modify-thumbnail', true);
                 //                onStoryThumbnail(false);
                 //                logger('(story) Manually inserting thumbnail button');
                 //            }
                 //            else{
-                //                $(this).attr('data-modify-thumbnail', true);
+                //                $(this).data('modify-thumbnail', true);
                 //                logger('(story) Thumbnail button already inserted');
                 //            }
                 //        }
@@ -651,8 +657,10 @@ export async function onStoryThumbnail(isDownload, isForce) {
             let userId = userInfo.user.pk;
             let stories = await getStories(userId);
             let urlID = location.pathname.split('/').filter(s => s.length > 0 && s.match(/^([0-9]{10,})$/)).at(-1);
+            // OPTIMIZATION: cache items reference
+            const items = stories.data.reels_media[0].items;
 
-            stories.data.reels_media[0].items.forEach(item => {
+            items.forEach(item => {
                 if (item.id == urlID) {
                     mediaId = item.id;
                 }
@@ -668,7 +676,7 @@ export async function onStoryThumbnail(isDownload, isForce) {
 
                 $header.each(function (index) {
                     if ($(this).children().length > 0) {
-                        mediaId = stories.data.reels_media[0].items[index].id;
+                        mediaId = items[index].id;
                     }
                 });
             }
@@ -676,9 +684,10 @@ export async function onStoryThumbnail(isDownload, isForce) {
             if (mediaId == null) {
                 // appear in from profile page to story page
                 $('body > div section:visible div.x1ned7t2.x78zum5 > div').each(function (index) {
-                    if ($(this).hasClass('x1lix1fw')) {
-                        if ($(this).children().length > 0) {
-                            mediaId = stories.data.reels_media[0].items[index].id;
+                    const $this = $(this);
+                    if ($this.hasClass('x1lix1fw')) {
+                        if ($this.children().length > 0) {
+                            mediaId = items[index].id;
                         }
                     }
                 });
@@ -686,7 +695,7 @@ export async function onStoryThumbnail(isDownload, isForce) {
                 // appear in from home page to story page
                 $('body > div section:visible ._ac0k > ._ac3r > div').each(function (index) {
                     if ($(this).children().hasClass('_ac3q')) {
-                        mediaId = stories.data.reels_media[0].items[index].id;
+                        mediaId = items[index].id;
                     }
                 });
             }
@@ -694,7 +703,7 @@ export async function onStoryThumbnail(isDownload, isForce) {
             if (mediaId == null) {
                 mediaId = location.pathname.split('/').filter(s => s.length > 0 && s.match(/^([0-9]{10,})$/)).at(-1);
             }
-			
+
             if (USER_SETTING.CAPTURE_IMAGE_VIA_MEDIA_CACHE) {
                 const cached = getImageFromCache(mediaId);
                 if (cached) {
@@ -764,8 +773,10 @@ export async function onStoryThumbnail(isDownload, isForce) {
             let userInfo = await getUserId(username);
             let userId = userInfo.user.pk;
             let stories = await getStories(userId);
+            // OPTIMIZATION: cache items
+            const items = stories.data.reels_media[0].items;
 
-            stories.data.reels_media[0].items.forEach(item => {
+            items.forEach(item => {
                 if (item.id == targetURL) {
                     videoThumbnailURL = item.display_url;
                     if (USER_SETTING.RENAME_PUBLISH_DATE) {
@@ -781,10 +792,10 @@ export async function onStoryThumbnail(isDownload, isForce) {
 
                 $header.each(function (index) {
                     if ($(this).children().length > 0) {
-                        videoThumbnailURL = stories.data.reels_media[0].items[index].display_url;
+                        videoThumbnailURL = items[index].display_url;
                         if (USER_SETTING.RENAME_PUBLISH_DATE) {
-                            timestamp = stories.data.reels_media[0].items[index].taken_at_timestamp;
-                            mediaId = stories.data.reels_media[0].items[index].id;
+                            timestamp = items[index].taken_at_timestamp;
+                            mediaId = items[index].id;
                         }
                     }
                 });
@@ -792,12 +803,13 @@ export async function onStoryThumbnail(isDownload, isForce) {
                 if (videoThumbnailURL.length == 0) {
                     // appear in from profile page to story page
                     $('body > div section:visible div.x1ned7t2.x78zum5 > div').each(function (index) {
-                        if ($(this).hasClass('x1lix1fw')) {
-                            if ($(this).children().length > 0) {
-                                videoThumbnailURL = stories.data.reels_media[0].items[index].display_url;
+                        const $this = $(this);
+                        if ($this.hasClass('x1lix1fw')) {
+                            if ($this.children().length > 0) {
+                                videoThumbnailURL = items[index].display_url;
                                 if (USER_SETTING.RENAME_PUBLISH_DATE) {
-                                    timestamp = stories.data.reels_media[0].items[index].taken_at_timestamp;
-                                    mediaId = stories.data.reels_media[0].items[index].id;
+                                    timestamp = items[index].taken_at_timestamp;
+                                    mediaId = items[index].id;
                                 }
                             }
                         }
@@ -806,10 +818,10 @@ export async function onStoryThumbnail(isDownload, isForce) {
                     // appear in from home page to story page
                     $('body > div section:visible ._ac0k > ._ac3r > div').each(function (index) {
                         if ($(this).children().hasClass('_ac3q')) {
-                            videoThumbnailURL = stories.data.reels_media[0].items[index].display_url;
+                            videoThumbnailURL = items[index].display_url;
                             if (USER_SETTING.RENAME_PUBLISH_DATE) {
-                                timestamp = stories.data.reels_media[0].items[index].taken_at_timestamp;
-                                mediaId = stories.data.reels_media[0].items[index].id;
+                                timestamp = items[index].taken_at_timestamp;
+                                mediaId = items[index].id;
                             }
                         }
                     });
@@ -828,7 +840,7 @@ export async function onStoryThumbnail(isDownload, isForce) {
         updateLoadingBar(false);
     }
     else {
-        if ($('body > div div.IG_DWSTORY').parent().find('video[class]').length) {
+        if ($('body > div div.IG_DWSTORY').parent().find('video').length) {
             // Add the stories download button
             let $element = null;
             // Default detecter (section layout mode)
@@ -857,17 +869,20 @@ export async function onStoryThumbnail(isDownload, isForce) {
                 let nowSize = 0;
 
                 $$element.each(function () {
-                    if ($(this).width() > nowSize) {
-                        nowSize = $(this).width();
-                        $element = $(this).children('div').first();
+                    const $this = $(this);
+                    const width = $this.width();
+                    if (width > nowSize) {
+                        nowSize = width;
+                        $element = $this.children('div').first();
                     }
                 });
             }
 
 
             if ($element != null) {
-                $element.first().css('position', 'relative');
-                $element.first().append(`<div data-ih-locale-title="VIDEO_THUMBNAIL" title="${_i18n("VIDEO_THUMBNAIL")}" class="IG_DWSTORY_THUMBNAIL">${SVG.THUMBNAIL}</div>`);
+                const $firstEl = $element.first();
+                $firstEl.css('position', 'relative');
+                $firstEl.append(`<div data-ih-locale-title="VIDEO_THUMBNAIL" title="${_i18n("VIDEO_THUMBNAIL")}" class="IG_DWSTORY_THUMBNAIL">${SVG.THUMBNAIL}</div>`);
             }
 
         }

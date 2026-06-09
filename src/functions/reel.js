@@ -102,7 +102,6 @@ export async function onReels(isDownload, isVideo, isPreview) {
             updateLoadingBar(false);
         }
         else {
-            //$('.IG_REELS_THUMBNAIL, .IG_REELS').remove();
             const svgClose = 'svg > polyline[points^="20.643 3.357 12 12 3.353 20.647"] ~ line';
             var timer = setInterval(() => {
                 const hasTiktokStyleLayout = $(svgClose).length > 0;
@@ -111,29 +110,30 @@ export async function onReels(isDownload, isVideo, isPreview) {
 
                     if (USER_SETTING.SCROLL_BUTTON) {
                         $('#scrollWrapper').remove();
-                        $('section > main[role="main"]').append('<section id="scrollWrapper"></section>');
-                        $('section > main[role="main"] > #scrollWrapper').append('<div class="button-up"><div></div></div>');
-                        $('section > main[role="main"] > #scrollWrapper').append('<div class="button-down"><div></div></div>');
+                        // OPTIMIZATION: cache reels main element (used 5 times below)
+                        const $reelsMain = $('section > main[role="main"]');
+                        $reelsMain.append('<section id="scrollWrapper"></section>');
+                        const $scrollWrapper = $reelsMain.find('> #scrollWrapper');
+                        $scrollWrapper.append('<div class="button-up"><div></div></div>');
+                        $scrollWrapper.append('<div class="button-down"><div></div></div>');
 
-                        $('section > main[role="main"] > #scrollWrapper > .button-up').on('click', function () {
-                            $('section > main[role="main"] > div')[0].scrollBy({ top: -30, behavior: "smooth" });
+                        $scrollWrapper.find('> .button-up').on('click', function () {
+                            $reelsMain.find('> div')[0].scrollBy({ top: -30, behavior: "smooth" });
                         });
-                        $('section > main[role="main"] > #scrollWrapper > .button-down').on('click', function () {
-                            $('section > main[role="main"] > div')[0].scrollBy({ top: 30, behavior: "smooth" });
+                        $scrollWrapper.find('> .button-down').on('click', function () {
+                            $reelsMain.find('> div')[0].scrollBy({ top: 30, behavior: "smooth" });
                         });
                     }
 
-                    // reels scroll has [tabindex] but header not.
-                    // ? Old selector: section > main[role="main"] > div[tabindex], section > main[role="main"] > div[class]
-                    // ! Co-author: sn-o-w
                     $('div[aria-busy][tabindex]').children('div').each(function () {
+                        const $this = $(this);
                         if (
-                            $(this).children().length > 0 &&
-                            $(this).width() > window.innerWidth * 0.8 &&
-                            $(this).height() > window.innerHeight * 0.8 &&
-                            $(this).find('video').length > 0
+                            $this.children().length > 0 &&
+                            $this.width() > window.innerWidth * 0.8 &&
+                            $this.height() > window.innerHeight * 0.8 &&
+                            $this.find('video').length > 0
                         ) {
-                            appendReelsButton($(this));
+                            appendReelsButton($this);
                         }
                     });
                 }
@@ -146,21 +146,26 @@ export async function onReels(isDownload, isVideo, isPreview) {
 }
 
 function appendReelsButton($main) {
-    if (!$main.children().find('.IG_REELS').length) {
-        $main.children().css('position', 'relative');
+    // OPTIMIZATION: cache $main.children() and $main.find('video') usage
+    const $mainChildren = $main.children();
+    if (!$mainChildren.find('.IG_REELS').length) {
+        $mainChildren.css('position', 'relative');
 
-        $main.children().append(`<div data-ih-locale-title="DW" title="${_i18n("DW")}" class="IG_REELS">${SVG.DOWNLOAD}</div>`);
-        $main.children().append(`<div data-ih-locale-title="NEW_TAB" title="${_i18n("NEW_TAB")}" class="IG_REELS_NEWTAB">${SVG.NEW_TAB}</div>`);
-        $main.children().append(`<div data-ih-locale-title="VIDEO_THUMBNAIL" title="${_i18n("VIDEO_THUMBNAIL")}" class="IG_REELS_THUMBNAIL">${SVG.THUMBNAIL}</div>`);
+        $mainChildren.append(`<div data-ih-locale-title="DW" title="${_i18n("DW")}" class="IG_REELS">${SVG.DOWNLOAD}</div>`);
+        $mainChildren.append(`<div data-ih-locale-title="NEW_TAB" title="${_i18n("NEW_TAB")}" class="IG_REELS_NEWTAB">${SVG.NEW_TAB}</div>`);
+        $mainChildren.append(`<div data-ih-locale-title="VIDEO_THUMBNAIL" title="${_i18n("VIDEO_THUMBNAIL")}" class="IG_REELS_THUMBNAIL">${SVG.THUMBNAIL}</div>`);
 
-        $main.find('video').each(function () {
+        const $videos = $main.find('video');
+
+        $videos.each(function () {
             $(this).off('fullscreenchange.IG_videoControl').on('fullscreenchange.IG_videoControl', function () {
-                if ($(this).attr('style').includes('object-fit')) {
+                const $vid = $(this);
+                if ($vid.attr('style').includes('object-fit')) {
                     if (document.fullscreenElement == this) {
-                        $(this).css('object-fit', 'contain');
+                        $vid.css('object-fit', 'contain');
                     }
                     else {
-                        $(this).css('object-fit', 'cover');
+                        $vid.css('object-fit', 'cover');
                     }
                 }
             });
@@ -168,18 +173,19 @@ function appendReelsButton($main) {
 
         // Disable video autoplay
         if (USER_SETTING.DISABLE_VIDEO_LOOPING) {
-            $main.find('video').each(function () {
+            $videos.each(function () {
                 $(this).on('ended', function () {
-                    if (!$(this).data('loop')) {
-                        let $element_play_button = $(this).next().find('div[role="presentation"] > div svg > path[d^="M5.888"]').parents('button[role="button"], div[role="button"]');
+                    const $this = $(this);
+                    if (!$this.data('loop')) {
+                        let $element_play_button = $this.next().find('div[role="presentation"] > div svg > path[d^="M5.888"]').parents('button[role="button"], div[role="button"]');
                         if ($element_play_button.length > 0) {
-                            $(this).attr('data-loop', true);
+                            $this.data('loop', true);
                             $element_play_button.trigger("click");
                             logger('Adding video event listener #loop, then paused click()');
                         }
                         else {
-                            $(this).attr('data-loop', true);
-                            $(this).parent().find('.xpgaw4o').removeAttr('style');
+                            $this.data('loop', true);
+                            $this.parent().find('.xpgaw4o').removeAttr('style');
                             this.pause();
                             logger('Adding video event listener #loop, then paused pause()');
                         }
@@ -198,9 +204,10 @@ function appendReelsButton($main) {
                     $overlayElement = $(e.target).parents('div[aria-label][data-visualcompletion="ignore"]').first();
                 }
 
-                $main.find('video').each(function () {
-                    $(this).css('z-index', '2');
-                    $(this).attr('controls', true);
+                $videos.each(function () {
+                    const $v = $(this);
+                    $v.css('z-index', '2');
+                    $v.attr('controls', true);
                     state.GL_weakCache.overlay.set(this, $overlayElement);
                 });
 
@@ -209,37 +216,37 @@ function appendReelsButton($main) {
             };
 
             $main.off('contextmenu.IG_videoControl').on('contextmenu.IG_videoControl', handleSwitchController);
-            $main.find('video').each(function () {
-                if (!$(this).data('controls')) {
-                    let $video = $(this);
+            $videos.each(function () {
+                const $video = $(this);
+                if (!$video.data('controls')) {
 
                     logger('(reel) Added video html5 contorller #modify');
 
                     if (USER_SETTING.MODIFY_VIDEO_VOLUME) {
                         this.volume = state.videoVolume;
 
-                        $(this).on('loadstart', function () {
+                        $video.on('loadstart', function () {
                             this.volume = state.videoVolume;
                         });
                     }
 
-                    let $mute_button_wrapper = $(this).parent().find('video + div > div');
+                    let $mute_button_wrapper = $video.parent().find('video + div > div');
                     $mute_button_wrapper = $mute_button_wrapper.add($main);
 
                     // eslint-disable-next-line no-unused-vars
                     let $element_mute_button = $mute_button_wrapper.find('button[type="button"], div[role="button"]').filter(function (idx) {
-                        // This is mute/unmute's icon
-                        return $(this).width() <= 64 && $(this).height() <= 64 && $(this).find('svg > path[d^="M16.636 7.028a1.5"], svg > path[d^="M1.5 13.3c-.8"]').length > 0;
+                        const $b = $(this);
+                        return $b.width() <= 64 && $b.height() <= 64 && $b.find('svg > path[d^="M16.636 7.028a1.5"], svg > path[d^="M1.5 13.3c-.8"]').length > 0;
                     });
 
                     state.GL_weakCache.mutedButton.set(this, $element_mute_button);
 
-                    let $targets = $(this).parent().find('video + div div[role="button"]').filter(function () {
-                        return $(this).parent('div[role="presentation"]').length > 0 && $(this).css('cursor') === 'pointer' && $(this).attr('style') != null;
+                    let $targets = $video.parent().find('video + div div[role="button"]').filter(function () {
+                        const $t = $(this);
+                        return $t.parent('div[role="presentation"]').length > 0 && $t.css('cursor') === 'pointer' && $t.attr('style') != null;
                     }).first();
 
-                    // Restore layout to show details interface
-                    $(this).on('contextmenu', function (e) {
+                    $video.on('contextmenu', function (e) {
                         e.preventDefault();
                         e.stopPropagation();
 
@@ -249,13 +256,12 @@ function appendReelsButton($main) {
                         state.GL_weakCache.overlay.get(this)?.css('z-index', '1');
                     });
 
-                    // Hide layout to show controller
                     $targets.off('contextmenu.IG_videoControl').on('contextmenu.IG_videoControl', handleSwitchController);
 
-                    $(this).on('volumechange', function () {
+                    $video.on('volumechange', function () {
                         let video = this;
                         let $element_mute_button = state.GL_weakCache.mutedButton.get(this) || {};
-                        let is_element_muted = $element_mute_button.find('svg > path[d^="M16.636"]').length === 0;
+                        let is_element_muted = $element_mute_button.find && $element_mute_button.find('svg > path[d^="M16.636"]').length === 0;
 
                         if (this.muted != is_element_muted) {
                             this.volume = state.videoVolume;
@@ -272,23 +278,23 @@ function appendReelsButton($main) {
                             }
                         }
 
-                        if ($(this).attr('data-completed')) {
+                        const $v = $(this);
+                        if ($v.data('completed')) {
                             state.videoVolume = this.volume;
                             GM_setValue('G_VIDEO_VOLUME', this.volume);
                         }
 
                         if (this.volume == state.videoVolume) {
-                            $(this).attr('data-completed', true);
+                            $v.data('completed', true);
                         }
                     });
 
-                    $(this).css('position', 'relative');
-                    $(this).attr('data-controls', true);
+                    $video.css('position', 'relative');
+                    $video.data('controls', true);
                 }
             });
         }
 
-        var $videos = $main.find('video');
         var $buttonParent = $main.find('div[role="presentation"] > div[role="button"] > div').first();
         toggleVolumeSilder($videos, $buttonParent, 'reel');
     }

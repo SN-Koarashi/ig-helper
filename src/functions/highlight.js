@@ -45,9 +45,13 @@ export async function onHighlightsStoryAll() {
     if (USER_SETTING.DIRECT_DOWNLOAD_STORY) {
 
         let complete = 0;
-        setDownloadProgress(complete, highStories.data.reels_media[0].items.length);
+        // OPTIMIZATION: Cache items array — accessed inside per-item setTimeout closures,
+        // avoids repeated .reels_media[0].items lookups (was 3 lookups per iteration).
+        const items = highStories.data.reels_media[0].items;
+        const totalItems = items.length;
+        setDownloadProgress(complete, totalItems);
 
-        highStories.data.reels_media[0].items.forEach((item, idx) => {
+        items.forEach((item, idx) => {
             setTimeout(() => {
                 if (USER_SETTING.RENAME_PUBLISH_DATE) {
                     timestamp = item.taken_at_timestamp;
@@ -73,7 +77,7 @@ export async function onHighlightsStoryAll() {
                                     isPreview: false,
                                 });
                                 if (handled) {
-                                    setDownloadProgress(++complete, highStories.data.reels_media[0].items.length);
+                                    setDownloadProgress(++complete, totalItems);
                                     return;
                                 }
                             } else if (USER_SETTING.FALLBACK_TO_BLOB_FETCH_IF_MEDIA_API_THROTTLED) {
@@ -91,7 +95,7 @@ export async function onHighlightsStoryAll() {
                                 shortcode: item.id
                             }
                         );
-                        setDownloadProgress(++complete, highStories.data.reels_media[0].items.length);
+                        setDownloadProgress(++complete, totalItems);
                     })();
                 }
                 else {
@@ -103,7 +107,7 @@ export async function onHighlightsStoryAll() {
                             filetype: 'jpg',
                             shortcode: item.id
                         }).then(() => {
-                            setDownloadProgress(++complete, highStories.data.reels_media[0].items.length);
+                            setDownloadProgress(++complete, totalItems);
                         });
                 }
             }, 100 * idx);
@@ -140,21 +144,23 @@ export async function onHighlightsStory(isDownload, isPreview) {
         if (state.GL_dataCache.highlights[highlightId]) {
             logger('Fetch from memory cache:', highlightId);
 
-            let totIndex = state.GL_dataCache.highlights[highlightId].data.reels_media[0].items.length;
+            // OPTIMIZATION: cache items array — avoids 4 repeated property lookups
+            const items = state.GL_dataCache.highlights[highlightId].data.reels_media[0].items;
+            let totIndex = items.length;
             username = state.GL_dataCache.highlights[highlightId].data.reels_media[0].owner.username;
-            target = state.GL_dataCache.highlights[highlightId].data.reels_media[0].items[totIndex - nowIndex];
+            target = items[totIndex - nowIndex];
         }
         else {
             let highStories = await getHighlightStories(highlightId);
-            let totIndex = highStories.data.reels_media[0].items.length;
+            const items = highStories.data.reels_media[0].items;
+            let totIndex = items.length;
             username = highStories.data.reels_media[0].owner.username;
-            target = highStories.data.reels_media[0].items[totIndex - nowIndex];
+            target = items[totIndex - nowIndex];
 
             state.GL_dataCache.highlights[highlightId] = highStories;
         }
 
         logger('onHighlightsStory', highlightId, state.GL_dataCache.highlights[highlightId]);
-
 
         if (USER_SETTING.RENAME_PUBLISH_DATE) {
             timestamp = target.taken_at_timestamp;
@@ -184,42 +190,44 @@ export async function onHighlightsStory(isDownload, isPreview) {
             let result = await getMediaInfo(target.id);
 
             if (result.status === 'ok') {
-                if (result.items[0].video_versions) {
+                // OPTIMIZATION: cache first media item — accessed 5+ times below
+                const mediaItem = result.items[0];
+                if (mediaItem.video_versions) {
                     const handled = await tryHandleDashFromMediaItem({
-                        mediaItem: result.items[0],
+                        mediaItem: mediaItem,
                         username,
                         sourceType: "highlights",
                         timestamp,
-                        shortcode: result.items[0].id,
+                        shortcode: mediaItem.id,
                         isPreview,
                     });
                     if (handled) return;
 
                     if (isPreview) {
-                        openNewTab(result.items[0].video_versions[0].url);
+                        openNewTab(mediaItem.video_versions[0].url);
                     }
                     else {
-                        saveFiles(result.items[0].video_versions[0].url,
+                        saveFiles(mediaItem.video_versions[0].url,
                             {
                                 username,
                                 sourceType: "highlights",
                                 timestamp,
                                 filetype: 'mp4',
-                                shortcode: result.items[0].id
+                                shortcode: mediaItem.id
                             });
                     }
                 }
                 else {
                     if (isPreview) {
-                        openNewTab(result.items[0].image_versions2.candidates[0].url);
+                        openNewTab(mediaItem.image_versions2.candidates[0].url);
                     }
                     else {
-                        saveFiles(result.items[0].image_versions2.candidates[0].url, {
+                        saveFiles(mediaItem.image_versions2.candidates[0].url, {
                             username,
                             sourceType: "highlights",
                             timestamp,
                             filetype: 'jpg',
-                            shortcode: result.items[0].id
+                            shortcode: mediaItem.id
                         });
                     }
                 }
@@ -293,9 +301,12 @@ export async function onHighlightsStory(isDownload, isPreview) {
                 let nowSize = 0;
 
                 $$element.each(function () {
-                    if ($(this).width() > nowSize) {
-                        nowSize = $(this).width();
-                        $element = $(this).children('div').first();
+                    // OPTIMIZATION: cache $(this) — was wrapped 3 times per iteration
+                    const $this = $(this);
+                    const width = $this.width();
+                    if (width > nowSize) {
+                        nowSize = width;
+                        $element = $this.children('div').first();
                     }
                 });
             }
@@ -321,7 +332,7 @@ export async function onHighlightsStory(isDownload, isPreview) {
                 //    $element.find('video').each(function(){
                 //        $(this).on('play playing', function(){
                 //            if(!$(this).data('modify')){
-                //                $(this).attr('data-modify', true);
+                //                $(this).data('modify', true);
                 //                this.volume = VIDEO_VOLUME;
                 //                logger('(highlight) Added video event listener #modify');
                 //            }
@@ -332,14 +343,16 @@ export async function onHighlightsStory(isDownload, isPreview) {
                 // Make sure to first remove thumbnail button if still exists and highlight is a picture
                 $element.find('img[referrerpolicy]').each(function () {
                     $(this).on('load', function () {
-                        if (!$(this).data('remove-thumbnail')) {
+                        // OPTIMIZATION: cache $(this) (called 4 times in this handler)
+                        const $img = $(this);
+                        if (!$img.data('remove-thumbnail')) {
                             if ($element.find('.IG_DWHISTORY_THUMBNAIL').length === 0) {
-                                $(this).attr('data-remove-thumbnail', true);
+                                $img.data('remove-thumbnail', true);
                                 $('.IG_DWHISTORY_THUMBNAIL').remove();
                                 logger('(highlight) Manually removing thumbnail button');
                             }
                             else {
-                                $(this).attr('data-remove-thumbnail', true);
+                                $img.data('remove-thumbnail', true);
                                 logger('(highlight) Thumbnail button is not present for this picture');
                             }
                         }
@@ -351,12 +364,12 @@ export async function onHighlightsStory(isDownload, isPreview) {
                 //    $(this).on('timeupdate',function(){
                 //        if(!$(this).data('modify-thumbnail')){
                 //            if($element.find('.IG_DWHISTORY_THUMBNAIL').length === 0){
-                //                $(this).attr('data-modify-thumbnail', true);
+                //                $(this).data('modify-thumbnail', true);
                 //                onHighlightsStoryThumbnail(false);
                 //                logger('(highlight) Manually inserting thumbnail button');
                 //            }
                 //            else{
-                //                $(this).attr('data-modify-thumbnail', true);
+                //                $(this).data('modify-thumbnail', true);
                 //                logger('(highlight) Thumbnail button already inserted');
                 //            }
                 //        }
@@ -390,15 +403,17 @@ export async function onHighlightsStoryThumbnail(isDownload) {
         if (state.GL_dataCache.highlights[highlightId]) {
             logger('Fetch from memory cache:', highlightId);
 
-            let totIndex = state.GL_dataCache.highlights[highlightId].data.reels_media[0].items.length;
+            const items = state.GL_dataCache.highlights[highlightId].data.reels_media[0].items;
+            let totIndex = items.length;
             username = state.GL_dataCache.highlights[highlightId].data.reels_media[0].owner.username;
-            target = state.GL_dataCache.highlights[highlightId].data.reels_media[0].items[totIndex - nowIndex];
+            target = items[totIndex - nowIndex];
         }
         else {
             let highStories = await getHighlightStories(highlightId);
-            let totIndex = highStories.data.reels_media[0].items.length;
+            const items = highStories.data.reels_media[0].items;
+            let totIndex = items.length;
             username = highStories.data.reels_media[0].owner.username;
-            target = highStories.data.reels_media[0].items[totIndex - nowIndex];
+            target = items[totIndex - nowIndex];
 
             state.GL_dataCache.highlights[highlightId] = highStories;
         }
@@ -406,7 +421,7 @@ export async function onHighlightsStoryThumbnail(isDownload) {
         if (USER_SETTING.RENAME_PUBLISH_DATE) {
             timestamp = target.taken_at_timestamp;
         }
-		
+
         if (USER_SETTING.CAPTURE_IMAGE_VIA_MEDIA_CACHE) {
             const cached = getImageFromCache(target.id);
             if (cached) {
@@ -484,9 +499,11 @@ export async function onHighlightsStoryThumbnail(isDownload) {
                     let nowSize = 0;
 
                     $$element.each(function () {
-                        if ($(this).width() > nowSize) {
-                            nowSize = $(this).width();
-                            $element = $(this).children('div').first();
+                        const $this = $(this);
+                        const width = $this.width();
+                        if (width > nowSize) {
+                            nowSize = width;
+                            $element = $this.children('div').first();
                         }
                     });
                 }

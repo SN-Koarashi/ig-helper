@@ -1,9 +1,9 @@
-import { state, USER_SETTING } from "./settings";
+import { state, USER_SETTING, SVG, resourceCountSelector, $body } from "./settings";
 import {
     reloadScript,
     triggerLinkElement, openNewTab, saveFiles, logger, toggleVolumeSilder, updatePopupSelectionSummary,
     replaceSameOriginHost, setTimeElementDateAndLocaleTime, getHighlightCurrentTimeElement,
-    triggerReactClickHandler
+    triggerReactClickHandler, updateLoadingBar
 } from "./utils/general";
 import { onStory, onStoryAll, onStoryThumbnail } from "./functions/story";
 import { onProfileAvatar } from "./functions/profile";
@@ -11,8 +11,9 @@ import { onHighlightsStory, onHighlightsStoryAll, onHighlightsStoryThumbnail } f
 import { onReels } from "./functions/reel";
 import { _i18n, getTranslationText, repaintingTranslations } from "./utils/i18n";
 import { getImageFromCache, registerPerformanceObserver } from "./utils/image_cache";
-import { batchDownloadPostFiles } from "./functions/post";
-import { registerMenuCommand, showDebugDOM, showHotkeySetting, showSetting } from "./utils/dialog";
+import { batchDownloadPostFiles, createMediaListDOM, getVisibleNodeIndex, getPostContextFromButton } from "./functions/post";
+import { registerMenuCommand, showDebugDOM, showHotkeySetting, showSetting, IG_createDM, IG_setDM } from "./utils/dialog";
+import { openImageViewer } from "./utils/image_viewer";
 /*! ESLINT IMPORT END !*/
 
 // Running if document is ready
@@ -32,7 +33,7 @@ $(function () {
 
     function setDOMTreeContent() {
         let text = $('div[id^="mount"]')[0];
-        var logger = "";
+        var loggerStr = "";
         state.GL_logger.forEach(log => {
             var jsonData = JSON.stringify(log.content, function (key, value) {
                 if (Array.isArray(this)) {
@@ -45,26 +46,41 @@ $(function () {
                     return value;
                 }
             }, "\t");
-            logger += `${new Date(log.time).toISOString()}: ${jsonData}\n`
+            loggerStr += `${new Date(log.time).toISOString()}: ${jsonData}\n`
         });
-        $('.IG_POPUP_DIG .IG_POPUP_DIG_BODY textarea').text("Logger:\n" + logger + "\n-----\n\nLocation: " + location.pathname + "\nDOM Tree with div#mount:\n" + text.innerHTML);
+        $('.IG_POPUP_DIG .IG_POPUP_DIG_BODY textarea').text("Logger:\n" + loggerStr + "\n-----\n\nLocation: " + location.pathname + "\nDOM Tree with div#mount:\n" + text.innerHTML);
     }
 
-    $('body').on('click', '.IG_POPUP_DIG .IG_POPUP_DIG_BODY .IG_DISPLAY_DOM_TREE', function () {
+    $body.on('click', '.IG_POPUP_DIG .IG_POPUP_DIG_BODY .IG_DISPLAY_DOM_TREE', function () {
         setDOMTreeContent();
     });
 
-    $('body').on('click', '.IG_POPUP_DIG .IG_POPUP_DIG_BODY .IG_SELECT_DOM_TREE', function () {
-        $('.IG_POPUP_DIG .IG_POPUP_DIG_BODY textarea').select();
-        document.execCommand('copy');
+    // OPTIMIZATION: replace deprecated document.execCommand('copy') with modern
+    // navigator.clipboard.writeText() API. Falls back to execCommand on browsers
+    // that don't support it (unlikely on Chrome/Firefox/Edge >= 100).
+    $body.on('click', '.IG_POPUP_DIG .IG_POPUP_DIG_BODY .IG_SELECT_DOM_TREE', function () {
+        const $textarea = $('.IG_POPUP_DIG .IG_POPUP_DIG_BODY textarea');
+        const textContent = $textarea.val() || $textarea.text();
+        $textarea.trigger('select');
+
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(textContent).catch(err => {
+                logger('Clipboard API failed, falling back to execCommand:', err);
+                try { document.execCommand('copy'); } catch (e) { logger('execCommand fallback failed:', e); }
+            });
+        }
+        else {
+            try { document.execCommand('copy'); } catch (e) { logger('execCommand failed:', e); }
+        }
     });
 
-    $('body').on('click', '.IG_POPUP_DIG .IG_POPUP_DIG_BODY .IG_DOWNLOAD_DOM_TREE', function () {
-        if ($('.IG_POPUP_DIG .IG_POPUP_DIG_BODY textarea').text().length === 0) {
+    $body.on('click', '.IG_POPUP_DIG .IG_POPUP_DIG_BODY .IG_DOWNLOAD_DOM_TREE', function () {
+        const $textarea = $('.IG_POPUP_DIG .IG_POPUP_DIG_BODY textarea');
+        if ($textarea.text().length === 0) {
             setDOMTreeContent();
         }
 
-        var text = $('.IG_POPUP_DIG .IG_POPUP_DIG_BODY textarea').text();
+        var text = $textarea.text();
         var a = document.createElement("a");
         var file = new Blob([text], { type: "text/plain" });
         a.href = URL.createObjectURL(file);
@@ -76,9 +92,10 @@ $(function () {
     });
 
     // Close the download dialog if user click the close icon
-    $('body').on('click', '.IG_POPUP_DIG_BTN, .IG_POPUP_DIG_BG', function () {
-        if ($(this).parent('#tempWrapper').length > 0) {
-            $(this).parent('#tempWrapper').fadeOut(250, function () {
+    $body.on('click', '.IG_POPUP_DIG_BTN, .IG_POPUP_DIG_BG', function () {
+        const $this = $(this);
+        if ($this.parent('#tempWrapper').length > 0) {
+            $this.parent('#tempWrapper').fadeOut(250, function () {
                 $(this).remove();
             });
         }
@@ -96,8 +113,9 @@ $(function () {
         // Hot key [Alt+W] to open/close the settings dialog - use custom keycode if enabled, fallback to default Alt+W(87)
         let settingsKeyCode = state.settingsHotkeyKeyCode || 87;
         if (e.altKey && e.which == settingsKeyCode) {
-            if ($('.IG_POPUP_DIG').length > 0 && $('.IG_POPUP_DIG #post_info').text() === 'Preference Settings') {
-                $('.IG_POPUP_DIG').remove();
+            const $popup = $('.IG_POPUP_DIG');
+            if ($popup.length > 0 && $popup.find('#post_info').text() === 'Preference Settings') {
+                $popup.remove();
             } else {
                 showSetting();
             }
@@ -107,8 +125,9 @@ $(function () {
         // Hot key [Alt+W] to open/close the key settings dialog - use custom keycode if enabled, fallback to default Alt+C(67)
         let keySettingsHotkeyKeyCode = state.keySettingsHotkeyKeyCode || 67;
         if (e.altKey && e.which == keySettingsHotkeyKeyCode) {
-            if ($('.IG_POPUP_DIG').length > 0 && $('.IG_POPUP_DIG #post_info').text() === 'Hotkey Settings') {
-                $('.IG_POPUP_DIG').remove();
+            const $popup = $('.IG_POPUP_DIG');
+            if ($popup.length > 0 && $popup.find('#post_info').text() === 'Hotkey Settings') {
+                $popup.remove();
             } else {
                 showHotkeySetting();
             }
@@ -141,11 +160,12 @@ $(function () {
         }
     });
 
-    $('body').on('change', '.IG_POPUP_DIG input', function () {
-        var name = $(this).attr('id');
+    $body.on('change', '.IG_POPUP_DIG input', function () {
+        const $this = $(this);
+        var name = $this.attr('id');
 
         if (name && USER_SETTING[name] !== undefined) {
-            let isChecked = $(this).prop('checked');
+            let isChecked = $this.prop('checked');
             GM_setValue(name, isChecked);
             USER_SETTING[name] = isChecked;
 
@@ -153,20 +173,21 @@ $(function () {
         }
     });
 
-    $('body').on('click', '.IG_POPUP_DIG .globalSettings', function (e) {
+    $body.on('click', '.IG_POPUP_DIG .globalSettings', function (e) {
         if ($(this).find('#tempWrapper').length > 0) {
             e.preventDefault();
         }
     });
 
-    $('body').on('change', '.IG_POPUP_DIG #tempWrapper input:not(#date_format)', function () {
-        let value = $(this).val();
+    $body.on('change', '.IG_POPUP_DIG #tempWrapper input:not(#date_format)', function () {
+        const $this = $(this);
+        let value = $this.val();
 
-        if ($(this).attr('type') == 'range') {
-            $(this).next().val(value);
+        if ($this.attr('type') == 'range') {
+            $this.next().val(value);
         }
         else {
-            $(this).prev().val(value);
+            $this.prev().val(value);
         }
 
         if (value >= 0 && value <= 1) {
@@ -175,62 +196,69 @@ $(function () {
         }
     });
 
-    $('body').on('input', '.IG_POPUP_DIG #tempWrapper input:not(#date_format)', function () {
-        if ($(this).attr('type') == 'range') {
-            let value = $(this).val();
-            $(this).next().val(value);
+    $body.on('input', '.IG_POPUP_DIG #tempWrapper input:not(#date_format)', function () {
+        const $this = $(this);
+        if ($this.attr('type') == 'range') {
+            let value = $this.val();
+            $this.next().val(value);
         }
         else {
-            let value = $(this).val();
+            let value = $this.val();
             if (value >= 0 && value <= 1) {
-                $(this).prev().val(value);
+                $this.prev().val(value);
             }
             else {
                 if (value < 0) {
-                    $(this).val(0);
+                    $this.val(0);
                 }
                 else {
-                    $(this).val(1);
+                    $this.val(1);
                 }
             }
         }
     });
 
-    $('body').on('input', '.IG_POPUP_DIG #tempWrapper input#date_format', function () {
-        GM_setValue('G_RENAME_FORMAT', $(this).val());
-        state.fileRenameFormat = $(this).val();
+    $body.on('input', '.IG_POPUP_DIG #tempWrapper input#date_format', function () {
+        const val = $(this).val();
+        GM_setValue('G_RENAME_FORMAT', val);
+        state.fileRenameFormat = val;
     });
 
-    $('body').on('click', 'a[data-needed="direct"]', function (e) {
+    $body.on('click', 'a[data-needed="direct"]', function (e) {
         e.preventDefault();
         triggerLinkElement(this);
     });
 
-    $('body').on('click', '.IG_POPUP_DIG_BODY .newTab', function () {
+    $body.on('click', '.IG_POPUP_DIG_BODY .newTab', function () {
+        const $this = $(this);
+        const $linkA = $this.parent().children('a');
         if (USER_SETTING.FORCE_RESOURCE_VIA_MEDIA && USER_SETTING.NEW_TAB_ALWAYS_FORCE_MEDIA_IN_POST) {
-            triggerLinkElement($(this).parent().children('a').first()[0], true);
+            triggerLinkElement($linkA.first()[0], true);
         }
         else {
-            openNewTab(replaceSameOriginHost($(this).parent().children('a').attr('data-href')));
+            openNewTab(replaceSameOriginHost($linkA.data('href')));
         }
     });
 
-    $('body').on('click', '.IG_POPUP_DIG_BODY .videoThumbnail', function () {
+    $body.on('click', '.IG_POPUP_DIG_BODY .videoThumbnail', function () {
+        const $this = $(this);
+        const $linkA = $this.parent().children('a');
         let timestamp = new Date().getTime();
 
-        if (USER_SETTING.RENAME_PUBLISH_DATE && $(this).parent().children('a').attr('datetime')) {
-            timestamp = $(this).parent().children('a').attr('datetime');
+        if (USER_SETTING.RENAME_PUBLISH_DATE && $linkA.attr('datetime')) {
+            timestamp = $linkA.attr('datetime');
         }
 
-        let postPath = $(this).parent().children('a').attr('data-path') ?? $('#article-id').text();
+        let postPath = $linkA.data('path') ?? $('#article-id').text();
 
         if (USER_SETTING.CAPTURE_IMAGE_VIA_MEDIA_CACHE) {
-            const mediaId = $(this).parent().children('a').first().attr('media-id');
+            const mediaId = $linkA.first().attr('media-id');
             const cached = getImageFromCache(mediaId);
+
             if (cached) {
                 logger("[Restore Cached postThumbnail]", mediaId);
                 saveFiles(cached, {
-                    username: $(this).parent().children('a').attr('data-username'),
+                    username: $linkA.data('username'),
                     sourceType: 'thumbnail',
                     timestamp,
                     filetype: 'jpg',
@@ -241,9 +269,9 @@ $(function () {
         }
 
         saveFiles(
-            $(this).parent().children('a').find('img').first().attr('src'),
+            $linkA.find('img').first().attr('src'),
             {
-                username: $(this).parent().children('a').attr('data-username'),
+                username: $linkA.data('username'),
                 sourceType: 'thumbnail',
                 timestamp,
                 filetype: 'jpg',
@@ -252,86 +280,88 @@ $(function () {
     });
 
     // Running if user left-click download icon in stories
-    $('body').on('click', '.IG_DWSTORY', function () {
+    $body.on('click', '.IG_DWSTORY', function () {
         onStory(true);
     });
 
     // Running if user left-click all download icon in stories
-    $('body').on('click', '.IG_DWSTORY_ALL', function () {
+    $body.on('click', '.IG_DWSTORY_ALL', function () {
         onStoryAll();
     });
 
     // Running if user left-click 'open in new tab' icon in stories
-    $('body').on('click', '.IG_DWNEWTAB', function (e) {
+    $body.on('click', '.IG_DWNEWTAB', function (e) {
         e.preventDefault();
         onStory(true, true, true);
     });
 
     // Running if user left-click download thumbnail icon in stories
-    $('body').on('click', '.IG_DWSTORY_THUMBNAIL', function () {
+    $body.on('click', '.IG_DWSTORY_THUMBNAIL', function () {
         onStoryThumbnail(true);
     });
 
     // Running if user left-click download icon in profile
-    $('body').on('click', '.IG_DWPROFILE', function (e) {
+    $body.on('click', '.IG_DWPROFILE', function (e) {
         e.stopPropagation();
         onProfileAvatar(true);
     });
 
     // Running if user left-click download icon in highlight stories
-    $('body').on('click', '.IG_DWHISTORY', function () {
+    $body.on('click', '.IG_DWHISTORY', function () {
         onHighlightsStory(true);
     });
 
     // Running if user left-click all download icon in highlight stories
-    $('body').on('click', '.IG_DWHISTORY_ALL', function () {
+    $body.on('click', '.IG_DWHISTORY_ALL', function () {
         onHighlightsStoryAll();
     });
 
     // Running if user left-click 'open in new tab' icon in highlight stories
-    $('body').on('click', '.IG_DWHINEWTAB', function (e) {
+    $body.on('click', '.IG_DWHINEWTAB', function (e) {
         e.preventDefault();
         onHighlightsStory(true, true);
     });
 
     // Running if user left-click thumbnail download icon in highlight stories
-    $('body').on('click', '.IG_DWHISTORY_THUMBNAIL', function () {
+    $body.on('click', '.IG_DWHISTORY_THUMBNAIL', function () {
         onHighlightsStoryThumbnail(true);
     });
 
     // Running if user left-click download icon in reels
-    $('body').on('click', '.IG_REELS', function () {
+    $body.on('click', '.IG_REELS', function () {
         onReels(true, true);
     });
 
     // Running if user left-click newtab icon in reels
-    $('body').on('click', '.IG_REELS_NEWTAB', function () {
+    $body.on('click', '.IG_REELS_NEWTAB', function () {
         onReels(true, true, true);
     });
 
     // Running if user left-click download icon in reels
-    $('body').on('click', '.IG_REELS_THUMBNAIL', function () {
+    $body.on('click', '.IG_REELS_THUMBNAIL', function () {
         onReels(true, false);
     });
 
     // Running if user right-click profile picture in stories area
-    $('body').on('mousedown', 'button[role="menuitem"], div[role="menuitem"], ul > li[tabindex="-1"] > div[role="button"]', function (e) {
+    $body.on('mousedown', 'button[role="menuitem"], div[role="menuitem"], ul > li[tabindex="-1"] > div[role="button"]', function (e) {
         // Right-Click || Middle-Click
         if (e.which === 3 || e.which === 2) {
             if (location.href === 'https://www.instagram.com/' && USER_SETTING.REDIRECT_CLICK_USER_STORY_PICTURE) {
                 e.preventDefault();
 
-                $(this).find('img').each(function () {
-                    if (!$(this).data('contextmenu')) {
-                        $(this).data('contextmenu', true);
-                        $(this).on('contextmenu', function (e) {
+                const $this = $(this);
+                $this.find('img').each(function () {
+                    const $img = $(this);
+                    if (!$img.data('contextmenu')) {
+                        $img.data('contextmenu', true);
+                        $img.on('contextmenu', function (e) {
                             e.preventDefault();
                         });
                     }
                 });
 
-                if ($(this).find('canvas._aarh, canvas + span > img').length > 0) {
-                    const targetUrl = 'https://www.instagram.com/' + $(this).children('div').last().text();
+                if ($this.find('canvas._aarh, canvas + span > img').length > 0) {
+                    const targetUrl = 'https://www.instagram.com/' + $this.children('div').last().text();
                     if (e.which === 2) {
                         GM_openInTab(targetUrl);
                     }
@@ -343,7 +373,7 @@ $(function () {
         }
     });
 
-    $('body').on('change', '.IG_POPUP_DIG_TITLE .checkbox', function () {
+    $body.on('change', '.IG_POPUP_DIG_TITLE .checkbox', function () {
         const isChecked = $(this).find('input').prop('checked');
         $('.IG_POPUP_DIG_BODY .inner_box').each(function () {
             $(this).prop('checked', isChecked);
@@ -351,11 +381,11 @@ $(function () {
         updatePopupSelectionSummary();
     });
 
-    $('body').on('change', '.IG_POPUP_DIG_BODY .inner_box', function () {
+    $body.on('change', '.IG_POPUP_DIG_BODY .inner_box', function () {
         updatePopupSelectionSummary();
     });
 
-    $('body').on('click', '.IG_POPUP_DIG_TITLE #batch_download_selected', function () {
+    $body.on('click', '.IG_POPUP_DIG_TITLE #batch_download_selected', function () {
         let index = 0;
         let links = [];
         $('.IG_POPUP_DIG_BODY a[data-needed="direct"]').each(function () {
@@ -374,9 +404,11 @@ $(function () {
         }
     });
 
-    $('body').on('change', '.IG_POPUP_DIG_TITLE #langSelect', function () {
-        GM_setValue('UI_LANGUAGE', $(this).val());
-        state.lang = $(this).val();
+    $body.on('change', '.IG_POPUP_DIG_TITLE #langSelect', function () {
+        const $this = $(this);
+        const val = $this.val();
+        GM_setValue('UI_LANGUAGE', val);
+        state.lang = val;
 
         if (state.lang?.startsWith('en') || state.locale[state.lang] != null) {
             repaintingTranslations();
@@ -393,7 +425,7 @@ $(function () {
         }
     });
 
-    $('body').on('click', '.IG_POPUP_DIG_TITLE #batch_download_direct', function () {
+    $body.on('click', '.IG_POPUP_DIG_TITLE #batch_download_direct', function () {
         let links = [];
         $('.IG_POPUP_DIG_BODY a[data-needed="direct"]').each(function () {
             links.push($(this));
@@ -408,16 +440,17 @@ $(function () {
         for (const mutation of mutationsList) {
             if (mutation.type === 'childList') {
                 mutation.addedNodes.forEach((node) => {
-                    const $videos = $(node).find('video');
+                    const $node = $(node);
+                    const $videos = $node.find('video').addBack('video');
 
                     if (location.pathname.startsWith("/stories/highlights/")) {
                         if (
-                            $(node).attr("data-ih-locale-title") == null &&
-                            $(node).attr("data-visualcompletion") == null &&
+                            $node.attr("data-ih-locale-title") == null &&
+                            $node.attr("data-visualcompletion") == null &&
                             node.tagName === "DIV"
                         ) {
                             // replace something times ago format to publish time when switch highlight
-                            var $time = getHighlightCurrentTimeElement($(node));
+                            var $time = getHighlightCurrentTimeElement($node);
                             setTimeElementDateAndLocaleTime($time);
                         }
                     }
@@ -427,8 +460,9 @@ $(function () {
                         if (USER_SETTING.MODIFY_VIDEO_VOLUME) {
                             $videos.each(function () {
                                 $(this).on('play playing', function () {
-                                    if (!$(this).data('modify')) {
-                                        $(this).attr('data-modify', true);
+                                    const $this = $(this);
+                                    if (!$this.data('modify')) {
+                                        $this.data('modify', true);
                                         this.volume = state.videoVolume;
                                         logger('(audio_observer) Added video event listener #modify');
                                     }
@@ -442,28 +476,29 @@ $(function () {
 
                             $videos.each(function () {
                                 $(this).on('timeupdate', function () {
-                                    if (!$(this).data('modify-thumbnail')) {
-                                        let $video = $(this);
-                                        if ($video.parents('div[style][class]').filter(function () {
-                                            return $(this).width() == $video.width();
-                                        }).find('.IG_DWSTORY_THUMBNAIL, .IG_DWHISTORY_THUMBNAIL').length === 0) {
-                                            $(this).attr('data-modify-thumbnail', true);
+                                    const $this = $(this);
+                                    if (!$this.data('modify-thumbnail')) {
+                                            let $video = $this;
+                                            if ($video.parents('div[style][class]').filter(function () {
+                                                return $(this).width() == $video.width();
+                                            }).find('.IG_DWSTORY_THUMBNAIL, .IG_DWHISTORY_THUMBNAIL').length === 0) {
+                                                $this.data('modify-thumbnail', true);
 
-                                            if (isHighlight) {
-                                                onHighlightsStoryThumbnail(false);
+                                                if (isHighlight) {
+                                                    onHighlightsStoryThumbnail(false);
+                                                }
+                                                else {
+                                                    onStoryThumbnail(false);
+                                                }
+
+                                                logger(`(${storyType})`, 'Manually inserting thumbnail button');
                                             }
                                             else {
-                                                onStoryThumbnail(false);
+                                                $this.data('modify-thumbnail', true);
+                                                logger(`(${storyType})`, 'Thumbnail button already inserted');
                                             }
-
-                                            logger(`(${storyType})`, 'Manually inserting thumbnail button');
                                         }
-                                        else {
-                                            $(this).attr('data-modify-thumbnail', true);
-                                            logger(`(${storyType})`, 'Thumbnail button already inserted');
-                                        }
-                                    }
-                                });
+                                    });
 
                                 var $video = $(this);
 
@@ -480,7 +515,8 @@ $(function () {
                                         }
 
                                         let $videoParent = $video.parents('div').filter(function () {
-                                            return $(this).attr('class') == null && $(this).attr('style') == null;
+                                            const $this = $(this);
+                                            return $this.attr('class') == null && $this.attr('style') == null;
                                         }).first();
 
                                         // This is mute/unmute's icon
@@ -550,26 +586,27 @@ $(function () {
 
                                         $video.on('volumechange', function () {
                                             let $element_mute_button = state.GL_weakCache.mutedButton.get(this) || {};
-                                            var is_elelment_muted = $element_mute_button?.find('svg > path[d^="M16.636"]').length === 0;
+                                            var is_element_muted = $element_mute_button?.find && $element_mute_button.find('svg > path[d^="M16.636"]').length === 0;
 
-                                            if (this.muted != is_elelment_muted) {
+                                            if (this.muted != is_element_muted) {
                                                 this.volume = state.videoVolume;
 
                                                 triggerReactClickHandler($element_mute_button.first()[0]);
                                             }
 
-                                            if ($(this).attr('data-completed')) {
+                                            const $v = $(this);
+                                            if ($v.data('completed')) {
                                                 state.videoVolume = this.volume;
                                                 GM_setValue('G_VIDEO_VOLUME', this.volume);
                                             }
 
                                             if (this.volume == state.videoVolume) {
-                                                $(this).attr('data-completed', true);
+                                                $v.data('completed', true);
                                             }
                                         });
 
                                         $video.css('position', 'absolute');
-                                        $video.attr('data-controls', true);
+                                        $video.data('controls', true);
 
                                         toggleVolumeSilder($video, $video.parents('div[style][class]').filter(function () {
                                             return $(this).width() == $video.width();
@@ -589,8 +626,16 @@ $(function () {
         }
     });
 
-    element_observer.observe($('div[id^="mount"]')[0], {
-        childList: true,
-        subtree: true,
-    });
+    (function installElementObserver(attempts) {
+        const mountRoot = $('div[id^="mount"]')[0];
+        if (mountRoot) {
+            element_observer.observe(mountRoot, { childList: true, subtree: true });
+            logger('[element_observer] installed on mount root');
+        } else if (attempts > 0) {
+            setTimeout(() => installElementObserver(attempts - 1), 250);
+            logger('[element_observer] mount root not ready, retrying...');
+        } else {
+            logger('[element_observer] mount root not found after multiple retries');
+        }
+    })(20);
 });

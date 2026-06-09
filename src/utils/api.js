@@ -10,7 +10,7 @@ import { logger, getAppID, updateLoadingBar } from "./general";
  */
 export function getHighlightStories(highlightId) {
     return new Promise((resolve, reject) => {
-        let getURL = `https://www.instagram.com/graphql/query/?query_hash=45246d3fe16ccc6577e0bd297a5db1ab&variables=%7B%22highlight_reel_ids%22:%5B%22${highlightId}%22%5D,%22precomposed_overlay%22:false%7D`;
+        const getURL = `https://www.instagram.com/graphql/query/?query_hash=45246d3fe16ccc6577e0bd297a5db1ab&variables=%7B%22highlight_reel_ids%22:%5B%22${highlightId}%22%5D,%22precomposed_overlay%22:false%7D`;
 
         GM_xmlhttpRequest({
             method: "GET",
@@ -42,7 +42,7 @@ export function getHighlightStories(highlightId) {
  */
 export function getStories(userId) {
     return new Promise((resolve, reject) => {
-        let getURL = `https://www.instagram.com/graphql/query/?query_hash=15463e8449a83d3d60b06be7e90627c7&variables=%7B%22reel_ids%22:%5B%22${userId}%22%5D,%22precomposed_overlay%22:false%7D`;
+        const getURL = `https://www.instagram.com/graphql/query/?query_hash=15463e8449a83d3d60b06be7e90627c7&variables=%7B%22reel_ids%22:%5B%22${userId}%22%5D,%22precomposed_overlay%22:false%7D`;
 
         GM_xmlhttpRequest({
             method: "GET",
@@ -75,7 +75,7 @@ export function getStories(userId) {
  */
 export function getUserId(username) {
     return new Promise((resolve, reject) => {
-        let getURL = `https://www.instagram.com/web/search/topsearch/?query=${username}`;
+        const getURL = `https://www.instagram.com/web/search/topsearch/?query=${username}`;
 
         GM_xmlhttpRequest({
             method: "GET",
@@ -84,7 +84,7 @@ export function getUserId(username) {
                 // Fix search issue by Discord: sno_w_
                 let obj = JSON.parse(response.response);
                 let result = null;
-                obj.users.forEach(pos => {
+                (obj.users ?? []).forEach(pos => {
                     if (pos.user.username?.toLowerCase() === username?.toLowerCase()) {
                         result = pos;
                     }
@@ -120,7 +120,7 @@ export function getUserId(username) {
  */
 export function getUserIdWithAgent(username) {
     return new Promise((resolve, reject) => {
-        let getURL = `https://i.instagram.com/api/v1/users/web_profile_info/?username=${username}`;
+        const getURL = `https://i.instagram.com/api/v1/users/web_profile_info/?username=${username}`;
 
         GM_xmlhttpRequest({
             method: "GET",
@@ -166,7 +166,7 @@ export function getUserIdWithAgent(username) {
  */
 export function getUserHighSizeProfile(userId) {
     return new Promise((resolve, reject) => {
-        let getURL = `https://www.instagram.com/api/v1/users/${userId}/info/`;
+        const getURL = `https://www.instagram.com/api/v1/users/${userId}/info/`;
 
         GM_xmlhttpRequest({
             method: "GET",
@@ -209,8 +209,8 @@ export function getUserHighSizeProfile(userId) {
 export function getPostOwner(postPath) {
     return new Promise((resolve, reject) => {
         if (!postPath) reject("NOPATH");
-        let postShortCode = postPath;
-        let getURL = `https://www.instagram.com/graphql/query/?query_hash=2c4c2e343a8f64c625ba02b2aa12c7f8&variables=%7B%22shortcode%22:%22${postShortCode}%22}`;
+        const postShortCode = postPath;
+        const getURL = `https://www.instagram.com/graphql/query/?query_hash=2c4c2e343a8f64c625ba02b2aa12c7f8&variables=%7B%22shortcode%22:%22${postShortCode}%22}`;
 
         GM_xmlhttpRequest({
             method: "GET",
@@ -244,8 +244,8 @@ export function getPostOwner(postPath) {
 export function getBlobMedia(postPath) {
     return new Promise((resolve, reject) => {
         if (!postPath) reject("NOPATH");
-        let postShortCode = postPath;
-        let getURL = `https://www.instagram.com/graphql/query/?query_hash=2c4c2e343a8f64c625ba02b2aa12c7f8&variables=%7B%22shortcode%22:%22${postShortCode}%22}`;
+        const postShortCode = postPath;
+        const getURL = `https://www.instagram.com/graphql/query/?query_hash=2c4c2e343a8f64c625ba02b2aa12c7f8&variables=%7B%22shortcode%22:%22${postShortCode}%22}`;
 
         GM_xmlhttpRequest({
             method: "GET",
@@ -294,8 +294,8 @@ export function getBlobMedia(postPath) {
 export function getBlobMediaWithQueryID(postPath) {
     return new Promise((resolve, reject) => {
         if (!postPath) reject("NOPATH");
-        let postShortCode = postPath;
-        let getURL = `https://www.instagram.com/graphql/query/?query_id=9496392173716084&variables={%22shortcode%22:%22${postShortCode}%22,%22__relay_internal__pv__PolarisFeedShareMenurelayprovider%22:true,%22__relay_internal__pv__PolarisIsLoggedInrelayprovider%22:true}`;
+        const postShortCode = postPath;
+        const getURL = `https://www.instagram.com/graphql/query/?query_id=9496392173716084&variables={%22shortcode%22:%22${postShortCode}%22,%22__relay_internal__pv__PolarisFeedShareMenurelayprovider%22:true,%22__relay_internal__pv__PolarisIsLoggedInrelayprovider%22:true}`;
 
         GM_xmlhttpRequest({
             method: "GET",
@@ -341,7 +341,7 @@ export function getBlobMediaWithQueryID(postPath) {
  */
 export function getMediaInfo(mediaId) {
     return new Promise((resolve, reject) => {
-        let getURL = `https://i.instagram.com/api/v1/media/${mediaId}/info/`;
+        const getURL = `https://i.instagram.com/api/v1/media/${mediaId}/info/`;
 
         if (mediaId == null) {
             alert("Cannot call Media API because of the media id is invalid.");

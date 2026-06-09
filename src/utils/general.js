@@ -1,4 +1,4 @@
-import { USER_SETTING, state } from "../settings";
+import { USER_SETTING, state, $body } from "../settings";
 import { _i18n } from "./i18n";
 import { getPostOwner, getMediaInfo, getUserId } from "./api";
 import { getImageFromCache } from "./image_cache";
@@ -34,15 +34,17 @@ export function getStoryId(url) {
  * getAppID
  * @description Get Instagram App ID.
  *
- * @return {?integer}
+ * @return {?string}
  */
 export function getAppID() {
     let result = null;
     $('script[type="application/json"]').each(function () {
         const regexp = /"APP_ID":"([0-9]+)"/ig;
-        const matcher = $(this).text().match(regexp);
+        const $this = $(this);
+        const text = $this.text();
+        const matcher = text.match(regexp);
         if (matcher != null && result == null) {
-            result = [...$(this).text().matchAll(regexp)];
+            result = [...text.matchAll(regexp)];
         }
     })
 
@@ -164,7 +166,7 @@ export function setTimeElementDateAndLocaleTime($time) {
  */
 export function getHighlightCurrentTimeElement($element) {
     if ($element == null || $element.length === 0) {
-        $element = $('body');
+        $element = $body;
     }
 
     let $section = $element.closest('section:visible');
@@ -201,13 +203,15 @@ export function getHighlightCurrentTimeElement($element) {
  * @return {void}
  */
 export function updateLoadingBar(isLoading) {
+    // OPTIMIZATION: cache the mount root selection (called every time)
+    const $mountDiv = $('div[id^="mount"] > div > div > div:first');
     if (isLoading) {
-        $('div[id^="mount"] > div > div > div:first').removeClass('x1s85apg');
-        $('div[id^="mount"] > div > div > div:first').css('z-index', '20000');
+        $mountDiv.removeClass('x1s85apg');
+        $mountDiv.css('z-index', '20000');
     }
     else {
-        $('div[id^="mount"] > div > div > div:first').addClass('x1s85apg');
-        $('div[id^="mount"] > div > div > div:first').css('z-index', '');
+        $mountDiv.addClass('x1s85apg');
+        $mountDiv.css('z-index', '');
     }
 }
 
@@ -219,10 +223,12 @@ export function updateLoadingBar(isLoading) {
  * @return {Object}
  */
 export function getStoryProgress(username) {
+    const lowerUsername = username?.toLowerCase();
     let $header = $('body > div section:visible a[href^="/' + (username) + '"] span').filter(function () {
-        return $(this).children().length === 0 && $(this).find('svg').length === 0 && $(this).text()?.toLowerCase() === username?.toLowerCase();
+        const $this = $(this);
+        return $this.children().length === 0 && $this.find('svg').length === 0 && $this.text()?.toLowerCase() === lowerUsername;
     }).parents('div:not([class]):not([style])').filter(function () {
-        return $(this).text()?.toLowerCase() !== username?.toLowerCase()
+        return $(this).text()?.toLowerCase() !== lowerUsername
     }).filter(function () {
         return $(this).children().length > 1
     }).first();
@@ -231,7 +237,7 @@ export function getStoryProgress(username) {
         $header = $('body > div section:visible a[href^="/' + (username) + '"]').filter(function () {
             return $(this).find('img').length > 0
         }).parents('div:not([class]):not([style])').filter(function () {
-            return $(this).text()?.toLowerCase() !== username?.toLowerCase()
+            return $(this).text()?.toLowerCase() !== lowerUsername
         }).filter(function () {
             return $(this).children().length > 1
         }).first();
@@ -340,17 +346,19 @@ export function setStoryProgressIndexByUsername($element, username, className) {
  * @return {Void}
  */
 export function setDownloadProgress(now, total) {
-    if ($('.circle_wrapper').length) {
-        $('.circle_wrapper span').text(`${now}/${total}`);
+    // OPTIMIZATION: cache the circle wrapper lookup
+    const $circle = $('.circle_wrapper');
+    if ($circle.length) {
+        $circle.find('span').text(`${now}/${total}`);
 
         if (now >= total) {
-            $('.circle_wrapper').fadeOut(250, function () {
+            $circle.fadeOut(250, function () {
                 $(this).remove();
             });
         }
     }
     else {
-        $('body').append(`<div class="circle_wrapper"><circle></circle><span>${now}/${total}</span></div>`);
+        $body.append(`<div class="circle_wrapper"><circle></circle><span>${now}/${total}</span></div>`);
     }
 }
 
@@ -656,6 +664,7 @@ export async function tryHandleDashFromMediaItem({
 }
 
 /**
+ * triggerDownload
  * @description Trigger download from Blob with filename.
  * 
  * @param {Blob} blob
@@ -978,21 +987,24 @@ async function changeExifData(blob, metadata) {
 
 /**
  * triggerLinkElement
- * @description Trigger the link element to start downloading the resource.
+ * @description Trigger the link element to start downloading or previewing the resource.
  *
- * @param  {Object}  element
+ * @param  {Object}   element     - The element containing resource link metadata.
+ * @param  {Boolean}  [isPreview] - True to preview in a new tab instead of downloading.
  * @return {void}
  */
 export async function triggerLinkElement(element, isPreview) {
     try {
+        // OPTIMIZATION: cache $(element) — referenced 15+ times in this function
+        const $el = $(element);
         let date = new Date().getTime();
         let timestamp = Math.floor(date / 1000);
-        let username = ($(element).attr('data-username')) ? $(element).attr('data-username') : state.GL_username;
-        let index = $(element).attr('data-globalindex') || 0;
+        let username = ($el.data('username')) ? $el.data('username') : state.GL_username;
+        let index = $el.attr('data-globalindex') || 0;
 
-        if (!username && $(element).attr('data-path')) {
-            logger('catching owner name from shortcode:', $(element).attr('data-href'));
-            username = await getPostOwner($(element).attr('data-path')).catch(err => {
+        if (!username && $el.data('path')) {
+            logger('catching owner name from shortcode:', $el.data('href'));
+            username = await getPostOwner($el.data('path')).catch(err => {
                 logger('get username failed, replace with default string, error message:', err.message);
             });
 
@@ -1001,20 +1013,20 @@ export async function triggerLinkElement(element, isPreview) {
             }
         }
 
-        if (USER_SETTING.RENAME_PUBLISH_DATE && $(element).attr('datetime')) {
-            timestamp = parseInt($(element).attr('datetime'));
+        if (USER_SETTING.RENAME_PUBLISH_DATE && $el.attr('datetime')) {
+            timestamp = parseInt($el.attr('datetime'));
         }
 
-        let mediaId = $(element).attr('media-id');
+        let mediaId = $el.attr('media-id');
 
         if (USER_SETTING.PREFER_DASH_MANIFEST && state.GL_mediaDataCache[mediaId] && !isPreview) {
             logger('[Video Dash Stream]', 'Processing video with DASH manifest, mediaId:', mediaId);
             const handled = await tryHandleDashFromMediaItem({
                 mediaItem: state.GL_mediaDataCache[mediaId],
                 username,
-                sourceType: $(element).data('name'),
+                sourceType: $el.data('name'),
                 timestamp,
-                shortcode: $(element).data('path'),
+                shortcode: $el.data('path'),
                 isPreview: false,
                 index
             });
@@ -1025,16 +1037,16 @@ export async function triggerLinkElement(element, isPreview) {
 
         if (USER_SETTING.CAPTURE_IMAGE_VIA_MEDIA_CACHE) {
             const cached = getImageFromCache(mediaId);
-            if (cached && $(element).data('type') != "mp4") {
+            if (cached && $el.data('type') != "mp4") {
                 if (isPreview) {
                     openNewTab(cached);
                 } else {
                     saveFiles(cached, {
                         username,
-                        sourceType: $(element).data('name'),
+                        sourceType: $el.data('name'),
                         timestamp,
-                        filetype: $(element).data('type') || 'jpg',
-                        shortcode: $(element).data('path'),
+                        filetype: $el.data('type') || 'jpg',
+                        shortcode: $el.data('path'),
                         index
                     });
                 }
@@ -1044,16 +1056,18 @@ export async function triggerLinkElement(element, isPreview) {
 
         if (USER_SETTING.FORCE_RESOURCE_VIA_MEDIA) {
             updateLoadingBar(true);
-            let result = await getMediaInfo($(element).attr('media-id'));
+            let result = await getMediaInfo($el.attr('media-id'));
             updateLoadingBar(false);
 
             if (result.status === 'ok') {
                 var resource_url = null;
-                if (result.items[0].video_versions) {
-                    resource_url = result.items[0].video_versions[0].url;
+                // OPTIMIZATION: cache result.items[0]
+                const mediaItem = result.items[0];
+                if (mediaItem.video_versions) {
+                    resource_url = mediaItem.video_versions[0].url;
                 }
                 else {
-                    result.items[0].image_versions2.candidates.sort(function (a, b) {
+                    mediaItem.image_versions2.candidates.sort(function (a, b) {
                         let aSTP = new URL(a.url).searchParams.get('stp');
                         let bSTP = new URL(b.url).searchParams.get('stp');
 
@@ -1069,7 +1083,7 @@ export async function triggerLinkElement(element, isPreview) {
                         return 0;
                     });
 
-                    resource_url = result.items[0].image_versions2.candidates[0].url;
+                    resource_url = mediaItem.image_versions2.candidates[0].url;
 
                     const getWidthFromURL = function (obj) {
                         if (obj.width != null) {
@@ -1087,9 +1101,9 @@ export async function triggerLinkElement(element, isPreview) {
                         }
                     }
 
-                    const resourceWidth = getWidthFromURL(result.items[0].image_versions2.candidates[0]);
+                    const resourceWidth = getWidthFromURL(mediaItem.image_versions2.candidates[0]);
                     if (
-                        result.items[0].original_width !== resourceWidth &&
+                        mediaItem.original_width !== resourceWidth &&
                         resourceWidth !== -1
                     ) {
                         // alert();
@@ -1102,25 +1116,25 @@ export async function triggerLinkElement(element, isPreview) {
                 else {
                     saveFiles(resource_url, {
                         username,
-                        sourceType: $(element).attr('data-name'),
+                        sourceType: $el.data('name'),
                         timestamp,
-                        filetype: $(element).attr('data-type'),
-                        shortcode: $(element).attr('data-path')
+                        filetype: $el.data('type'),
+                        shortcode: $el.data('path')
                     });
                 }
             }
             else {
                 if (USER_SETTING.FALLBACK_TO_BLOB_FETCH_IF_MEDIA_API_THROTTLED) {
                     if (isPreview) {
-                        openNewTab(replaceSameOriginHost($(element).attr('data-href')));
+                        openNewTab(replaceSameOriginHost($el.data('href')));
                     }
                     else {
-                        saveFiles($(element).attr('data-href'), {
+                        saveFiles($el.data('href'), {
                             username,
-                            sourceType: $(element).attr('data-name'),
+                            sourceType: $el.data('name'),
                             timestamp,
-                            filetype: $(element).attr('data-type'),
-                            shortcode: $(element).attr('data-path')
+                            filetype: $el.data('type'),
+                            shortcode: $el.data('path')
                         });
                     }
                 }
@@ -1131,12 +1145,12 @@ export async function triggerLinkElement(element, isPreview) {
             }
         }
         else {
-            saveFiles($(element).attr('data-href'), {
+            saveFiles($el.data('href'), {
                 username,
-                sourceType: $(element).attr('data-name'),
+                sourceType: $el.data('name'),
                 timestamp,
-                filetype: $(element).attr('data-type'),
-                shortcode: $(element).attr('data-path')
+                filetype: $el.data('type'),
+                shortcode: $el.data('path')
             });
         }
     }
@@ -1209,7 +1223,7 @@ export function callNotification() {
                         highlight: true,
                         timeout: 5000,
                         zombieTimeout: 5000,
-                        image: "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a5/Instagram_icon.png/64px-Instagram_icon.png",
+                        image: "https://t3.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://www.instagram.com&size=64",
                         onclick: (event) => {
                             event?.preventDefault();
                             var w = GM_openInTab(GM_info.script.downloadURL);
@@ -1256,13 +1270,9 @@ export function openNewTab(link) {
 export function reloadScript() {
     clearInterval(state.GL_repeat);
 
-    // unregister event in post element
-    state.GL_registerEventList.forEach(item => {
-        item.trigger.forEach(bindElement => {
-            $(item.element).off('click', bindElement);
-        });
-    });
-    state.GL_registerEventList = [];
+    // OPTIMIZATION: use cached $body and combine .off() calls
+    $body.off('.igHelperPost');
+    state.bodyEventsRegistered = false;
 
     $('.button_wrapper').remove();
     $('.IG_DWPROFILE, .IG_DWPROFILE, .IG_DWSTORY, .IG_DWSTORY_ALL, .IG_DWSTORY_THUMBNAIL, .IG_DWSTORY_POSITION, .IG_DWNEWTAB, .IG_DWHISTORY, .IG_DWHISTORY_ALL, .IG_DWHINEWTAB, .IG_DWHISTORY_THUMBNAIL, .IG_DWHISTORY_POSITION, .IG_REELS, .IG_REELS_NEWTAB, .IG_REELS_THUMBNAIL').remove();
@@ -1271,7 +1281,7 @@ export function reloadScript() {
     state.pageLoaded = false;
     state.firstStarted = false;
     state.currentURL = location.href;
-    state.GL_observer.disconnect();
+    state.GL_observer?.disconnect();
 
     logger('main timer re-register completed');
 }
@@ -1329,17 +1339,22 @@ export function initSettings() {
  * @return {void}
  */
 export function toggleVolumeSilder($videos, $buttonParent, loggerType, customClass = "") {
-    if ($buttonParent.find('div.volume_slider').length === 0) {
+    // OPTIMIZATION: cache the volume_slider lookup
+    let $existingSlider = $buttonParent.find('div.volume_slider');
+    if ($existingSlider.length === 0) {
         $buttonParent.append(`<div class="volume_slider ${customClass}" />`);
-        $buttonParent.find('div.volume_slider').append(`<div><input type="range" max="1" min="0" step="0.05" value="${state.videoVolume}" /></div>`);
-        $buttonParent.find('div.volume_slider input').attr('style', `--ig-track-progress: ${(state.videoVolume * 100) + '%'}`);
-        $buttonParent.find('div.volume_slider input').on('input', function () {
-            var percent = ($(this).val() * 100) + '%';
+        const $newSlider = $buttonParent.find('div.volume_slider');
+        $newSlider.append(`<div><input type="range" max="1" min="0" step="0.05" value="${state.videoVolume}" /></div>`);
+        const $sliderInput = $newSlider.find('input');
+        $sliderInput.attr('style', `--ig-track-progress: ${(state.videoVolume * 100) + '%'}`);
+        $sliderInput.on('input', function () {
+            const $this = $(this);
+            var percent = ($this.val() * 100) + '%';
 
-            state.videoVolume = $(this).val();
-            GM_setValue('G_VIDEO_VOLUME', $(this).val());
+            state.videoVolume = $this.val();
+            GM_setValue('G_VIDEO_VOLUME', $this.val());
 
-            $(this).attr('style', `--ig-track-progress: ${percent}`);
+            $this.attr('style', `--ig-track-progress: ${percent}`);
 
             $videos.each(function () {
                 logger(`(${loggerType})`, 'video volume changed #slider');
@@ -1347,10 +1362,11 @@ export function toggleVolumeSilder($videos, $buttonParent, loggerType, customCla
             });
         });
 
-        $buttonParent.find('div.volume_slider input').on('mouseenter', function () {
+        $sliderInput.on('mouseenter', function () {
+            const $this = $(this);
             var percent = (state.videoVolume * 100) + '%';
-            $(this).attr('style', `--ig-track-progress: ${percent}`);
-            $(this).val(state.videoVolume);
+            $this.attr('style', `--ig-track-progress: ${percent}`);
+            $this.val(state.videoVolume);
 
 
             $videos.each(function () {
@@ -1359,13 +1375,13 @@ export function toggleVolumeSilder($videos, $buttonParent, loggerType, customCla
             });
         });
 
-        $buttonParent.find('div.volume_slider').on('click', function (e) {
+        $newSlider.on('click', function (e) {
             e.stopPropagation();
             e.preventDefault();
         });
     }
     else {
-        $buttonParent.find('div.volume_slider').remove();
+        $existingSlider.remove();
     }
 }
 
