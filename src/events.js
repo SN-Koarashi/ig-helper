@@ -226,7 +226,7 @@ $(function () {
 
     $body.on('click', 'a[data-needed="direct"]', function (e) {
         e.preventDefault();
-        triggerLinkElement(this);
+        triggerLinkElement($(this), false);
     });
 
     $body.on('click', '.IG_POPUP_DIG_BODY .newTab', function () {
@@ -386,6 +386,8 @@ $(function () {
     });
 
     $body.on('click', '.IG_POPUP_DIG_TITLE #batch_download_selected', function () {
+        if ($('.IG_POPUP_DIG #_SNLOAD').length > 0) return;
+
         let index = 0;
         let links = [];
         $('.IG_POPUP_DIG_BODY a[data-needed="direct"]').each(function () {
@@ -426,6 +428,8 @@ $(function () {
     });
 
     $body.on('click', '.IG_POPUP_DIG_TITLE #batch_download_direct', function () {
+        if ($('.IG_POPUP_DIG #_SNLOAD').length > 0) return;
+		
         let links = [];
         $('.IG_POPUP_DIG_BODY a[data-needed="direct"]').each(function () {
             links.push($(this));

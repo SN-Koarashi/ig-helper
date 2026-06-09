@@ -21,8 +21,8 @@ export function IG_createDM(hasHidden, hasCheckbox) {
     if (hasCheckbox) {
         $title.append(`<div style="text-align: center;" id="button_group"></div>`);
         const $btnGroup = $title.find('> div#button_group');
-        $btnGroup.append(`<button id="batch_download_selected" data-ih-locale="BATCH_DOWNLOAD_SELECTED">${_i18n('BATCH_DOWNLOAD_SELECTED')}</button>`);
-        $btnGroup.append(`<button id="batch_download_direct" data-ih-locale="BATCH_DOWNLOAD_DIRECT">${_i18n('BATCH_DOWNLOAD_DIRECT')}</button>`);
+        $btnGroup.append(`<button id="batch_download_selected" disabled data-ih-locale="BATCH_DOWNLOAD_SELECTED">${_i18n('BATCH_DOWNLOAD_SELECTED')}</button>`);
+        $btnGroup.append(`<button id="batch_download_direct" disabled data-ih-locale="BATCH_DOWNLOAD_DIRECT">${_i18n('BATCH_DOWNLOAD_DIRECT')}</button>`);
         $title.append(`<label class="checkbox"><input value="yes" type="checkbox" /><span data-ih-locale="ALL_CHECK">${_i18n('ALL_CHECK')}</span><span class="item-count"></span></label>`);
     }
 }

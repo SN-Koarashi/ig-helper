@@ -1,4 +1,4 @@
-import { USER_SETTING, state, $body } from "../settings";
+import { USER_SETTING, state, userIdCache, $body } from "../settings";
 import { _i18n } from "./i18n";
 import { getPostOwner, getMediaInfo, getUserId } from "./api";
 import { getImageFromCache } from "./image_cache";
@@ -381,14 +381,18 @@ export function saveFiles(downloadLink, metadata) {
     return new Promise((resolve) => {
         setTimeout(() => {
             updateLoadingBar(true);
-            fetch(downloadLink).then(res => {
-                return res.blob().then(dwel => {
+            fetch(downloadLink)
+                .then(res => res.blob())
+                .then(dwel => {
                     updateLoadingBar(false);
-                    createSaveFileElement(downloadLink, dwel, metadata).then(() => {
-                        resolve(true);
-                    });
+                    return createSaveFileElement(downloadLink, dwel, metadata);
+                })
+                .then(() => resolve(true))
+                .catch(err => {
+                    updateLoadingBar(false);
+                    console.error('saveFiles failed:', err);
+                    resolve(false);
                 });
-            });
         }, 50);
     });
 }
@@ -670,12 +674,22 @@ export async function tryHandleDashFromMediaItem({
  * @param {Blob} blob
  * @param {string} filename
  */
-function triggerDownload(blob, filename) {
-    const link = document.createElement('a');
-    link.href = URL.createObjectURL(blob);
-    link.download = filename;
-    link.click();
-    link.remove();
+export function triggerDownload(blob, filename) {
+    return new Promise((resolve) => {
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = filename;
+        link.rel = "noopener";
+        link.style.display = "none";
+        document.body.appendChild(link);
+        link.click();
+        setTimeout(() => {
+            try { document.body.removeChild(link); } catch (e) { /* noop */ }
+            URL.revokeObjectURL(url);
+            resolve();
+        }, 250);
+    });
 }
 
 /**
@@ -764,22 +778,38 @@ export function getSaveFileName(downloadLink, metadata) {
 export async function createSaveFileElement(downloadLink, object, metadata) {
     let { username, sourceType, filetype, shortcode } = metadata;
 
-    if (metadata.uid == null) {
-        const userInfo = await getUserId(username);
-        metadata.uid = userInfo?.user?.id || null;
+    if (metadata.uid == null && username) {
+        if (!userIdCache.has(username)) {
+            userIdCache.set(username, getUserId(username));
+        }
+
+        try {
+            const userInfo = await userIdCache.get(username);
+            metadata.uid = userInfo?.user?.id || null;
+        } catch (err) {
+            userIdCache.delete(username);
+            metadata.uid = null;
+        }
     }
 
     const downloadName = getSaveFileName(downloadLink, metadata);
 
-    if (USER_SETTING.MODIFY_RESOURCE_EXIF && filetype === 'jpg' && shortcode && sourceType === 'photo' && (object.type === 'image/jpeg' || object.type === 'image/webp')) {
-        changeExifData(object, metadata)
-            .then(newBlob => triggerDownload(newBlob, downloadName))
-            .catch(err => {
-                console.error('Failed to strip EXIF and/or attach post URL to EXIF.', err);
-                triggerDownload(object, downloadName);
-            });
+    if (
+        USER_SETTING.MODIFY_RESOURCE_EXIF &&
+        filetype === 'jpg' &&
+        shortcode &&
+        sourceType === 'photo' &&
+        (object.type === 'image/jpeg' || object.type === 'image/webp')
+    ) {
+        try {
+            const newBlob = await changeExifData(object, metadata);
+            await triggerDownload(newBlob, downloadName);
+        } catch (err) {
+            console.error('Failed to strip EXIF and/or attach post URL to EXIF.', err);
+            await triggerDownload(object, downloadName);
+        }
     } else {
-        triggerDownload(object, downloadName);
+        await triggerDownload(object, downloadName);
     }
 }
 
@@ -993,60 +1023,71 @@ async function changeExifData(blob, metadata) {
  * @param  {Boolean}  [isPreview] - True to preview in a new tab instead of downloading.
  * @return {void}
  */
-export async function triggerLinkElement(element, isPreview) {
+export async function triggerLinkElement($element, isPreview = false) {
     try {
-        // OPTIMIZATION: cache $(element) — referenced 15+ times in this function
-        const $el = $(element);
+        const $el = $($element);
+
         let date = new Date().getTime();
         let timestamp = Math.floor(date / 1000);
-        let username = ($el.data('username')) ? $el.data('username') : state.GL_username;
-        let index = $el.attr('data-globalindex') || 0;
+        let username = $el.data('username') ? $el.data('username') : state.GLusername;
+        let index = parseInt($el.attr('data-globalindex') || 0, 10) || 0;
 
         if (!username && $el.data('path')) {
-            logger('catching owner name from shortcode:', $el.data('href'));
+            logger('catching owner name from shortcode', $el.data('href'));
             username = await getPostOwner($el.data('path')).catch(err => {
-                logger('get username failed, replace with default string, error message:', err.message);
+                logger('get username failed, replace with default string, error message', err?.message);
+                return null;
             });
-
-            if (username == null) {
-                username = "NONE";
-            }
         }
+
+        if (username == null) username = 'NONE';
 
         if (USER_SETTING.RENAME_PUBLISH_DATE && $el.attr('datetime')) {
-            timestamp = parseInt($el.attr('datetime'));
+            timestamp = parseInt($el.attr('datetime'), 10) || timestamp;
         }
 
-        let mediaId = $el.attr('media-id');
+        const mediaId = $el.attr('media-id') || $el.attr('data-media-id') || null;
+        const sourceType = $el.data('name');
+        const filetype = $el.data('type') || 'jpg';
+        const shortcode = $el.data('path');
+        const href = $el.data('href');
 
-        if (USER_SETTING.PREFER_DASH_MANIFEST && state.GL_mediaDataCache[mediaId] && !isPreview) {
-            logger('[Video Dash Stream]', 'Processing video with DASH manifest, mediaId:', mediaId);
-            const handled = await tryHandleDashFromMediaItem({
-                mediaItem: state.GL_mediaDataCache[mediaId],
+        const downloadOnly = !isPreview;
+
+        if (!isPreview && index < 0) {
+            alert(i18nNOCHECKRESOURCE);
+            return;
+        }
+
+        if (USER_SETTING.PREFER_DASH_MANIFEST && state.GL_mediaDataCache[mediaId]) {
+            logger('Video Dash Stream, Processing video with DASH manifest', 'mediaId', mediaId);
+
+            const handled = await tryHandleDashFromMediaItem(
+                state.GL_mediaDataCache[mediaId],
                 username,
-                sourceType: $el.data('name'),
+                sourceType,
                 timestamp,
-                shortcode: $el.data('path'),
-                isPreview: false,
+                shortcode,
+                downloadOnly ? false : isPreview,
                 index
-            });
-            if (handled) {
-                return;
-            }
+            );
+
+            if (handled) return;
         }
 
         if (USER_SETTING.CAPTURE_IMAGE_VIA_MEDIA_CACHE) {
             const cached = getImageFromCache(mediaId);
-            if (cached && $el.data('type') != "mp4") {
-                if (isPreview) {
+
+            if (cached && filetype !== 'mp4') {
+                if (!downloadOnly && isPreview) {
                     openNewTab(cached);
                 } else {
-                    saveFiles(cached, {
+                    await saveFiles(cached, {
                         username,
-                        sourceType: $el.data('name'),
+                        sourceType,
                         timestamp,
-                        filetype: $el.data('type') || 'jpg',
-                        shortcode: $el.data('path'),
+                        filetype: filetype || 'jpg',
+                        shortcode,
                         index
                     });
                 }
@@ -1054,19 +1095,19 @@ export async function triggerLinkElement(element, isPreview) {
             }
         }
 
-        if (USER_SETTING.FORCE_RESOURCE_VIA_MEDIA) {
+        if (USER_SETTING.FORCE_RESOURCE_VIA_MEDIA && mediaId) {
             updateLoadingBar(true);
-            let result = await getMediaInfo($el.attr('media-id'));
+            let result = await getMediaInfo(mediaId);
             updateLoadingBar(false);
 
-            if (result.status === 'ok') {
-                var resource_url = null;
+            if (result?.status === 'ok') {
+                let resource_url = null;
                 // OPTIMIZATION: cache result.items[0]
-                const mediaItem = result.items[0];
-                if (mediaItem.video_versions) {
+                const mediaItem = result.items?.[0];
+
+                if (mediaItem?.video_versions?.length) {
                     resource_url = mediaItem.video_versions[0].url;
-                }
-                else {
+                } else if (mediaItem?.image_versions2?.candidates?.length) {
                     mediaItem.image_versions2.candidates.sort(function (a, b) {
                         let aSTP = new URL(a.url).searchParams.get('stp');
                         let bSTP = new URL(b.url).searchParams.get('stp');
@@ -1074,87 +1115,76 @@ export async function triggerLinkElement(element, isPreview) {
                         if (aSTP && bSTP) {
                             if (aSTP.length > bSTP.length) return 1;
                             if (aSTP.length < bSTP.length) return -1;
-                        }
-                        else {
-                            if (a.width < b.width) return 1;
-                            if (a.width > b.width) return -1;
+                        } else {
+                            if ((a.width || 0) > (b.width || 0)) return 1;
+                            if ((a.width || 0) < (b.width || 0)) return -1;
                         }
 
                         return 0;
                     });
 
                     resource_url = mediaItem.image_versions2.candidates[0].url;
-
-                    const getWidthFromURL = function (obj) {
-                        if (obj.width != null) {
-                            return obj.width;
-                        }
-
-                        const url = new URL(obj.url);
-                        const stp = url.searchParams.get('stp');
-
-                        if (stp != null) {
-                            return parseInt(stp.match(/_p([0-9]+)x([0-9]+)_/i)?.at(1) || -1);
-                        }
-                        else {
-                            return 0;
-                        }
-                    }
-
-                    const resourceWidth = getWidthFromURL(mediaItem.image_versions2.candidates[0]);
-                    if (
-                        mediaItem.original_width !== resourceWidth &&
-                        resourceWidth !== -1
-                    ) {
-                        // alert();
-                    }
                 }
 
-                if (isPreview) {
+                if (!resource_url) {
+                    alert('Cannot find download URL.');
+                    return;
+                }
+
+                if (!downloadOnly && isPreview) {
                     openNewTab(replaceSameOriginHost(resource_url));
-                }
-                else {
-                    saveFiles(resource_url, {
+                } else {
+                    await saveFiles(resource_url, {
                         username,
-                        sourceType: $el.data('name'),
+                        sourceType,
                         timestamp,
-                        filetype: $el.data('type'),
-                        shortcode: $el.data('path')
+                        filetype,
+                        shortcode,
+                        index
                     });
                 }
+                return;
             }
-            else {
-                if (USER_SETTING.FALLBACK_TO_BLOB_FETCH_IF_MEDIA_API_THROTTLED) {
-                    if (isPreview) {
-                        openNewTab(replaceSameOriginHost($el.data('href')));
-                    }
-                    else {
-                        saveFiles($el.data('href'), {
-                            username,
-                            sourceType: $el.data('name'),
-                            timestamp,
-                            filetype: $el.data('type'),
-                            shortcode: $el.data('path')
-                        });
-                    }
+
+            if (USER_SETTING.FALLBACK_TO_BLOB_FETCH_IF_MEDIA_API_THROTTLED && href) {
+                if (!downloadOnly && isPreview) {
+                    openNewTab(replaceSameOriginHost(href));
+                } else {
+                    await saveFiles(href, {
+                        username,
+                        sourceType,
+                        timestamp,
+                        filetype,
+                        shortcode,
+                        index
+                    });
                 }
-                else {
-                    alert('Fetch failed from Media API. API response message: ' + result.message);
-                }
-                logger(result);
+                return;
             }
+
+            alert(`Fetch failed from Media API. API response message: ${result?.message}`);
+            logger(result);
+            return;
         }
-        else {
-            saveFiles($el.data('href'), {
-                username,
-                sourceType: $el.data('name'),
-                timestamp,
-                filetype: $el.data('type'),
-                shortcode: $el.data('path')
-            });
+
+        if (href) {
+            if (!downloadOnly && isPreview) {
+                openNewTab(replaceSameOriginHost(href));
+            } else {
+                await saveFiles(href, {
+                    username,
+                    sourceType,
+                    timestamp,
+                    filetype,
+                    shortcode,
+                    index
+                });
+            }
+            return;
         }
-    }
-    catch (err) {
+
+        alert('Cannot find download URL.');
+    } catch (err) {
         console.error('Occur error in triggerLinkElement:', err);
         logger('Occur error in triggerLinkElement:', err);
     }

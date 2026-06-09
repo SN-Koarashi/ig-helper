@@ -67,6 +67,8 @@ export const checkInterval = 250;
 export const style = GM_getResourceText("INTERNAL_CSS");
 export const locale_manifest = JSON.parse(GM_getResourceText("LOCALE_MANIFEST"));
 
+export const userIdCache = new Map();
+
 // OPTIMIZATION: Cached jQuery body reference — used in many places, jQuery 4
 // creates a new wrapper for each $('body') call. Reusing $body avoids that
 // overhead while remaining 100% behavior-compatible.
