@@ -18,6 +18,6 @@
     "globals": "^15.14.0"
   },
   "dependencies": {
-    "jquery": "^3.7.1"
+    "jquery": "^4.0.0"
   }
 }

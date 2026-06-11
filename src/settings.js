@@ -54,9 +54,25 @@ export const SVG = {
 };
 
 /*******************************/
+
+// FIX: resourceCountSelector moved to module scope — was previously re-declared
+// inside every createDownloadButton() invocation, and also referenced from the
+// body-level delegated handlers added below.
+
+// Improve the selector by using the value from the getVisibleNodeIndex function in 'const $viewport'.
+export const resourceCountSelector = '*:not([data-pagelet])>*:not([role]):not([data-pagelet])>*>*>*[role]>*>ul[class] li[class]';
+
+/*******************************/
 export const checkInterval = 250;
 export const style = GM_getResourceText("INTERNAL_CSS");
 export const locale_manifest = JSON.parse(GM_getResourceText("LOCALE_MANIFEST"));
+
+export const userIdCache = new Map();
+
+// OPTIMIZATION: Cached jQuery body reference — used in many places, jQuery 4
+// creates a new wrapper for each $('body') call. Reusing $body avoids that
+// overhead while remaining 100% behavior-compatible.
+export const $body = $('body');
 
 export var state = {
     videoVolume: (GM_getValue('G_VIDEO_VOLUME')) ? GM_getValue('G_VIDEO_VOLUME') : 1,
@@ -68,7 +84,6 @@ export var state = {
     currentURL: location.href,
     firstStarted: false,
     pageLoaded: false,
-    GL_registerEventList: [],
     GL_logger: [],
     GL_referrer: null,
     GL_postPath: null,

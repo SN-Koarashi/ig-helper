@@ -197,9 +197,11 @@ export function _i18n(text) {
  */
 export function repaintingTranslations() {
     $('[data-ih-locale]').each(function () {
-        $(this).text(_i18n($(this).attr('data-ih-locale')));
+        const $this = $(this);
+        $this.text(_i18n($this.data('ih-locale')));
     });
     $('[data-ih-locale-title]').each(function () {
-        $(this).attr('title', _i18n($(this).attr('data-ih-locale-title')));
+        const $this = $(this);
+        $this.attr('title', _i18n($this.data('ih-locale-title')));
     });
 }
