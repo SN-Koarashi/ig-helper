@@ -17,7 +17,7 @@
 // @name:zh-CN         IG小助手
 // @name:zh-TW         IG小精靈
 // @namespace          https://github.snkms.com/
-// @version            3.20.1
+// @version            4.0.1
 // @description        Download photos and videos from Instagram posts in one click, including Stories, Reels, and profile pictures.
 // @description:ar     نزّل صورًا ومقاطع فيديو من منشورات Instagram بنقرة واحدة، بما في ذلك القصص وReels وصور الملف الشخصي.
 // @description:de     Lade Fotos und Videos aus Instagram-Beiträgen mit einem Klick herunter, einschließlich Stories, Reels und Profilbildern.
@@ -51,7 +51,7 @@
 // @connect            i.instagram.com
 // @connect            raw.githubusercontent.com
 // @require            https://cdn.jsdelivr.net/npm/mediabunny@1.34.5/dist/bundles/mediabunny.min.cjs#sha256-wUFR+x2bDvpqgMAVGy2CvGvULyjTGvGy4UUAm8rae5U=
-// @require            https://code.jquery.com/jquery-3.7.1.min.js#sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=
+// @require            https://code.jquery.com/jquery-4.0.0.min.js#sha256-OaVG6prZf4v69dPg6PhVattBXkcOWQB62pdZ3ORyrao=
 // @resource           INTERNAL_CSS https://cdn.jsdelivr.net/gh/SN-Koarashi/ig-helper@master/style.css
 // @resource           LOCALE_MANIFEST https://cdn.jsdelivr.net/gh/SN-Koarashi/ig-helper@master/locale/manifest.json
 // @supportURL         https://github.com/SN-Koarashi/ig-helper/
@@ -111,21 +111,37 @@
     const IMAGE_MAX_CACHE_ITEMS = 300;
     /*******************************/
 
-    // Icon download by Google Fonts Material Icon
+    // Icon download by Google Fonts Material Icon & Lucide
     const SVG = {
-        DOWNLOAD: '<svg xmlns="http://www.w3.org/2000/svg" enable-background="new 0 0 24 24" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"><g><rect fill="none" height="24" width="24"/></g><g><path d="M18,15v3H6v-3H4v3c0,1.1,0.9,2,2,2h12c1.1,0,2-0.9,2-2v-3H18z M17,11l-1.41-1.41L13,12.17V4h-2v8.17L8.41,9.59L7,11l5,5 L17,11z"/></g></svg>',
-        NEW_TAB: '<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M19 19H5V5h7V3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2v-7h-2v7zM14 3v2h3.59l-9.83 9.83 1.41 1.41L19 6.41V10h2V3h-7z"/></svg>',
-        THUMBNAIL: '<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M19 5v14H5V5h14m0-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-4.86 8.86l-3 3.87L9 13.14 6 17h12l-3.86-5.14z"/></svg>',
-        DOWNLOAD_ALL: '<svg xmlns="http://www.w3.org/2000/svg" enable-background="new 0 0 24 24" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"><g><rect fill="none" height="24" width="24"/></g><g><g><polygon points="18,6.41 16.59,5 12,9.58 7.41,5 6,6.41 12,12.41"/><polygon points="18,13 16.59,11.59 12,16.17 7.41,11.59 6,13 12,19"/></g></g></svg>',
+        DOWNLOAD: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-download-icon lucide-download"><path d="M12 15V3"/><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/></svg>',
+        NEW_TAB: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-external-link-icon lucide-external-link"><path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></svg>',
+        THUMBNAIL: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-image-icon lucide-image"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>',
+        DOWNLOAD_ALL: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-cloud-download-icon lucide-cloud-download"><path d="M12 13v8l-4-4"/><path d="m12 21 4-4"/><path d="M4.393 15.269A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.436 8.284"/></svg>',
         CLOSE: '<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z"/></svg>',
-        FULLSCREEN: '<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"/></svg>',
+        FULLSCREEN: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-maximize-icon lucide-maximize"><path d="M8 3H5a2 2 0 0 0-2 2v3"/><path d="M21 8V5a2 2 0 0 0-2-2h-3"/><path d="M3 16v3a2 2 0 0 0 2 2h3"/><path d="M16 21h3a2 2 0 0 0 2-2v-3"/></svg>',
         TURN_DEG: '<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#1f1f1f"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M7.34 6.41L.86 12.9l6.49 6.48 6.49-6.48-6.5-6.49zM3.69 12.9l3.66-3.66L11 12.9l-3.66 3.66-3.65-3.66zm15.67-6.26C17.61 4.88 15.3 4 13 4V.76L8.76 5 13 9.24V6c1.79 0 3.58.68 4.95 2.05 2.73 2.73 2.73 7.17 0 9.9C16.58 19.32 14.79 20 13 20c-.97 0-1.94-.21-2.84-.61l-1.49 1.49C10.02 21.62 11.51 22 13 22c2.3 0 4.61-.88 6.36-2.64 3.52-3.51 3.52-9.21 0-12.72z"/></svg>'
     };
+
+    /*******************************/
+
+    // FIX: resourceCountSelector moved to module scope — was previously re-declared
+    // inside every createDownloadButton() invocation, and also referenced from the
+    // body-level delegated handlers added below.
+
+    // Improve the selector by using the value from the getVisibleNodeIndex function in 'const $viewport'.
+    const resourceCountSelector = '*:not([data-pagelet])>*:not([role]):not([data-pagelet])>*>*>*[role]>*>ul[class] li[class]';
 
     /*******************************/
     const checkInterval = 250;
     const style = GM_getResourceText("INTERNAL_CSS");
     const locale_manifest = JSON.parse(GM_getResourceText("LOCALE_MANIFEST"));
+
+    const userIdCache = new Map();
+
+    // OPTIMIZATION: Cached jQuery body reference — used in many places, jQuery 4
+    // creates a new wrapper for each $('body') call. Reusing $body avoids that
+    // overhead while remaining 100% behavior-compatible.
+    const $body = $('body');
 
     var state = {
         videoVolume: (GM_getValue('G_VIDEO_VOLUME')) ? GM_getValue('G_VIDEO_VOLUME') : 1,
@@ -137,7 +153,6 @@
         currentURL: location.href,
         firstStarted: false,
         pageLoaded: false,
-        GL_registerEventList: [],
         GL_logger: [],
         GL_referrer: null,
         GL_postPath: null,
@@ -183,6 +198,7 @@
     });
 
     logger('Script Loaded', GM_info.script.name, 'version:', GM_info.script.version);
+    registerPostClickHandlers();
     purgeCache();
     /*******************************/
 
@@ -207,6 +223,7 @@
             state.pageLoaded = false;
             state.firstStarted = true;
             state.currentURL = location.href;
+            clearTimeout(state.homepageObserverDebounce);
             state.GL_observer.disconnect();
 
             // Auto-skip "X shared this with you" dialog on any ?igsh= link
@@ -251,6 +268,8 @@
 
                         // This is to prevent the detection of the "Modify Video Volume" setting from being too slow.
                         setTimeout(() => {
+                            clearInterval(state.GL_repeat);
+                            state.GL_repeat = null;
                             onReadyMyDW(false);
                         }, 15);
                     }
@@ -279,6 +298,7 @@
 
                     const element = $('div[id^="mount"] > div > div div > section > main div:not([class]):not([style]) > div > article')?.parent()[0];
                     if (element) {
+                        state.GL_observer.disconnect();
                         state.GL_observer.observe(element, {
                             childList: true
                         });
@@ -375,37 +395,10 @@
                 else {
                     state.pageLoaded = false;
                     // Remove icons
-                    if ($('.IG_DWSTORY').length) {
-                        $('.IG_DWSTORY').remove();
-                    }
-                    if ($('.IG_DWSTORY_ALL').length) {
-                        $('.IG_DWSTORY_ALL').remove();
-                    }
-                    if ($('.IG_DWNEWTAB').length) {
-                        $('.IG_DWNEWTAB').remove();
-                    }
-                    if ($('.IG_DWSTORY_THUMBNAIL').length) {
-                        $('.IG_DWSTORY_THUMBNAIL').remove();
-                    }
-                    if ($('.IG_DWSTORY_POSITION').length) {
-                        $('.IG_DWSTORY_POSITION').remove();
-                    }
-
-                    if ($('.IG_DWHISTORY').length) {
-                        $('.IG_DWHISTORY').remove();
-                    }
-                    if ($('.IG_DWHISTORY_ALL').length) {
-                        $('.IG_DWHISTORY_ALL').remove();
-                    }
-                    if ($('.IG_DWHINEWTAB').length) {
-                        $('.IG_DWHINEWTAB').remove();
-                    }
-                    if ($('.IG_DWHISTORY_THUMBNAIL').length) {
-                        $('.IG_DWHISTORY_THUMBNAIL').remove();
-                    }
-                    if ($('.IG_DWHISTORY_POSITION').length) {
-                        $('.IG_DWHISTORY_POSITION').remove();
-                    }
+                    // OPTIMIZATION: Single combined selector + .remove() — replaces 8 separate
+                    // $('.CLASS').length checks + removes. Behavior is identical because
+                    // .remove() is a no-op on an empty set.
+                    $('.IG_DWSTORY, .IG_DWSTORY_ALL, .IG_DWNEWTAB, .IG_DWSTORY_THUMBNAIL, .IG_DWSTORY_POSITION, .IG_DWHISTORY, .IG_DWHISTORY_ALL, .IG_DWHINEWTAB, .IG_DWHISTORY_THUMBNAIL, .IG_DWHISTORY_POSITION').remove();
                 }
             }
 
@@ -448,9 +441,13 @@
         if (USER_SETTING.DIRECT_DOWNLOAD_STORY) {
 
             let complete = 0;
-            setDownloadProgress(complete, highStories.data.reels_media[0].items.length);
+            // OPTIMIZATION: Cache items array — accessed inside per-item setTimeout closures,
+            // avoids repeated .reels_media[0].items lookups (was 3 lookups per iteration).
+            const items = highStories.data.reels_media[0].items;
+            const totalItems = items.length;
+            setDownloadProgress(complete, totalItems);
 
-            highStories.data.reels_media[0].items.forEach((item, idx) => {
+            items.forEach((item, idx) => {
                 setTimeout(() => {
                     if (USER_SETTING.RENAME_PUBLISH_DATE) {
                         timestamp = item.taken_at_timestamp;
@@ -476,7 +473,7 @@
                                         isPreview: false,
                                     });
                                     if (handled) {
-                                        setDownloadProgress(++complete, highStories.data.reels_media[0].items.length);
+                                        setDownloadProgress(++complete, totalItems);
                                         return;
                                     }
                                 } else if (USER_SETTING.FALLBACK_TO_BLOB_FETCH_IF_MEDIA_API_THROTTLED) {
@@ -494,7 +491,7 @@
                                     shortcode: item.id
                                 }
                             );
-                            setDownloadProgress(++complete, highStories.data.reels_media[0].items.length);
+                            setDownloadProgress(++complete, totalItems);
                         })();
                     }
                     else {
@@ -506,7 +503,7 @@
                                 filetype: 'jpg',
                                 shortcode: item.id
                             }).then(() => {
-                                setDownloadProgress(++complete, highStories.data.reels_media[0].items.length);
+                                setDownloadProgress(++complete, totalItems);
                             });
                     }
                 }, 100 * idx);
@@ -543,21 +540,23 @@
             if (state.GL_dataCache.highlights[highlightId]) {
                 logger('Fetch from memory cache:', highlightId);
 
-                let totIndex = state.GL_dataCache.highlights[highlightId].data.reels_media[0].items.length;
+                // OPTIMIZATION: cache items array — avoids 4 repeated property lookups
+                const items = state.GL_dataCache.highlights[highlightId].data.reels_media[0].items;
+                let totIndex = items.length;
                 username = state.GL_dataCache.highlights[highlightId].data.reels_media[0].owner.username;
-                target = state.GL_dataCache.highlights[highlightId].data.reels_media[0].items[totIndex - nowIndex];
+                target = items[totIndex - nowIndex];
             }
             else {
                 let highStories = await getHighlightStories(highlightId);
-                let totIndex = highStories.data.reels_media[0].items.length;
+                const items = highStories.data.reels_media[0].items;
+                let totIndex = items.length;
                 username = highStories.data.reels_media[0].owner.username;
-                target = highStories.data.reels_media[0].items[totIndex - nowIndex];
+                target = items[totIndex - nowIndex];
 
                 state.GL_dataCache.highlights[highlightId] = highStories;
             }
 
             logger('onHighlightsStory', highlightId, state.GL_dataCache.highlights[highlightId]);
-
 
             if (USER_SETTING.RENAME_PUBLISH_DATE) {
                 timestamp = target.taken_at_timestamp;
@@ -587,42 +586,44 @@
                 let result = await getMediaInfo(target.id);
 
                 if (result.status === 'ok') {
-                    if (result.items[0].video_versions) {
+                    // OPTIMIZATION: cache first media item — accessed 5+ times below
+                    const mediaItem = result.items[0];
+                    if (mediaItem.video_versions) {
                         const handled = await tryHandleDashFromMediaItem({
-                            mediaItem: result.items[0],
+                            mediaItem: mediaItem,
                             username,
                             sourceType: "highlights",
                             timestamp,
-                            shortcode: result.items[0].id,
+                            shortcode: mediaItem.id,
                             isPreview,
                         });
                         if (handled) return;
 
                         if (isPreview) {
-                            openNewTab(result.items[0].video_versions[0].url);
+                            openNewTab(mediaItem.video_versions[0].url);
                         }
                         else {
-                            saveFiles(result.items[0].video_versions[0].url,
+                            saveFiles(mediaItem.video_versions[0].url,
                                 {
                                     username,
                                     sourceType: "highlights",
                                     timestamp,
                                     filetype: 'mp4',
-                                    shortcode: result.items[0].id
+                                    shortcode: mediaItem.id
                                 });
                         }
                     }
                     else {
                         if (isPreview) {
-                            openNewTab(result.items[0].image_versions2.candidates[0].url);
+                            openNewTab(mediaItem.image_versions2.candidates[0].url);
                         }
                         else {
-                            saveFiles(result.items[0].image_versions2.candidates[0].url, {
+                            saveFiles(mediaItem.image_versions2.candidates[0].url, {
                                 username,
                                 sourceType: "highlights",
                                 timestamp,
                                 filetype: 'jpg',
-                                shortcode: result.items[0].id
+                                shortcode: mediaItem.id
                             });
                         }
                     }
@@ -696,9 +697,12 @@
                     let nowSize = 0;
 
                     $$element.each(function () {
-                        if ($(this).width() > nowSize) {
-                            nowSize = $(this).width();
-                            $element = $(this).children('div').first();
+                        // OPTIMIZATION: cache $(this) — was wrapped 3 times per iteration
+                        const $this = $(this);
+                        const width = $this.width();
+                        if (width > nowSize) {
+                            nowSize = width;
+                            $element = $this.children('div').first();
                         }
                     });
                 }
@@ -724,7 +728,7 @@
                     //    $element.find('video').each(function(){
                     //        $(this).on('play playing', function(){
                     //            if(!$(this).data('modify')){
-                    //                $(this).attr('data-modify', true);
+                    //                $(this).data('modify', true);
                     //                this.volume = VIDEO_VOLUME;
                     //                logger('(highlight) Added video event listener #modify');
                     //            }
@@ -735,14 +739,16 @@
                     // Make sure to first remove thumbnail button if still exists and highlight is a picture
                     $element.find('img[referrerpolicy]').each(function () {
                         $(this).on('load', function () {
-                            if (!$(this).data('remove-thumbnail')) {
+                            // OPTIMIZATION: cache $(this) (called 4 times in this handler)
+                            const $img = $(this);
+                            if (!$img.data('remove-thumbnail')) {
                                 if ($element.find('.IG_DWHISTORY_THUMBNAIL').length === 0) {
-                                    $(this).attr('data-remove-thumbnail', true);
+                                    $img.data('remove-thumbnail', true);
                                     $('.IG_DWHISTORY_THUMBNAIL').remove();
                                     logger('(highlight) Manually removing thumbnail button');
                                 }
                                 else {
-                                    $(this).attr('data-remove-thumbnail', true);
+                                    $img.data('remove-thumbnail', true);
                                     logger('(highlight) Thumbnail button is not present for this picture');
                                 }
                             }
@@ -754,12 +760,12 @@
                     //    $(this).on('timeupdate',function(){
                     //        if(!$(this).data('modify-thumbnail')){
                     //            if($element.find('.IG_DWHISTORY_THUMBNAIL').length === 0){
-                    //                $(this).attr('data-modify-thumbnail', true);
+                    //                $(this).data('modify-thumbnail', true);
                     //                onHighlightsStoryThumbnail(false);
                     //                logger('(highlight) Manually inserting thumbnail button');
                     //            }
                     //            else{
-                    //                $(this).attr('data-modify-thumbnail', true);
+                    //                $(this).data('modify-thumbnail', true);
                     //                logger('(highlight) Thumbnail button already inserted');
                     //            }
                     //        }
@@ -793,15 +799,17 @@
             if (state.GL_dataCache.highlights[highlightId]) {
                 logger('Fetch from memory cache:', highlightId);
 
-                let totIndex = state.GL_dataCache.highlights[highlightId].data.reels_media[0].items.length;
+                const items = state.GL_dataCache.highlights[highlightId].data.reels_media[0].items;
+                let totIndex = items.length;
                 username = state.GL_dataCache.highlights[highlightId].data.reels_media[0].owner.username;
-                target = state.GL_dataCache.highlights[highlightId].data.reels_media[0].items[totIndex - nowIndex];
+                target = items[totIndex - nowIndex];
             }
             else {
                 let highStories = await getHighlightStories(highlightId);
-                let totIndex = highStories.data.reels_media[0].items.length;
+                const items = highStories.data.reels_media[0].items;
+                let totIndex = items.length;
                 username = highStories.data.reels_media[0].owner.username;
-                target = highStories.data.reels_media[0].items[totIndex - nowIndex];
+                target = items[totIndex - nowIndex];
 
                 state.GL_dataCache.highlights[highlightId] = highStories;
             }
@@ -887,9 +895,11 @@
                         let nowSize = 0;
 
                         $$element.each(function () {
-                            if ($(this).width() > nowSize) {
-                                nowSize = $(this).width();
-                                $element = $(this).children('div').first();
+                            const $this = $(this);
+                            const width = $this.width();
+                            if (width > nowSize) {
+                                nowSize = width;
+                                $element = $this.children('div').first();
                             }
                         });
                     }
@@ -921,16 +931,23 @@
             }).removeAttr('data-snig');
         }
 
+        clearInterval(state.GL_repeat);
+        state.GL_repeat = null;
+
         // Whether is Instagram dialog?
         if (NoDialog == false) {
             const maxCall = 100;
             let i = 0;
-            var repeat = setInterval(() => {
+            state.GL_repeat = setInterval(() => {
                 // section:visible > main > div > div[data-snig="canDownload"] > div > div > div > hr << (single foreground post in page, non-floating // <hr> element here is literally the line beneath poster's username) >>
                 // section:visible > main > div > div.xdt5ytf[data-snig="canDownload"] << (former CSS selector for single foreground post in page, non-floating) >>
                 // <hr> is much more unique element than "div.xdt5ytf"
-                if (i > maxCall || $('article[data-snig="canDownload"], section:visible > main > div > div[data-snig="canDownload"] > div > div > div > hr, div[id^="mount"] > div > div > div.x1n2onr6.x1vjfegm div[data-snig="canDownload"]').length > 0) {
-                    clearInterval(repeat);
+                if (i > maxCall || $(`article[data-snig="canDownload"],
+                    section:visible > main > div > div[data-snig="canDownload"] > div > div > div > hr,
+                    div[id^="mount"] div div div.x1n2onr6.x1vjfegm div[data-snig="canDownload"]
+                `).length > 0) {
+                    clearInterval(state.GL_repeat);
+                    state.GL_repeat = null;
 
                     if (i > maxCall) {
                         //alert('Trying to call button creation method reached to maximum try times. If you want to re-register method, please open script menu and press "Reload Script" button or hotkey "R" to reload main timer.');
@@ -957,14 +974,18 @@
      * @return {Void}
      */
     function initPostVideoFunction($mainElement) {
-        $mainElement.find('video').each(function () {
+        // OPTIMIZATION: cache $videos — used in 3-4 separate .find('video') traversals below
+        const $videos = $mainElement.find('video');
+
+        $videos.each(function () {
             $(this).off('fullscreenchange.IG_videoControl').on('fullscreenchange.IG_videoControl', function () {
-                if ($(this).attr('style').includes('object-fit')) {
+                const $vid = $(this);
+                if ($vid.attr('style').includes('object-fit')) {
                     if (document.fullscreenElement == this) {
-                        $(this).css('object-fit', 'contain');
+                        $vid.css('object-fit', 'contain');
                     }
                     else {
-                        $(this).css('object-fit', 'cover');
+                        $vid.css('object-fit', 'cover');
                     }
                 }
             });
@@ -972,10 +993,11 @@
 
         // Disable video autoplay
         if (USER_SETTING.DISABLE_VIDEO_LOOPING) {
-            $mainElement.find('video').each(function () {
+            $videos.each(function () {
                 $(this).on('ended', function () {
-                    if (!$(this).data('loop')) {
-                        $(this).attr('data-loop', true);
+                    const $vid = $(this);
+                    if (!$vid.data('loop')) {
+                        $vid.data('loop', true);
                         this.pause();
                         logger('(post) Added video event listener #loop');
                     }
@@ -985,10 +1007,11 @@
 
         // Modify video volume
         if (USER_SETTING.MODIFY_VIDEO_VOLUME) {
-            $mainElement.find('video').each(function () {
+            $videos.each(function () {
                 $(this).on('play playing', function () {
-                    if (!$(this).data('modify')) {
-                        $(this).attr('data-modify', true);
+                    const $vid = $(this);
+                    if (!$vid.data('modify')) {
+                        $vid.data('modify', true);
                         this.volume = state.videoVolume;
                         logger('(post) Added video event listener #modify');
                     }
@@ -1007,7 +1030,7 @@
                     $overlayElement = $(e.target).parents('div[aria-label][data-visualcompletion="ignore"]').first();
                 }
 
-                $mainElement.find('video').each(function () {
+                $videos.each(function () {
                     $(this).css('z-index', '2');
                     $(this).attr('controls', true);
                     state.GL_weakCache.overlay.set(this, $overlayElement);
@@ -1019,39 +1042,40 @@
 
             $mainElement.off('contextmenu.IG_videoControl').on('contextmenu.IG_videoControl', handleSwitchController);
 
-            $mainElement.find('video').each(function () {
-                if (!$(this).data('controls')) {
-                    let $video = $(this);
+            $videos.each(function () {
+                const $video = $(this);
+                if (!$video.data('controls')) {
 
                     logger('(post) Added video html5 contorller #modify');
 
                     if (USER_SETTING.MODIFY_VIDEO_VOLUME) {
                         this.volume = state.videoVolume;
 
-                        $(this).on('loadstart', function () {
+                        $video.on('loadstart', function () {
                             this.volume = state.videoVolume;
                         });
                     }
 
 
-                    let $mute_button_wrapper = $(this).parent().find('video + div > div');
+                    let $mute_button_wrapper = $video.parent().find('video + div > div');
                     $mute_button_wrapper = $mute_button_wrapper.add($mainElement);
 
                     // eslint-disable-next-line no-unused-vars
                     let $element_mute_button = $mute_button_wrapper.find('button[type="button"], div[role="button"]').filter(function (idx) {
+                        const $b = $(this);
                         // This is mute/unmute's icon
-                        return $(this).width() <= 64 && $(this).height() <= 64 && $(this).find('svg > path[d^="M16.636 7.028a1.5"], svg > path[d^="M1.5 13.3c-.8"]').length > 0;
+                        return $b.width() <= 64 && $b.height() <= 64 && $b.find('svg > path[d^="M16.636 7.028a1.5"], svg > path[d^="M1.5 13.3c-.8"]').length > 0;
                     });
 
                     state.GL_weakCache.mutedButton.set(this, $element_mute_button);
 
-                    let $targets = $(this).parent().find('video + div > div').first();
+                    let $targets = $video.parent().find('video + div > div').first();
 
                     // Hide layout to show controller
                     $targets.off('contextmenu.IG_videoControl').on('contextmenu.IG_videoControl', handleSwitchController);
 
                     // Restore layout to show details interface
-                    $(this).on('contextmenu', function (e) {
+                    $video.on('contextmenu', function (e) {
                         e.preventDefault();
                         e.stopPropagation();
 
@@ -1063,10 +1087,10 @@
                         $(this).parents('a[href^="/reels/"]').first().removeAttr("draggable");
                     });
 
-                    $(this).on('volumechange', function () {
+                    $video.on('volumechange', function () {
                         let video = this;
                         let $element_mute_button = state.GL_weakCache.mutedButton.get(this) || {};
-                        let is_element_muted = $element_mute_button.find('svg > path[d^="M16.636"]').length === 0;
+                        let is_element_muted = $element_mute_button.find && $element_mute_button.find('svg > path[d^="M16.636"]').length === 0;
 
                         if (this.muted != is_element_muted) {
                             this.volume = state.videoVolume;
@@ -1083,33 +1107,34 @@
                             }
                         }
 
-                        if ($(this).attr('data-completed')) {
+                        const $v = $(this);
+                        if ($v.data('completed')) {
                             state.videoVolume = this.volume;
                             GM_setValue('G_VIDEO_VOLUME', this.volume);
                         }
 
                         if (this.volume == state.videoVolume) {
-                            $(this).attr('data-completed', true);
+                            $v.data('completed', true);
                         }
                     });
 
-                    $(this).parents('a[href^="/reels/"]').first().on('click', function (e) {
+                    $video.parents('a[href^="/reels/"]').first().on('click', function (e) {
                         if ($video.attr('controls')) {
                             e.preventDefault();
                             e.stopPropagation();
                         }
                     });
 
-                    $(this).css('position', 'absolute');
-                    $(this).attr('data-controls', true);
+                    $video.css('position', 'absolute');
+                    $video.data('controls', true);
                 }
             });
         }
 
-        var $videos = $mainElement.find('video');
         var $buttonParent = $mainElement.find('video + div > div').first();
         toggleVolumeSilder($videos, $buttonParent, 'post', 'bottom');
     };
+
 
     /**
      * createDownloadButton
@@ -1123,19 +1148,19 @@
         $('article, section:visible > main > div > div > div > div > div > hr').map(function (index) {
             return $(this).is('section:visible > main > div > div > div > div > div > hr') ? $(this).parent().parent().parent().parent()[0] : this;
         }).filter(function () {
-            return $(this).height() > 0 && $(this).width() > 0
+            const $this = $(this);
+            return $this.height() > 0 && $this.width() > 0
         })
             .each(function (index) {
+                // OPTIMIZATION: cache $(this) — referenced 8+ times in this each() body
+                const $self = $(this);
                 // If it is have not download icon
                 // class x1iyjqo2 mean user profile pages post list container
-                if (!$(this).attr('data-snig') && !$(this).hasClass('x1iyjqo2') && !$(this).children('article')?.hasClass('x1iyjqo2') && $(this).parents('div#scrollview').length === 0) {
-                    logger("Found post container", $(this));
+                if (!$self.attr('data-snig') && !$self.hasClass('x1iyjqo2') && !$self.children('article')?.hasClass('x1iyjqo2') && $self.parents('div#scrollview').length === 0) {
+                    logger("Found post container", $self);
 
-                    const $mainElement = $(this);
+                    const $mainElement = $self;
                     const tagName = this.tagName;
-                    // Improve the selector by using the value from the getVisibleNodeIndex function in 'const $viewport'.
-                    const resourceCountSelector = '*:not([data-pagelet])>*:not([role]):not([data-pagelet])>*>*>*[role]>*>ul[class] li[class]';
-                    var displayResourceURL;
 
                     // not loop each in single top post
                     if (tagName === "DIV" && index != 0) {
@@ -1144,17 +1169,25 @@
 
                     const $childElement = $mainElement.children("div").children("div");
 
+                    if ($mainElement.find('> .button_wrapper, .button_wrapper').length > 0) {
+                        $mainElement.attr('data-snig', 'canDownload');
+                        return;
+                    }
+
                     if ($childElement.length === 0) return;
 
                     logger("Found insert point", $childElement);
 
                     // Modify carousel post counter's position to not interfere with our buttons
-                    if ($mainElement.find('._acay').length > 0) {
-                        if ($mainElement.find('._acay + .x24i39r').length > 0) {
-                            $mainElement.find('._acay + .x24i39r').css('top', '37px');
+                    // OPTIMIZATION: cache repeated ._acay lookup
+                    const $acay = $mainElement.find('._acay');
+                    if ($acay.length > 0) {
+                        const $acayX24 = $mainElement.find('._acay + .x24i39r');
+                        if ($acayX24.length > 0) {
+                            $acayX24.css('top', '37px');
                         }
 
-                        const observeNode = $mainElement.find('._acay').first().parent()[0];
+                        const observeNode = $acay.first().parent()[0];
                         var observer = new MutationObserver(function () {
                             $mainElement.find('._acay + .x24i39r').css('top', '37px');
                         });
@@ -1172,42 +1205,48 @@
                     const ThumbnailElement = `<div data-ih-locale-title="VIDEO_THUMBNAIL" title="${_i18n("VIDEO_THUMBNAIL")}" class="IG_THUMBNAIL_MAIN">${SVG.THUMBNAIL}</div>`;
                     const ViewerElement = `<div data-ih-locale-title="IMAGE_VIEWER" title="${_i18n("IMAGE_VIEWER")}" class="IG_IMAGE_VIEWER">${SVG.FULLSCREEN}</div>`;
 
-                    $childElement.find(".button_wrapper").append(DownloadElement);
+                    // OPTIMIZATION: cache .button_wrapper inside $childElement (used 5+ times)
+                    const $buttonWrapper = $childElement.find(".button_wrapper");
+                    $buttonWrapper.append(DownloadElement);
 
                     const resource_count = $mainElement.find(resourceCountSelector).length;
 
                     if (resource_count > 1 && USER_SETTING.DIRECT_DOWNLOAD_VISIBLE_RESOURCE && !USER_SETTING.DIRECT_DOWNLOAD_ALL) {
                         const DownloadAllElement = `<div data-ih-locale-title="DW_ALL" title="${_i18n("DW_ALL")}" class="IG_DW_ALL_MAIN">${SVG.DOWNLOAD_ALL}</div>`;
-                        $childElement.find(".button_wrapper").append(DownloadAllElement);
+                        $buttonWrapper.append(DownloadAllElement);
                     }
 
-                    $childElement.find(".button_wrapper").append(NewTabElement);
+                    $buttonWrapper.append(NewTabElement);
 
                     let $resourceLayout = $childElement.filter(function () {
-                        return $(this).width() > 100 && $(this).height() > 100;
+                        const $this = $(this);
+                        return $this.width() > 100 && $this.height() > 100;
                     }).first();
 
                     let $isNewPostStyleLayout = $resourceLayout.find(`a[role="link"][tabindex="0"][href^="/"]`).filter(function () {
-                        return !$(this).attr('href').startsWith("/p/") && !$(this).attr('href').startsWith("/reels/");
+                        const href = $(this).attr('href');
+                        return !href.startsWith("/p/") && !href.startsWith("/reels/");
                     }).length > 0;
 
                     // Make sure the button wrapper doesn't cover the "More Options" button.
                     if ($isNewPostStyleLayout) {
-                        $childElement.find(".button_wrapper").css('top', '45px');
+                        $buttonWrapper.css('top', '45px');
                     }
 
                     setTimeout(() => {
                         // eslint-disable-next-line no-unused-vars
                         const checkNodeCallback = (entries, observer) => {
                             entries.forEach((entry) => {
-                                //logger(entry);
                                 if (entry.isIntersecting) {
                                     var $targetNode = $(entry.target);
-                                    $childElement.find('.IG_THUMBNAIL_MAIN')?.remove();
-                                    $childElement.find('.IG_IMAGE_VIEWER')?.remove();
+                                    // OPTIMIZATION: combined remove selector instead of 2 separate
+                                    $childElement.find('.IG_THUMBNAIL_MAIN, .IG_IMAGE_VIEWER').remove();
 
                                     // Check if video?
                                     if ($targetNode.find('video').length > 0) {
+                                        // FIX: clear any stale image URL when the visible item is a video
+                                        $mainElement.removeData('igHelper_displayResourceURL');
+
                                         if ($childElement.find('.IG_THUMBNAIL_MAIN').length === 0) {
                                             $childElement.find(".button_wrapper").append(ThumbnailElement);
                                         }
@@ -1216,7 +1255,9 @@
                                     }
                                     // is Image
                                     else {
-                                        displayResourceURL = $targetNode.find('img').attr('src');
+                                        const imgSrc = $targetNode.find('img').attr('src');
+                                        $mainElement.data('igHelper_displayResourceURL', imgSrc);
+
                                         $childElement.find(".button_wrapper").append(ViewerElement);
                                     }
                                 }
@@ -1236,7 +1277,8 @@
                             observer_i.disconnect();
 
                             $(target).find('li').each(function () {
-                                if ($(target).find('video').length > 0 || $(target).find('img').length > 0) {
+                                const $t = $(target);
+                                if ($t.find('video').length > 0 || $t.find('img').length > 0) {
                                     observer_i.observe(this);
                                 }
                             });
@@ -1245,9 +1287,10 @@
                         let $triggeredTarget = null;
                         // first onload
                         $childElement.find('.button_wrapper').parent().find('ul li, div[role="button"] > div, div[class] > div').each(function () {
-                            const $targetNode = $(this).find('video').length > 0
-                                ? $(this).find('video')?.first()
-                                : $(this).find('img')?.first();
+                            const $li = $(this);
+                            const $targetNode = $li.find('video').length > 0
+                                ? $li.find('video')?.first()
+                                : $li.find('img')?.first();
 
                             // Check if the node is visible and has size, 
                             // and not the same node as last triggered one to avoid duplicated trigger 
@@ -1267,7 +1310,7 @@
                                     $targetNode.get(0).tagName === "IMG" &&
                                     $targetNode.attr('alt')?.length == 0
                                 ) {
-                                    return;
+                                        return;
                                 }
 
                                 $triggeredTarget = $targetNode;
@@ -1275,290 +1318,398 @@
                             }
                         });
 
+                        const $bwParent = $childElement.find('.button_wrapper').parent();
                         const listRoot =
-                            $childElement.find('.button_wrapper').parent().find('ul li, div[role="button"] > div').first().parent()[0];
+                            $bwParent.find('ul li, div[role="button"] > div').first().parent()[0] ||
+                            $bwParent.find('ul').first()[0];
 
                         if (listRoot) {
                             observer.observe(listRoot, {
                                 attributes: true,
                                 childList: true,
                             });
-                        }
-                        else {
+                        } else {
                             initPostVideoFunction($mainElement);
                             logger("Cannot find resource list root element, thumbnail and viewer button may not work.");
                         }
 
                     }, 50);
 
-
                     $childElement.css('position', 'relative');
 
-                    state.GL_registerEventList.push({
-                        element: this,
-                        trigger: [
-                            '.IG_THUMBNAIL_MAIN',
-                            '.IG_NEWTAB_MAIN',
-                            '.IG_DW_ALL_MAIN',
-                            '.IG_DW_MAIN',
-                            '.IG_IMAGE_VIEWER'
-                        ]
-                    });
-
-                    $(this).on('click', '.IG_IMAGE_VIEWER', function () {
-                        if (displayResourceURL != null) {
-                            openImageViewer(displayResourceURL);
-                        }
-                        else {
-                            alert("Cannot find resource url.");
-                        }
-                    });
-
-                    $(this).on('click', '.IG_THUMBNAIL_MAIN', function () {
-                        updateLoadingBar(true);
-
-                        state.GL_username = $mainElement.attr('data-username');
-                        state.GL_postPath = location.pathname.replace(/\/$/, '').split('/').at(-1) || $mainElement.find('a[href^="/p/"]').first().attr("href").split("/").at(2) || $(this).parent().parent().parent().children("div:last-child").children("div").children("div:last-child").find('a[href^="/p/"]').last().attr("href").split("/").at(2);
-
-                        var index = getVisibleNodeIndex($mainElement);
-
-                        IG_createDM(true, false);
-
-                        createMediaListDOM(state.GL_postPath, ".IG_POPUP_DIG .IG_POPUP_DIG_MAIN .IG_POPUP_DIG_BODY", "").then(() => {
-                            let checkBlob = setInterval(() => {
-                                if ($('.IG_POPUP_DIG .IG_POPUP_DIG_MAIN .IG_POPUP_DIG_BODY a').length > 0) {
-                                    clearInterval(checkBlob);
-                                    var $videoThumbnail = $('.IG_POPUP_DIG .IG_POPUP_DIG_BODY a[data-globalindex="' + (index + 1) + '"]')?.parent().find('.videoThumbnail')?.first();
-
-                                    if ($videoThumbnail != null && $videoThumbnail.length > 0) {
-                                        $videoThumbnail.trigger("click");
-                                    }
-                                    else {
-                                        alert('Cannot find thumbnail URL.');
-                                    }
-
-                                    updateLoadingBar(false);
-                                    $('.IG_POPUP_DIG').remove();
-                                }
-                            }, 250);
-                        });
-                    });
-
-                    $(this).on('click', '.IG_NEWTAB_MAIN', function () {
-                        updateLoadingBar(true);
-
-                        state.GL_username = $mainElement.attr('data-username');
-                        state.GL_postPath = location.pathname.replace(/\/$/, '').split('/').at(-1) || $mainElement.find('a[href^="/p/"]').first().attr("href").split("/").at(2) || $(this).parent().parent().parent().children("div:last-child").children("div").children("div:last-child").find('a[href^="/p/"]').last().attr("href").split("/").at(2);
-
-                        var index = getVisibleNodeIndex($mainElement);
-
-                        IG_createDM(true, false);
-
-                        createMediaListDOM(state.GL_postPath, ".IG_POPUP_DIG .IG_POPUP_DIG_MAIN .IG_POPUP_DIG_BODY", "").then(() => {
-                            let checkBlob = setInterval(() => {
-                                if ($('.IG_POPUP_DIG .IG_POPUP_DIG_MAIN .IG_POPUP_DIG_BODY a').length > 0) {
-                                    clearInterval(checkBlob);
-                                    var $linkElement = $('.IG_POPUP_DIG .IG_POPUP_DIG_BODY a[data-globalindex="' + (index + 1) + '"]');
-
-                                    if (USER_SETTING.FORCE_RESOURCE_VIA_MEDIA && USER_SETTING.NEW_TAB_ALWAYS_FORCE_MEDIA_IN_POST) {
-                                        triggerLinkElement($linkElement.first()[0], true);
-                                    }
-                                    else {
-                                        let href = $linkElement?.attr('data-href');
-                                        if (href) {
-                                            openNewTab(replaceSameOriginHost(href));
-                                        }
-                                        else {
-                                            alert('Cannot find open tab URL.');
-                                        }
-                                    }
-
-                                    updateLoadingBar(false);
-                                    $('.IG_POPUP_DIG').remove();
-                                }
-                            }, 250);
-                        });
-                    });
-
-                    // Running if user click the download all icon
-                    $(this).on('click', '.IG_DW_ALL_MAIN', async function () {
-                        state.GL_username = $mainElement.attr('data-username');
-                        state.GL_postPath = location.pathname.replace(/\/$/, '').split('/').at(-1) || $mainElement.find('a[href^="/p/"]').first().attr("href").split("/").at(2) || $(this).parent().parent().parent().children("div:last-child").children("div").children("div:last-child").find('a[href^="/p/"]').last().attr("href").split("/").at(2);
-
-                        // Create element that download dailog
-                        IG_createDM(USER_SETTING.DIRECT_DOWNLOAD_ALL, true);
-
-                        $("#article-id").html(`<a href="https://www.instagram.com/p/${state.GL_postPath}">${state.GL_postPath}</a>`);
-
-                        $('.IG_POPUP_DIG .IG_POPUP_DIG_MAIN .IG_POPUP_DIG_BODY a').each(function () {
-                            $(this).wrap('<div></div>');
-                            $(this).before('<label class="inner_box_wrapper"><input class="inner_box" type="checkbox"><span></span></label>');
-                            $(this).after(`<div data-ih-locale-title="NEW_TAB" title="${_i18n("NEW_TAB")}" class="newTab">${SVG.NEW_TAB}</div>`);
-
-                            if ($(this).attr('data-name') == 'video') {
-                                $(this).after(`<div data-ih-locale-title="VIDEO_THUMBNAIL" title="${_i18n("VIDEO_THUMBNAIL")}" class="videoThumbnail">${SVG.THUMBNAIL}</div>`);
-                            }
-                        });
-
-
-                        createMediaListDOM(state.GL_postPath, ".IG_POPUP_DIG .IG_POPUP_DIG_MAIN .IG_POPUP_DIG_BODY", _i18n("LOAD_BLOB_MULTIPLE")).then(() => {
-                            let checkBlob = setInterval(() => {
-                                if ($('.IG_POPUP_DIG .IG_POPUP_DIG_MAIN .IG_POPUP_DIG_BODY a').length > 0) {
-                                    clearInterval(checkBlob);
-                                    $('.IG_POPUP_DIG .IG_POPUP_DIG_MAIN .IG_POPUP_DIG_BODY a').each(function () {
-                                        $(this).trigger("click");
-                                    });
-
-                                    $('.IG_POPUP_DIG').remove();
-                                }
-                            }, 250);
-                        });
-                    });
-
-                    // Running if user click the download icon
-                    $(this).on('click', '.IG_DW_MAIN', async function () {
-                        state.GL_username = $mainElement.attr('data-username');
-                        state.GL_postPath = location.pathname.replace(/\/$/, '').split('/').at(-1) || $mainElement.find('a[href^="/p/"]').first().attr("href").split("/").at(2) || $(this).parent().parent().parent().children("div:last-child").children("div").children("div:last-child").find('a[href^="/p/"]').last().attr("href").split("/").at(2);
-
-                        // Create element that download dailog
-                        IG_createDM(USER_SETTING.DIRECT_DOWNLOAD_ALL, true);
-
-                        $("#article-id").html(`<a href="https://www.instagram.com/p/${state.GL_postPath}">${state.GL_postPath}</a>`);
-
-                        if (USER_SETTING.DIRECT_DOWNLOAD_VISIBLE_RESOURCE) {
-                            updateLoadingBar(true);
-                            IG_setDM(true);
-
-                            var index = getVisibleNodeIndex($(this).parent().parent().parent());
-
-                            createMediaListDOM(state.GL_postPath, ".IG_POPUP_DIG .IG_POPUP_DIG_MAIN .IG_POPUP_DIG_BODY", "").then(() => {
-                                let checkBlob = setInterval(() => {
-                                    if ($('.IG_POPUP_DIG .IG_POPUP_DIG_MAIN .IG_POPUP_DIG_BODY a').length > 0) {
-                                        clearInterval(checkBlob);
-                                        var href = $('.IG_POPUP_DIG .IG_POPUP_DIG_BODY a[data-globalindex="' + (index + 1) + '"]')?.attr('data-href');
-
-                                        if (href) {
-                                            updateLoadingBar(false);
-                                            $('.IG_POPUP_DIG .IG_POPUP_DIG_BODY a[data-globalindex="' + (index + 1) + '"]')?.trigger("click");
-                                        }
-                                        else {
-                                            alert('Cannot find download URL.');
-                                        }
-
-                                        $('.IG_POPUP_DIG').remove();
-                                    }
-                                }, 250);
-                            });
-
-                            return;
-                        }
-
-                        if (!USER_SETTING.DIRECT_DOWNLOAD_ALL) {
-                            // Find video/image element and add the download icon
-                            var s = 0;
-                            var multiple = $(this).parent().parent().find(resourceCountSelector).length;
-                            var blob = USER_SETTING.FORCE_FETCH_ALL_RESOURCES;
-                            var publish_time = new Date(
-                                $(this).parent().parent().parent().find('a[href] time[datetime]').filter(function () {
-                                    let href = $(this).parents("a[href]").attr("href");
-                                    return href?.startsWith("/p/") || href?.match(/\/([\w.\-_]+)\/p\//ig) != null;
-                                }).first().attr('datetime')
-                            ).getTime();
-
-                            // If posts have more than one images or videos.
-                            if (multiple) {
-                                $(this).parent().parent().find(resourceCountSelector).each(function () {
-                                    let element_videos = $(this).parent().parent().parent().find('video');
-                                    //if(element_videos && element_videos.attr('src') && element_videos.attr('src').match(/^blob:/ig)){
-                                    if (element_videos && element_videos.attr('src')) {
-                                        blob = true;
-                                    }
-                                });
-
-
-                                if (blob || USER_SETTING.FORCE_RESOURCE_VIA_MEDIA) {
-                                    createMediaListDOM(state.GL_postPath, ".IG_POPUP_DIG .IG_POPUP_DIG_MAIN .IG_POPUP_DIG_BODY", _i18n("LOAD_BLOB_MULTIPLE"));
-                                }
-                                else {
-                                    $(this).parent().parent().find(resourceCountSelector).each(function () {
-                                        s++;
-                                        let element_videos = $(this).find('video');
-                                        let element_images = $(this).find('._aagv img');
-                                        let imgLink = (element_images.attr('srcset')) ? element_images.attr('srcset').split(" ")[0] : element_images.attr('src');
-
-                                        if (element_videos && element_videos.attr('src')) {
-                                            blob = true;
-                                        }
-                                        if (element_images && imgLink) {
-                                            $('.IG_POPUP_DIG .IG_POPUP_DIG_MAIN .IG_POPUP_DIG_BODY').append(`<a datetime="${publish_time}" data-needed="direct" data-path="${state.GL_postPath}" data-name="photo" data-type="jpg" data-globalIndex="${s}" href="javascript:;" data-href="${imgLink}"><img width="100" src="${imgLink}" /><br/>- <span data-ih-locale="IMG">${_i18n("IMG")}</span> ${s} -</a>`);
-                                        }
-
-                                    });
-
-                                    if (blob) {
-                                        createMediaListDOM(state.GL_postPath, ".IG_POPUP_DIG .IG_POPUP_DIG_MAIN .IG_POPUP_DIG_BODY", _i18n("LOAD_BLOB_RELOAD"));
-                                    }
-                                }
-                            }
-                            else {
-                                if (USER_SETTING.FORCE_RESOURCE_VIA_MEDIA) {
-                                    createMediaListDOM(state.GL_postPath, ".IG_POPUP_DIG .IG_POPUP_DIG_MAIN .IG_POPUP_DIG_BODY", _i18n("LOAD_BLOB_MULTIPLE"));
-                                }
-                                else {
-                                    s++;
-                                    let element_videos = $(this).parent().parent().parent().find('video');
-                                    let element_images = $(this).parent().parent().parent().find('._aagv img');
-                                    let imgLink = (element_images.attr('srcset')) ? element_images.attr('srcset').split(" ")[0] : element_images.attr('src');
-
-
-                                    if (element_videos && element_videos.attr('src')) {
-                                        createMediaListDOM(state.GL_postPath, ".IG_POPUP_DIG .IG_POPUP_DIG_MAIN .IG_POPUP_DIG_BODY", _i18n("LOAD_BLOB_ONE"));
-                                    }
-                                    if (element_images && imgLink) {
-                                        $('.IG_POPUP_DIG .IG_POPUP_DIG_MAIN .IG_POPUP_DIG_BODY').append(`<a datetime="${publish_time}" data-needed="direct" data-path="${state.GL_postPath}" data-name="photo" data-type="jpg" data-globalIndex="${s}" href="javascript:;" href="" data-href="${imgLink}"><img width="100" src="${imgLink}" /><br/>- <span data-ih-locale="IMG">${_i18n("IMG")}</span> ${s} -</a>`);
-                                    }
-                                }
-                            }
-                        }
-
-                        $('.IG_POPUP_DIG .IG_POPUP_DIG_MAIN .IG_POPUP_DIG_BODY a').each(function () {
-                            $(this).wrap('<div></div>');
-                            $(this).before('<label class="inner_box_wrapper"><input class="inner_box" type="checkbox"><span></span></label>');
-                            $(this).after(`<div data-ih-locale-title="NEW_TAB" title="${_i18n("NEW_TAB")}" class="newTab">${SVG.NEW_TAB}</div>`);
-
-                            if ($(this).attr('data-name') == 'video') {
-                                $(this).after(`<div data-ih-locale-title="VIDEO_THUMBNAIL" title="${_i18n("VIDEO_THUMBNAIL")}" class="videoThumbnail">${SVG.THUMBNAIL}</div>`);
-                            }
-                        });
-
-                        if (USER_SETTING.DIRECT_DOWNLOAD_ALL) {
-                            createMediaListDOM(state.GL_postPath, ".IG_POPUP_DIG .IG_POPUP_DIG_MAIN .IG_POPUP_DIG_BODY", _i18n("LOAD_BLOB_MULTIPLE")).then(() => {
-                                let checkBlob = setInterval(() => {
-                                    if ($('.IG_POPUP_DIG .IG_POPUP_DIG_MAIN .IG_POPUP_DIG_BODY a').length > 0) {
-                                        clearInterval(checkBlob);
-                                        let links = [];
-                                        $('.IG_POPUP_DIG .IG_POPUP_DIG_MAIN .IG_POPUP_DIG_BODY a').each(function () {
-                                            links.push($(this));
-                                        });
-
-                                        batchDownloadPostFiles(links).then(() => {
-                                            $('.IG_POPUP_DIG').remove();
-                                        });
-                                    }
-                                }, 250);
-                            });
-                        }
-                    });
-
                     // Add the mark that download is ready
-                    var username = $(this).find("header > div:last-child > div:first-child span a").first().text() || $(this).find('a[href^="/"]').filter(function () {
+                    var username = $self.find("header > div:last-child > div:first-child span a").first().text() || $self.find('a[href^="/"]').filter(function () {
                         return $(this)?.text()?.length > 0;
                     }).first().text();
 
-                    $(this).attr('data-snig', 'canDownload');
-                    $(this).attr('data-username', username);
+                    $self.attr('data-snig', 'canDownload');
+                    $self.data('username', username);
                 }
             });
+    }
+
+
+    /**
+     * registerPostClickHandlers
+     * @description Registers delegated body-level handlers for post download/view actions.
+     *
+     * FIX: Registers all post-button click handlers exactly once on $('body') using
+     * the event namespace ".igHelperPost". Body-level delegation means jQuery stores
+     * only a single handler object per event type (not one per article), and the
+     * handlers themselves never hold strong references to article DOM nodes —
+     * they resolve the relevant article at click-time via $(this).closest().
+     *
+     * Cleanup is a single $('body').off('.igHelperPost') call in reloadScript().
+     */
+    function registerPostClickHandlers() {
+        if (state.bodyEventsRegistered) return;
+        state.bodyEventsRegistered = true;
+
+        // OPTIMIZATION: All body-level delegated handlers now use cached $body reference
+        $body.on('click.igHelperPost', '.IG_IMAGE_VIEWER', function () {
+            const { $article } = getPostContextFromButton(this);
+            let url = $article.data('igHelper_displayResourceURL');
+
+            if (!url) {
+                url = $article.find('img:visible').filter(function () {
+                    const $img = $(this);
+                    return (($img.attr('alt') || '').length > 0) && (($img.attr('src') || '').length > 0);
+                }).first().attr('src');
+            }
+
+            if (url) {
+                openImageViewer(url);
+            } else {
+                alert("Cannot find resource url.");
+            }
+        });
+
+        $body.on('click.igHelperPost', '.IG_THUMBNAIL_MAIN', async function () {
+            updateLoadingBar(true);
+
+            try {
+                const { $article, postPath } = getPostContextFromButton(this);
+                if ($article.length === 0 || !postPath) {
+                    alert('Cannot determine post path.');
+                    return;
+                }
+
+                state.GL_username = $article.data('username');
+                state.GL_postPath = postPath;
+                const index = getVisibleNodeIndex($article);
+
+                IG_createDM(true, false);
+
+                const totalInserted = await createMediaListDOM(
+                    state.GL_postPath,
+                    ".IG_POPUP_DIG .IG_POPUP_DIG_MAIN .IG_POPUP_DIG_BODY",
+                    ""
+                );
+
+                if (!totalInserted || totalInserted < 1) {
+                    alert('Cannot find thumbnail URL.');
+                    return;
+                }
+
+                const $popupBody = $('.IG_POPUP_DIG .IG_POPUP_DIG_MAIN .IG_POPUP_DIG_BODY');
+                const $videoThumbnail = $popupBody
+                    .find('a[data-globalindex="' + (index + 1) + '"]')
+                    .parent()
+                    .find('.videoThumbnail')
+                    .first();
+
+                if ($videoThumbnail.length > 0) {
+                    $videoThumbnail.trigger("click");
+                }
+                else {
+                    alert('Cannot find thumbnail URL.');
+                }
+            }
+            catch (err) {
+                logger('registerPostClickHandlers .IG_THUMBNAIL_MAIN', err);
+                alert('Cannot find thumbnail URL.');
+            }
+            finally {
+                updateLoadingBar(false);
+                $('.IG_POPUP_DIG').remove();
+            }
+        });
+
+        $body.on('click.igHelperPost', '.IG_NEWTAB_MAIN', async function () {
+            updateLoadingBar(true);
+
+            try {
+                const { $article, postPath } = getPostContextFromButton(this);
+                if ($article.length === 0 || !postPath) {
+                    alert('Cannot determine post path.');
+                    return;
+                }
+
+                state.GL_username = $article.data('username');
+                state.GL_postPath = postPath;
+                const index = getVisibleNodeIndex($article);
+
+                IG_createDM(true, false);
+
+                const totalInserted = await createMediaListDOM(
+                    state.GL_postPath,
+                    ".IG_POPUP_DIG .IG_POPUP_DIG_MAIN .IG_POPUP_DIG_BODY",
+                    ""
+                );
+
+                if (!totalInserted || totalInserted < 1) {
+                    alert('Cannot find open tab URL.');
+                    return;
+                }
+
+                const $popupBody = $('.IG_POPUP_DIG .IG_POPUP_DIG_MAIN .IG_POPUP_DIG_BODY');
+                const $linkElement = $popupBody.find('a[data-globalindex="' + (index + 1) + '"]');
+
+                if ($linkElement.length === 0) {
+                    alert('Cannot find open tab URL.');
+                    return;
+                }
+
+                if (USER_SETTING.FORCE_RESOURCE_VIA_MEDIA && USER_SETTING.NEW_TAB_ALWAYS_FORCE_MEDIA_IN_POST) {
+                    triggerLinkElement($linkElement.first()[0], true);
+                }
+                else {
+                    const href = $linkElement.data('href');
+                    if (href) {
+                        openNewTab(replaceSameOriginHost(href));
+                    }
+                    else {
+                        alert('Cannot find open tab URL.');
+                    }
+                }
+            }
+            catch (err) {
+                logger('registerPostClickHandlers .IG_NEWTAB_MAIN', err);
+                alert('Cannot find open tab URL.');
+            }
+            finally {
+                updateLoadingBar(false);
+                $('.IG_POPUP_DIG').remove();
+            }
+        });
+
+        $body.on('click.igHelperPost', '.IG_DW_ALL_MAIN', async function () {
+            try {
+                const { $article, postPath } = getPostContextFromButton(this);
+                if ($article.length === 0 || !postPath) {
+                    alert('Cannot determine post path.');
+                    return;
+                }
+
+                state.GL_username = $article.data('username');
+                state.GL_postPath = postPath;
+
+                IG_createDM(USER_SETTING.DIRECT_DOWNLOAD_ALL, true);
+                $("#article-id").html(`<a href="https://www.instagram.com/p/${state.GL_postPath}">${state.GL_postPath}</a>`);
+
+                const totalInserted = await createMediaListDOM(
+                    state.GL_postPath,
+                    ".IG_POPUP_DIG .IG_POPUP_DIG_MAIN .IG_POPUP_DIG_BODY",
+                    _i18n("LOAD_BLOB_MULTIPLE")
+                );
+
+                if (!totalInserted || totalInserted < 1) {
+                    $('.IG_POPUP_DIG').remove();
+                    return;
+                }
+
+                const links = [];
+                $('.IG_POPUP_DIG .IG_POPUP_DIG_MAIN .IG_POPUP_DIG_BODY a').each(function () {
+                    links.push($(this));
+                });
+
+                await batchDownloadPostFiles(links);
+            }
+            catch (err) {
+                logger('registerPostClickHandlers .IG_DW_ALL_MAIN', err);
+            }
+            finally {
+                $('.IG_POPUP_DIG').remove();
+            }
+        });
+
+        $body.on('click.igHelperPost', '.IG_DW_MAIN', async function () {
+            try {
+                const { $article, postPath } = getPostContextFromButton(this);
+                if ($article.length === 0 || !postPath) {
+                    alert('Cannot determine post path.');
+                    return;
+                }
+
+                state.GL_username = $article.data('username');
+                state.GL_postPath = postPath;
+
+                IG_createDM(USER_SETTING.DIRECT_DOWNLOAD_ALL, true);
+                $("#article-id").html(`<a href="https://www.instagram.com/p/${state.GL_postPath}">${state.GL_postPath}</a>`);
+
+                if (USER_SETTING.DIRECT_DOWNLOAD_VISIBLE_RESOURCE) {
+                    updateLoadingBar(true);
+                    IG_setDM(true);
+
+                    try {
+                        const index = getVisibleNodeIndex($article);
+
+                        const totalInserted = await createMediaListDOM(
+                            state.GL_postPath,
+                            ".IG_POPUP_DIG .IG_POPUP_DIG_MAIN .IG_POPUP_DIG_BODY",
+                            ""
+                        );
+
+                        if (!totalInserted || totalInserted < 1) {
+                            alert('Cannot find download URL.');
+                            return;
+                        }
+
+                        const $popupBody = $('.IG_POPUP_DIG .IG_POPUP_DIG_MAIN .IG_POPUP_DIG_BODY');
+                        const $targetLink = $popupBody.find('a[data-globalindex="' + (index + 1) + '"]');
+                        const href = $targetLink.data('href');
+
+                        if ($targetLink.length > 0 && href) {
+                            $targetLink.trigger("click");
+                        }
+                        else {
+                            alert('Cannot find download URL.');
+                        }
+                    }
+                    catch (err) {
+                        logger('registerPostClickHandlers .IG_DW_MAIN visibleResource', err);
+                        alert('Cannot find download URL.');
+                    }
+                    finally {
+                        updateLoadingBar(false);
+                        $('.IG_POPUP_DIG').remove();
+                    }
+
+                    return;
+                }
+
+                if (!USER_SETTING.DIRECT_DOWNLOAD_ALL) {
+                    let s = 0;
+                    const $resourceItems = $article.find(resourceCountSelector);
+                    let multiple = $resourceItems.length;
+                    let blob = USER_SETTING.FORCE_FETCH_ALL_RESOURCES;
+                    const publish_time = new Date(
+                        $article.find('a[href] time[datetime]').filter(function () {
+                            let href = $(this).parents("a[href]").attr("href");
+                            return href?.startsWith("/p/") || href?.match(/\/([\w.\-_]+)\/(p|reel)\//ig) != null;
+                        }).first().attr('datetime')
+                    ).getTime();
+
+                    if (multiple) {
+                        $resourceItems.each(function () {
+                            let element_videos = $(this).parent().parent().parent().find('video');
+                            if (element_videos && element_videos.attr('src')) {
+                                blob = true;
+                            }
+                        });
+
+                        if (blob || USER_SETTING.FORCE_RESOURCE_VIA_MEDIA) {
+                            await createMediaListDOM(
+                                state.GL_postPath,
+                                ".IG_POPUP_DIG .IG_POPUP_DIG_MAIN .IG_POPUP_DIG_BODY",
+                                _i18n("LOAD_BLOB_MULTIPLE")
+                            );
+                        }
+                        else {
+                            const $popupBody = $('.IG_POPUP_DIG .IG_POPUP_DIG_MAIN .IG_POPUP_DIG_BODY');
+                            $resourceItems.each(function () {
+                                s++;
+                                const $this = $(this);
+                                let element_videos = $this.find('video');
+                                let element_images = $this.find('._aagv img');
+                                let imgLink = (element_images.attr('srcset')) ? element_images.attr('srcset').split(" ")[0] : element_images.attr('src');
+
+                                if (element_videos && element_videos.attr('src')) {
+                                    blob = true;
+                                }
+                                if (element_images && imgLink) {
+                                    $popupBody.append(`<a datetime="${publish_time}" data-needed="direct" data-path="${state.GL_postPath}" data-name="photo" data-type="jpg" data-globalIndex="${s}" href="javascript:;" data-href="${imgLink}"><img width="100" src="${imgLink}" /><br/>- <span data-ih-locale="IMG">${_i18n("IMG")}</span> ${s} -</a>`);
+                                }
+                            });
+
+                            if (blob) {
+                                await createMediaListDOM(
+                                    state.GL_postPath,
+                                    ".IG_POPUP_DIG .IG_POPUP_DIG_MAIN .IG_POPUP_DIG_BODY",
+                                    _i18n("LOAD_BLOB_RELOAD")
+                                );
+                            }
+                        }
+                    }
+                    else {
+                        if (USER_SETTING.FORCE_RESOURCE_VIA_MEDIA) {
+                            await createMediaListDOM(
+                                state.GL_postPath,
+                                ".IG_POPUP_DIG .IG_POPUP_DIG_MAIN .IG_POPUP_DIG_BODY",
+                                _i18n("LOAD_BLOB_MULTIPLE")
+                            );
+                        }
+                        else {
+                            s++;
+                            let element_videos = $article.find('video');
+                            let element_images = $article.find('._aagv img');
+                            let imgLink = (element_images.attr('srcset')) ? element_images.attr('srcset').split(" ")[0] : element_images.attr('src');
+
+                            if (element_videos && element_videos.attr('src')) {
+                                await createMediaListDOM(
+                                    state.GL_postPath,
+                                    ".IG_POPUP_DIG .IG_POPUP_DIG_MAIN .IG_POPUP_DIG_BODY",
+                                    _i18n("LOAD_BLOB_ONE")
+                                );
+                            }
+                            if (element_images && imgLink) {
+                                $('.IG_POPUP_DIG .IG_POPUP_DIG_MAIN .IG_POPUP_DIG_BODY').append(`<a datetime="${publish_time}" data-needed="direct" data-path="${state.GL_postPath}" data-name="photo" data-type="jpg" data-globalIndex="${s}" href="javascript:;" href="" data-href="${imgLink}"><img width="100" src="${imgLink}" /><br/>- <span data-ih-locale="IMG">${_i18n("IMG")}</span> ${s} -</a>`);
+                            }
+                        }
+                    }
+                }
+
+                $('.IG_POPUP_DIG .IG_POPUP_DIG_MAIN .IG_POPUP_DIG_BODY a').each(function () {
+                    const $a = $(this);
+                    if ($a.parent().is('div') && $a.prev('.inner_box_wrapper').length > 0) {
+                        return;
+                    }
+
+                    $a.wrap('<div></div>');
+                    $a.before('<label class="inner_box_wrapper"><input class="inner_box" type="checkbox"><span></span></label>');
+                    $a.after(`<div data-ih-locale-title="NEW_TAB" title="${_i18n("NEW_TAB")}" class="newTab">${SVG.NEW_TAB}</div>`);
+
+                    if ($a.data('name') == 'video') {
+                        $a.after(`<div data-ih-locale-title="VIDEO_THUMBNAIL" title="${_i18n("VIDEO_THUMBNAIL")}" class="videoThumbnail">${SVG.THUMBNAIL}</div>`);
+                    }
+                });
+
+                if (USER_SETTING.DIRECT_DOWNLOAD_ALL) {
+                    const totalInserted = await createMediaListDOM(
+                        state.GL_postPath,
+                        ".IG_POPUP_DIG .IG_POPUP_DIG_MAIN .IG_POPUP_DIG_BODY",
+                        _i18n("LOAD_BLOB_MULTIPLE")
+                    );
+
+                    if (!totalInserted || totalInserted < 1) {
+                        $('.IG_POPUP_DIG').remove();
+                        return;
+                    }
+
+                    const links = [];
+                    $('.IG_POPUP_DIG .IG_POPUP_DIG_MAIN .IG_POPUP_DIG_BODY a').each(function () {
+                        links.push($(this));
+                    });
+
+                    await batchDownloadPostFiles(links);
+                    $('.IG_POPUP_DIG').remove();
+                }
+            }
+            catch (err) {
+                logger('registerPostClickHandlers .IG_DW_MAIN', err);
+                $('.IG_POPUP_DIG').remove();
+            }
+        });
     }
 
 
@@ -1591,12 +1742,15 @@
      * @param  {String}  postURL
      * @param  {String}  selector - Use CSS element selectors to choose where it appears.
      * @param  {String}  message - i18n display loading message
-     * @return {void}
+     * @return {Promise<number>}  The number of <a> elements inserted into the DOM
      */
     async function createMediaListDOM(postURL, selector, message) {
         try {
-            $(`${selector} a`).remove();
-            $(selector).append('<p id="_SNLOAD">' + message + '</p>');
+            // OPTIMIZATION: cache the popup body selection used many times below
+            const $target = $(selector);
+            $target.find('a').remove();
+            $target.append('<p id="_SNLOAD">' + message + '</p>');
+            $('.IG_POPUP_DIG #batch_download_selected, .IG_POPUP_DIG #batch_download_direct').prop('disabled', true);
             let result = await getBlobMedia(postURL);
             let resource = filterResourceData(result.data);
 
@@ -1605,7 +1759,7 @@
 
                 // GraphVideo
                 if (resource.__typename == "GraphVideo" && resource.video_url) {
-                    $(selector).append(`<a media-id="${resource.id}" datetime="${resource.taken_at_timestamp}" data-blob="true" data-needed="direct" data-path="${resource.shortcode}" data-name="video" data-type="mp4" data-username="${resource.owner.username}" data-globalIndex="${idx}" href="javascript:;" data-href="${resource.video_url}"><img width="100" src="${resource.display_resources[1].src}" /><br/>- <span data-ih-locale="VID">${_i18n("VID")}</span> ${idx} -</a>`);
+                    $target.append(`<a media-id="${resource.id}" datetime="${resource.taken_at_timestamp}" data-blob="true" data-needed="direct" data-path="${resource.shortcode}" data-name="video" data-type="mp4" data-username="${resource.owner.username}" data-globalIndex="${idx}" href="javascript:;" data-href="${resource.video_url}"><img width="100" src="${resource.display_resources[1].src}" /><br/>- <span data-ih-locale="VID">${_i18n("VID")}</span> ${idx} -</a>`);
                     idx++;
 
                     if (resource.video_dash_manifest) {
@@ -1614,21 +1768,21 @@
                 }
                 // GraphImage
                 if (resource.__typename == "GraphImage") {
-                    $(selector).append(`<a media-id="${resource.id}" datetime="${resource.taken_at_timestamp}" data-blob="true" data-needed="direct" data-path="${resource.shortcode}" data-name="photo" data-type="jpg" data-username="${resource.owner.username}" data-globalIndex="${idx}" href="javascript:;" data-href="${resource.display_resources[resource.display_resources.length - 1].src}"><img width="100" src="${resource.display_resources[1].src}" /><br/>- <span data-ih-locale="IMG">${_i18n("IMG")}</span> ${idx} -</a>`);
+                    $target.append(`<a media-id="${resource.id}" datetime="${resource.taken_at_timestamp}" data-blob="true" data-needed="direct" data-path="${resource.shortcode}" data-name="photo" data-type="jpg" data-username="${resource.owner.username}" data-globalIndex="${idx}" href="javascript:;" data-href="${resource.display_resources[resource.display_resources.length - 1].src}"><img width="100" src="${resource.display_resources[1].src}" /><br/>- <span data-ih-locale="IMG">${_i18n("IMG")}</span> ${idx} -</a>`);
                     idx++;
                 }
                 // GraphSidecar
                 if (resource.__typename == "GraphSidecar" && resource.edge_sidecar_to_children) {
                     for (let e of resource.edge_sidecar_to_children.edges) {
                         if (e.node.__typename == "GraphVideo") {
-                            $(selector).append(`<a media-id="${e.node.id}" datetime="${resource.taken_at_timestamp}" data-blob="true" data-needed="direct" data-path="${resource.shortcode}" data-name="video" data-type="mp4" data-username="${resource.owner.username}" data-globalIndex="${idx}" href="javascript:;" data-href="${e.node.video_url}"><img width="100" src="${e.node.display_resources[1].src}" /><br/>- <span data-ih-locale-title="VID">${_i18n("VID")}</span> ${idx} -</a>`);
+                            $target.append(`<a media-id="${e.node.id}" datetime="${resource.taken_at_timestamp}" data-blob="true" data-needed="direct" data-path="${resource.shortcode}" data-name="video" data-type="mp4" data-username="${resource.owner.username}" data-globalIndex="${idx}" href="javascript:;" data-href="${e.node.video_url}"><img width="100" src="${e.node.display_resources[1].src}" /><br/>- <span data-ih-locale-title="VID">${_i18n("VID")}</span> ${idx} -</a>`);
                             if (e.node.video_dash_manifest) {
                                 state.GL_mediaDataCache[e.node.id] = e.node;
                             }
                         }
 
                         if (e.node.__typename == "GraphImage") {
-                            $(selector).append(`<a media-id="${e.node.id}" datetime="${resource.taken_at_timestamp}" data-blob="true" data-needed="direct" data-path="${resource.shortcode}" data-name="photo" data-type="jpg" data-username="${resource.owner.username}" data-globalIndex="${idx}" href="javascript:;" data-href="${e.node.display_resources[e.node.display_resources.length - 1].src}"><img width="100" src="${e.node.display_resources[1].src}" /><br/>- <span data-ih-locale="IMG">${_i18n("IMG")}</span> ${idx} -</a>`);
+                            $target.append(`<a media-id="${e.node.id}" datetime="${resource.taken_at_timestamp}" data-blob="true" data-needed="direct" data-path="${resource.shortcode}" data-name="photo" data-type="jpg" data-username="${resource.owner.username}" data-globalIndex="${idx}" href="javascript:;" data-href="${e.node.display_resources[e.node.display_resources.length - 1].src}"><img width="100" src="${e.node.display_resources[1].src}" /><br/>- <span data-ih-locale="IMG">${_i18n("IMG")}</span> ${idx} -</a>`);
                         }
                         idx++;
                     }
@@ -1658,11 +1812,11 @@
                                 return 0;
                             });
 
-                            $(selector).append(`<a media-id="${mda.pk}" datetime="${mda.taken_at}" data-blob="true" data-needed="direct" data-path="${resource.code}" data-name="photo" data-type="jpg" data-username="${resource.owner.username}" data-globalIndex="${idx}" href="javascript:;" data-href="${mda.image_versions2.candidates[0].url}"><img width="100" src="${mda.image_versions2.candidates[0].url}" /><br/>- <span data-ih-locale="IMG">${_i18n("IMG")}</span> ${idx} -</a>`);
+                            $target.append(`<a media-id="${mda.pk}" datetime="${mda.taken_at}" data-blob="true" data-needed="direct" data-path="${resource.code}" data-name="photo" data-type="jpg" data-username="${resource.owner.username}" data-globalIndex="${idx}" href="javascript:;" data-href="${mda.image_versions2.candidates[0].url}"><img width="100" src="${mda.image_versions2.candidates[0].url}" /><br/>- <span data-ih-locale="IMG">${_i18n("IMG")}</span> ${idx} -</a>`);
                         }
                         // Video
                         else {
-                            $(selector).append(`<a media-id="${mda.pk}" datetime="${mda.taken_at}" data-blob="true" data-needed="direct" data-path="${resource.code}" data-name="video" data-type="mp4" data-username="${resource.owner.username}" data-globalIndex="${idx}" href="javascript:;" data-href="${mda.video_versions[0].url}"><img width="100" src="${mda.image_versions2.candidates[0].url}" /><br/>- <span data-ih-locale="VID">${_i18n("VID")}</span> ${idx} -</a>`);
+                            $target.append(`<a media-id="${mda.pk}" datetime="${mda.taken_at}" data-blob="true" data-needed="direct" data-path="${resource.code}" data-name="video" data-type="mp4" data-username="${resource.owner.username}" data-globalIndex="${idx}" href="javascript:;" data-href="${mda.video_versions[0].url}"><img width="100" src="${mda.image_versions2.candidates[0].url}" /><br/>- <span data-ih-locale="VID">${_i18n("VID")}</span> ${idx} -</a>`);
                             if (mda.video_dash_manifest) {
                                 state.GL_mediaDataCache[mda.pk] = mda;
                             }
@@ -1689,33 +1843,40 @@
                             return 0;
                         });
 
-                        $(selector).append(`<a media-id="${resource.pk}" datetime="${resource.taken_at}" data-blob="true" data-needed="direct" data-path="${resource.code}" data-name="photo" data-type="jpg" data-username="${resource.owner.username}" data-globalIndex="${idx}" href="javascript:;" data-href="${resource.image_versions2.candidates[0].url}"><img width="100" src="${resource.image_versions2.candidates[0].url}" /><br/>- <span data-ih-locale="IMG">${_i18n("IMG")}</span> ${idx} -</a>`);
+                        $target.append(`<a media-id="${resource.pk}" datetime="${resource.taken_at}" data-blob="true" data-needed="direct" data-path="${resource.code}" data-name="photo" data-type="jpg" data-username="${resource.owner.username}" data-globalIndex="${idx}" href="javascript:;" data-href="${resource.image_versions2.candidates[0].url}"><img width="100" src="${resource.image_versions2.candidates[0].url}" /><br/>- <span data-ih-locale="IMG">${_i18n("IMG")}</span> ${idx} -</a>`);
                     }
                     // Video
                     else {
                         if (resource.video_dash_manifest) {
                             state.GL_mediaDataCache[resource.pk] = resource;
                         }
-                        $(selector).append(`<a media-id="${resource.pk}" datetime="${resource.taken_at}" data-blob="true" data-needed="direct" data-path="${resource.code}" data-name="video" data-type="mp4" data-username="${resource.owner.username}" data-globalIndex="${idx}" href="javascript:;" data-href="${resource.video_versions[0].url}"><img width="100" src="${resource.image_versions2.candidates[0].url}" /><br/>- <span data-ih-locale="VID">${_i18n("VID")}</span> ${idx} -</a>`);
+                        $target.append(`<a media-id="${resource.pk}" datetime="${resource.taken_at}" data-blob="true" data-needed="direct" data-path="${resource.code}" data-name="video" data-type="mp4" data-username="${resource.owner.username}" data-globalIndex="${idx}" href="javascript:;" data-href="${resource.video_versions[0].url}"><img width="100" src="${resource.image_versions2.candidates[0].url}" /><br/>- <span data-ih-locale="VID">${_i18n("VID")}</span> ${idx} -</a>`);
                     }
                 }
             }
 
             $("#_SNLOAD").remove();
+            $('.IG_POPUP_DIG #batch_download_selected, .IG_POPUP_DIG #batch_download_direct').prop('disabled', false);
             $('.IG_POPUP_DIG .IG_POPUP_DIG_MAIN .IG_POPUP_DIG_BODY a').each(function () {
-                $(this).wrap('<div></div>');
-                $(this).before('<label class="inner_box_wrapper"><input class="inner_box" type="checkbox"><span></span></label>');
-                $(this).after(`<div data-ih-locale-title="NEW_TAB" title="${_i18n("NEW_TAB")}" class="newTab">${SVG.NEW_TAB}</div>`);
+                const $a = $(this);
+                $a.wrap('<div></div>');
+                $a.before('<label class="inner_box_wrapper"><input class="inner_box" type="checkbox"><span></span></label>');
+                $a.after(`<div data-ih-locale-title="NEW_TAB" title="${_i18n("NEW_TAB")}" class="newTab">${SVG.NEW_TAB}</div>`);
 
-                if ($(this).attr('data-name') == 'video') {
-                    $(this).after(`<div data-ih-locale-title="VIDEO_THUMBNAIL" title="${_i18n("VIDEO_THUMBNAIL")}" class="videoThumbnail">${SVG.THUMBNAIL}</div>`);
+                if ($a.data('name') == 'video') {
+                    $a.after(`<div data-ih-locale-title="VIDEO_THUMBNAIL" title="${_i18n("VIDEO_THUMBNAIL")}" class="videoThumbnail">${SVG.THUMBNAIL}</div>`);
                 }
             });
             updatePopupSelectionSummary();
+
+            return $target.find('a').length;
         }
         catch (err) {
             logger('createMediaListDOM', err);
-        };
+            $("#_SNLOAD").remove();
+            $('.IG_POPUP_DIG #batch_download_selected, .IG_POPUP_DIG #batch_download_direct').prop('disabled', false);
+            return 0;
+        }
     }
 
 
@@ -1786,6 +1947,7 @@
         return index;
     }
 
+
     /**
      * batchDownloadPostFiles
      * @description Batch download media files in posts to prevent browser crashes.
@@ -1793,29 +1955,86 @@
      * @return {Promise<void>}
      */
     async function batchDownloadPostFiles($elements) {
-        const batchSize = 5;
-        let batchGroups = [];
-        for (let i = 0; i < $elements.length; i += batchSize) {
-            const batch = $elements.slice(i, i + batchSize);
-            batchGroups.push(batch);
-        }
         let index = 0;
-        setDownloadProgress(0, $elements.length);
+        const totalLen = $elements.length;
+        setDownloadProgress(0, totalLen);
 
-        for (const currentBatch of batchGroups) {
-            await new Promise((resolve) => {
-                currentBatch.forEach(($item) => {
-                    setTimeout(() => {
-                        $item.trigger("click");
-                    }, 10 * index);
+        for (const element of $elements) {
+            try {
+                await triggerLinkElement($(element), false);
+            } catch (err) {
+                console.error('batchDownloadPostFiles failed:', err, element?.dataset?.href);
+            }
 
-                    index++;
-                    setDownloadProgress(index, $elements.length);
-                });
-
-                setTimeout(resolve, 1000);
-            });
+            index++;
+            setDownloadProgress(index, totalLen);
+            await new Promise(resolve => setTimeout(resolve, 1000));
         }
+    }
+
+
+    /**
+     * getPostContextFromButton
+     * @description Resolve the current post container and shortcode safely across
+     * homepage, dialog, /p/, /reel/, and changing Instagram layouts.
+     *
+     * @param {HTMLElement|JQuery} target
+     * @return {{ $article: JQuery<HTMLElement>, postPath: (string|null) }}
+     */
+    function getPostContextFromButton(target) {
+        const $article = $(target).closest('[data-snig="canDownload"], article, div[data-snig]');
+        if ($article.length === 0) {
+            return { $article: $(), postPath: null };
+        }
+
+        const candidates = [];
+        const pushHref = (href) => {
+            if (typeof href === 'string' && href.trim().length > 0) {
+                candidates.push(href.trim());
+            }
+        };
+
+        pushHref($article.find('a[href^="/p/"]').first().attr('href'));
+        pushHref($article.find('a[href^="/reel/"]').first().attr('href'));
+        pushHref($article.find('a[href*="/p/"]').first().attr('href'));
+        pushHref($article.find('a[href*="/reel/"]').first().attr('href'));
+
+        $article.find('a[role="link"][href], a[href]').each(function () {
+            const href = $(this).attr('href') || '';
+            if (href.startsWith('/p/') || href.startsWith('/reel/') || href.match(/^\/[^/]+\/(p|reel)\//i)) {
+                pushHref(href);
+                return false;
+            }
+        });
+
+        let postPath = null;
+        for (const href of candidates) {
+            const parts = href.split('/').filter(Boolean);
+            const idx = parts.findIndex(p => p === 'p' || p === 'reel');
+            if (idx >= 0 && parts[idx + 1]) {
+                postPath = parts[idx + 1];
+                break;
+            }
+            if ((href.startsWith('/p/') || href.startsWith('/reel/')) && parts[1]) {
+                postPath = parts[1];
+                break;
+            }
+        }
+
+        if (!postPath) {
+            const pathParts = location.pathname.replace(/\/$/, '').split('/').filter(Boolean);
+            if ((pathParts[0] === 'p' || pathParts[0] === 'reel') && pathParts[1]) {
+                postPath = pathParts[1];
+            }
+            else {
+                const routeIndex = pathParts.findIndex(p => p === 'p' || p === 'reel');
+                if (routeIndex >= 0 && pathParts[routeIndex + 1]) {
+                    postPath = pathParts[routeIndex + 1];
+                }
+            }
+        }
+
+        return { $article, postPath };
     }
 
     /**
@@ -2075,7 +2294,6 @@
                 updateLoadingBar(false);
             }
             else {
-                //$('.IG_REELS_THUMBNAIL, .IG_REELS').remove();
                 const svgClose = 'svg > polyline[points^="20.643 3.357 12 12 3.353 20.647"] ~ line';
                 var timer = setInterval(() => {
                     const hasTiktokStyleLayout = $(svgClose).length > 0;
@@ -2084,29 +2302,30 @@
 
                         if (USER_SETTING.SCROLL_BUTTON) {
                             $('#scrollWrapper').remove();
-                            $('section > main[role="main"]').append('<section id="scrollWrapper"></section>');
-                            $('section > main[role="main"] > #scrollWrapper').append('<div class="button-up"><div></div></div>');
-                            $('section > main[role="main"] > #scrollWrapper').append('<div class="button-down"><div></div></div>');
+                            // OPTIMIZATION: cache reels main element (used 5 times below)
+                            const $reelsMain = $('section > main[role="main"]');
+                            $reelsMain.append('<section id="scrollWrapper"></section>');
+                            const $scrollWrapper = $reelsMain.find('> #scrollWrapper');
+                            $scrollWrapper.append('<div class="button-up"><div></div></div>');
+                            $scrollWrapper.append('<div class="button-down"><div></div></div>');
 
-                            $('section > main[role="main"] > #scrollWrapper > .button-up').on('click', function () {
-                                $('section > main[role="main"] > div')[0].scrollBy({ top: -30, behavior: "smooth" });
+                            $scrollWrapper.find('> .button-up').on('click', function () {
+                                $reelsMain.find('> div')[0].scrollBy({ top: -30, behavior: "smooth" });
                             });
-                            $('section > main[role="main"] > #scrollWrapper > .button-down').on('click', function () {
-                                $('section > main[role="main"] > div')[0].scrollBy({ top: 30, behavior: "smooth" });
+                            $scrollWrapper.find('> .button-down').on('click', function () {
+                                $reelsMain.find('> div')[0].scrollBy({ top: 30, behavior: "smooth" });
                             });
                         }
 
-                        // reels scroll has [tabindex] but header not.
-                        // ? Old selector: section > main[role="main"] > div[tabindex], section > main[role="main"] > div[class]
-                        // ! Co-author: sn-o-w
                         $('div[aria-busy][tabindex]').children('div').each(function () {
+                            const $this = $(this);
                             if (
-                                $(this).children().length > 0 &&
-                                $(this).width() > window.innerWidth * 0.8 &&
-                                $(this).height() > window.innerHeight * 0.8 &&
-                                $(this).find('video').length > 0
+                                $this.children().length > 0 &&
+                                $this.width() > window.innerWidth * 0.8 &&
+                                $this.height() > window.innerHeight * 0.8 &&
+                                $this.find('video').length > 0
                             ) {
-                                appendReelsButton($(this));
+                                appendReelsButton($this);
                             }
                         });
                     }
@@ -2119,21 +2338,26 @@
     }
 
     function appendReelsButton($main) {
-        if (!$main.children().find('.IG_REELS').length) {
-            $main.children().css('position', 'relative');
+        // OPTIMIZATION: cache $main.children() and $main.find('video') usage
+        const $mainChildren = $main.children();
+        if (!$mainChildren.find('.IG_REELS').length) {
+            $mainChildren.css('position', 'relative');
 
-            $main.children().append(`<div data-ih-locale-title="DW" title="${_i18n("DW")}" class="IG_REELS">${SVG.DOWNLOAD}</div>`);
-            $main.children().append(`<div data-ih-locale-title="NEW_TAB" title="${_i18n("NEW_TAB")}" class="IG_REELS_NEWTAB">${SVG.NEW_TAB}</div>`);
-            $main.children().append(`<div data-ih-locale-title="VIDEO_THUMBNAIL" title="${_i18n("VIDEO_THUMBNAIL")}" class="IG_REELS_THUMBNAIL">${SVG.THUMBNAIL}</div>`);
+            $mainChildren.append(`<div data-ih-locale-title="DW" title="${_i18n("DW")}" class="IG_REELS">${SVG.DOWNLOAD}</div>`);
+            $mainChildren.append(`<div data-ih-locale-title="NEW_TAB" title="${_i18n("NEW_TAB")}" class="IG_REELS_NEWTAB">${SVG.NEW_TAB}</div>`);
+            $mainChildren.append(`<div data-ih-locale-title="VIDEO_THUMBNAIL" title="${_i18n("VIDEO_THUMBNAIL")}" class="IG_REELS_THUMBNAIL">${SVG.THUMBNAIL}</div>`);
 
-            $main.find('video').each(function () {
+            const $videos = $main.find('video');
+
+            $videos.each(function () {
                 $(this).off('fullscreenchange.IG_videoControl').on('fullscreenchange.IG_videoControl', function () {
-                    if ($(this).attr('style').includes('object-fit')) {
+                    const $vid = $(this);
+                    if ($vid.attr('style').includes('object-fit')) {
                         if (document.fullscreenElement == this) {
-                            $(this).css('object-fit', 'contain');
+                            $vid.css('object-fit', 'contain');
                         }
                         else {
-                            $(this).css('object-fit', 'cover');
+                            $vid.css('object-fit', 'cover');
                         }
                     }
                 });
@@ -2141,18 +2365,19 @@
 
             // Disable video autoplay
             if (USER_SETTING.DISABLE_VIDEO_LOOPING) {
-                $main.find('video').each(function () {
+                $videos.each(function () {
                     $(this).on('ended', function () {
-                        if (!$(this).data('loop')) {
-                            let $element_play_button = $(this).next().find('div[role="presentation"] > div svg > path[d^="M5.888"]').parents('button[role="button"], div[role="button"]');
+                        const $this = $(this);
+                        if (!$this.data('loop')) {
+                            let $element_play_button = $this.next().find('div[role="presentation"] > div svg > path[d^="M5.888"]').parents('button[role="button"], div[role="button"]');
                             if ($element_play_button.length > 0) {
-                                $(this).attr('data-loop', true);
+                                $this.data('loop', true);
                                 $element_play_button.trigger("click");
                                 logger('Adding video event listener #loop, then paused click()');
                             }
                             else {
-                                $(this).attr('data-loop', true);
-                                $(this).parent().find('.xpgaw4o').removeAttr('style');
+                                $this.data('loop', true);
+                                $this.parent().find('.xpgaw4o').removeAttr('style');
                                 this.pause();
                                 logger('Adding video event listener #loop, then paused pause()');
                             }
@@ -2171,9 +2396,10 @@
                         $overlayElement = $(e.target).parents('div[aria-label][data-visualcompletion="ignore"]').first();
                     }
 
-                    $main.find('video').each(function () {
-                        $(this).css('z-index', '2');
-                        $(this).attr('controls', true);
+                    $videos.each(function () {
+                        const $v = $(this);
+                        $v.css('z-index', '2');
+                        $v.attr('controls', true);
                         state.GL_weakCache.overlay.set(this, $overlayElement);
                     });
 
@@ -2182,37 +2408,37 @@
                 };
 
                 $main.off('contextmenu.IG_videoControl').on('contextmenu.IG_videoControl', handleSwitchController);
-                $main.find('video').each(function () {
-                    if (!$(this).data('controls')) {
-                        let $video = $(this);
+                $videos.each(function () {
+                    const $video = $(this);
+                    if (!$video.data('controls')) {
 
                         logger('(reel) Added video html5 contorller #modify');
 
                         if (USER_SETTING.MODIFY_VIDEO_VOLUME) {
                             this.volume = state.videoVolume;
 
-                            $(this).on('loadstart', function () {
+                            $video.on('loadstart', function () {
                                 this.volume = state.videoVolume;
                             });
                         }
 
-                        let $mute_button_wrapper = $(this).parent().find('video + div > div');
+                        let $mute_button_wrapper = $video.parent().find('video + div > div');
                         $mute_button_wrapper = $mute_button_wrapper.add($main);
 
                         // eslint-disable-next-line no-unused-vars
                         let $element_mute_button = $mute_button_wrapper.find('button[type="button"], div[role="button"]').filter(function (idx) {
-                            // This is mute/unmute's icon
-                            return $(this).width() <= 64 && $(this).height() <= 64 && $(this).find('svg > path[d^="M16.636 7.028a1.5"], svg > path[d^="M1.5 13.3c-.8"]').length > 0;
+                            const $b = $(this);
+                            return $b.width() <= 64 && $b.height() <= 64 && $b.find('svg > path[d^="M16.636 7.028a1.5"], svg > path[d^="M1.5 13.3c-.8"]').length > 0;
                         });
 
                         state.GL_weakCache.mutedButton.set(this, $element_mute_button);
 
-                        let $targets = $(this).parent().find('video + div div[role="button"]').filter(function () {
-                            return $(this).parent('div[role="presentation"]').length > 0 && $(this).css('cursor') === 'pointer' && $(this).attr('style') != null;
+                        let $targets = $video.parent().find('video + div div[role="button"]').filter(function () {
+                            const $t = $(this);
+                            return $t.parent('div[role="presentation"]').length > 0 && $t.css('cursor') === 'pointer' && $t.attr('style') != null;
                         }).first();
 
-                        // Restore layout to show details interface
-                        $(this).on('contextmenu', function (e) {
+                        $video.on('contextmenu', function (e) {
                             e.preventDefault();
                             e.stopPropagation();
 
@@ -2222,13 +2448,12 @@
                             state.GL_weakCache.overlay.get(this)?.css('z-index', '1');
                         });
 
-                        // Hide layout to show controller
                         $targets.off('contextmenu.IG_videoControl').on('contextmenu.IG_videoControl', handleSwitchController);
 
-                        $(this).on('volumechange', function () {
+                        $video.on('volumechange', function () {
                             let video = this;
                             let $element_mute_button = state.GL_weakCache.mutedButton.get(this) || {};
-                            let is_element_muted = $element_mute_button.find('svg > path[d^="M16.636"]').length === 0;
+                            let is_element_muted = $element_mute_button.find && $element_mute_button.find('svg > path[d^="M16.636"]').length === 0;
 
                             if (this.muted != is_element_muted) {
                                 this.volume = state.videoVolume;
@@ -2245,23 +2470,23 @@
                                 }
                             }
 
-                            if ($(this).attr('data-completed')) {
+                            const $v = $(this);
+                            if ($v.data('completed')) {
                                 state.videoVolume = this.volume;
                                 GM_setValue('G_VIDEO_VOLUME', this.volume);
                             }
 
                             if (this.volume == state.videoVolume) {
-                                $(this).attr('data-completed', true);
+                                $v.data('completed', true);
                             }
                         });
 
-                        $(this).css('position', 'relative');
-                        $(this).attr('data-controls', true);
+                        $video.css('position', 'relative');
+                        $video.data('controls', true);
                     }
                 });
             }
 
-            var $videos = $main.find('video');
             var $buttonParent = $main.find('div[role="presentation"] > div[role="button"] > div').first();
             toggleVolumeSilder($videos, $buttonParent, 'reel');
         }
@@ -2277,11 +2502,17 @@
         try {
             $('.IG_POPUP_DIG #post_info').text(`${type} ID: ${obj.data.reels_media[0].id}`);
             const selector = '.IG_POPUP_DIG .IG_POPUP_DIG_MAIN .IG_POPUP_DIG_BODY';
+            // OPTIMIZATION: cache target once
+            const $selector = $(selector);
 
-            obj.data.reels_media[0].items.forEach((item, idx) => {
+            // OPTIMIZATION: cache reels_media[0] reference
+            const reel = obj.data.reels_media[0];
+            const items = reel.items;
+
+            items.forEach((item, idx) => {
                 let date = new Date().getTime();
                 let timestamp = Math.floor(date / 1000);
-                let username = obj.data.reels_media[0]?.user?.username || obj.data.reels_media[0]?.owner?.username;
+                let username = reel?.user?.username || reel?.owner?.username;
 
                 if (USER_SETTING.RENAME_PUBLISH_DATE) {
                     timestamp = item.taken_at_timestamp;
@@ -2294,20 +2525,21 @@
                 });
 
                 if (item.is_video) {
-                    $(selector).append(`<a media-id="${item.id}" datetime="${timestamp}" data-blob="true" data-needed="direct" data-name="${type}" data-type="mp4" data-username="${username}" data-path="${item.id}" data-globalIndex="${idx + 1}" href="javascript:;" data-href="${item.video_resources[0].src}"><img width="100" src="${item.display_resources[0].src}" /><br/>- <span data-ih-locale-title="VID">${_i18n("VID")}</span> ${idx} -</a>`);
+                    $selector.append(`<a media-id="${item.id}" datetime="${timestamp}" data-blob="true" data-needed="direct" data-name="${type}" data-type="mp4" data-username="${username}" data-path="${item.id}" data-globalIndex="${idx + 1}" href="javascript:;" data-href="${item.video_resources[0].src}"><img width="100" src="${item.display_resources[0].src}" /><br/>- <span data-ih-locale-title="VID">${_i18n("VID")}</span> ${idx} -</a>`);
                 }
                 else {
-                    $(selector).append(`<a media-id="${item.id}" datetime="${timestamp}" data-blob="true" data-needed="direct" data-name="${type}" data-type="jpg" data-username="${username}" data-path="${item.id}" data-globalIndex="${idx + 1}" href="javascript:;" data-href="${item.display_resources[0].src}"><img width="100" src="${item.display_resources[0].src}" /><br/>- <span data-ih-locale-title="IMG">${_i18n("IMG")}</span> ${idx} -</a>`);
+                    $selector.append(`<a media-id="${item.id}" datetime="${timestamp}" data-blob="true" data-needed="direct" data-name="${type}" data-type="jpg" data-username="${username}" data-path="${item.id}" data-globalIndex="${idx + 1}" href="javascript:;" data-href="${item.display_resources[0].src}"><img width="100" src="${item.display_resources[0].src}" /><br/>- <span data-ih-locale-title="IMG">${_i18n("IMG")}</span> ${idx} -</a>`);
                 }
             });
 
-            $('.IG_POPUP_DIG .IG_POPUP_DIG_MAIN .IG_POPUP_DIG_BODY a').each(function () {
-                $(this).wrap('<div></div>');
-                $(this).before('<label class="inner_box_wrapper"><input class="inner_box" type="checkbox"><span></span></label>');
-                $(this).after(`<div data-ih-locale-title="NEW_TAB" title="${_i18n("NEW_TAB")}" class="newTab">${SVG.NEW_TAB}</div>`);
+            $selector.find('a').each(function () {
+                const $a = $(this);
+                $a.wrap('<div></div>');
+                $a.before('<label class="inner_box_wrapper"><input class="inner_box" type="checkbox"><span></span></label>');
+                $a.after(`<div data-ih-locale-title="NEW_TAB" title="${_i18n("NEW_TAB")}" class="newTab">${SVG.NEW_TAB}</div>`);
 
-                if ($(this).attr('data-type') == 'mp4') {
-                    $(this).after(`<div data-ih-locale-title="VIDEO_THUMBNAIL" title="${_i18n("VIDEO_THUMBNAIL")}" class="videoThumbnail">${SVG.THUMBNAIL}</div>`);
+                if ($a.data('type') == 'mp4') {
+                    $a.after(`<div data-ih-locale-title="VIDEO_THUMBNAIL" title="${_i18n("VIDEO_THUMBNAIL")}" class="videoThumbnail">${SVG.THUMBNAIL}</div>`);
                 }
             });
 
@@ -2338,9 +2570,12 @@
 
         if (USER_SETTING.DIRECT_DOWNLOAD_STORY) {
             let complete = 0;
-            setDownloadProgress(complete, stories.data.reels_media[0].items.length);
+            // OPTIMIZATION: cache items array — repeatedly accessed inside setTimeout closures
+            const items = stories.data.reels_media[0].items;
+            const totalItems = items.length;
+            setDownloadProgress(complete, totalItems);
 
-            stories.data.reels_media[0].items.forEach((item, idx) => {
+            items.forEach((item, idx) => {
                 setTimeout(() => {
                     if (USER_SETTING.RENAME_PUBLISH_DATE) {
                         timestamp = item.taken_at_timestamp;
@@ -2361,7 +2596,7 @@
                                 filetype: 'mp4',
                                 shortcode: item.id
                             }).then(() => {
-                                setDownloadProgress(++complete, stories.data.reels_media[0].items.length);
+                                setDownloadProgress(++complete, totalItems);
                             });
                     }
                     else {
@@ -2372,7 +2607,7 @@
                             filetype: 'jpg',
                             shortcode: item.id
                         }).then(() => {
-                            setDownloadProgress(++complete, stories.data.reels_media[0].items.length);
+                            setDownloadProgress(++complete, totalItems);
                         });
                     }
                 }, 100 * idx);
@@ -2405,10 +2640,11 @@
         const $time = $(
             'body > div section:visible time[datetime]'
         ).filter(function () {
+            const $this = $(this);
             return (
-                $(this).is(':visible') &&
-                $(this).closest('a[href^="/stories/highlights/"]').length === 0 &&
-                $(this).closest('[role="button"]').length === 0
+                $this.is(':visible') &&
+                $this.closest('a[href^="/stories/highlights/"]').length === 0 &&
+                $this.closest('[role="button"]').length === 0
             );
         }).first();
 
@@ -2456,27 +2692,10 @@
                 let stories = await getStories(userId);
                 let urlID = location.pathname.split('/').filter(s => s.length > 0 && s.match(/^([0-9]{10,})$/)).at(-1);
 
-                /*
-                let latest_reel_media = stories.data.reels_media[0].latest_reel_media;
-                let last_seen = stories.data.reels_media[0].seen;
-                logger(stories);
+                // OPTIMIZATION: cache items reference (used 4+ times)
+                const items = stories.data.reels_media[0].items;
 
-                if(urlID == null){
-                    mediaId = stories.data.reels_media[0].items.filter(function(item, index){
-                        return item.taken_at_timestamp === last_seen && item.taken_at_timestamp !== latest_reel_media || last_seen === latest_reel_media && index === 0;
-                    })?.at(0)?.id;
-                    logger('nula', mediaId);
-                }
-                else{
-                    stories.data.reels_media[0].items.forEach(item => {
-                        if(item.id == urlID){
-                            mediaId = item.id;
-                        }
-                    });
-                }
-                */
-
-                stories.data.reels_media[0].items.forEach(item => {
+                items.forEach(item => {
                     if (item.id == urlID) {
                         mediaId = item.id;
                     }
@@ -2492,7 +2711,7 @@
 
                     $header.each(function (index) {
                         if ($(this).children().length > 0) {
-                            mediaId = stories.data.reels_media[0].items[index].id;
+                            mediaId = items[index].id;
                         }
                     });
                 }
@@ -2500,9 +2719,10 @@
                 if (mediaId == null) {
                     // appear in from profile page to story page
                     $('body > div section:visible div.x1ned7t2.x78zum5 > div').each(function (index) {
-                        if ($(this).hasClass('x1lix1fw')) {
-                            if ($(this).children().length > 0) {
-                                mediaId = stories.data.reels_media[0].items[index].id;
+                        const $this = $(this);
+                        if ($this.hasClass('x1lix1fw')) {
+                            if ($this.children().length > 0) {
+                                mediaId = items[index].id;
                             }
                         }
                     });
@@ -2510,7 +2730,7 @@
                     // appear in from home page to story page
                     $('body > div section:visible ._ac0k > ._ac3r > div').each(function (index) {
                         if ($(this).children().hasClass('_ac3q')) {
-                            mediaId = stories.data.reels_media[0].items[index].id;
+                            mediaId = items[index].id;
                         }
                     });
                 }
@@ -2521,7 +2741,7 @@
 
                 if (USER_SETTING.CAPTURE_IMAGE_VIA_MEDIA_CACHE) {
                     const cached = getImageFromCache(mediaId);
-                    if (cached && !stories.data.reels_media[0].items.filter(item => item.id === mediaId).at(0).is_video) {
+                    if (cached && !items.filter(item => item.id === mediaId).at(0).is_video) {
                         logger("[Restore Cached onStory]", mediaId);
                         if (isPreview) {
                             openNewTab(cached);
@@ -2546,9 +2766,11 @@
                 }
 
                 if (result.status === 'ok') {
-                    if (result.items[0].video_versions) {
+                    // OPTIMIZATION: cache result.items[0]
+                    const mediaItem = result.items[0];
+                    if (mediaItem.video_versions) {
                         const handled = await tryHandleDashFromMediaItem({
-                            mediaItem: result.items[0],
+                            mediaItem: mediaItem,
                             username,
                             sourceType: "stories",
                             timestamp,
@@ -2561,10 +2783,10 @@
                         }
 
                         if (isPreview) {
-                            openNewTab(result.items[0].video_versions[0].url);
+                            openNewTab(mediaItem.video_versions[0].url);
                         }
                         else {
-                            saveFiles(result.items[0].video_versions[0].url, {
+                            saveFiles(mediaItem.video_versions[0].url, {
                                 username,
                                 sourceType: "stories",
                                 timestamp,
@@ -2575,10 +2797,10 @@
                     }
                     else {
                         if (isPreview) {
-                            openNewTab(result.items[0].image_versions2.candidates[0].url);
+                            openNewTab(mediaItem.image_versions2.candidates[0].url);
                         }
                         else {
-                            saveFiles(result.items[0].image_versions2.candidates[0].url, {
+                            saveFiles(mediaItem.image_versions2.candidates[0].url, {
                                 username,
                                 sourceType: "stories",
                                 timestamp,
@@ -2632,8 +2854,10 @@
                     let userInfo = await getUserId(username);
                     let userId = userInfo.user.pk;
                     let stories = await getStories(userId);
+                    // OPTIMIZATION: cache items
+                    const items = stories.data.reels_media[0].items;
 
-                    stories.data.reels_media[0].items.forEach(item => {
+                    items.forEach(item => {
                         if (item.id == targetURL) {
                             videoURL = item.video_resources[0].src;
                             if (USER_SETTING.RENAME_PUBLISH_DATE) {
@@ -2650,10 +2874,10 @@
 
                         $header.each(function (index) {
                             if ($(this).children().length > 0) {
-                                videoURL = stories.data.reels_media[0].items[index].video_resources[0].src;
+                                videoURL = items[index].video_resources[0].src;
                                 if (USER_SETTING.RENAME_PUBLISH_DATE) {
-                                    timestamp = stories.data.reels_media[0].items[index].taken_at_timestamp;
-                                    mediaId = stories.data.reels_media[0].items[index].id;
+                                    timestamp = items[index].taken_at_timestamp;
+                                    mediaId = items[index].id;
                                 }
                             }
                         });
@@ -2662,12 +2886,13 @@
                         if (videoURL.length == 0) {
                             // appear in from profile page to story page
                             $('body > div section:visible div.x1ned7t2.x78zum5 > div').each(function (index) {
-                                if ($(this).hasClass('x1lix1fw')) {
-                                    if ($(this).children().length > 0) {
-                                        videoURL = stories.data.reels_media[0].items[index].video_resources[0].src;
+                                const $this = $(this);
+                                if ($this.hasClass('x1lix1fw')) {
+                                    if ($this.children().length > 0) {
+                                        videoURL = items[index].video_resources[0].src;
                                         if (USER_SETTING.RENAME_PUBLISH_DATE) {
-                                            timestamp = stories.data.reels_media[0].items[index].taken_at_timestamp;
-                                            mediaId = stories.data.reels_media[0].items[index].id;
+                                            timestamp = items[index].taken_at_timestamp;
+                                            mediaId = items[index].id;
                                         }
                                     }
                                 }
@@ -2676,10 +2901,10 @@
                             // appear in from home page to story page
                             $('body > div section:visible ._ac0k > ._ac3r > div').each(function (index) {
                                 if ($(this).children().hasClass('_ac3q')) {
-                                    videoURL = stories.data.reels_media[0].items[index].video_resources[0].src;
+                                    videoURL = items[index].video_resources[0].src;
                                     if (USER_SETTING.RENAME_PUBLISH_DATE) {
-                                        timestamp = stories.data.reels_media[0].items[index].taken_at_timestamp;
-                                        mediaId = stories.data.reels_media[0].items[index].id;
+                                        timestamp = items[index].taken_at_timestamp;
+                                        mediaId = items[index].id;
                                     }
                                 }
                             });
@@ -2711,7 +2936,8 @@
                 // Download stories if it is image
                 let srcset = $('body > div section:visible img[referrerpolicy][class], body > div section:visible img[crossorigin][class]:not([alt])').attr('srcset')?.split(',')[0]?.split(' ')[0];
                 let link = (srcset) ? srcset : $('body > div section:visible img[referrerpolicy][class], body > div section:visible img[crossorigin][class]:not([alt])').filter(function () {
-                    return $(this).parents('a').length === 0 && $(this).width() === $(this).parent().width();
+                    const $this = $(this);
+                    return $this.parents('a').length === 0 && $this.width() === $this.parent().width();
                 }).attr('src');
 
                 if (!link) {
@@ -2803,32 +3029,36 @@
                     let nowSize = 0;
 
                     $$element.each(function () {
-                        if ($(this).width() > nowSize) {
-                            nowSize = $(this).width();
-                            $element = $(this).children('div').first();
+                        const $this = $(this);
+                        const width = $this.width();
+                        if (width > nowSize) {
+                            nowSize = width;
+                            $element = $this.children('div').first();
                         }
                     });
                 }
 
 
                 if ($element != null) {
-                    $element.first().css('position', 'relative');
-                    $element.first().append(`<div data-ih-locale-title="DW" title="${_i18n("DW")}" class="IG_DWSTORY">${SVG.DOWNLOAD}</div>`);
-                    $element.first().append(`<div data-ih-locale-title="NEW_TAB" title="${_i18n("NEW_TAB")}" class="IG_DWNEWTAB">${SVG.NEW_TAB}</div>`);
+                    // OPTIMIZATION: cache .first() once
+                    const $firstEl = $element.first();
+                    $firstEl.css('position', 'relative');
+                    $firstEl.append(`<div data-ih-locale-title="DW" title="${_i18n("DW")}" class="IG_DWSTORY">${SVG.DOWNLOAD}</div>`);
+                    $firstEl.append(`<div data-ih-locale-title="NEW_TAB" title="${_i18n("NEW_TAB")}" class="IG_DWNEWTAB">${SVG.NEW_TAB}</div>`);
 
                     let $header = getStoryProgress(username);
                     if ($header.length > 1) {
-                        $element.first().append(`<div data-ih-locale-title="DW_ALL" title="${_i18n("DW_ALL")}" class="IG_DWSTORY_ALL">${SVG.DOWNLOAD_ALL}</div>`);
+                        $firstEl.append(`<div data-ih-locale-title="DW_ALL" title="${_i18n("DW_ALL")}" class="IG_DWSTORY_ALL">${SVG.DOWNLOAD_ALL}</div>`);
                     }
 
-                    setStoryProgressIndexText($element.first(), $header, 'IG_DWSTORY_POSITION');
+                    setStoryProgressIndexText($firstEl, $header, 'IG_DWSTORY_POSITION');
 
                     // Modify video volume
                     //if(USER_SETTING.MODIFY_VIDEO_VOLUME){
                     //    $element.find('video').each(function(){
                     //        $(this).on('play playing', function(){
                     //            if(!$(this).data('modify')){
-                    //                $(this).attr('data-modify', true);
+                    //                $(this).data('modify', true);
                     //                this.volume = VIDEO_VOLUME;
                     //                logger('(story) Added video event listener #modify');
                     //            }
@@ -2839,14 +3069,15 @@
                     // Make sure to first remove thumbnail button if still exists and story is a picture
                     $element.find('img[referrerpolicy]').each(function () {
                         $(this).on('load', function () {
-                            if (!$(this).data('remove-thumbnail')) {
+                            const $img = $(this);
+                            if (!$img.data('remove-thumbnail')) {
                                 if ($element.find('.IG_DWSTORY_THUMBNAIL').length === 0) {
-                                    $(this).attr('data-remove-thumbnail', true);
+                                    $img.data('remove-thumbnail', true);
                                     $('.IG_DWSTORY_THUMBNAIL').remove();
                                     logger('(story) Manually removing thumbnail button');
                                 }
                                 else {
-                                    $(this).attr('data-remove-thumbnail', true);
+                                    $img.data('remove-thumbnail', true);
                                     logger('(story) Thumbnail button is not present for this picture');
                                 }
                             }
@@ -2858,12 +3089,12 @@
                     //    $(this).on('timeupdate',function(){
                     //        if(!$(this).data('modify-thumbnail')){
                     //            if($element.find('.IG_DWSTORY_THUMBNAIL').length === 0){
-                    //                $(this).attr('data-modify-thumbnail', true);
+                    //                $(this).data('modify-thumbnail', true);
                     //                onStoryThumbnail(false);
                     //                logger('(story) Manually inserting thumbnail button');
                     //            }
                     //            else{
-                    //                $(this).attr('data-modify-thumbnail', true);
+                    //                $(this).data('modify-thumbnail', true);
                     //                logger('(story) Thumbnail button already inserted');
                     //            }
                     //        }
@@ -2904,8 +3135,10 @@
                 let userId = userInfo.user.pk;
                 let stories = await getStories(userId);
                 let urlID = location.pathname.split('/').filter(s => s.length > 0 && s.match(/^([0-9]{10,})$/)).at(-1);
+                // OPTIMIZATION: cache items reference
+                const items = stories.data.reels_media[0].items;
 
-                stories.data.reels_media[0].items.forEach(item => {
+                items.forEach(item => {
                     if (item.id == urlID) {
                         mediaId = item.id;
                     }
@@ -2921,7 +3154,7 @@
 
                     $header.each(function (index) {
                         if ($(this).children().length > 0) {
-                            mediaId = stories.data.reels_media[0].items[index].id;
+                            mediaId = items[index].id;
                         }
                     });
                 }
@@ -2929,9 +3162,10 @@
                 if (mediaId == null) {
                     // appear in from profile page to story page
                     $('body > div section:visible div.x1ned7t2.x78zum5 > div').each(function (index) {
-                        if ($(this).hasClass('x1lix1fw')) {
-                            if ($(this).children().length > 0) {
-                                mediaId = stories.data.reels_media[0].items[index].id;
+                        const $this = $(this);
+                        if ($this.hasClass('x1lix1fw')) {
+                            if ($this.children().length > 0) {
+                                mediaId = items[index].id;
                             }
                         }
                     });
@@ -2939,7 +3173,7 @@
                     // appear in from home page to story page
                     $('body > div section:visible ._ac0k > ._ac3r > div').each(function (index) {
                         if ($(this).children().hasClass('_ac3q')) {
-                            mediaId = stories.data.reels_media[0].items[index].id;
+                            mediaId = items[index].id;
                         }
                     });
                 }
@@ -3017,8 +3251,10 @@
                 let userInfo = await getUserId(username);
                 let userId = userInfo.user.pk;
                 let stories = await getStories(userId);
+                // OPTIMIZATION: cache items
+                const items = stories.data.reels_media[0].items;
 
-                stories.data.reels_media[0].items.forEach(item => {
+                items.forEach(item => {
                     if (item.id == targetURL) {
                         videoThumbnailURL = item.display_url;
                         if (USER_SETTING.RENAME_PUBLISH_DATE) {
@@ -3034,10 +3270,10 @@
 
                     $header.each(function (index) {
                         if ($(this).children().length > 0) {
-                            videoThumbnailURL = stories.data.reels_media[0].items[index].display_url;
+                            videoThumbnailURL = items[index].display_url;
                             if (USER_SETTING.RENAME_PUBLISH_DATE) {
-                                timestamp = stories.data.reels_media[0].items[index].taken_at_timestamp;
-                                mediaId = stories.data.reels_media[0].items[index].id;
+                                timestamp = items[index].taken_at_timestamp;
+                                mediaId = items[index].id;
                             }
                         }
                     });
@@ -3045,12 +3281,13 @@
                     if (videoThumbnailURL.length == 0) {
                         // appear in from profile page to story page
                         $('body > div section:visible div.x1ned7t2.x78zum5 > div').each(function (index) {
-                            if ($(this).hasClass('x1lix1fw')) {
-                                if ($(this).children().length > 0) {
-                                    videoThumbnailURL = stories.data.reels_media[0].items[index].display_url;
+                            const $this = $(this);
+                            if ($this.hasClass('x1lix1fw')) {
+                                if ($this.children().length > 0) {
+                                    videoThumbnailURL = items[index].display_url;
                                     if (USER_SETTING.RENAME_PUBLISH_DATE) {
-                                        timestamp = stories.data.reels_media[0].items[index].taken_at_timestamp;
-                                        mediaId = stories.data.reels_media[0].items[index].id;
+                                        timestamp = items[index].taken_at_timestamp;
+                                        mediaId = items[index].id;
                                     }
                                 }
                             }
@@ -3059,10 +3296,10 @@
                         // appear in from home page to story page
                         $('body > div section:visible ._ac0k > ._ac3r > div').each(function (index) {
                             if ($(this).children().hasClass('_ac3q')) {
-                                videoThumbnailURL = stories.data.reels_media[0].items[index].display_url;
+                                videoThumbnailURL = items[index].display_url;
                                 if (USER_SETTING.RENAME_PUBLISH_DATE) {
-                                    timestamp = stories.data.reels_media[0].items[index].taken_at_timestamp;
-                                    mediaId = stories.data.reels_media[0].items[index].id;
+                                    timestamp = items[index].taken_at_timestamp;
+                                    mediaId = items[index].id;
                                 }
                             }
                         });
@@ -3081,7 +3318,7 @@
             updateLoadingBar(false);
         }
         else {
-            if ($('body > div div.IG_DWSTORY').parent().find('video[class]').length) {
+            if ($('body > div div.IG_DWSTORY').parent().find('video').length) {
                 // Add the stories download button
                 let $element = null;
                 // Default detecter (section layout mode)
@@ -3110,17 +3347,20 @@
                     let nowSize = 0;
 
                     $$element.each(function () {
-                        if ($(this).width() > nowSize) {
-                            nowSize = $(this).width();
-                            $element = $(this).children('div').first();
+                        const $this = $(this);
+                        const width = $this.width();
+                        if (width > nowSize) {
+                            nowSize = width;
+                            $element = $this.children('div').first();
                         }
                     });
                 }
 
 
                 if ($element != null) {
-                    $element.first().css('position', 'relative');
-                    $element.first().append(`<div data-ih-locale-title="VIDEO_THUMBNAIL" title="${_i18n("VIDEO_THUMBNAIL")}" class="IG_DWSTORY_THUMBNAIL">${SVG.THUMBNAIL}</div>`);
+                    const $firstEl = $element.first();
+                    $firstEl.css('position', 'relative');
+                    $firstEl.append(`<div data-ih-locale-title="VIDEO_THUMBNAIL" title="${_i18n("VIDEO_THUMBNAIL")}" class="IG_DWSTORY_THUMBNAIL">${SVG.THUMBNAIL}</div>`);
                 }
 
             }
@@ -3138,7 +3378,7 @@
      */
     function getHighlightStories(highlightId) {
         return new Promise((resolve, reject) => {
-            let getURL = `https://www.instagram.com/graphql/query/?query_hash=45246d3fe16ccc6577e0bd297a5db1ab&variables=%7B%22highlight_reel_ids%22:%5B%22${highlightId}%22%5D,%22precomposed_overlay%22:false%7D`;
+            const getURL = `https://www.instagram.com/graphql/query/?query_hash=45246d3fe16ccc6577e0bd297a5db1ab&variables=%7B%22highlight_reel_ids%22:%5B%22${highlightId}%22%5D,%22precomposed_overlay%22:false%7D`;
 
             GM_xmlhttpRequest({
                 method: "GET",
@@ -3170,7 +3410,7 @@
      */
     function getStories(userId) {
         return new Promise((resolve, reject) => {
-            let getURL = `https://www.instagram.com/graphql/query/?query_hash=15463e8449a83d3d60b06be7e90627c7&variables=%7B%22reel_ids%22:%5B%22${userId}%22%5D,%22precomposed_overlay%22:false%7D`;
+            const getURL = `https://www.instagram.com/graphql/query/?query_hash=15463e8449a83d3d60b06be7e90627c7&variables=%7B%22reel_ids%22:%5B%22${userId}%22%5D,%22precomposed_overlay%22:false%7D`;
 
             GM_xmlhttpRequest({
                 method: "GET",
@@ -3203,7 +3443,7 @@
      */
     function getUserId(username) {
         return new Promise((resolve, reject) => {
-            let getURL = `https://www.instagram.com/web/search/topsearch/?query=${username}`;
+            const getURL = `https://www.instagram.com/web/search/topsearch/?query=${username}`;
 
             GM_xmlhttpRequest({
                 method: "GET",
@@ -3212,7 +3452,7 @@
                     // Fix search issue by Discord: sno_w_
                     let obj = JSON.parse(response.response);
                     let result = null;
-                    obj.users.forEach(pos => {
+                    (obj.users ?? []).forEach(pos => {
                         if (pos.user.username?.toLowerCase() === username?.toLowerCase()) {
                             result = pos;
                         }
@@ -3248,7 +3488,7 @@
      */
     function getUserIdWithAgent(username) {
         return new Promise((resolve, reject) => {
-            let getURL = `https://i.instagram.com/api/v1/users/web_profile_info/?username=${username}`;
+            const getURL = `https://i.instagram.com/api/v1/users/web_profile_info/?username=${username}`;
 
             GM_xmlhttpRequest({
                 method: "GET",
@@ -3294,7 +3534,7 @@
      */
     function getUserHighSizeProfile(userId) {
         return new Promise((resolve, reject) => {
-            let getURL = `https://www.instagram.com/api/v1/users/${userId}/info/`;
+            const getURL = `https://www.instagram.com/api/v1/users/${userId}/info/`;
 
             GM_xmlhttpRequest({
                 method: "GET",
@@ -3337,8 +3577,8 @@
     function getPostOwner(postPath) {
         return new Promise((resolve, reject) => {
             if (!postPath) reject("NOPATH");
-            let postShortCode = postPath;
-            let getURL = `https://www.instagram.com/graphql/query/?query_hash=2c4c2e343a8f64c625ba02b2aa12c7f8&variables=%7B%22shortcode%22:%22${postShortCode}%22}`;
+            const postShortCode = postPath;
+            const getURL = `https://www.instagram.com/graphql/query/?query_hash=2c4c2e343a8f64c625ba02b2aa12c7f8&variables=%7B%22shortcode%22:%22${postShortCode}%22}`;
 
             GM_xmlhttpRequest({
                 method: "GET",
@@ -3372,8 +3612,8 @@
     function getBlobMedia(postPath) {
         return new Promise((resolve, reject) => {
             if (!postPath) reject("NOPATH");
-            let postShortCode = postPath;
-            let getURL = `https://www.instagram.com/graphql/query/?query_hash=2c4c2e343a8f64c625ba02b2aa12c7f8&variables=%7B%22shortcode%22:%22${postShortCode}%22}`;
+            const postShortCode = postPath;
+            const getURL = `https://www.instagram.com/graphql/query/?query_hash=2c4c2e343a8f64c625ba02b2aa12c7f8&variables=%7B%22shortcode%22:%22${postShortCode}%22}`;
 
             GM_xmlhttpRequest({
                 method: "GET",
@@ -3422,8 +3662,8 @@
     function getBlobMediaWithQueryID(postPath) {
         return new Promise((resolve, reject) => {
             if (!postPath) reject("NOPATH");
-            let postShortCode = postPath;
-            let getURL = `https://www.instagram.com/graphql/query/?query_id=9496392173716084&variables={%22shortcode%22:%22${postShortCode}%22,%22__relay_internal__pv__PolarisFeedShareMenurelayprovider%22:true,%22__relay_internal__pv__PolarisIsLoggedInrelayprovider%22:true}`;
+            const postShortCode = postPath;
+            const getURL = `https://www.instagram.com/graphql/query/?query_id=9496392173716084&variables={%22shortcode%22:%22${postShortCode}%22,%22__relay_internal__pv__PolarisFeedShareMenurelayprovider%22:true,%22__relay_internal__pv__PolarisIsLoggedInrelayprovider%22:true}`;
 
             GM_xmlhttpRequest({
                 method: "GET",
@@ -3469,7 +3709,7 @@
      */
     function getMediaInfo(mediaId) {
         return new Promise((resolve, reject) => {
-            let getURL = `https://i.instagram.com/api/v1/media/${mediaId}/info/`;
+            const getURL = `https://i.instagram.com/api/v1/media/${mediaId}/info/`;
 
             if (mediaId == null) {
                 alert("Cannot call Media API because of the media id is invalid.");
@@ -3553,15 +3793,17 @@
      * getAppID
      * @description Get Instagram App ID.
      *
-     * @return {?integer}
+     * @return {?string}
      */
     function getAppID() {
         let result = null;
         $('script[type="application/json"]').each(function () {
             const regexp = /"APP_ID":"([0-9]+)"/ig;
-            const matcher = $(this).text().match(regexp);
+            const $this = $(this);
+            const text = $this.text();
+            const matcher = text.match(regexp);
             if (matcher != null && result == null) {
-                result = [...$(this).text().matchAll(regexp)];
+                result = [...text.matchAll(regexp)];
             }
         })
 
@@ -3683,7 +3925,7 @@
      */
     function getHighlightCurrentTimeElement($element) {
         if ($element == null || $element.length === 0) {
-            $element = $('body');
+            $element = $body;
         }
 
         let $section = $element.closest('section:visible');
@@ -3720,13 +3962,15 @@
      * @return {void}
      */
     function updateLoadingBar(isLoading) {
+        // OPTIMIZATION: cache the mount root selection (called every time)
+        const $mountDiv = $('div[id^="mount"] > div > div > div:first');
         if (isLoading) {
-            $('div[id^="mount"] > div > div > div:first').removeClass('x1s85apg');
-            $('div[id^="mount"] > div > div > div:first').css('z-index', '20000');
+            $mountDiv.removeClass('x1s85apg');
+            $mountDiv.css('z-index', '20000');
         }
         else {
-            $('div[id^="mount"] > div > div > div:first').addClass('x1s85apg');
-            $('div[id^="mount"] > div > div > div:first').css('z-index', '');
+            $mountDiv.addClass('x1s85apg');
+            $mountDiv.css('z-index', '');
         }
     }
 
@@ -3738,10 +3982,12 @@
      * @return {Object}
      */
     function getStoryProgress(username) {
+        const lowerUsername = username?.toLowerCase();
         let $header = $('body > div section:visible a[href^="/' + (username) + '"] span').filter(function () {
-            return $(this).children().length === 0 && $(this).find('svg').length === 0 && $(this).text()?.toLowerCase() === username?.toLowerCase();
+            const $this = $(this);
+            return $this.children().length === 0 && $this.find('svg').length === 0 && $this.text()?.toLowerCase() === lowerUsername;
         }).parents('div:not([class]):not([style])').filter(function () {
-            return $(this).text()?.toLowerCase() !== username?.toLowerCase()
+            return $(this).text()?.toLowerCase() !== lowerUsername
         }).filter(function () {
             return $(this).children().length > 1
         }).first();
@@ -3750,7 +3996,7 @@
             $header = $('body > div section:visible a[href^="/' + (username) + '"]').filter(function () {
                 return $(this).find('img').length > 0
             }).parents('div:not([class]):not([style])').filter(function () {
-                return $(this).text()?.toLowerCase() !== username?.toLowerCase()
+                return $(this).text()?.toLowerCase() !== lowerUsername
             }).filter(function () {
                 return $(this).children().length > 1
             }).first();
@@ -3859,17 +4105,19 @@
      * @return {Void}
      */
     function setDownloadProgress(now, total) {
-        if ($('.circle_wrapper').length) {
-            $('.circle_wrapper span').text(`${now}/${total}`);
+        // OPTIMIZATION: cache the circle wrapper lookup
+        const $circle = $('.circle_wrapper');
+        if ($circle.length) {
+            $circle.find('span').text(`${now}/${total}`);
 
             if (now >= total) {
-                $('.circle_wrapper').fadeOut(250, function () {
+                $circle.fadeOut(250, function () {
                     $(this).remove();
                 });
             }
         }
         else {
-            $('body').append(`<div class="circle_wrapper"><circle></circle><span>${now}/${total}</span></div>`);
+            $body.append(`<div class="circle_wrapper"><circle></circle><span>${now}/${total}</span></div>`);
         }
     }
 
@@ -3892,14 +4140,18 @@
         return new Promise((resolve) => {
             setTimeout(() => {
                 updateLoadingBar(true);
-                fetch(downloadLink).then(res => {
-                    return res.blob().then(dwel => {
+                fetch(downloadLink)
+                    .then(res => res.blob())
+                    .then(dwel => {
                         updateLoadingBar(false);
-                        createSaveFileElement(downloadLink, dwel, metadata).then(() => {
-                            resolve(true);
-                        });
+                        return createSaveFileElement(downloadLink, dwel, metadata);
+                    })
+                    .then(() => resolve(true))
+                    .catch(err => {
+                        updateLoadingBar(false);
+                        console.error('saveFiles failed:', err);
+                        resolve(false);
                     });
-                });
             }, 50);
         });
     }
@@ -4175,17 +4427,29 @@
     }
 
     /**
+     * triggerDownload
      * @description Trigger download from Blob with filename.
      * 
      * @param {Blob} blob
      * @param {string} filename
      */
     function triggerDownload(blob, filename) {
-        const link = document.createElement('a');
-        link.href = URL.createObjectURL(blob);
-        link.download = filename;
-        link.click();
-        link.remove();
+        return new Promise((resolve) => {
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement("a");
+            link.href = url;
+            link.download = filename;
+            link.rel = "noopener";
+            link.style.display = "none";
+            document.body.appendChild(link);
+            link.click();
+            setTimeout(() => {
+                // eslint-disable-next-line no-unused-vars
+                try { document.body.removeChild(link); } catch (e) { /* noop */ }
+                URL.revokeObjectURL(url);
+                resolve();
+            }, 250);
+        });
     }
 
     /**
@@ -4274,22 +4538,39 @@
     async function createSaveFileElement(downloadLink, object, metadata) {
         let { username, sourceType, filetype, shortcode } = metadata;
 
-        if (metadata.uid == null) {
-            const userInfo = await getUserId(username);
-            metadata.uid = userInfo?.user?.id || null;
+        if (metadata.uid == null && username) {
+            if (!userIdCache.has(username)) {
+                userIdCache.set(username, getUserId(username));
+            }
+
+            try {
+                const userInfo = await userIdCache.get(username);
+                metadata.uid = userInfo?.user?.id || null;
+                // eslint-disable-next-line no-unused-vars
+            } catch (err) {
+                userIdCache.delete(username);
+                metadata.uid = null;
+            }
         }
 
         const downloadName = getSaveFileName(downloadLink, metadata);
 
-        if (USER_SETTING.MODIFY_RESOURCE_EXIF && filetype === 'jpg' && shortcode && sourceType === 'photo' && (object.type === 'image/jpeg' || object.type === 'image/webp')) {
-            changeExifData(object, metadata)
-                .then(newBlob => triggerDownload(newBlob, downloadName))
-                .catch(err => {
-                    console.error('Failed to strip EXIF and/or attach post URL to EXIF.', err);
-                    triggerDownload(object, downloadName);
-                });
+        if (
+            USER_SETTING.MODIFY_RESOURCE_EXIF &&
+            filetype === 'jpg' &&
+            shortcode &&
+            sourceType === 'photo' &&
+            (object.type === 'image/jpeg' || object.type === 'image/webp')
+        ) {
+            try {
+                const newBlob = await changeExifData(object, metadata);
+                await triggerDownload(newBlob, downloadName);
+            } catch (err) {
+                console.error('Failed to strip EXIF and/or attach post URL to EXIF.', err);
+                await triggerDownload(object, downloadName);
+            }
         } else {
-            triggerDownload(object, downloadName);
+            await triggerDownload(object, downloadName);
         }
     }
 
@@ -4497,63 +4778,77 @@
 
     /**
      * triggerLinkElement
-     * @description Trigger the link element to start downloading the resource.
+     * @description Trigger the link element to start downloading or previewing the resource.
      *
-     * @param  {Object}  element
+     * @param  {Object}   element     - The element containing resource link metadata.
+     * @param  {Boolean}  [isPreview] - True to preview in a new tab instead of downloading.
      * @return {void}
      */
-    async function triggerLinkElement(element, isPreview) {
+    async function triggerLinkElement($element, isPreview = false) {
         try {
+            const $el = $($element);
+
             let date = new Date().getTime();
             let timestamp = Math.floor(date / 1000);
-            let username = ($(element).attr('data-username')) ? $(element).attr('data-username') : state.GL_username;
-            let index = $(element).attr('data-globalindex') || 0;
+            let username = $el.data('username') ? $el.data('username') : state.GLusername;
+            let index = parseInt($el.attr('data-globalindex') || 0, 10) || 0;
 
-            if (!username && $(element).attr('data-path')) {
-                logger('catching owner name from shortcode:', $(element).attr('data-href'));
-                username = await getPostOwner($(element).attr('data-path')).catch(err => {
-                    logger('get username failed, replace with default string, error message:', err.message);
+            if (!username && $el.data('path')) {
+                logger('catching owner name from shortcode', $el.data('href'));
+                username = await getPostOwner($el.data('path')).catch(err => {
+                    logger('get username failed, replace with default string, error message', err?.message);
+                    return null;
                 });
-
-                if (username == null) {
-                    username = "NONE";
-                }
             }
 
-            if (USER_SETTING.RENAME_PUBLISH_DATE && $(element).attr('datetime')) {
-                timestamp = parseInt($(element).attr('datetime'));
+            if (username == null) username = 'NONE';
+
+            if (USER_SETTING.RENAME_PUBLISH_DATE && $el.attr('datetime')) {
+                timestamp = parseInt($el.attr('datetime'), 10) || timestamp;
             }
 
-            let mediaId = $(element).attr('media-id');
+            const mediaId = $el.attr('media-id') || $el.attr('data-media-id') || null;
+            const sourceType = $el.data('name');
+            const filetype = $el.data('type') || 'jpg';
+            const shortcode = $el.data('path');
+            const href = $el.data('href');
 
-            if (USER_SETTING.PREFER_DASH_MANIFEST && state.GL_mediaDataCache[mediaId] && !isPreview) {
-                logger('[Video Dash Stream]', 'Processing video with DASH manifest, mediaId:', mediaId);
-                const handled = await tryHandleDashFromMediaItem({
-                    mediaItem: state.GL_mediaDataCache[mediaId],
+            const downloadOnly = !isPreview;
+
+            if (!isPreview && index < 0) {
+                alert(_i18n('NO_CHECK_RESOURCE'));
+                return;
+            }
+
+            if (USER_SETTING.PREFER_DASH_MANIFEST && state.GL_mediaDataCache[mediaId]) {
+                logger('Video Dash Stream, Processing video with DASH manifest', 'mediaId', mediaId);
+
+                const handled = await tryHandleDashFromMediaItem(
+                    state.GL_mediaDataCache[mediaId],
                     username,
-                    sourceType: $(element).data('name'),
+                    sourceType,
                     timestamp,
-                    shortcode: $(element).data('path'),
-                    isPreview: false,
+                    shortcode,
+                    downloadOnly ? false : isPreview,
                     index
-                });
-                if (handled) {
-                    return;
-                }
+                );
+
+                if (handled) return;
             }
 
             if (USER_SETTING.CAPTURE_IMAGE_VIA_MEDIA_CACHE) {
                 const cached = getImageFromCache(mediaId);
-                if (cached && $(element).data('type') != "mp4") {
-                    if (isPreview) {
+
+                if (cached && filetype !== 'mp4') {
+                    if (!downloadOnly && isPreview) {
                         openNewTab(cached);
                     } else {
-                        saveFiles(cached, {
+                        await saveFiles(cached, {
                             username,
-                            sourceType: $(element).data('name'),
+                            sourceType,
                             timestamp,
-                            filetype: $(element).data('type') || 'jpg',
-                            shortcode: $(element).data('path'),
+                            filetype: filetype || 'jpg',
+                            shortcode,
                             index
                         });
                     }
@@ -4561,105 +4856,96 @@
                 }
             }
 
-            if (USER_SETTING.FORCE_RESOURCE_VIA_MEDIA) {
+            if (USER_SETTING.FORCE_RESOURCE_VIA_MEDIA && mediaId) {
                 updateLoadingBar(true);
-                let result = await getMediaInfo($(element).attr('media-id'));
+                let result = await getMediaInfo(mediaId);
                 updateLoadingBar(false);
 
-                if (result.status === 'ok') {
-                    var resource_url = null;
-                    if (result.items[0].video_versions) {
-                        resource_url = result.items[0].video_versions[0].url;
-                    }
-                    else {
-                        result.items[0].image_versions2.candidates.sort(function (a, b) {
+                if (result?.status === 'ok') {
+                    let resource_url = null;
+                    // OPTIMIZATION: cache result.items[0]
+                    const mediaItem = result.items?.[0];
+
+                    if (mediaItem?.video_versions?.length) {
+                        resource_url = mediaItem.video_versions[0].url;
+                    } else if (mediaItem?.image_versions2?.candidates?.length) {
+                        mediaItem.image_versions2.candidates.sort(function (a, b) {
                             let aSTP = new URL(a.url).searchParams.get('stp');
                             let bSTP = new URL(b.url).searchParams.get('stp');
 
                             if (aSTP && bSTP) {
                                 if (aSTP.length > bSTP.length) return 1;
                                 if (aSTP.length < bSTP.length) return -1;
-                            }
-                            else {
-                                if (a.width < b.width) return 1;
-                                if (a.width > b.width) return -1;
+                            } else {
+                                if ((a.width || 0) > (b.width || 0)) return 1;
+                                if ((a.width || 0) < (b.width || 0)) return -1;
                             }
 
                             return 0;
                         });
 
-                        resource_url = result.items[0].image_versions2.candidates[0].url;
-
-                        const getWidthFromURL = function (obj) {
-                            if (obj.width != null) {
-                                return obj.width;
-                            }
-
-                            const url = new URL(obj.url);
-                            const stp = url.searchParams.get('stp');
-
-                            if (stp != null) {
-                                return parseInt(stp.match(/_p([0-9]+)x([0-9]+)_/i)?.at(1) || -1);
-                            }
-                            else {
-                                return 0;
-                            }
-                        }
-
-                        const resourceWidth = getWidthFromURL(result.items[0].image_versions2.candidates[0]);
-                        if (
-                            result.items[0].original_width !== resourceWidth &&
-                            resourceWidth !== -1
-                        ) {
-                            // alert();
-                        }
+                        resource_url = mediaItem.image_versions2.candidates[0].url;
                     }
 
-                    if (isPreview) {
+                    if (!resource_url) {
+                        alert('Cannot find download URL.');
+                        return;
+                    }
+
+                    if (!downloadOnly && isPreview) {
                         openNewTab(replaceSameOriginHost(resource_url));
-                    }
-                    else {
-                        saveFiles(resource_url, {
+                    } else {
+                        await saveFiles(resource_url, {
                             username,
-                            sourceType: $(element).attr('data-name'),
+                            sourceType,
                             timestamp,
-                            filetype: $(element).attr('data-type'),
-                            shortcode: $(element).attr('data-path')
+                            filetype,
+                            shortcode,
+                            index
                         });
                     }
+                    return;
                 }
-                else {
-                    if (USER_SETTING.FALLBACK_TO_BLOB_FETCH_IF_MEDIA_API_THROTTLED) {
-                        if (isPreview) {
-                            openNewTab(replaceSameOriginHost($(element).attr('data-href')));
-                        }
-                        else {
-                            saveFiles($(element).attr('data-href'), {
-                                username,
-                                sourceType: $(element).attr('data-name'),
-                                timestamp,
-                                filetype: $(element).attr('data-type'),
-                                shortcode: $(element).attr('data-path')
-                            });
-                        }
+
+                if (USER_SETTING.FALLBACK_TO_BLOB_FETCH_IF_MEDIA_API_THROTTLED && href) {
+                    if (!downloadOnly && isPreview) {
+                        openNewTab(replaceSameOriginHost(href));
+                    } else {
+                        await saveFiles(href, {
+                            username,
+                            sourceType,
+                            timestamp,
+                            filetype,
+                            shortcode,
+                            index
+                        });
                     }
-                    else {
-                        alert('Fetch failed from Media API. API response message: ' + result.message);
-                    }
-                    logger(result);
+                    return;
                 }
+
+                alert(`Fetch failed from Media API. API response message: ${result?.message}`);
+                logger(result);
+                return;
             }
-            else {
-                saveFiles($(element).attr('data-href'), {
-                    username,
-                    sourceType: $(element).attr('data-name'),
-                    timestamp,
-                    filetype: $(element).attr('data-type'),
-                    shortcode: $(element).attr('data-path')
-                });
+
+            if (href) {
+                if (!downloadOnly && isPreview) {
+                    openNewTab(replaceSameOriginHost(href));
+                } else {
+                    await saveFiles(href, {
+                        username,
+                        sourceType,
+                        timestamp,
+                        filetype,
+                        shortcode,
+                        index
+                    });
+                }
+                return;
             }
-        }
-        catch (err) {
+
+            alert('Cannot find download URL.');
+        } catch (err) {
             console.error('Occur error in triggerLinkElement:', err);
             logger('Occur error in triggerLinkElement:', err);
         }
@@ -4728,7 +5014,7 @@
                             highlight: true,
                             timeout: 5000,
                             zombieTimeout: 5000,
-                            image: "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a5/Instagram_icon.png/64px-Instagram_icon.png",
+                            image: "https://t3.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://www.instagram.com&size=64",
                             onclick: (event) => {
                                 event?.preventDefault();
                                 var w = GM_openInTab(GM_info.script.downloadURL);
@@ -4775,13 +5061,9 @@
     function reloadScript() {
         clearInterval(state.GL_repeat);
 
-        // unregister event in post element
-        state.GL_registerEventList.forEach(item => {
-            item.trigger.forEach(bindElement => {
-                $(item.element).off('click', bindElement);
-            });
-        });
-        state.GL_registerEventList = [];
+        // OPTIMIZATION: use cached $body and combine .off() calls
+        $body.off('.igHelperPost');
+        state.bodyEventsRegistered = false;
 
         $('.button_wrapper').remove();
         $('.IG_DWPROFILE, .IG_DWPROFILE, .IG_DWSTORY, .IG_DWSTORY_ALL, .IG_DWSTORY_THUMBNAIL, .IG_DWSTORY_POSITION, .IG_DWNEWTAB, .IG_DWHISTORY, .IG_DWHISTORY_ALL, .IG_DWHINEWTAB, .IG_DWHISTORY_THUMBNAIL, .IG_DWHISTORY_POSITION, .IG_REELS, .IG_REELS_NEWTAB, .IG_REELS_THUMBNAIL').remove();
@@ -4790,7 +5072,7 @@
         state.pageLoaded = false;
         state.firstStarted = false;
         state.currentURL = location.href;
-        state.GL_observer.disconnect();
+        state.GL_observer?.disconnect();
 
         logger('main timer re-register completed');
     }
@@ -4848,17 +5130,22 @@
      * @return {void}
      */
     function toggleVolumeSilder($videos, $buttonParent, loggerType, customClass = "") {
-        if ($buttonParent.find('div.volume_slider').length === 0) {
+        // OPTIMIZATION: cache the volume_slider lookup
+        let $existingSlider = $buttonParent.find('div.volume_slider');
+        if ($existingSlider.length === 0) {
             $buttonParent.append(`<div class="volume_slider ${customClass}" />`);
-            $buttonParent.find('div.volume_slider').append(`<div><input type="range" max="1" min="0" step="0.05" value="${state.videoVolume}" /></div>`);
-            $buttonParent.find('div.volume_slider input').attr('style', `--ig-track-progress: ${(state.videoVolume * 100) + '%'}`);
-            $buttonParent.find('div.volume_slider input').on('input', function () {
-                var percent = ($(this).val() * 100) + '%';
+            const $newSlider = $buttonParent.find('div.volume_slider');
+            $newSlider.append(`<div><input type="range" max="1" min="0" step="0.05" value="${state.videoVolume}" /></div>`);
+            const $sliderInput = $newSlider.find('input');
+            $sliderInput.attr('style', `--ig-track-progress: ${(state.videoVolume * 100) + '%'}`);
+            $sliderInput.on('input', function () {
+                const $this = $(this);
+                var percent = ($this.val() * 100) + '%';
 
-                state.videoVolume = $(this).val();
-                GM_setValue('G_VIDEO_VOLUME', $(this).val());
+                state.videoVolume = $this.val();
+                GM_setValue('G_VIDEO_VOLUME', $this.val());
 
-                $(this).attr('style', `--ig-track-progress: ${percent}`);
+                $this.attr('style', `--ig-track-progress: ${percent}`);
 
                 $videos.each(function () {
                     logger(`(${loggerType})`, 'video volume changed #slider');
@@ -4866,10 +5153,11 @@
                 });
             });
 
-            $buttonParent.find('div.volume_slider input').on('mouseenter', function () {
+            $sliderInput.on('mouseenter', function () {
+                const $this = $(this);
                 var percent = (state.videoVolume * 100) + '%';
-                $(this).attr('style', `--ig-track-progress: ${percent}`);
-                $(this).val(state.videoVolume);
+                $this.attr('style', `--ig-track-progress: ${percent}`);
+                $this.val(state.videoVolume);
 
 
                 $videos.each(function () {
@@ -4878,13 +5166,13 @@
                 });
             });
 
-            $buttonParent.find('div.volume_slider').on('click', function (e) {
+            $newSlider.on('click', function (e) {
                 e.stopPropagation();
                 e.preventDefault();
             });
         }
         else {
-            $buttonParent.find('div.volume_slider').remove();
+            $existingSlider.remove();
         }
     }
 
@@ -5006,14 +5294,17 @@
      */
     function IG_createDM(hasHidden, hasCheckbox) {
         let isHidden = (hasHidden) ? "hidden" : "";
-        $('body').append('<div class="IG_POPUP_DIG ' + isHidden + '"><div class="IG_POPUP_DIG_BG"></div><div class="IG_POPUP_DIG_MAIN"><div class="IG_POPUP_DIG_TITLE"></div><div class="IG_POPUP_DIG_BODY"></div></div></div>');
-        $('.IG_POPUP_DIG .IG_POPUP_DIG_MAIN .IG_POPUP_DIG_TITLE').append(`<div style="position:relative;min-height:36px;text-align:center;margin-bottom: 7px;"><div style="position:absolute;left:0px;line-height: 18px;"><kbd>${getPlatformModifierKey()}</kbd>+<kbd>Q</kbd> [<span data-ih-locale="CLOSE">${_i18n("CLOSE")}</span>]</div><div style="line-height: 18px;">IG Helper v${GM_info.script.version}</div><div id="post_info" style="line-height: 14px;font-size:14px;">Post ID: <span id="article-id"></span></div><div class="IG_POPUP_DIG_BTN">${SVG.CLOSE}</div></div>`);
+        $body.append('<div class="IG_POPUP_DIG ' + isHidden + '"><div class="IG_POPUP_DIG_BG"></div><div class="IG_POPUP_DIG_MAIN"><div class="IG_POPUP_DIG_TITLE"></div><div class="IG_POPUP_DIG_BODY"></div></div></div>');
+        // OPTIMIZATION: cache popup title element used 3+ times in this function
+        const $title = $('.IG_POPUP_DIG .IG_POPUP_DIG_MAIN .IG_POPUP_DIG_TITLE');
+        $title.append(`<div style="position:relative;min-height:36px;text-align:center;margin-bottom: 7px;"><div style="position:absolute;left:0px;line-height: 18px;"><kbd>${getPlatformModifierKey()}</kbd>+<kbd>Q</kbd> [<span data-ih-locale="CLOSE">${_i18n("CLOSE")}</span>]</div><div style="line-height: 18px;">IG Helper v${GM_info.script.version}</div><div id="post_info" style="line-height: 14px;font-size:14px;">Post ID: <span id="article-id"></span></div><div class="IG_POPUP_DIG_BTN">${SVG.CLOSE}</div></div>`);
 
         if (hasCheckbox) {
-            $('.IG_POPUP_DIG .IG_POPUP_DIG_MAIN .IG_POPUP_DIG_TITLE').append(`<div style="text-align: center;" id="button_group"></div>`);
-            $('.IG_POPUP_DIG .IG_POPUP_DIG_MAIN .IG_POPUP_DIG_TITLE > div#button_group').append(`<button id="batch_download_selected" data-ih-locale="BATCH_DOWNLOAD_SELECTED">${_i18n('BATCH_DOWNLOAD_SELECTED')}</button>`);
-            $('.IG_POPUP_DIG .IG_POPUP_DIG_MAIN .IG_POPUP_DIG_TITLE > div#button_group').append(`<button id="batch_download_direct" data-ih-locale="BATCH_DOWNLOAD_DIRECT">${_i18n('BATCH_DOWNLOAD_DIRECT')}</button>`);
-            $('.IG_POPUP_DIG .IG_POPUP_DIG_MAIN .IG_POPUP_DIG_TITLE').append(`<label class="checkbox"><input value="yes" type="checkbox" /><span data-ih-locale="ALL_CHECK">${_i18n('ALL_CHECK')}</span><span class="item-count"></span></label>`);
+            $title.append(`<div style="text-align: center;" id="button_group"></div>`);
+            const $btnGroup = $title.find('> div#button_group');
+            $btnGroup.append(`<button id="batch_download_selected" disabled data-ih-locale="BATCH_DOWNLOAD_SELECTED">${_i18n('BATCH_DOWNLOAD_SELECTED')}</button>`);
+            $btnGroup.append(`<button id="batch_download_direct" disabled data-ih-locale="BATCH_DOWNLOAD_DIRECT">${_i18n('BATCH_DOWNLOAD_DIRECT')}</button>`);
+            $title.append(`<label class="checkbox"><input value="yes" type="checkbox" /><span data-ih-locale="ALL_CHECK">${_i18n('ALL_CHECK')}</span><span class="item-count"></span></label>`);
         }
     }
 
@@ -5025,12 +5316,13 @@
      * @return {void}
      */
     function IG_setDM(hasHidden) {
-        if ($('.IG_POPUP_DIG').length) {
+        const $popup = $('.IG_POPUP_DIG');
+        if ($popup.length) {
             if (hasHidden) {
-                $('.IG_POPUP_DIG').addClass("hidden");
+                $popup.addClass("hidden");
             }
             else {
-                $('.IG_POPUP_DIG').removeClass("hidden");
+                $popup.removeClass("hidden");
             }
         }
     }
@@ -5097,7 +5389,7 @@
 
         $('.IG_POPUP_DIG #post_info').text('Hotkey Settings');
 
-        const $body = $('.IG_POPUP_DIG .IG_POPUP_DIG_BODY');
+        const $popupBody = $('.IG_POPUP_DIG .IG_POPUP_DIG_BODY');
 
         const hotkeyOptions = [
             { value: '87', label: 'Alt+W' },
@@ -5148,10 +5440,10 @@
             `);
 
             $container.find('.hotkey-reset').on('click', function () {
-                const defaultCode = parseInt($container.find('.hotkey-preset').data('default'));
-                const stateKeyName = $container.find('.hotkey-preset').data('state');
-                const storage = $container.find('.hotkey-preset').data('storage');
                 const $preset = $container.find('.hotkey-preset');
+                const defaultCode = parseInt($preset.data('default'));
+                const stateKeyName = $preset.data('state');
+                const storage = $preset.data('storage');
 
                 state[stateKeyName] = defaultCode;
                 GM_setValue(storage, defaultCode);
@@ -5160,16 +5452,17 @@
             });
 
             $container.find('.hotkey-preset').on('change', function () {
-                const val = $(this).val();
-                const storage = $(this).data('storage');
-                const stateKeyName = $(this).data('state');
-                const defaultCode = parseInt($(this).data('default'));
+                const $this = $(this);
+                const val = $this.val();
+                const storage = $this.data('storage');
+                const stateKeyName = $this.data('state');
+                const defaultCode = parseInt($this.data('default'));
                 const keyCode = parseInt(val);
 
                 if (checkHotkeyConflict(keyCode, stateKeyName)) {
                     state[stateKeyName] = defaultCode;
                     GM_setValue(storage, defaultCode);
-                    $(this).val(defaultCode);
+                    $this.val(defaultCode);
                     $container.find('.hotkey-conflict-warning').show().delay(2000).fadeOut(500);
                 } else {
                     state[stateKeyName] = keyCode;
@@ -5181,10 +5474,11 @@
             return $container;
         }
 
-        $body.append('<span style="display: block; margin-bottom: 15px;" class="hotkey-settings-container"></span>');
+        $popupBody.append('<span style="display: block; margin-bottom: 15px;" class="hotkey-settings-container"></span>');
+        const $container = $popupBody.find('.hotkey-settings-container');
 
         hotkeyConfigs.forEach((config) => {
-            $body.find('.hotkey-settings-container').append(
+            $container.append(
                 createHotkeySetting(config.name, config.key, config.stateKey, config.storageKey, config.defaultKeyCode)
             );
         });
@@ -5209,16 +5503,18 @@
                 </div>
             `);
 
+        // OPTIMIZATION: cache the lang select once
+        const $langSelect = $('#langSelect');
         for (const o in locale_manifest) {
-            $('#langSelect').append(
+            $langSelect.append(
                 `<option value="${o}" ${(state.lang === o) ? 'selected' : ''}>${locale_manifest[o]}</option>`
             );
         }
 
-        const $body = $('.IG_POPUP_DIG .IG_POPUP_DIG_BODY');
+        const $popupBody = $('.IG_POPUP_DIG .IG_POPUP_DIG_BODY');
 
         for (const name in USER_SETTING) {
-            $body.append(`
+            $popupBody.append(`
                 <label class="globalSettings"
                        title="${_i18n(name + '_INTRO')}"
                        data-ih-locale-title="${name + '_INTRO'}">
@@ -5231,10 +5527,11 @@
             );
 
             if (name === 'MODIFY_VIDEO_VOLUME') {
-                $body.find(`input[id="${name}"]`).parent('label').on('contextmenu', function (e) {
+                $popupBody.find(`input[id="${name}"]`).parent('label').on('contextmenu', function (e) {
                     e.preventDefault();
-                    if (!$(this).find('#tempWrapper').length) {
-                        $(this).append('<div id="tempWrapper"></div>')
+                    const $this = $(this);
+                    if (!$this.find('#tempWrapper').length) {
+                        $this.append('<div id="tempWrapper"></div>')
                             .children('#tempWrapper')
                             .append(`<input value="${state.videoVolume}" type="range" min="0" max="1" step="0.05" />`)
                             .append(`<input value="${state.videoVolume}" step="0.05" type="number" />`)
@@ -5244,10 +5541,11 @@
             }
 
             if (name === 'AUTO_RENAME') {
-                $body.find(`input[id="${name}"]`).parent('label').on('contextmenu', function (e) {
+                $popupBody.find(`input[id="${name}"]`).parent('label').on('contextmenu', function (e) {
                     e.preventDefault();
-                    if (!$(this).find('#tempWrapper').length) {
-                        $(this).append('<div id="tempWrapper"></div>')
+                    const $this = $(this);
+                    if (!$this.find('#tempWrapper').length) {
+                        $this.append('<div id="tempWrapper"></div>')
                             .children('#tempWrapper')
                             .append(`<input id="date_format" value="${state.fileRenameFormat}" />`)
                             .append(`<div class="IG_POPUP_DIG_BTN">${SVG.CLOSE}</div>`);
@@ -5292,13 +5590,16 @@
         IG_createDM();
         $('.IG_POPUP_DIG #post_info').text('IG Debug DOM Tree');
 
-        $('.IG_POPUP_DIG .IG_POPUP_DIG_BODY').append(`<textarea style="font-family: monospace;width:100%;box-sizing: border-box;height:300px;background: transparent;" readonly></textarea>`);
-        $('.IG_POPUP_DIG .IG_POPUP_DIG_BODY').append(`<span style="display:block;text-align:center;">`);
-        $('.IG_POPUP_DIG .IG_POPUP_DIG_BODY span').append(`<button style="margin: 3px;" class="IG_DISPLAY_DOM_TREE"><a>${_i18n('SHOW_DOM_TREE')}</a></button>`);
-        $('.IG_POPUP_DIG .IG_POPUP_DIG_BODY span').append(`<button style="margin: 3px;" class="IG_SELECT_DOM_TREE"><a>${_i18n('SELECT_AND_COPY')}</a></button>`);
-        $('.IG_POPUP_DIG .IG_POPUP_DIG_BODY span').append(`<button style="margin: 3px;" class="IG_DOWNLOAD_DOM_TREE"><a>${_i18n('DOWNLOAD_DOM_TREE')}</a></button><br/>`);
-        $('.IG_POPUP_DIG .IG_POPUP_DIG_BODY span').append(`<button style="margin: 3px;" class="IG_REPORT_GITHUB"><a href="https://github.com/SN-Koarashi/ig-helper/issues" target="_blank">${_i18n('REPORT_GITHUB')}</a></button>`);
-        $('.IG_POPUP_DIG .IG_POPUP_DIG_BODY span').append(`<button style="margin: 3px;" class="IG_REPORT_DISCORD"><a href="https://discord.gg/q3KT4hdq8x" target="_blank">${_i18n('REPORT_DISCORD')}</a></button>`);
+        // OPTIMIZATION: cache popup body
+        const $popupBody = $('.IG_POPUP_DIG .IG_POPUP_DIG_BODY');
+        $popupBody.append(`<textarea style="font-family: monospace;width:100%;box-sizing: border-box;height:300px;background: transparent;" readonly></textarea>`);
+        $popupBody.append(`<span style="display:block;text-align:center;">`);
+        const $span = $popupBody.find('span').last();
+        $span.append(`<button style="margin: 3px;" class="IG_DISPLAY_DOM_TREE"><a>${_i18n('SHOW_DOM_TREE')}</a></button>`);
+        $span.append(`<button style="margin: 3px;" class="IG_SELECT_DOM_TREE"><a>${_i18n('SELECT_AND_COPY')}</a></button>`);
+        $span.append(`<button style="margin: 3px;" class="IG_DOWNLOAD_DOM_TREE"><a>${_i18n('DOWNLOAD_DOM_TREE')}</a></button><br/>`);
+        $span.append(`<button style="margin: 3px;" class="IG_REPORT_GITHUB"><a href="https://github.com/SN-Koarashi/ig-helper/issues" target="_blank">${_i18n('REPORT_GITHUB')}</a></button>`);
+        $span.append(`<button style="margin: 3px;" class="IG_REPORT_DISCORD"><a href="https://discord.gg/q3KT4hdq8x" target="_blank">${_i18n('REPORT_DISCORD')}</a></button>`);
     }
 
     /**
@@ -5312,10 +5613,12 @@
         IG_createDM();
         $('.IG_POPUP_DIG #post_info').text('Feedback Options');
 
-        $('.IG_POPUP_DIG .IG_POPUP_DIG_BODY').append(`<span style="display:block;text-align:center;">`);
-        $('.IG_POPUP_DIG .IG_POPUP_DIG_BODY span').append(`<button style="margin: 3px;" class="IG_REPORT_FORK"><a href="https://greasyfork.org/en/scripts/404535-ig-helper/feedback" target="_blank">${_i18n('REPORT_FORK')}</a></button>`);
-        $('.IG_POPUP_DIG .IG_POPUP_DIG_BODY span').append(`<button style="margin: 3px;" class="IG_REPORT_GITHUB"><a href="https://github.com/SN-Koarashi/ig-helper/issues" target="_blank">${_i18n('REPORT_GITHUB')}</a></button>`);
-        $('.IG_POPUP_DIG .IG_POPUP_DIG_BODY span').append(`<button style="margin: 3px;" class="IG_REPORT_DISCORD"><a href="https://discord.gg/q3KT4hdq8x" target="_blank">${_i18n('REPORT_DISCORD')}</a></button>`);
+        const $popupBody = $('.IG_POPUP_DIG .IG_POPUP_DIG_BODY');
+        $popupBody.append(`<span style="display:block;text-align:center;">`);
+        const $span = $popupBody.find('span').last();
+        $span.append(`<button style="margin: 3px;" class="IG_REPORT_FORK"><a href="https://greasyfork.org/en/scripts/404535-ig-helper/feedback" target="_blank">${_i18n('REPORT_FORK')}</a></button>`);
+        $span.append(`<button style="margin: 3px;" class="IG_REPORT_GITHUB"><a href="https://github.com/SN-Koarashi/ig-helper/issues" target="_blank">${_i18n('REPORT_GITHUB')}</a></button>`);
+        $span.append(`<button style="margin: 3px;" class="IG_REPORT_DISCORD"><a href="https://discord.gg/q3KT4hdq8x" target="_blank">${_i18n('REPORT_DISCORD')}</a></button>`);
     }
 
     var detectMovingViewerTimer = null;
@@ -5323,7 +5626,7 @@
     function openImageViewer(imageUrl) {
         removeImageViewer();
 
-        $('body').append(
+        $body.append(
             `<div id="imageViewer">
     	<div id="iv_header">
     		<div style="flex:1;">Image Viewer</div>
@@ -5618,8 +5921,9 @@
                 if (entry.initiatorType === 'img') {
                     const u = entry.name;
 
-                    if (!(u.includes('_e35') || u.includes('_e15') || u.includes('.webp?')) ||
-                        u.includes('_e35_s') || 
+                    if (
+                        !(u.includes('_e35') || u.includes('_e15') || u.includes('.webp?')) ||
+                        u.includes('_e35_s') ||
                         u.match(/_[sp](\d+)x\1(?!\d)/)
                     ) {
                         return;
@@ -5828,10 +6132,12 @@
      */
     function repaintingTranslations() {
         $('[data-ih-locale]').each(function () {
-            $(this).text(_i18n($(this).attr('data-ih-locale')));
+            const $this = $(this);
+            $this.text(_i18n($this.data('ih-locale')));
         });
         $('[data-ih-locale-title]').each(function () {
-            $(this).attr('title', _i18n($(this).attr('data-ih-locale-title')));
+            const $this = $(this);
+            $this.attr('title', _i18n($this.data('ih-locale-title')));
         });
     }
 
@@ -5854,7 +6160,7 @@
 
         function setDOMTreeContent() {
             let text = $('div[id^="mount"]')[0];
-            var logger = "";
+            var loggerStr = "";
             state.GL_logger.forEach(log => {
                 var jsonData = JSON.stringify(log.content, function (key, value) {
                     if (Array.isArray(this)) {
@@ -5867,26 +6173,41 @@
                         return value;
                     }
                 }, "\t");
-                logger += `${new Date(log.time).toISOString()}: ${jsonData}\n`
+                loggerStr += `${new Date(log.time).toISOString()}: ${jsonData}\n`
             });
-            $('.IG_POPUP_DIG .IG_POPUP_DIG_BODY textarea').text("Logger:\n" + logger + "\n-----\n\nLocation: " + location.pathname + "\nDOM Tree with div#mount:\n" + text.innerHTML);
+            $('.IG_POPUP_DIG .IG_POPUP_DIG_BODY textarea').text("Logger:\n" + loggerStr + "\n-----\n\nLocation: " + location.pathname + "\nDOM Tree with div#mount:\n" + text.innerHTML);
         }
 
-        $('body').on('click', '.IG_POPUP_DIG .IG_POPUP_DIG_BODY .IG_DISPLAY_DOM_TREE', function () {
+        $body.on('click', '.IG_POPUP_DIG .IG_POPUP_DIG_BODY .IG_DISPLAY_DOM_TREE', function () {
             setDOMTreeContent();
         });
 
-        $('body').on('click', '.IG_POPUP_DIG .IG_POPUP_DIG_BODY .IG_SELECT_DOM_TREE', function () {
-            $('.IG_POPUP_DIG .IG_POPUP_DIG_BODY textarea').select();
-            document.execCommand('copy');
+        // OPTIMIZATION: replace deprecated document.execCommand('copy') with modern
+        // navigator.clipboard.writeText() API. Falls back to execCommand on browsers
+        // that don't support it (unlikely on Chrome/Firefox/Edge >= 100).
+        $body.on('click', '.IG_POPUP_DIG .IG_POPUP_DIG_BODY .IG_SELECT_DOM_TREE', function () {
+            const $textarea = $('.IG_POPUP_DIG .IG_POPUP_DIG_BODY textarea');
+            const textContent = $textarea.val() || $textarea.text();
+            $textarea.trigger('select');
+
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(textContent).catch(err => {
+                    logger('Clipboard API failed, falling back to execCommand:', err);
+                    try { document.execCommand('copy'); } catch (e) { logger('execCommand fallback failed:', e); }
+                });
+            }
+            else {
+                try { document.execCommand('copy'); } catch (e) { logger('execCommand failed:', e); }
+            }
         });
 
-        $('body').on('click', '.IG_POPUP_DIG .IG_POPUP_DIG_BODY .IG_DOWNLOAD_DOM_TREE', function () {
-            if ($('.IG_POPUP_DIG .IG_POPUP_DIG_BODY textarea').text().length === 0) {
+        $body.on('click', '.IG_POPUP_DIG .IG_POPUP_DIG_BODY .IG_DOWNLOAD_DOM_TREE', function () {
+            const $textarea = $('.IG_POPUP_DIG .IG_POPUP_DIG_BODY textarea');
+            if ($textarea.text().length === 0) {
                 setDOMTreeContent();
             }
 
-            var text = $('.IG_POPUP_DIG .IG_POPUP_DIG_BODY textarea').text();
+            var text = $textarea.text();
             var a = document.createElement("a");
             var file = new Blob([text], { type: "text/plain" });
             a.href = URL.createObjectURL(file);
@@ -5898,9 +6219,10 @@
         });
 
         // Close the download dialog if user click the close icon
-        $('body').on('click', '.IG_POPUP_DIG_BTN, .IG_POPUP_DIG_BG', function () {
-            if ($(this).parent('#tempWrapper').length > 0) {
-                $(this).parent('#tempWrapper').fadeOut(250, function () {
+        $body.on('click', '.IG_POPUP_DIG_BTN, .IG_POPUP_DIG_BG', function () {
+            const $this = $(this);
+            if ($this.parent('#tempWrapper').length > 0) {
+                $this.parent('#tempWrapper').fadeOut(250, function () {
                     $(this).remove();
                 });
             }
@@ -5918,8 +6240,9 @@
             // Hot key [Alt+W] to open/close the settings dialog - use custom keycode if enabled, fallback to default Alt+W(87)
             let settingsKeyCode = state.settingsHotkeyKeyCode || 87;
             if (e.altKey && e.which == settingsKeyCode) {
-                if ($('.IG_POPUP_DIG').length > 0 && $('.IG_POPUP_DIG #post_info').text() === 'Preference Settings') {
-                    $('.IG_POPUP_DIG').remove();
+                const $popup = $('.IG_POPUP_DIG');
+                if ($popup.length > 0 && $popup.find('#post_info').text() === 'Preference Settings') {
+                    $popup.remove();
                 } else {
                     showSetting();
                 }
@@ -5929,8 +6252,9 @@
             // Hot key [Alt+W] to open/close the key settings dialog - use custom keycode if enabled, fallback to default Alt+C(67)
             let keySettingsHotkeyKeyCode = state.keySettingsHotkeyKeyCode || 67;
             if (e.altKey && e.which == keySettingsHotkeyKeyCode) {
-                if ($('.IG_POPUP_DIG').length > 0 && $('.IG_POPUP_DIG #post_info').text() === 'Hotkey Settings') {
-                    $('.IG_POPUP_DIG').remove();
+                const $popup = $('.IG_POPUP_DIG');
+                if ($popup.length > 0 && $popup.find('#post_info').text() === 'Hotkey Settings') {
+                    $popup.remove();
                 } else {
                     showHotkeySetting();
                 }
@@ -5963,11 +6287,12 @@
             }
         });
 
-        $('body').on('change', '.IG_POPUP_DIG input', function () {
-            var name = $(this).attr('id');
+        $body.on('change', '.IG_POPUP_DIG input', function () {
+            const $this = $(this);
+            var name = $this.attr('id');
 
             if (name && USER_SETTING[name] !== undefined) {
-                let isChecked = $(this).prop('checked');
+                let isChecked = $this.prop('checked');
                 GM_setValue(name, isChecked);
                 USER_SETTING[name] = isChecked;
 
@@ -5975,20 +6300,21 @@
             }
         });
 
-        $('body').on('click', '.IG_POPUP_DIG .globalSettings', function (e) {
+        $body.on('click', '.IG_POPUP_DIG .globalSettings', function (e) {
             if ($(this).find('#tempWrapper').length > 0) {
                 e.preventDefault();
             }
         });
 
-        $('body').on('change', '.IG_POPUP_DIG #tempWrapper input:not(#date_format)', function () {
-            let value = $(this).val();
+        $body.on('change', '.IG_POPUP_DIG #tempWrapper input:not(#date_format)', function () {
+            const $this = $(this);
+            let value = $this.val();
 
-            if ($(this).attr('type') == 'range') {
-                $(this).next().val(value);
+            if ($this.attr('type') == 'range') {
+                $this.next().val(value);
             }
             else {
-                $(this).prev().val(value);
+                $this.prev().val(value);
             }
 
             if (value >= 0 && value <= 1) {
@@ -5997,62 +6323,69 @@
             }
         });
 
-        $('body').on('input', '.IG_POPUP_DIG #tempWrapper input:not(#date_format)', function () {
-            if ($(this).attr('type') == 'range') {
-                let value = $(this).val();
-                $(this).next().val(value);
+        $body.on('input', '.IG_POPUP_DIG #tempWrapper input:not(#date_format)', function () {
+            const $this = $(this);
+            if ($this.attr('type') == 'range') {
+                let value = $this.val();
+                $this.next().val(value);
             }
             else {
-                let value = $(this).val();
+                let value = $this.val();
                 if (value >= 0 && value <= 1) {
-                    $(this).prev().val(value);
+                    $this.prev().val(value);
                 }
                 else {
                     if (value < 0) {
-                        $(this).val(0);
+                        $this.val(0);
                     }
                     else {
-                        $(this).val(1);
+                        $this.val(1);
                     }
                 }
             }
         });
 
-        $('body').on('input', '.IG_POPUP_DIG #tempWrapper input#date_format', function () {
-            GM_setValue('G_RENAME_FORMAT', $(this).val());
-            state.fileRenameFormat = $(this).val();
+        $body.on('input', '.IG_POPUP_DIG #tempWrapper input#date_format', function () {
+            const val = $(this).val();
+            GM_setValue('G_RENAME_FORMAT', val);
+            state.fileRenameFormat = val;
         });
 
-        $('body').on('click', 'a[data-needed="direct"]', function (e) {
+        $body.on('click', 'a[data-needed="direct"]', function (e) {
             e.preventDefault();
-            triggerLinkElement(this);
+            triggerLinkElement($(this), false);
         });
 
-        $('body').on('click', '.IG_POPUP_DIG_BODY .newTab', function () {
+        $body.on('click', '.IG_POPUP_DIG_BODY .newTab', function () {
+            const $this = $(this);
+            const $linkA = $this.parent().children('a');
             if (USER_SETTING.FORCE_RESOURCE_VIA_MEDIA && USER_SETTING.NEW_TAB_ALWAYS_FORCE_MEDIA_IN_POST) {
-                triggerLinkElement($(this).parent().children('a').first()[0], true);
+                triggerLinkElement($linkA.first()[0], true);
             }
             else {
-                openNewTab(replaceSameOriginHost($(this).parent().children('a').attr('data-href')));
+                openNewTab(replaceSameOriginHost($linkA.data('href')));
             }
         });
 
-        $('body').on('click', '.IG_POPUP_DIG_BODY .videoThumbnail', function () {
+        $body.on('click', '.IG_POPUP_DIG_BODY .videoThumbnail', function () {
+            const $this = $(this);
+            const $linkA = $this.parent().children('a');
             let timestamp = new Date().getTime();
 
-            if (USER_SETTING.RENAME_PUBLISH_DATE && $(this).parent().children('a').attr('datetime')) {
-                timestamp = $(this).parent().children('a').attr('datetime');
+            if (USER_SETTING.RENAME_PUBLISH_DATE && $linkA.attr('datetime')) {
+                timestamp = $linkA.attr('datetime');
             }
 
-            let postPath = $(this).parent().children('a').attr('data-path') ?? $('#article-id').text();
+            let postPath = $linkA.data('path') ?? $('#article-id').text();
 
             if (USER_SETTING.CAPTURE_IMAGE_VIA_MEDIA_CACHE) {
-                const mediaId = $(this).parent().children('a').first().attr('media-id');
+                const mediaId = $linkA.first().attr('media-id');
                 const cached = getImageFromCache(mediaId);
+
                 if (cached) {
                     logger("[Restore Cached postThumbnail]", mediaId);
                     saveFiles(cached, {
-                        username: $(this).parent().children('a').attr('data-username'),
+                        username: $linkA.data('username'),
                         sourceType: 'thumbnail',
                         timestamp,
                         filetype: 'jpg',
@@ -6063,9 +6396,9 @@
             }
 
             saveFiles(
-                $(this).parent().children('a').find('img').first().attr('src'),
+                $linkA.find('img').first().attr('src'),
                 {
-                    username: $(this).parent().children('a').attr('data-username'),
+                    username: $linkA.data('username'),
                     sourceType: 'thumbnail',
                     timestamp,
                     filetype: 'jpg',
@@ -6074,86 +6407,88 @@
         });
 
         // Running if user left-click download icon in stories
-        $('body').on('click', '.IG_DWSTORY', function () {
+        $body.on('click', '.IG_DWSTORY', function () {
             onStory(true);
         });
 
         // Running if user left-click all download icon in stories
-        $('body').on('click', '.IG_DWSTORY_ALL', function () {
+        $body.on('click', '.IG_DWSTORY_ALL', function () {
             onStoryAll();
         });
 
         // Running if user left-click 'open in new tab' icon in stories
-        $('body').on('click', '.IG_DWNEWTAB', function (e) {
+        $body.on('click', '.IG_DWNEWTAB', function (e) {
             e.preventDefault();
             onStory(true, true, true);
         });
 
         // Running if user left-click download thumbnail icon in stories
-        $('body').on('click', '.IG_DWSTORY_THUMBNAIL', function () {
+        $body.on('click', '.IG_DWSTORY_THUMBNAIL', function () {
             onStoryThumbnail(true);
         });
 
         // Running if user left-click download icon in profile
-        $('body').on('click', '.IG_DWPROFILE', function (e) {
+        $body.on('click', '.IG_DWPROFILE', function (e) {
             e.stopPropagation();
             onProfileAvatar(true);
         });
 
         // Running if user left-click download icon in highlight stories
-        $('body').on('click', '.IG_DWHISTORY', function () {
+        $body.on('click', '.IG_DWHISTORY', function () {
             onHighlightsStory(true);
         });
 
         // Running if user left-click all download icon in highlight stories
-        $('body').on('click', '.IG_DWHISTORY_ALL', function () {
+        $body.on('click', '.IG_DWHISTORY_ALL', function () {
             onHighlightsStoryAll();
         });
 
         // Running if user left-click 'open in new tab' icon in highlight stories
-        $('body').on('click', '.IG_DWHINEWTAB', function (e) {
+        $body.on('click', '.IG_DWHINEWTAB', function (e) {
             e.preventDefault();
             onHighlightsStory(true, true);
         });
 
         // Running if user left-click thumbnail download icon in highlight stories
-        $('body').on('click', '.IG_DWHISTORY_THUMBNAIL', function () {
+        $body.on('click', '.IG_DWHISTORY_THUMBNAIL', function () {
             onHighlightsStoryThumbnail(true);
         });
 
         // Running if user left-click download icon in reels
-        $('body').on('click', '.IG_REELS', function () {
+        $body.on('click', '.IG_REELS', function () {
             onReels(true, true);
         });
 
         // Running if user left-click newtab icon in reels
-        $('body').on('click', '.IG_REELS_NEWTAB', function () {
+        $body.on('click', '.IG_REELS_NEWTAB', function () {
             onReels(true, true, true);
         });
 
         // Running if user left-click download icon in reels
-        $('body').on('click', '.IG_REELS_THUMBNAIL', function () {
+        $body.on('click', '.IG_REELS_THUMBNAIL', function () {
             onReels(true, false);
         });
 
         // Running if user right-click profile picture in stories area
-        $('body').on('mousedown', 'button[role="menuitem"], div[role="menuitem"], ul > li[tabindex="-1"] > div[role="button"]', function (e) {
+        $body.on('mousedown', 'button[role="menuitem"], div[role="menuitem"], ul > li[tabindex="-1"] > div[role="button"]', function (e) {
             // Right-Click || Middle-Click
             if (e.which === 3 || e.which === 2) {
                 if (location.href === 'https://www.instagram.com/' && USER_SETTING.REDIRECT_CLICK_USER_STORY_PICTURE) {
                     e.preventDefault();
 
-                    $(this).find('img').each(function () {
-                        if (!$(this).data('contextmenu')) {
-                            $(this).data('contextmenu', true);
-                            $(this).on('contextmenu', function (e) {
+                    const $this = $(this);
+                    $this.find('img').each(function () {
+                        const $img = $(this);
+                        if (!$img.data('contextmenu')) {
+                            $img.data('contextmenu', true);
+                            $img.on('contextmenu', function (e) {
                                 e.preventDefault();
                             });
                         }
                     });
 
-                    if ($(this).find('canvas._aarh, canvas + span > img').length > 0) {
-                        const targetUrl = 'https://www.instagram.com/' + $(this).children('div').last().text();
+                    if ($this.find('canvas._aarh, canvas + span > img').length > 0) {
+                        const targetUrl = 'https://www.instagram.com/' + $this.children('div').last().text();
                         if (e.which === 2) {
                             GM_openInTab(targetUrl);
                         }
@@ -6165,7 +6500,7 @@
             }
         });
 
-        $('body').on('change', '.IG_POPUP_DIG_TITLE .checkbox', function () {
+        $body.on('change', '.IG_POPUP_DIG_TITLE .checkbox', function () {
             const isChecked = $(this).find('input').prop('checked');
             $('.IG_POPUP_DIG_BODY .inner_box').each(function () {
                 $(this).prop('checked', isChecked);
@@ -6173,11 +6508,13 @@
             updatePopupSelectionSummary();
         });
 
-        $('body').on('change', '.IG_POPUP_DIG_BODY .inner_box', function () {
+        $body.on('change', '.IG_POPUP_DIG_BODY .inner_box', function () {
             updatePopupSelectionSummary();
         });
 
-        $('body').on('click', '.IG_POPUP_DIG_TITLE #batch_download_selected', function () {
+        $body.on('click', '.IG_POPUP_DIG_TITLE #batch_download_selected', function () {
+            if ($('.IG_POPUP_DIG #_SNLOAD').length > 0) return;
+
             let index = 0;
             let links = [];
             $('.IG_POPUP_DIG_BODY a[data-needed="direct"]').each(function () {
@@ -6196,9 +6533,11 @@
             }
         });
 
-        $('body').on('change', '.IG_POPUP_DIG_TITLE #langSelect', function () {
-            GM_setValue('UI_LANGUAGE', $(this).val());
-            state.lang = $(this).val();
+        $body.on('change', '.IG_POPUP_DIG_TITLE #langSelect', function () {
+            const $this = $(this);
+            const val = $this.val();
+            GM_setValue('UI_LANGUAGE', val);
+            state.lang = val;
 
             if (state.lang?.startsWith('en') || state.locale[state.lang] != null) {
                 repaintingTranslations();
@@ -6215,7 +6554,9 @@
             }
         });
 
-        $('body').on('click', '.IG_POPUP_DIG_TITLE #batch_download_direct', function () {
+        $body.on('click', '.IG_POPUP_DIG_TITLE #batch_download_direct', function () {
+            if ($('.IG_POPUP_DIG #_SNLOAD').length > 0) return;
+
             let links = [];
             $('.IG_POPUP_DIG_BODY a[data-needed="direct"]').each(function () {
                 links.push($(this));
@@ -6230,16 +6571,17 @@
             for (const mutation of mutationsList) {
                 if (mutation.type === 'childList') {
                     mutation.addedNodes.forEach((node) => {
-                        const $videos = $(node).find('video');
+                        const $node = $(node);
+                        const $videos = $node.find('video').addBack('video');
 
                         if (location.pathname.startsWith("/stories/highlights/")) {
                             if (
-                                $(node).attr("data-ih-locale-title") == null &&
-                                $(node).attr("data-visualcompletion") == null &&
+                                $node.attr("data-ih-locale-title") == null &&
+                                $node.attr("data-visualcompletion") == null &&
                                 node.tagName === "DIV"
                             ) {
                                 // replace something times ago format to publish time when switch highlight
-                                var $time = getHighlightCurrentTimeElement($(node));
+                                var $time = getHighlightCurrentTimeElement($node);
                                 setTimeElementDateAndLocaleTime($time);
                             }
                         }
@@ -6249,8 +6591,9 @@
                             if (USER_SETTING.MODIFY_VIDEO_VOLUME) {
                                 $videos.each(function () {
                                     $(this).on('play playing', function () {
-                                        if (!$(this).data('modify')) {
-                                            $(this).attr('data-modify', true);
+                                        const $this = $(this);
+                                        if (!$this.data('modify')) {
+                                            $this.data('modify', true);
                                             this.volume = state.videoVolume;
                                             logger('(audio_observer) Added video event listener #modify');
                                         }
@@ -6264,28 +6607,29 @@
 
                                 $videos.each(function () {
                                     $(this).on('timeupdate', function () {
-                                        if (!$(this).data('modify-thumbnail')) {
-                                            let $video = $(this);
-                                            if ($video.parents('div[style][class]').filter(function () {
-                                                return $(this).width() == $video.width();
-                                            }).find('.IG_DWSTORY_THUMBNAIL, .IG_DWHISTORY_THUMBNAIL').length === 0) {
-                                                $(this).attr('data-modify-thumbnail', true);
+                                        const $this = $(this);
+                                        if (!$this.data('modify-thumbnail')) {
+                                                let $video = $this;
+                                                if ($video.parents('div[style][class]').filter(function () {
+                                                    return $(this).width() == $video.width();
+                                                }).find('.IG_DWSTORY_THUMBNAIL, .IG_DWHISTORY_THUMBNAIL').length === 0) {
+                                                    $this.data('modify-thumbnail', true);
 
-                                                if (isHighlight) {
-                                                    onHighlightsStoryThumbnail(false);
+                                                    if (isHighlight) {
+                                                        onHighlightsStoryThumbnail(false);
+                                                    }
+                                                    else {
+                                                        onStoryThumbnail(false);
+                                                    }
+
+                                                    logger(`(${storyType})`, 'Manually inserting thumbnail button');
                                                 }
                                                 else {
-                                                    onStoryThumbnail(false);
+                                                    $this.data('modify-thumbnail', true);
+                                                    logger(`(${storyType})`, 'Thumbnail button already inserted');
                                                 }
-
-                                                logger(`(${storyType})`, 'Manually inserting thumbnail button');
                                             }
-                                            else {
-                                                $(this).attr('data-modify-thumbnail', true);
-                                                logger(`(${storyType})`, 'Thumbnail button already inserted');
-                                            }
-                                        }
-                                    });
+                                        });
 
                                     var $video = $(this);
 
@@ -6302,7 +6646,8 @@
                                             }
 
                                             let $videoParent = $video.parents('div').filter(function () {
-                                                return $(this).attr('class') == null && $(this).attr('style') == null;
+                                                const $this = $(this);
+                                                return $this.attr('class') == null && $this.attr('style') == null;
                                             }).first();
 
                                             // This is mute/unmute's icon
@@ -6372,26 +6717,27 @@
 
                                             $video.on('volumechange', function () {
                                                 let $element_mute_button = state.GL_weakCache.mutedButton.get(this) || {};
-                                                var is_elelment_muted = $element_mute_button?.find('svg > path[d^="M16.636"]').length === 0;
+                                                var is_element_muted = $element_mute_button?.find && $element_mute_button.find('svg > path[d^="M16.636"]').length === 0;
 
-                                                if (this.muted != is_elelment_muted) {
+                                                if (this.muted != is_element_muted) {
                                                     this.volume = state.videoVolume;
 
                                                     triggerReactClickHandler($element_mute_button.first()[0]);
                                                 }
 
-                                                if ($(this).attr('data-completed')) {
+                                                const $v = $(this);
+                                                if ($v.data('completed')) {
                                                     state.videoVolume = this.volume;
                                                     GM_setValue('G_VIDEO_VOLUME', this.volume);
                                                 }
 
                                                 if (this.volume == state.videoVolume) {
-                                                    $(this).attr('data-completed', true);
+                                                    $v.data('completed', true);
                                                 }
                                             });
 
                                             $video.css('position', 'absolute');
-                                            $video.attr('data-controls', true);
+                                            $video.data('controls', true);
 
                                             toggleVolumeSilder($video, $video.parents('div[style][class]').filter(function () {
                                                 return $(this).width() == $video.width();
@@ -6411,9 +6757,17 @@
             }
         });
 
-        element_observer.observe($('div[id^="mount"]')[0], {
-            childList: true,
-            subtree: true,
-        });
+        (function installElementObserver(attempts) {
+            const mountRoot = $('div[id^="mount"]')[0];
+            if (mountRoot) {
+                element_observer.observe(mountRoot, { childList: true, subtree: true });
+                logger('[element_observer] installed on mount root');
+            } else if (attempts > 0) {
+                setTimeout(() => installElementObserver(attempts - 1), 250);
+                logger('[element_observer] mount root not ready, retrying...');
+            } else {
+                logger('[element_observer] mount root not found after multiple retries');
+            }
+        })(20);
     });
 })(jQuery, Mediabunny);

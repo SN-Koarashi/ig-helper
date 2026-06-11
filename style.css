@@ -70,12 +70,27 @@
 .IG_IMAGE_VIEWER {
     position: relative;
     top: 0px;
-    padding: 2px;
+    padding: 4px;
     line-height: 0;
-    background: #fff;
-    border-radius: 50%;
+    background: transparent;
+    color: #ffffff;
+    border-radius: 6px;
     cursor: pointer;
-    color: #000;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 26px;
+    height: 26px;
+    box-sizing: border-box;
+    transition: background 0.2s ease;
+}
+
+.IG_DW_MAIN:hover,
+.IG_NEWTAB_MAIN:hover,
+.IG_THUMBNAIL_MAIN:hover,
+.IG_DW_ALL_MAIN:hover,
+.IG_IMAGE_VIEWER:hover {
+    background: rgba(255, 255, 255, 0.25);
 }
 
 .button_wrapper {
@@ -83,11 +98,24 @@
     top: 15px;
     right: 15px;
     line-height: 0;
-    color: #000;
     display: flex;
     flex-flow: row-reverse;
-    gap: 5px;
+    gap: 8px;
     z-index: 1;
+    background: rgba(0, 0, 0, 0.35);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    padding: 6px 8px;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* SVG scaling */
+.button_wrapper svg {
+    width: 18px;
+    height: 18px;
+    display: block;
 }
 
 #_SNLOAD {
@@ -165,20 +193,20 @@
     user-select: none;
 }
 
-*:not(:has(> section[class])) > .IG_DWSTORY,
-*:not(:has(> section[class])) > .IG_DWHISTORY,
-*:not(:has(> section[class])) > .IG_DWSTORY_THUMBNAIL,
-*:not(:has(> section[class])) > .IG_DWHISTORY_THUMBNAIL,
-*:not(:has(> section[class])) > .IG_DWNEWTAB,
-*:not(:has(> section[class])) > .IG_DWHINEWTAB {
+*:not(:has(> section[class]))>.IG_DWSTORY,
+*:not(:has(> section[class]))>.IG_DWHISTORY,
+*:not(:has(> section[class]))>.IG_DWSTORY_THUMBNAIL,
+*:not(:has(> section[class]))>.IG_DWHISTORY_THUMBNAIL,
+*:not(:has(> section[class]))>.IG_DWNEWTAB,
+*:not(:has(> section[class]))>.IG_DWHINEWTAB {
     right: -40px;
     color: #000;
 }
 
-*:not(:has(> section[class])) > .IG_DWSTORY_ALL,
-*:not(:has(> section[class])) > .IG_DWHISTORY_ALL,
-*:not(:has(> section[class])) > .IG_DWSTORY_POSITION,
-*:not(:has(> section[class])) > .IG_DWHISTORY_POSITION {
+*:not(:has(> section[class]))>.IG_DWSTORY_ALL,
+*:not(:has(> section[class]))>.IG_DWHISTORY_ALL,
+*:not(:has(> section[class]))>.IG_DWSTORY_POSITION,
+*:not(:has(> section[class]))>.IG_DWHISTORY_POSITION {
     right: -70px;
     color: #000;
 }
@@ -507,12 +535,6 @@ kbd {
 .IG_POPUP_DIG_BODY .newTab:hover,
 .IG_POPUP_DIG_BODY .videoThumbnail:hover {
     background: rgb(var(--ig-secondary-button-hover));
-}
-
-.IG_POPUP_DIG_BODY .newTab svg,
-.IG_POPUP_DIG_BODY .videoThumbnail svg,
-.IG_POPUP_DIG_BTN>svg {
-    fill: rgb(var(--ig-primary-text));
 }
 
 .IG_POPUP_DIG_BTN {

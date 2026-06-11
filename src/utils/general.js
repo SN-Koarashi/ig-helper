@@ -685,6 +685,7 @@ export function triggerDownload(blob, filename) {
         document.body.appendChild(link);
         link.click();
         setTimeout(() => {
+            // eslint-disable-next-line no-unused-vars
             try { document.body.removeChild(link); } catch (e) { /* noop */ }
             URL.revokeObjectURL(url);
             resolve();
@@ -786,6 +787,7 @@ export async function createSaveFileElement(downloadLink, object, metadata) {
         try {
             const userInfo = await userIdCache.get(username);
             metadata.uid = userInfo?.user?.id || null;
+            // eslint-disable-next-line no-unused-vars
         } catch (err) {
             userIdCache.delete(username);
             metadata.uid = null;
@@ -1055,7 +1057,7 @@ export async function triggerLinkElement($element, isPreview = false) {
         const downloadOnly = !isPreview;
 
         if (!isPreview && index < 0) {
-            alert(i18nNOCHECKRESOURCE);
+            alert(_i18n('NO_CHECK_RESOURCE'));
             return;
         }
 
