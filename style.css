@@ -239,6 +239,10 @@
     border: 1px solid #ccc
 }
 
+.IG_DWPROFILE svg {
+    color: #000;
+}
+
 .globalSettings {
     position: relative;
     display: inline-block;
