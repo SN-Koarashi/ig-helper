@@ -39,6 +39,8 @@ export function translateText() {
             "VID": "Video",
             "DW": "Download",
             "DW_ALL": "Download All Resources",
+            "TAGGED_PROFILES": "Tagged Profiles",
+            "NO_TAGGED_PROFILES": "No tagged profiles found.",
             "VIDEO_THUMBNAIL": "Download Video Thumbnail",
             "LOAD_BLOB_ONE": "Loading Blob Media...",
             "LOAD_BLOB_MULTIPLE": "Loading Blob Media and Others...",
