@@ -66,6 +66,7 @@ export async function createStoryListDOM(obj, type) {
         });
 
         updatePopupSelectionSummary();
+        $('.IG_POPUP_DIG #batch_download_selected, .IG_POPUP_DIG #batch_download_direct').prop('disabled', false);
         updateLoadingBar(false);
     }
     catch (err) {

@@ -29,7 +29,9 @@ export var timer = setInterval(function () {
         state.firstStarted = true;
         state.currentURL = location.href;
         clearTimeout(state.homepageObserverDebounce);
-        state.GL_observer.disconnect();
+        if (!state.currentURL.includes('/stories/') || !location.pathname.startsWith('/stories/')) {
+            state.GL_observer.disconnect();
+        }
 
         // Auto-skip "X shared this with you" dialog on any ?igsh= link
         if (USER_SETTING.SKIP_SHARED_WITH_YOU_DIALOG && window.location.search.includes("igsh")) {
