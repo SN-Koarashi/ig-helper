@@ -2,13 +2,13 @@ import { SVG, state } from "../settings";
 import {
     logger, getAppID, getStoryProgress, getStoryProgressIndex, updateLoadingBar
 } from "../utils/general";
-import { getStories, getUserId } from "../utils/api";
+import { getHighlightStories, getStories, getUserId } from "../utils/api";
 import { _i18n } from "../utils/i18n";
 import { IG_createDM } from "../utils/dialog";
 /*! ESLINT IMPORT END !*/
 
 const PROFILE_CACHE_MAX_AGE = 5 * 60 * 1000;
-const CONTROL_SELECTOR = '.IG_DWSTORY, .IG_DWSTORY_ALL, .IG_DWNEWTAB, .IG_DWSTORY_THUMBNAIL, .IG_DWSTORY_TAGGED_PROFILES';
+const CONTROL_SELECTOR = '.IG_DWSTORY, .IG_DWSTORY_ALL, .IG_DWNEWTAB, .IG_DWSTORY_THUMBNAIL, .IG_DWHISTORY, .IG_DWHISTORY_ALL, .IG_DWHINEWTAB, .IG_DWHISTORY_THUMBNAIL, .IG_DWSTORY_TAGGED_PROFILES';
 
 function isUsername(value) {
     return !!value && /^[A-Za-z0-9._]+$/.test(value);
@@ -67,15 +67,22 @@ function getCurrentStoryUsernameCandidates(preferredUsername, scope) {
     return usernames;
 }
 
+function getCurrentHighlightIdFromLocation() {
+    const paths = location.pathname.split('/').filter(Boolean);
+    return paths[0] === 'stories' && paths[1] === 'highlights' && /^\d{10,}$/.test(paths[2] || '') ? paths[2] : null;
+}
+
 function getCurrentStoryMediaIdFromLocation() {
+    if (getCurrentHighlightIdFromLocation()) return null;
     return location.pathname.split('/').filter(path => /^\d{10,}$/.test(path)).at(-1) || null;
 }
 
 function getCurrentStoryIdentitySignature(scope) {
     const username = getCurrentStoryUsernameCandidates(null, scope).join('|');
     const mediaId = getCurrentStoryMediaIdFromLocation() || '';
-    const positionText = $('.IG_DWSTORY_POSITION').first().text().trim();
-    return [location.pathname, username, mediaId, positionText].join('::');
+    const highlightId = getCurrentHighlightIdFromLocation() || '';
+    const positionText = $('.IG_DWSTORY_POSITION, .IG_DWHISTORY_POSITION').first().text().trim();
+    return [location.pathname, username, mediaId, highlightId, positionText].join('::');
 }
 
 function getStoryItems(source) {
@@ -87,6 +94,12 @@ function getStoryItems(source) {
 
     const reel = Object.values(source.reels || source.data?.reels || {}).find(value => Array.isArray(value?.items));
     return reel?.items || [];
+}
+
+function getStorySourceOwnerUsername(source) {
+    return (source?.user?.username || source?.owner?.username || source?.reels_media?.[0]?.user?.username
+        || source?.reels_media?.[0]?.owner?.username || source?.data?.reels_media?.[0]?.user?.username
+        || source?.data?.reels_media?.[0]?.owner?.username || '').trim();
 }
 
 function getStoryItemIds(item) {
@@ -110,7 +123,7 @@ function resolveStoryItemByProgress(source, username) {
     let progress = getStoryProgressIndex($header);
 
     if (progress == null) {
-        const match = $('.IG_DWSTORY_POSITION').first().text().trim().match(/^(\d+)\s*\/\s*(\d+)$/);
+        const match = $('.IG_DWSTORY_POSITION, .IG_DWHISTORY_POSITION').first().text().trim().match(/^(\d+)\s*\/\s*(\d+)$/);
         if (match) progress = { current: parseInt(match[1], 10), total: parseInt(match[2], 10) };
     }
 
@@ -144,11 +157,14 @@ function resolveCurrentStoryItem(source, username) {
     const urlItem = urlId ? items.find(item => storyItemMatchesMediaId(item, urlId)) : null;
     if (urlItem) return urlItem;
 
+    const timestampId = resolveStoryMediaIdByVisibleTimestamp(source);
+    const timestampItem = timestampId ? items.find(item => storyItemMatchesMediaId(item, timestampId)) || null : null;
+    if (getCurrentHighlightIdFromLocation() && timestampItem) return timestampItem;
+
     const progressItem = resolveStoryItemByProgress(source, username);
     if (progressItem) return progressItem;
 
-    const timestampId = resolveStoryMediaIdByVisibleTimestamp(source);
-    return timestampId ? items.find(item => storyItemMatchesMediaId(item, timestampId)) || null : null;
+    return timestampItem;
 }
 
 function requestJSON(url, options = {}) {
@@ -227,6 +243,10 @@ async function getCachedStories(username) {
         const userInfo = await getUserId(username);
         return getStories(userInfo.user.pk);
     });
+}
+
+async function getCachedHighlightStories(highlightId) {
+    return cacheValue(getDataCacheBucket('highlights'), getStoryTaggedProfilesRequestBucket('highlights'), highlightId, () => getHighlightStories(highlightId));
 }
 
 async function getCachedMediaInfo(mediaId) {
@@ -351,11 +371,12 @@ function extractVisibleStoryTaggedProfiles(excludeUsername, button) {
 }
 
 function profileStateFromSource(source, username) {
-    const item = resolveCurrentStoryItem(source, username);
+    const ownerUsername = getStorySourceOwnerUsername(source) || username;
+    const item = resolveCurrentStoryItem(source, ownerUsername);
     const mediaId = item ? getStoryItemIds(item)[0] : getCurrentStoryMediaIdFromLocation();
-    const profiles = extractStoryTaggedProfiles(item, username);
+    const profiles = extractStoryTaggedProfiles(item, ownerUsername);
 
-    return { mediaId, profiles, username };
+    return { mediaId, profiles, username: ownerUsername };
 }
 
 function profileStateFromMediaInfo(mediaInfo, mediaId, username) {
@@ -367,11 +388,38 @@ function profileStateFromMediaInfo(mediaInfo, mediaId, username) {
 async function getCurrentStoryTaggedProfileState(username, button) {
     const usernames = getCurrentStoryUsernameCandidates(username, button);
     const mediaId = getCurrentStoryMediaIdFromLocation();
+    const highlightId = getCurrentHighlightIdFromLocation();
     const activeUsername = usernames[0] || username || null;
     let fallbackState = { mediaId, profiles: [], username: activeUsername };
 
     const visibleProfiles = extractVisibleStoryTaggedProfiles(activeUsername, button);
     if (visibleProfiles.length) return { mediaId, profiles: visibleProfiles, username: activeUsername };
+
+    if (highlightId) {
+        try {
+            const result = await getCachedHighlightStories(highlightId);
+            const highlightState = profileStateFromSource(result, activeUsername);
+
+            fallbackState = {
+                ...fallbackState,
+                mediaId: highlightState.mediaId || fallbackState.mediaId,
+                username: highlightState.username || fallbackState.username
+            };
+            if (highlightState.profiles.length) return highlightState;
+
+            if (highlightState.mediaId) {
+                const mediaInfo = await getCachedMediaInfo(highlightState.mediaId);
+                const mediaInfoState = profileStateFromMediaInfo(mediaInfo, highlightState.mediaId, highlightState.username || activeUsername);
+
+                if (mediaInfoState.profiles.length) return mediaInfoState;
+            }
+        }
+        catch (err) {
+            logger('getCurrentStoryTaggedProfileState()', err);
+        }
+
+        return fallbackState;
+    }
 
     for (const candidateUsername of usernames) {
         try {
@@ -466,7 +514,7 @@ export async function onStoryTaggedProfiles(button) {
     const username = getCurrentStoryUsername(button) || $(button).attr('data-story-owner') || null;
     const identitySignature = getCurrentStoryIdentitySignature(button);
 
-    if (!username && !getCurrentStoryMediaIdFromLocation()) {
+    if (!username && !getCurrentStoryMediaIdFromLocation() && !getCurrentHighlightIdFromLocation()) {
         showStoryTaggedProfilesDialog([], null);
         return;
     }
@@ -485,7 +533,7 @@ export async function onStoryTaggedProfiles(button) {
     }
     catch (err) {
         logger('onStoryTaggedProfiles()', err);
-        showStoryTaggedProfilesDialog([], getCurrentStoryMediaIdFromLocation());
+        showStoryTaggedProfilesDialog([], getCurrentStoryMediaIdFromLocation() || getCurrentHighlightIdFromLocation());
     }
     finally {
         updateLoadingBar(false);
@@ -504,11 +552,11 @@ function getStoryTaggedProfilesButtonLayout($element) {
         if ($control.length > 0 && $control.css('display') !== 'none') occupied.add(slot);
     };
 
-    markIfVisible('.IG_DWSTORY', 'primary:0');
-    markIfVisible('.IG_DWNEWTAB', 'primary:1');
-    markIfVisible('.IG_DWSTORY_THUMBNAIL', 'primary:2');
-    markIfVisible('.IG_DWSTORY_ALL', 'secondary:0');
-    markIfVisible('.IG_DWSTORY_POSITION', 'secondary:1');
+    markIfVisible('.IG_DWSTORY, .IG_DWHISTORY', 'primary:0');
+    markIfVisible('.IG_DWNEWTAB, .IG_DWHINEWTAB', 'primary:1');
+    markIfVisible('.IG_DWSTORY_THUMBNAIL, .IG_DWHISTORY_THUMBNAIL', 'primary:2');
+    markIfVisible('.IG_DWSTORY_ALL, .IG_DWHISTORY_ALL', 'secondary:0');
+    markIfVisible('.IG_DWSTORY_POSITION, .IG_DWHISTORY_POSITION', 'secondary:1');
 
     const hasSecondaryControls = occupied.has('secondary:0') || occupied.has('secondary:1');
     const slots = hasSecondaryControls
