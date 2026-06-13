@@ -74,9 +74,12 @@ export function getStories(userId) {
  * @return {Promise<Integer>}
  */
 export function getUserId(username) {
-    return new Promise((resolve, reject) => {
-        const getURL = `https://www.instagram.com/web/search/topsearch/?query=${username}`;
+    if (userIdCache.has(username)) {
+        return userIdCache.get(username);
+    }
 
+    const promise = new Promise((resolve, reject) => {
+        const getURL = `https://www.instagram.com/web/search/topsearch/?query=${username}`;
         GM_xmlhttpRequest({
             method: "GET",
             url: getURL,
@@ -84,23 +87,16 @@ export function getUserId(username) {
                 // Fix search issue by Discord: sno_w_
                 let obj = JSON.parse(response.response);
                 let result = null;
-                (obj.users ?? []).forEach(pos => {
-                    if (pos.user.username?.toLowerCase() === username?.toLowerCase()) {
-                        result = pos;
-                    }
+                (obj.users ?? []).forEach((pos) => {
+                    if (pos.user.username?.toLowerCase() === username?.toLowerCase()) result = pos;
                 });
-
                 if (result != null) {
                     logger('getUserId()', result);
                     resolve(result);
-                }
-                else {
-                    getUserIdWithAgent(username).then((result) => {
-                        resolve(result);
-                        // eslint-disable-next-line no-unused-vars
-                    }).catch((err) => {
-                        alert("Cannot find user info from getUserId()");
-                    });
+                } else {
+                    getUserIdWithAgent(username)
+                        .then((result) => resolve(result))
+                        .catch((err) => alert('Cannot find user info from getUserId()'));
                 }
             },
             onerror: function (err) {
@@ -108,7 +104,12 @@ export function getUserId(username) {
                 reject(err);
             }
         });
+    }).catch((err) => {
+        userIdCache.delete(username);
+        return Promise.reject(err);
     });
+    userIdCache.set(username, promise);
+    return promise;
 }
 
 /**
