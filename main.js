@@ -17,7 +17,7 @@
 // @name:zh-CN         IG小助手
 // @name:zh-TW         IG小精靈
 // @namespace          https://github.snkms.com/
-// @version            4.0.1.1
+// @version            4.0.2
 // @description        Download photos and videos from Instagram posts in one click, including Stories, Reels, and profile pictures.
 // @description:ar     نزّل صورًا ومقاطع فيديو من منشورات Instagram بنقرة واحدة، بما في ذلك القصص وReels وصور الملف الشخصي.
 // @description:de     Lade Fotos und Videos aus Instagram-Beiträgen mit einem Klick herunter, einschließlich Stories, Reels und Profilbildern.
@@ -224,7 +224,9 @@
             state.firstStarted = true;
             state.currentURL = location.href;
             clearTimeout(state.homepageObserverDebounce);
-            state.GL_observer.disconnect();
+            if (!state.currentURL.includes('/stories/') || !location.pathname.startsWith('/stories/')) {
+                state.GL_observer.disconnect();
+            }
 
             // Auto-skip "X shared this with you" dialog on any ?igsh= link
             if (USER_SETTING.SKIP_SHARED_WITH_YOU_DIALOG && window.location.search.includes("igsh")) {
@@ -2544,6 +2546,7 @@
             });
 
             updatePopupSelectionSummary();
+            $('.IG_POPUP_DIG #batch_download_selected, .IG_POPUP_DIG #batch_download_direct').prop('disabled', false);
             updateLoadingBar(false);
         }
         catch (err) {
@@ -3442,9 +3445,12 @@
      * @return {Promise<Integer>}
      */
     function getUserId(username) {
-        return new Promise((resolve, reject) => {
-            const getURL = `https://www.instagram.com/web/search/topsearch/?query=${username}`;
+        if (userIdCache.has(username)) {
+            return userIdCache.get(username);
+        }
 
+        const promise = new Promise((resolve, reject) => {
+            const getURL = `https://www.instagram.com/web/search/topsearch/?query=${username}`;
             GM_xmlhttpRequest({
                 method: "GET",
                 url: getURL,
@@ -3452,23 +3458,16 @@
                     // Fix search issue by Discord: sno_w_
                     let obj = JSON.parse(response.response);
                     let result = null;
-                    (obj.users ?? []).forEach(pos => {
-                        if (pos.user.username?.toLowerCase() === username?.toLowerCase()) {
-                            result = pos;
-                        }
+                    (obj.users ?? []).forEach((pos) => {
+                        if (pos.user.username?.toLowerCase() === username?.toLowerCase()) result = pos;
                     });
-
                     if (result != null) {
                         logger('getUserId()', result);
                         resolve(result);
-                    }
-                    else {
-                        getUserIdWithAgent(username).then((result) => {
-                            resolve(result);
-                            // eslint-disable-next-line no-unused-vars
-                        }).catch((err) => {
-                            alert("Cannot find user info from getUserId()");
-                        });
+                    } else {
+                        getUserIdWithAgent(username)
+                            .then((result) => resolve(result))
+                            .catch((err) => alert('Cannot find user info from getUserId()'));
                     }
                 },
                 onerror: function (err) {
@@ -3476,7 +3475,12 @@
                     reject(err);
                 }
             });
+        }).catch((err) => {
+            userIdCache.delete(username);
+            return Promise.reject(err);
         });
+        userIdCache.set(username, promise);
+        return promise;
     }
 
     /**
