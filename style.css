@@ -205,6 +205,7 @@
 
 *:not(:has(> section[class]))>.IG_DWSTORY_ALL,
 *:not(:has(> section[class]))>.IG_DWHISTORY_ALL,
+*:not(:has(> section[class]))>.IG_DWSTORY_TAGGED_PROFILES,
 *:not(:has(> section[class]))>.IG_DWSTORY_POSITION,
 *:not(:has(> section[class]))>.IG_DWHISTORY_POSITION {
     right: -70px;
@@ -227,6 +228,25 @@
     color: #000;
 }
 
+.IG_DWSTORY_TAGGED_PROFILES {
+    position: absolute;
+    right: -24px;
+    top: 79px;
+    width: 28px;
+    height: 28px;
+    padding: 2px;
+    box-sizing: border-box;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    background: #fff;
+    border-radius: 5px;
+    color: #000;
+    cursor: pointer;
+    line-height: 0;
+    z-index: 5;
+}
+
 .IG_DWPROFILE {
     position: absolute;
     right: 0px;
@@ -241,6 +261,32 @@
 
 .IG_DWPROFILE svg {
     color: #000;
+}
+
+.IG_TAGGED_PROFILE_LINK {
+    align-items: flex-start;
+    border-bottom: 1px solid rgb(var(--ig-separator));
+    box-sizing: border-box;
+    display: flex !important;
+    flex-direction: column;
+    gap: 4px;
+    padding: 10px !important;
+    text-align: left !important;
+    text-decoration: none;
+}
+
+.IG_TAGGED_PROFILE_LINK:hover {
+    background: rgb(var(--ig-secondary-button-hover));
+}
+
+.IG_TAGGED_PROFILE_USERNAME {
+    font-weight: 700;
+}
+
+.IG_TAGGED_PROFILE_EMPTY {
+    color: rgb(var(--ig-secondary-text));
+    padding: 24px 10px;
+    text-align: center;
 }
 
 .globalSettings {
