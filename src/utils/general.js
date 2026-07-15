@@ -1031,7 +1031,7 @@ export async function triggerLinkElement($element, isPreview = false) {
 
         let date = new Date().getTime();
         let timestamp = Math.floor(date / 1000);
-        let username = $el.data('username') ? $el.data('username') : state.GLusername;
+        let username = $el.data('username') ? $el.data('username') : state.GL_username;
         let index = parseInt($el.attr('data-globalindex') || 0, 10) || 0;
 
         if (!username && $el.data('path')) {

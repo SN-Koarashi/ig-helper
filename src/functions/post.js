@@ -706,14 +706,13 @@ export function registerPostClickHandlers() {
                         }
                     });
 
-                    if (blob || USER_SETTING.FORCE_RESOURCE_VIA_MEDIA) {
-                        await createMediaListDOM(
-                            state.GL_postPath,
-                            ".IG_POPUP_DIG .IG_POPUP_DIG_MAIN .IG_POPUP_DIG_BODY",
-                            _i18n("LOAD_BLOB_MULTIPLE")
-                        );
-                    }
-                    else {
+                    const totalInserted = await createMediaListDOM(
+                        state.GL_postPath,
+                        ".IG_POPUP_DIG .IG_POPUP_DIG_MAIN .IG_POPUP_DIG_BODY",
+                        _i18n("LOAD_BLOB_MULTIPLE")
+                    );
+
+                    if (!totalInserted || totalInserted < 1) {
                         const $popupBody = $('.IG_POPUP_DIG .IG_POPUP_DIG_MAIN .IG_POPUP_DIG_BODY');
                         $resourceItems.each(function () {
                             s++;
@@ -729,14 +728,6 @@ export function registerPostClickHandlers() {
                                 $popupBody.append(`<a datetime="${publish_time}" data-needed="direct" data-path="${state.GL_postPath}" data-name="photo" data-type="jpg" data-globalIndex="${s}" href="javascript:;" data-href="${imgLink}"><img width="100" src="${imgLink}" /><br/>- <span data-ih-locale="IMG">${_i18n("IMG")}</span> ${s} -</a>`);
                             }
                         });
-
-                        if (blob) {
-                            await createMediaListDOM(
-                                state.GL_postPath,
-                                ".IG_POPUP_DIG .IG_POPUP_DIG_MAIN .IG_POPUP_DIG_BODY",
-                                _i18n("LOAD_BLOB_RELOAD")
-                            );
-                        }
                     }
                 }
                 else {
@@ -764,6 +755,14 @@ export function registerPostClickHandlers() {
                             $('.IG_POPUP_DIG .IG_POPUP_DIG_MAIN .IG_POPUP_DIG_BODY').append(`<a datetime="${publish_time}" data-needed="direct" data-path="${state.GL_postPath}" data-name="photo" data-type="jpg" data-globalIndex="${s}" href="javascript:;" href="" data-href="${imgLink}"><img width="100" src="${imgLink}" /><br/>- <span data-ih-locale="IMG">${_i18n("IMG")}</span> ${s} -</a>`);
                         }
                     }
+                }
+
+                // Manual image-only paths do not pass through createMediaListDOM(),
+                // so the popup action buttons must be re-enabled here as soon as we
+                // have at least one downloadable resource in the dialog.
+                if ($('.IG_POPUP_DIG .IG_POPUP_DIG_MAIN .IG_POPUP_DIG_BODY a[data-needed="direct"]').length > 0) {
+                    $('.IG_POPUP_DIG #batch_download_selected, .IG_POPUP_DIG #batch_download_direct').prop('disabled', false);
+                    updatePopupSelectionSummary();
                 }
             }
 
