@@ -4170,6 +4170,39 @@
     }
 
     /**
+     * normalizeTimestampToMs
+     * @description Normalize a timestamp value to milliseconds.
+     *
+     * @param {unknown} value
+     * @return {number}
+     */
+    function normalizeTimestampToMs(value) {
+        const numeric = Number(value);
+        if (!Number.isFinite(numeric)) {
+            return Date.now();
+        }
+
+        const abs = Math.abs(numeric);
+
+        // Instagram usually returns seconds or milliseconds, but we also tolerate
+        // microseconds/nanoseconds by scaling down based on magnitude instead of
+        // assuming a fixed digit count.
+        if (abs < 1e11) {
+            return Math.trunc(numeric * 1000);
+        }
+
+        if (abs < 1e14) {
+            return Math.trunc(numeric);
+        }
+
+        if (abs < 1e17) {
+            return Math.trunc(numeric / 1000);
+        }
+
+        return Math.trunc(numeric / 1000000);
+    }
+
+    /**
      * fetchArrayBuffer
      * @description Download URL as ArrayBuffer.
      *
@@ -4482,7 +4515,7 @@
      */
     function getSaveFileName(downloadLink, metadata) {
         let { username, sourceType, timestamp, filetype, shortcode, index, uid } = metadata;
-        timestamp = parseInt(timestamp.toString().padEnd(13, '0'));
+        timestamp = normalizeTimestampToMs(timestamp);
         index = (index != null) ? index : 0;
 
         const date = new Date(timestamp);
