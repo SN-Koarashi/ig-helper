@@ -91,7 +91,7 @@ export function getUserId(username) {
                 // Fix search issue by Discord: sno_w_
                 let obj = JSON.parse(response.response);
                 let result = null;
-                obj.users.forEach(pos => {
+                (obj.users ?? []).forEach(pos => {
                     if (pos.user.username?.toLowerCase() === username?.toLowerCase()) {
                         result = pos;
                     }
@@ -109,7 +109,8 @@ export function getUserId(username) {
                         // eslint-disable-next-line no-unused-vars
                     }).catch((err) => {
                         userIdCache.delete(username);
-                        alert("Cannot find user info from getUserId()");
+                        console.error('getUserId()', 'reject from agent', err);
+                        alert("Cannot find user info from getUserId()\nDetails may be in the console.");
                     });
                 }
             },

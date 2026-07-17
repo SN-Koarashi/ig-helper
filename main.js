@@ -17,7 +17,7 @@
 // @name:zh-CN         IG小助手
 // @name:zh-TW         IG小精靈
 // @namespace          https://github.snkms.com/
-// @version            4.0.3
+// @version            4.0.4
 // @description        Download photos and videos from Instagram posts in one click, including Stories, Reels, and profile pictures.
 // @description:ar     نزّل صورًا ومقاطع فيديو من منشورات Instagram بنقرة واحدة، بما في ذلك القصص وReels وصور الملف الشخصي.
 // @description:de     Lade Fotos und Videos aus Instagram-Beiträgen mit einem Klick herunter, einschließlich Stories, Reels und Profilbildern.
@@ -3461,7 +3461,7 @@
                     // Fix search issue by Discord: sno_w_
                     let obj = JSON.parse(response.response);
                     let result = null;
-                    obj.users.forEach(pos => {
+                    (obj.users ?? []).forEach(pos => {
                         if (pos.user.username?.toLowerCase() === username?.toLowerCase()) {
                             result = pos;
                         }
@@ -3479,7 +3479,8 @@
                             // eslint-disable-next-line no-unused-vars
                         }).catch((err) => {
                             userIdCache.delete(username);
-                            alert("Cannot find user info from getUserId()");
+                            console.error('getUserId()', 'reject from agent', err);
+                            alert("Cannot find user info from getUserId()\nDetails may be in the console.");
                         });
                     }
                 },
