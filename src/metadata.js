@@ -38,6 +38,7 @@
 // @author             SN-Koarashi (5026)
 // @match              https://*.instagram.com/*
 // @grant              GM_addStyle
+// @grant              GM_download
 // @grant              GM_getResourceText
 // @grant              GM_getValue
 // @grant              GM_info

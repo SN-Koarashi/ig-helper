@@ -378,21 +378,54 @@ export function setDownloadProgress(now, total) {
  * @return {Promise}
  */
 export function saveFiles(downloadLink, metadata) {
-    return new Promise((resolve) => {
+    return new Promise(resolve => {
         setTimeout(() => {
             updateLoadingBar(true);
-            fetch(downloadLink)
-                .then(res => res.blob())
-                .then(dwel => {
-                    updateLoadingBar(false);
-                    return createSaveFileElement(downloadLink, dwel, metadata);
-                })
-                .then(() => resolve(true))
-                .catch(err => {
-                    updateLoadingBar(false);
-                    console.error('saveFiles failed:', err);
-                    resolve(false);
+
+            const downloadName = getSaveFileName(downloadLink, metadata);
+            const { filetype, shortcode, sourceType } = metadata;
+
+            if (
+                USER_SETTING.MODIFY_RESOURCE_EXIF &&
+                filetype === 'jpg' &&
+                shortcode &&
+                sourceType === 'photo' &&
+                (object.type === 'image/jpeg' || object.type === 'image/webp')
+            ) {
+                fetch(downloadLink)
+                    .then(res => res.blob())
+                    .then(dwel => {
+                        updateLoadingBar(false);
+                        return createSaveFileElement(downloadLink, dwel, metadata);
+                    })
+                    .then(() => resolve(true))
+                    .catch(err => {
+                        updateLoadingBar(false);
+                        console.error('saveFiles failed', err);
+                        resolve(false);
+                    });
+            } else {
+                GM_download({
+                    url: downloadLink,
+                    name: downloadName,
+                    onload: () => {
+                        updateLoadingBar(false);
+                        resolve(true);
+                    },
+                    onerror: (err) => {
+                        logger('saveFiles GM_download error', err);
+                        updateLoadingBar(false);
+                        fetch(downloadLink)
+                            .then(res => res.blob())
+                            .then(dwel => createSaveFileElement(downloadLink, dwel, metadata))
+                            .then(() => resolve(true))
+                            .catch(e => {
+                                console.error('saveFiles fallback failed', e);
+                                resolve(false);
+                            });
+                    },
                 });
+            }
         }, 50);
     });
 }
@@ -675,21 +708,33 @@ export async function tryHandleDashFromMediaItem({
  * @param {string} filename
  */
 export function triggerDownload(blob, filename) {
-    return new Promise((resolve) => {
+    return new Promise(resolve => {
         const url = URL.createObjectURL(blob);
-        const link = document.createElement("a");
-        link.href = url;
-        link.download = filename;
-        link.rel = "noopener";
-        link.style.display = "none";
-        document.body.appendChild(link);
-        link.click();
-        setTimeout(() => {
-            // eslint-disable-next-line no-unused-vars
-            try { document.body.removeChild(link); } catch (e) { /* noop */ }
-            URL.revokeObjectURL(url);
-            resolve();
-        }, 250);
+
+        GM_download({
+            url: url,
+            name: filename,
+            onload: () => {
+                URL.revokeObjectURL(url);
+                resolve();
+            },
+            onerror: () => {
+                URL.revokeObjectURL(url);
+                const blobUrl = URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.href = blobUrl;
+                link.download = filename;
+                link.rel = 'noopener';
+                link.style.display = 'none';
+                document.body.appendChild(link);
+                link.click();
+                setTimeout(() => {
+                    try { document.body.removeChild(link); } catch(e) { /* noop */ }
+                    URL.revokeObjectURL(blobUrl);
+                    resolve();
+                }, 250);
+            },
+        });
     });
 }
 
@@ -779,16 +824,15 @@ export function getSaveFileName(downloadLink, metadata) {
 export async function createSaveFileElement(downloadLink, object, metadata) {
     let { username, sourceType, filetype, shortcode } = metadata;
 
-    if (metadata.uid == null && username) {
+    if (metadata.uid == null) {
+        username = metadata.username;
         if (!userIdCache.has(username)) {
             userIdCache.set(username, getUserId(username));
         }
-
         try {
             const userInfo = await userIdCache.get(username);
-            metadata.uid = userInfo?.user?.id || null;
-            // eslint-disable-next-line no-unused-vars
-        } catch (err) {
+            metadata.uid = userInfo?.user?.id ?? null;
+        } catch(err) {
             userIdCache.delete(username);
             metadata.uid = null;
         }
@@ -806,13 +850,25 @@ export async function createSaveFileElement(downloadLink, object, metadata) {
         try {
             const newBlob = await changeExifData(object, metadata);
             await triggerDownload(newBlob, downloadName);
-        } catch (err) {
+        } catch(err) {
             console.error('Failed to strip EXIF and/or attach post URL to EXIF.', err);
             await triggerDownload(object, downloadName);
         }
-    } else {
-        await triggerDownload(object, downloadName);
+        return;
     }
+
+    const blobUrl = URL.createObjectURL(object);
+    GM_download({
+        url: blobUrl,
+        name: downloadName,
+        onload: () => {
+            URL.revokeObjectURL(blobUrl);
+        },
+        onerror: () => {
+            URL.revokeObjectURL(blobUrl);
+            triggerDownload(object, downloadName);
+        },
+    });
 }
 
 /**
