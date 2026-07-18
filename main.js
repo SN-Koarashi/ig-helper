@@ -17,7 +17,7 @@
 // @name:zh-CN         IG小助手
 // @name:zh-TW         IG小精靈
 // @namespace          https://github.snkms.com/
-// @version            4.1.1
+// @version            4.1.1.1
 // @description        Download photos and videos from Instagram posts in one click, including Stories, Reels, and profile pictures.
 // @description:ar     نزّل صورًا ومقاطع فيديو من منشورات Instagram بنقرة واحدة، بما في ذلك القصص وReels وصور الملف الشخصي.
 // @description:de     Lade Fotos und Videos aus Instagram-Beiträgen mit einem Klick herunter, einschließlich Stories, Reels und Profilbildern.
@@ -6679,27 +6679,27 @@
                                     $(this).on('timeupdate', function () {
                                         const $this = $(this);
                                         if (!$this.data('modify-thumbnail')) {
-                                                let $video = $this;
-                                                if ($video.parents('div[style][class]').filter(function () {
-                                                    return $(this).width() == $video.width();
-                                                }).find('.IG_DWSTORY_THUMBNAIL, .IG_DWHISTORY_THUMBNAIL').length === 0) {
-                                                    $this.data('modify-thumbnail', true);
+                                            let $video = $this;
+                                            if ($video.parents('div[style][class]').filter(function () {
+                                                return $(this).width() == $video.width();
+                                            }).find('.IG_DWSTORY_THUMBNAIL, .IG_DWHISTORY_THUMBNAIL').length === 0) {
+                                                $this.data('modify-thumbnail', true);
 
-                                                    if (isHighlight) {
-                                                        onHighlightsStoryThumbnail(false);
-                                                    }
-                                                    else {
-                                                        onStoryThumbnail(false);
-                                                    }
-
-                                                    logger(`(${storyType})`, 'Manually inserting thumbnail button');
+                                                if (isHighlight) {
+                                                    onHighlightsStoryThumbnail(false);
                                                 }
                                                 else {
-                                                    $this.data('modify-thumbnail', true);
-                                                    logger(`(${storyType})`, 'Thumbnail button already inserted');
+                                                    onStoryThumbnail(false);
                                                 }
+
+                                                logger(`(${storyType})`, 'Manually inserting thumbnail button');
                                             }
-                                        });
+                                            else {
+                                                $this.data('modify-thumbnail', true);
+                                                logger(`(${storyType})`, 'Thumbnail button already inserted');
+                                            }
+                                        }
+                                    });
 
                                     var $video = $(this);
 
