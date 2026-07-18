@@ -389,8 +389,7 @@ export function saveFiles(downloadLink, metadata) {
                 USER_SETTING.MODIFY_RESOURCE_EXIF &&
                 filetype === 'jpg' &&
                 shortcode &&
-                sourceType === 'photo' &&
-                (object.type === 'image/jpeg' || object.type === 'image/webp')
+                sourceType === 'photo'
             ) {
                 fetch(downloadLink)
                     .then(res => res.blob())
@@ -412,17 +411,22 @@ export function saveFiles(downloadLink, metadata) {
                         updateLoadingBar(false);
                         resolve(true);
                     },
+                    // eslint-disable-next-line no-unused-vars
                     onerror: (err) => {
-                        logger('saveFiles GM_download error', err);
                         updateLoadingBar(false);
-                        fetch(downloadLink)
-                            .then(res => res.blob())
-                            .then(dwel => createSaveFileElement(downloadLink, dwel, metadata))
-                            .then(() => resolve(true))
-                            .catch(e => {
-                                console.error('saveFiles fallback failed', e);
-                                resolve(false);
-                            });
+                        resolve(true);
+
+                        // ! If the user cancels the download (when a "Save As" window is displayed), this area will be triggered incorrectly.
+                        // logger('saveFiles GM_download error', err);
+                        // updateLoadingBar(false);
+                        // fetch(downloadLink)
+                        //     .then(res => res.blob())
+                        //     .then(dwel => createSaveFileElement(downloadLink, dwel, metadata))
+                        //     .then(() => resolve(true))
+                        //     .catch(e => {
+                        //         console.error('saveFiles fallback failed', e);
+                        //         resolve(false);
+                        //     });
                     },
                 });
             }
@@ -720,19 +724,23 @@ export function triggerDownload(blob, filename) {
             },
             onerror: () => {
                 URL.revokeObjectURL(url);
-                const blobUrl = URL.createObjectURL(blob);
-                const link = document.createElement('a');
-                link.href = blobUrl;
-                link.download = filename;
-                link.rel = 'noopener';
-                link.style.display = 'none';
-                document.body.appendChild(link);
-                link.click();
-                setTimeout(() => {
-                    try { document.body.removeChild(link); } catch(e) { /* noop */ }
-                    URL.revokeObjectURL(blobUrl);
-                    resolve();
-                }, 250);
+                resolve();
+
+                // ! If the user cancels the download (when a "Save As" window is displayed), this area will be triggered incorrectly.
+                // const blobUrl = URL.createObjectURL(blob);
+                // const link = document.createElement('a');
+                // link.href = blobUrl;
+                // link.download = filename;
+                // link.rel = 'noopener';
+                // link.style.display = 'none';
+                // document.body.appendChild(link);
+                // link.click();
+                // setTimeout(() => {
+                //     // eslint-disable-next-line no-unused-vars
+                //     try { document.body.removeChild(link); } catch (e) { /* noop */ }
+                //     URL.revokeObjectURL(blobUrl);
+                //     resolve();
+                // }, 250);
             },
         });
     });
@@ -832,7 +840,8 @@ export async function createSaveFileElement(downloadLink, object, metadata) {
         try {
             const userInfo = await userIdCache.get(username);
             metadata.uid = userInfo?.user?.id ?? null;
-        } catch(err) {
+            // eslint-disable-next-line no-unused-vars
+        } catch (err) {
             userIdCache.delete(username);
             metadata.uid = null;
         }
@@ -850,25 +859,15 @@ export async function createSaveFileElement(downloadLink, object, metadata) {
         try {
             const newBlob = await changeExifData(object, metadata);
             await triggerDownload(newBlob, downloadName);
-        } catch(err) {
+        } catch (err) {
             console.error('Failed to strip EXIF and/or attach post URL to EXIF.', err);
             await triggerDownload(object, downloadName);
         }
         return;
     }
-
-    const blobUrl = URL.createObjectURL(object);
-    GM_download({
-        url: blobUrl,
-        name: downloadName,
-        onload: () => {
-            URL.revokeObjectURL(blobUrl);
-        },
-        onerror: () => {
-            URL.revokeObjectURL(blobUrl);
-            triggerDownload(object, downloadName);
-        },
-    });
+    else {
+        await triggerDownload(object, downloadName);
+    }
 }
 
 /**
