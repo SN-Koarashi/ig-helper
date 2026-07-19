@@ -3459,30 +3459,37 @@
                 method: "GET",
                 url: getURL,
                 onload: function (response) {
-                    // Fix search issue by Discord: sno_w_
-                    let obj = JSON.parse(response.response);
-                    let result = null;
-                    (obj.users ?? []).forEach(pos => {
-                        if (pos.user.username?.toLowerCase() === username?.toLowerCase()) {
-                            result = pos;
-                        }
-                    });
+                    try {
+                        // Fix search issue by Discord: sno_w_
+                        let obj = JSON.parse(response.response);
+                        let result = null;
+                        (obj.users ?? []).forEach(pos => {
+                            if (pos.user.username?.toLowerCase() === username?.toLowerCase()) {
+                                result = pos;
+                            }
+                        });
 
-                    if (result != null) {
-                        logger('getUserId()', result);
-                        userIdCache.set(username, result);
-                        resolve(result);
-                    }
-                    else {
-                        getUserIdWithAgent(username).then((result) => {
+                        if (result != null) {
+                            logger('getUserId()', result);
                             userIdCache.set(username, result);
                             resolve(result);
+                        }
+                        else {
+                            getUserIdWithAgent(username).then((result) => {
+                                userIdCache.set(username, result);
+                                resolve(result);
                             // eslint-disable-next-line no-unused-vars
-                        }).catch((err) => {
-                            userIdCache.delete(username);
-                            console.error('getUserId()', 'reject from agent', err);
-                            alert("Cannot find user info from getUserId()\nDetails may be in the console.");
-                        });
+                            }).catch((err) => {
+                                userIdCache.delete(username);
+                                logger('getUserId()', 'fallback reject', err);
+    							alert("Cannot find user info from getUserId()\nDetails may be in the console.");
+                                reject(err);
+                            });
+                        }
+                    } catch (err) {
+                        userIdCache.delete(username);
+                        logger('getUserId()', 'parse reject', err);
+                        reject(err);
                     }
                 },
                 onerror: function (err) {
