@@ -1,3 +1,4 @@
+import { userIdCache } from "../settings";
 import { logger, getAppID, updateLoadingBar } from "./general";
 /*! ESLINT IMPORT END !*/
 
@@ -74,42 +75,59 @@ export function getStories(userId) {
  * @return {Promise<Integer>}
  */
 export function getUserId(username) {
-    if (userIdCache.has(username)) {
-        return userIdCache.get(username);
-    }
+    return new Promise((resolve, reject) => {
+        if (userIdCache.has(username)) {
+            logger('getUserId()', 'return from cache:', userIdCache.get(username));
+            resolve(userIdCache.get(username));
+            return;
+        }
 
-    const promise = new Promise((resolve, reject) => {
-        const getURL = `https://www.instagram.com/web/search/topsearch/?query=${username}`;
+        let getURL = `https://www.instagram.com/web/search/topsearch/?query=${username}`;
+
         GM_xmlhttpRequest({
             method: "GET",
             url: getURL,
             onload: function (response) {
-                // Fix search issue by Discord: sno_w_
-                let obj = JSON.parse(response.response);
-                let result = null;
-                (obj.users ?? []).forEach((pos) => {
-                    if (pos.user.username?.toLowerCase() === username?.toLowerCase()) result = pos;
-                });
-                if (result != null) {
-                    logger('getUserId()', result);
-                    resolve(result);
-                } else {
-                    getUserIdWithAgent(username)
-                        .then((result) => resolve(result))
-                        .catch((err) => alert('Cannot find user info from getUserId()'));
+                try {
+                    // Fix search issue by Discord: sno_w_
+                    let obj = JSON.parse(response.response);
+                    let result = null;
+                    (obj.users ?? []).forEach(pos => {
+                        if (pos.user.username?.toLowerCase() === username?.toLowerCase()) {
+                            result = pos;
+                        }
+                    });
+
+                    if (result != null) {
+                        logger('getUserId()', result);
+                        userIdCache.set(username, result);
+                        resolve(result);
+                    }
+                    else {
+                        getUserIdWithAgent(username).then((result) => {
+                            userIdCache.set(username, result);
+                            resolve(result);
+                        // eslint-disable-next-line no-unused-vars
+                        }).catch((err) => {
+                            userIdCache.delete(username);
+                            logger('getUserId()', 'fallback reject', err);
+							alert("Cannot find user info from getUserId()\nDetails may be in the console.");
+                            reject(err);
+                        });
+                    }
+                } catch (err) {
+                    userIdCache.delete(username);
+                    logger('getUserId()', 'parse reject', err);
+                    reject(err);
                 }
             },
             onerror: function (err) {
                 logger('getUserId()', 'reject', err);
+                userIdCache.delete(username);
                 reject(err);
             }
         });
-    }).catch((err) => {
-        userIdCache.delete(username);
-        return Promise.reject(err);
     });
-    userIdCache.set(username, promise);
-    return promise;
 }
 
 /**

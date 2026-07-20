@@ -1,9 +1,9 @@
-import { state, USER_SETTING, SVG, resourceCountSelector, $body } from "./settings";
+import { state, USER_SETTING, $body } from "./settings";
 import {
     reloadScript,
     triggerLinkElement, openNewTab, saveFiles, logger, toggleVolumeSilder, updatePopupSelectionSummary,
     replaceSameOriginHost, setTimeElementDateAndLocaleTime, getHighlightCurrentTimeElement,
-    triggerReactClickHandler, updateLoadingBar
+    triggerReactClickHandler
 } from "./utils/general";
 import { onStory, onStoryAll, onStoryThumbnail } from "./functions/story";
 import { onStoryTaggedProfiles } from "./functions/storyTaggedProfiles";
@@ -12,9 +12,8 @@ import { onHighlightsStory, onHighlightsStoryAll, onHighlightsStoryThumbnail } f
 import { onReels } from "./functions/reel";
 import { _i18n, getTranslationText, repaintingTranslations } from "./utils/i18n";
 import { getImageFromCache, registerPerformanceObserver } from "./utils/image_cache";
-import { batchDownloadPostFiles, createMediaListDOM, getVisibleNodeIndex, getPostContextFromButton } from "./functions/post";
-import { registerMenuCommand, showDebugDOM, showHotkeySetting, showSetting, IG_createDM, IG_setDM } from "./utils/dialog";
-import { openImageViewer } from "./utils/image_viewer";
+import { batchDownloadPostFiles } from "./functions/post";
+import { registerMenuCommand, showDebugDOM, showHotkeySetting, showSetting } from "./utils/dialog";
 /*! ESLINT IMPORT END !*/
 
 // Running if document is ready
@@ -435,7 +434,7 @@ $(function () {
 
     $body.on('click', '.IG_POPUP_DIG_TITLE #batch_download_direct', function () {
         if ($('.IG_POPUP_DIG #_SNLOAD').length > 0) return;
-		
+
         let links = [];
         $('.IG_POPUP_DIG_BODY a[data-needed="direct"]').each(function () {
             links.push($(this));
@@ -488,27 +487,27 @@ $(function () {
                                 $(this).on('timeupdate', function () {
                                     const $this = $(this);
                                     if (!$this.data('modify-thumbnail')) {
-                                            let $video = $this;
-                                            if ($video.parents('div[style][class]').filter(function () {
-                                                return $(this).width() == $video.width();
-                                            }).find('.IG_DWSTORY_THUMBNAIL, .IG_DWHISTORY_THUMBNAIL').length === 0) {
-                                                $this.data('modify-thumbnail', true);
+                                        let $video = $this;
+                                        if ($video.parents('div[style][class]').filter(function () {
+                                            return $(this).width() == $video.width();
+                                        }).find('.IG_DWSTORY_THUMBNAIL, .IG_DWHISTORY_THUMBNAIL').length === 0) {
+                                            $this.data('modify-thumbnail', true);
 
-                                                if (isHighlight) {
-                                                    onHighlightsStoryThumbnail(false);
-                                                }
-                                                else {
-                                                    onStoryThumbnail(false);
-                                                }
-
-                                                logger(`(${storyType})`, 'Manually inserting thumbnail button');
+                                            if (isHighlight) {
+                                                onHighlightsStoryThumbnail(false);
                                             }
                                             else {
-                                                $this.data('modify-thumbnail', true);
-                                                logger(`(${storyType})`, 'Thumbnail button already inserted');
+                                                onStoryThumbnail(false);
                                             }
+
+                                            logger(`(${storyType})`, 'Manually inserting thumbnail button');
                                         }
-                                    });
+                                        else {
+                                            $this.data('modify-thumbnail', true);
+                                            logger(`(${storyType})`, 'Thumbnail button already inserted');
+                                        }
+                                    }
+                                });
 
                                 var $video = $(this);
 
