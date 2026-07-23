@@ -758,6 +758,26 @@
                         });
                     });
 
+                    // If the highlight's <video> (blob src) is already present in the DOM by the time
+                    // onHighlightsStory runs (e.g. script initialized late, after 'timeupdate' already
+                    // fired once), insert the thumbnail button immediately instead of relying on a
+                    // future 'timeupdate' event that may never come. The MutationObserver-based
+                    // listener elsewhere only attaches to <video> nodes that are added *after* it
+                    // was created, so a late init otherwise misses the button entirely.
+                    $element.find('video[src^="blob:"]').each(function () {
+                        const $video = $(this);
+                        if (!$video.data('modify-thumbnail')) {
+                            $video.data('modify-thumbnail', true);
+                            if ($element.find('.IG_DWHISTORY_THUMBNAIL').length === 0) {
+                                onHighlightsStoryThumbnail(false);
+                                logger('(highlight) Manually inserting thumbnail button (late init)');
+                            }
+                            else {
+                                logger('(highlight) Thumbnail button already inserted');
+                            }
+                        }
+                    });
+
                     // Try to use event listener 'timeupdate' in order to detect if highlight is a video
                     //$element.find('video').each(function(){
                     //    $(this).on('timeupdate',function(){
@@ -3088,6 +3108,26 @@
                         });
                     });
 
+                    // If the story's <video> (blob src) is already present in the DOM by the time
+                    // onStory runs (e.g. script initialized late, after 'timeupdate' already fired
+                    // once), insert the thumbnail button immediately instead of relying on a
+                    // future 'timeupdate' event that may never come. The MutationObserver-based
+                    // listener elsewhere only attaches to <video> nodes that are added *after* it
+                    // was created, so a late init otherwise misses the button entirely.
+                    $element.find('video[src^="blob:"]').each(function () {
+                        const $video = $(this);
+                        if (!$video.data('modify-thumbnail')) {
+                            $video.data('modify-thumbnail', true);
+                            if ($element.find('.IG_DWSTORY_THUMBNAIL').length === 0) {
+                                onStoryThumbnail(false);
+                                logger('(story) Manually inserting thumbnail button (late init)');
+                            }
+                            else {
+                                logger('(story) Thumbnail button already inserted');
+                            }
+                        }
+                    });
+
                     // Try to use event listener 'timeupdate' in order to detect if story is a video
                     //$element.find('video').each(function(){
                     //    $(this).on('timeupdate',function(){
@@ -3459,30 +3499,37 @@
                 method: "GET",
                 url: getURL,
                 onload: function (response) {
-                    // Fix search issue by Discord: sno_w_
-                    let obj = JSON.parse(response.response);
-                    let result = null;
-                    (obj.users ?? []).forEach(pos => {
-                        if (pos.user.username?.toLowerCase() === username?.toLowerCase()) {
-                            result = pos;
-                        }
-                    });
+                    try {
+                        // Fix search issue by Discord: sno_w_
+                        let obj = JSON.parse(response.response);
+                        let result = null;
+                        (obj.users ?? []).forEach(pos => {
+                            if (pos.user.username?.toLowerCase() === username?.toLowerCase()) {
+                                result = pos;
+                            }
+                        });
 
-                    if (result != null) {
-                        logger('getUserId()', result);
-                        userIdCache.set(username, result);
-                        resolve(result);
-                    }
-                    else {
-                        getUserIdWithAgent(username).then((result) => {
+                        if (result != null) {
+                            logger('getUserId()', result);
                             userIdCache.set(username, result);
                             resolve(result);
+                        }
+                        else {
+                            getUserIdWithAgent(username).then((result) => {
+                                userIdCache.set(username, result);
+                                resolve(result);
                             // eslint-disable-next-line no-unused-vars
-                        }).catch((err) => {
-                            userIdCache.delete(username);
-                            console.error('getUserId()', 'reject from agent', err);
-                            alert("Cannot find user info from getUserId()\nDetails may be in the console.");
-                        });
+                            }).catch((err) => {
+                                userIdCache.delete(username);
+                                logger('getUserId()', 'fallback reject', err);
+    							alert("Cannot find user info from getUserId()\nDetails may be in the console.");
+                                reject(err);
+                            });
+                        }
+                    } catch (err) {
+                        userIdCache.delete(username);
+                        logger('getUserId()', 'parse reject', err);
+                        reject(err);
                     }
                 },
                 onerror: function (err) {
