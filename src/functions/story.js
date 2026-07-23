@@ -12,6 +12,7 @@ import { getUserId, getStories, getMediaInfo } from "../utils/api";
 import { _i18n } from "../utils/i18n";
 import { getImageFromCache } from "../utils/image_cache";
 import { IG_createDM } from "../utils/dialog";
+import { setStoryTaggedProfilesButton } from "./storyTaggedProfiles";
 /*! ESLINT IMPORT END !*/
 
 /**
@@ -575,6 +576,7 @@ export async function onStory(isDownload, isForce, isPreview) {
                 }
 
                 setStoryProgressIndexText($firstEl, $header, 'IG_DWSTORY_POSITION');
+                setStoryTaggedProfilesButton($firstEl, username);
 
                 // Modify video volume
                 //if(USER_SETTING.MODIFY_VIDEO_VOLUME){
@@ -646,7 +648,9 @@ export async function onStory(isDownload, isForce, isPreview) {
             }
         }
         else {
-            setStoryProgressIndexByUsername($('.IG_DWSTORY').parent(), username, 'IG_DWSTORY_POSITION');
+            let $storyElement = $('.IG_DWSTORY').parent();
+            setStoryProgressIndexByUsername($storyElement, username, 'IG_DWSTORY_POSITION');
+            setStoryTaggedProfilesButton($storyElement, username);
         }
     }
 }

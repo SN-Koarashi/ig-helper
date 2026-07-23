@@ -356,22 +356,29 @@ export function getBlobMediaWithQueryID(postPath) {
  * @description Get Instagram Media object.
  *
  * @param  {String}  mediaId
- * @return {Object}
+ * @param  {Boolean}  isSilent - Suppress alerts and reject request errors.
+ * @return {Promise<Object>}
  */
-export function getMediaInfo(mediaId) {
+export function getMediaInfo(mediaId, isSilent = false) {
     return new Promise((resolve, reject) => {
         const getURL = `https://i.instagram.com/api/v1/media/${mediaId}/info/`;
 
         if (mediaId == null) {
-            alert("Cannot call Media API because of the media id is invalid.");
+            if (!isSilent) {
+                alert("Cannot call Media API because of the media id is invalid.");
+            }
             logger('getMediaInfo()', 'reject', 'Cannot call Media API because of the media id is invalid.');
 
             updateLoadingBar(false);
             reject(-1);
             return;
         }
-        if (getAppID() == null) {
-            alert("Cannot call Media API because of the app id is invalid.");
+
+        const appId = getAppID();
+        if (appId == null) {
+            if (!isSilent) {
+                alert("Cannot call Media API because of the app id is invalid.");
+            }
             logger('getMediaInfo()', 'reject', 'Cannot call Media API because of the app id is invalid.');
             updateLoadingBar(false);
             reject(-1);
@@ -384,23 +391,33 @@ export function getMediaInfo(mediaId) {
             headers: {
                 "User-Agent": window.navigator.userAgent,
                 "Accept": "*/*",
-                'X-IG-App-ID': getAppID()
+                'X-IG-App-ID': appId
             },
             onload: function (response) {
-                if (response.finalUrl == getURL) {
-                    let obj = JSON.parse(response.response);
-                    logger('getMediaInfo()', obj);
-                    resolve(obj);
+                if (response.finalUrl === getURL) {
+                    try {
+                        const obj = JSON.parse(response.responseText ?? response.response);
+                        logger('getMediaInfo()', obj);
+                        resolve(obj);
+                    }
+                    catch (err) {
+                        logger('getMediaInfo()', 'reject', err);
+                        reject(err);
+                    }
                 }
                 else {
-                    let finalURL = new URL(response.finalUrl);
+                    const finalURL = new URL(response.finalUrl);
                     if (finalURL.pathname.startsWith('/accounts/login')) {
                         logger('getMediaInfo()', 'reject', 'The account must be logged in to access Media API.');
-                        alert("The account must be logged in to access Media API.");
+                        if (!isSilent) {
+                            alert("The account must be logged in to access Media API.");
+                        }
                     }
                     else {
                         logger('getMediaInfo()', 'reject', 'Unable to retrieve content because the API was redirected to "' + response.finalUrl + '"');
-                        alert('Unable to retrieve content because the API was redirected to "' + response.finalUrl + '"');
+                        if (!isSilent) {
+                            alert('Unable to retrieve content because the API was redirected to "' + response.finalUrl + '"');
+                        }
                     }
                     updateLoadingBar(false);
                     reject(-1);
@@ -408,7 +425,65 @@ export function getMediaInfo(mediaId) {
             },
             onerror: function (err) {
                 logger('getMediaInfo()', 'reject', err);
-                resolve(err);
+                if (isSilent) {
+                    reject(err);
+                }
+                else {
+                    resolve(err);
+                }
+            }
+        });
+    });
+}
+
+/**
+ * getReelsMedia
+ * @description Get mobile reels-media data for a user ID.
+ *
+ * @param  {Integer|String}  userId
+ * @return {Promise<Object>}
+ */
+export function getReelsMedia(userId) {
+    return new Promise((resolve, reject) => {
+        if (userId == null) {
+            reject(new Error('Cannot call reels-media API because the user id is invalid.'));
+            return;
+        }
+
+        const appId = getAppID();
+        if (appId == null) {
+            reject(new Error('Cannot call reels-media API because the app id is invalid.'));
+            return;
+        }
+
+        const getURL = `https://i.instagram.com/api/v1/feed/reels_media/?reel_ids=${encodeURIComponent(userId)}`;
+        GM_xmlhttpRequest({
+            method: "GET",
+            url: getURL,
+            headers: {
+                "User-Agent": window.navigator.userAgent,
+                "Accept": "*/*",
+                'X-IG-App-ID': appId
+            },
+            onload: function (response) {
+                try {
+                    if (response.finalUrl && response.finalUrl !== getURL) {
+                        reject(new Error(`Request was redirected to "${response.finalUrl}".`));
+                        return;
+                    }
+
+                    const obj = JSON.parse(response.responseText ?? response.response);
+                    logger('getReelsMedia()', obj);
+                    resolve(obj);
+                }
+                catch (err) {
+                    logger('getReelsMedia()', 'reject', err);
+                    reject(err);
+                }
+            },
+            onerror: function (err) {
+                logger('getReelsMedia()', 'reject', err);
+                reject(err);
             }
         });
     });
