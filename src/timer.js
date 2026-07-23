@@ -182,13 +182,9 @@ export var timer = setInterval(function () {
                     onStory(false);
 
                     // Prevent buttons from being eaten by black holes sometimes.
-                    // Keep this finite like the original story setup path, with
-                    // a couple of extra retries for Instagram's delayed story DOM.
-                    [150, 450, 1000].forEach(delay => {
-                        setTimeout(() => {
-                            onStory(false);
-                        }, delay);
-                    });
+                    setTimeout(() => {
+                        onStory(false);
+                    }, 150);
                 }
 
                 if ($(".IG_DWSTORY").length) {

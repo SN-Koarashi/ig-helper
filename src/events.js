@@ -295,10 +295,18 @@ $(function () {
         onStory(true, true, true);
     });
 
-    // Running if user left-click tagged profiles icon in stories
-    $body.on('click', '.IG_DWSTORY_TAGGED_PROFILES', function () {
+    // Prevent story navigation when pressing the tagged-profiles control
+    $body.on('pointerdown', '.IG_DWSTORY_TAGGED_PROFILES', function (e) {
+        e.stopPropagation();
+    });
+
+    // Running if user left-click tagged profiles icon in stories or highlights
+    $body.on('click', '.IG_DWSTORY_TAGGED_PROFILES', function (e) {
+        e.preventDefault();
+        e.stopPropagation();
         onStoryTaggedProfiles(this);
     });
+
 
     // Running if user left-click download thumbnail icon in stories
     $body.on('click', '.IG_DWSTORY_THUMBNAIL', function () {

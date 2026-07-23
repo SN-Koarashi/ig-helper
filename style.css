@@ -156,7 +156,8 @@
 
 .IG_REELS_THUMBNAIL,
 .IG_DWSTORY_THUMBNAIL,
-.IG_DWHISTORY_THUMBNAIL {
+.IG_DWHISTORY_THUMBNAIL,
+.IG_DWSTORY_TAGGED_PROFILES {
     position: absolute;
     right: 40px;
     top: 79px;
@@ -205,9 +206,9 @@
 
 *:not(:has(> section[class]))>.IG_DWSTORY_ALL,
 *:not(:has(> section[class]))>.IG_DWHISTORY_ALL,
-*:not(:has(> section[class]))>.IG_DWSTORY_TAGGED_PROFILES,
 *:not(:has(> section[class]))>.IG_DWSTORY_POSITION,
-*:not(:has(> section[class]))>.IG_DWHISTORY_POSITION {
+*:not(:has(> section[class]))>.IG_DWHISTORY_POSITION,
+*:not(:has(> section[class]))>.IG_DWSTORY_TAGGED_PROFILES {
     right: -70px;
     color: #000;
 }
@@ -223,29 +224,12 @@
 }
 
 .IG_DWSTORY_ALL,
-.IG_DWHISTORY_ALL {
+.IG_DWHISTORY_ALL,
+.IG_DWSTORY_TAGGED_PROFILES {
     right: -24px;
     color: #000;
 }
 
-.IG_DWSTORY_TAGGED_PROFILES {
-    position: absolute;
-    right: -24px;
-    top: 79px;
-    width: 28px;
-    height: 28px;
-    padding: 2px;
-    box-sizing: border-box;
-    display: none;
-    align-items: center;
-    justify-content: center;
-    background: #fff;
-    border-radius: 5px;
-    color: #000;
-    cursor: pointer;
-    line-height: 0;
-    z-index: 5;
-}
 
 .IG_DWPROFILE {
     position: absolute;
@@ -263,30 +247,105 @@
     color: #000;
 }
 
-.IG_TAGGED_PROFILE_LINK {
-    align-items: flex-start;
-    border-bottom: 1px solid rgb(var(--ig-separator));
+.IG_TAGGED_PROFILES_DIALOG .IG_POPUP_DIG_MAIN {
+    width: min(500px, calc(100% - 30px));
     box-sizing: border-box;
-    display: flex !important;
-    flex-direction: column;
+}
+
+.IG_TAGGED_PROFILES_DIALOG .IG_POPUP_DIG_BODY {
+    min-height: 0;
+}
+
+.IG_TAGGED_PROFILE_MEDIA_ID {
+    display: flex;
+    align-items: baseline;
     gap: 4px;
-    padding: 10px !important;
+    margin: 0 0 8px;
+    padding: 0 0 8px;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.16);
+    border-color: rgba(var(--ig-primary-text), 0.16);
+    font-size: 12px;
+    overflow-wrap: anywhere;
+}
+
+.IG_TAGGED_PROFILE_MEDIA_ID code {
+    color: inherit;
+    font-family: monospace;
+}
+
+.IG_TAGGED_PROFILE_LIST {
+    display: grid;
+    gap: 6px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.IG_TAGGED_PROFILE_LIST li {
+    margin: 0;
+    overflow: hidden;
+    border: 1px solid rgba(0, 0, 0, 0.18);
+    border-color: rgba(var(--ig-primary-text), 0.18);
+    border-radius: 7px;
+}
+
+.IG_TAGGED_PROFILE_LIST li:hover {
+    background: rgba(var(--ig-hover-overlay));
+}
+
+.IG_TAGGED_PROFILE_LINK {
+    display: flex !important;
+    color: inherit !important;
+    align-items: center;
+    gap: 8px;
+    min-height: 40px;
+    padding: 8px 10px !important;
+    box-sizing: border-box;
     text-align: left !important;
     text-decoration: none;
 }
 
-.IG_TAGGED_PROFILE_LINK:hover {
-    background: rgb(var(--ig-secondary-button-hover));
+.IG_TAGGED_PROFILE_OPEN {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 auto;
+    opacity: 0.7;
+    line-height: 0;
 }
 
 .IG_TAGGED_PROFILE_USERNAME {
-    font-weight: 700;
+    min-width: 0;
+    flex: 1;
+    padding: 1px 0;
+    overflow: hidden;
+    font-weight: bold;
+    line-height: 1.25rem;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.IG_TAGGED_PROFILE_OPEN svg {
+    width: 18px;
+    height: 18px;
 }
 
 .IG_TAGGED_PROFILE_EMPTY {
-    color: rgb(var(--ig-secondary-text));
-    padding: 24px 10px;
+    min-height: 80px;
+    margin: 0;
+    padding: 16px;
+    box-sizing: border-box;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px dashed rgba(0, 0, 0, 0.22);
+    border-color: rgba(var(--ig-primary-text), 0.22);
+    border-radius: 7px;
     text-align: center;
+}
+
+.IG_TAGGED_PROFILE_ERROR {
+    border-style: solid;
 }
 
 .globalSettings {
