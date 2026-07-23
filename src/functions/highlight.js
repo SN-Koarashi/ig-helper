@@ -358,6 +358,26 @@ export async function onHighlightsStory(isDownload, isPreview) {
                         }
                     });
                 });
+				
+                // If the highlight's <video> (blob src) is already present in the DOM by the time
+                // onHighlightsStory runs (e.g. script initialized late, after 'timeupdate' already
+                // fired once), insert the thumbnail button immediately instead of relying on a
+                // future 'timeupdate' event that may never come. The MutationObserver-based
+                // listener elsewhere only attaches to <video> nodes that are added *after* it
+                // was created, so a late init otherwise misses the button entirely.
+                $element.find('video[src^="blob:"]').each(function () {
+                    const $video = $(this);
+                    if (!$video.data('modify-thumbnail')) {
+                        $video.data('modify-thumbnail', true);
+                        if ($element.find('.IG_DWHISTORY_THUMBNAIL').length === 0) {
+                            onHighlightsStoryThumbnail(false);
+                            logger('(highlight) Manually inserting thumbnail button (late init)');
+                        }
+                        else {
+                            logger('(highlight) Thumbnail button already inserted');
+                        }
+                    }
+                });
 
                 // Try to use event listener 'timeupdate' in order to detect if highlight is a video
                 //$element.find('video').each(function(){
