@@ -24,7 +24,8 @@ export const USER_SETTING = {
     'RENAME_PUBLISH_DATE': true,
     'SCROLL_BUTTON': true,
     'SKIP_VIEW_STORY_CONFIRM': false,
-    'SKIP_SHARED_WITH_YOU_DIALOG': false
+    'SKIP_SHARED_WITH_YOU_DIALOG': false,
+    'USE_EXTERNAL_DOWNLOAD_MODE': false
 };
 
 export const PARENT_CHILD_MAPPING = {
