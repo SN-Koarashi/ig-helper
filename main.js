@@ -17,7 +17,7 @@
 // @name:zh-CN         IG小助手
 // @name:zh-TW         IG小精靈
 // @namespace          https://github.snkms.com/
-// @version            4.1.2
+// @version            4.2.0
 // @description        Download photos and videos from Instagram posts in one click, including Stories, Reels, and profile pictures.
 // @description:ar     نزّل صورًا ومقاطع فيديو من منشورات Instagram بنقرة واحدة، بما في ذلك القصص وReels وصور الملف الشخصي.
 // @description:de     Lade Fotos und Videos aus Instagram-Beiträgen mit einem Klick herunter, einschließlich Stories, Reels und Profilbildern.
@@ -94,7 +94,8 @@
         'RENAME_PUBLISH_DATE': true,
         'SCROLL_BUTTON': true,
         'SKIP_VIEW_STORY_CONFIRM': false,
-        'SKIP_SHARED_WITH_YOU_DIALOG': false
+        'SKIP_SHARED_WITH_YOU_DIALOG': false,
+        'USE_EXTERNAL_DOWNLOAD_MODE': false
     };
 
     const PARENT_CHILD_MAPPING = {
@@ -4225,31 +4226,36 @@
                             resolve(false);
                         });
                 } else {
-                    GM_download({
-                        url: downloadLink,
-                        name: downloadName,
-                        onload: () => {
-                            updateLoadingBar(false);
-                            resolve(true);
-                        },
-                        // eslint-disable-next-line no-unused-vars
-                        onerror: (err) => {
-                            updateLoadingBar(false);
-                            resolve(true);
-
-                            // ! If the user cancels the download (when a "Save As" window is displayed), this area will be triggered incorrectly.
-                            // logger('saveFiles GM_download error', err);
-                            // updateLoadingBar(false);
-                            // fetch(downloadLink)
-                            //     .then(res => res.blob())
-                            //     .then(dwel => createSaveFileElement(downloadLink, dwel, metadata))
-                            //     .then(() => resolve(true))
-                            //     .catch(e => {
-                            //         console.error('saveFiles fallback failed', e);
-                            //         resolve(false);
-                            //     });
-                        },
-                    });
+                    if (USER_SETTING.USE_EXTERNAL_DOWNLOAD_MODE) {
+                        GM_download({
+                            url: downloadLink,
+                            name: downloadName,
+                            onload: () => {
+                                updateLoadingBar(false);
+                                resolve(true);
+                            },
+                            // eslint-disable-next-line no-unused-vars
+                            onerror: (err) => {
+                                updateLoadingBar(false);
+                                resolve(true);
+                            },
+                        });
+                    }
+                    else {
+                        updateLoadingBar(true);
+                        fetch(downloadLink)
+                            .then(res => res.blob())
+                            .then(dwel => {
+                                updateLoadingBar(false);
+                                return createSaveFileElement(downloadLink, dwel, metadata);
+                            })
+                            .then(() => resolve(true))
+                            .catch(err => {
+                                updateLoadingBar(false);
+                                console.error('saveFiles failed:', err);
+                                resolve(false);
+                            });
+                    }
                 }
             }, 50);
         });
@@ -4536,34 +4542,35 @@
         return new Promise(resolve => {
             const url = URL.createObjectURL(blob);
 
-            GM_download({
-                url: url,
-                name: filename,
-                onload: () => {
+            if (USER_SETTING.USE_EXTERNAL_DOWNLOAD_MODE) {
+                GM_download({
+                    url: url,
+                    name: filename,
+                    onload: () => {
+                        URL.revokeObjectURL(url);
+                        resolve();
+                    },
+                    onerror: () => {
+                        URL.revokeObjectURL(url);
+                        resolve();
+                    },
+                });
+            }
+            else {
+                const link = document.createElement("a");
+                link.href = url;
+                link.download = filename;
+                link.rel = "noopener";
+                link.style.display = "none";
+                document.body.appendChild(link);
+                link.click();
+                setTimeout(() => {
+                    // eslint-disable-next-line no-unused-vars
+                    try { document.body.removeChild(link); } catch (e) { /* noop */ }
                     URL.revokeObjectURL(url);
                     resolve();
-                },
-                onerror: () => {
-                    URL.revokeObjectURL(url);
-                    resolve();
-
-                    // ! If the user cancels the download (when a "Save As" window is displayed), this area will be triggered incorrectly.
-                    // const blobUrl = URL.createObjectURL(blob);
-                    // const link = document.createElement('a');
-                    // link.href = blobUrl;
-                    // link.download = filename;
-                    // link.rel = 'noopener';
-                    // link.style.display = 'none';
-                    // document.body.appendChild(link);
-                    // link.click();
-                    // setTimeout(() => {
-                    //     // eslint-disable-next-line no-unused-vars
-                    //     try { document.body.removeChild(link); } catch (e) { /* noop */ }
-                    //     URL.revokeObjectURL(blobUrl);
-                    //     resolve();
-                    // }, 250);
-                },
-            });
+                }, 250);
+            }
         });
     }
 
@@ -6164,7 +6171,9 @@
                 "HOTKEY_KEY_SETTINGS_KEY": "Hotkey Settings",
                 "HOTKEY_DOWNLOAD_STORY_KEY": "Download Story",
                 "HOTKEY_CONFLICT_WARNING": "This hotkey may conflict with other settings.",
-                "HOTKEY_RESET": "Reset"
+                "HOTKEY_RESET": "Reset",
+                "USE_EXTERNAL_DOWNLOAD_MODE": "Use External Download Mode",
+                "USE_EXTERNAL_DOWNLOAD_MODE_INTRO": "Enabling this feature will cause the script to use extended download functions (such as GM_download) to download files, resolving the issue of missing files when download multiple files. \n\nPlease note: Enabling this feature may cause the file renaming function to malfunction. Please ensure that the download mode in your extended feature settings is set to Native."
             }
         };
 

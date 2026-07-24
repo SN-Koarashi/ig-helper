@@ -404,31 +404,36 @@ export function saveFiles(downloadLink, metadata) {
                         resolve(false);
                     });
             } else {
-                GM_download({
-                    url: downloadLink,
-                    name: downloadName,
-                    onload: () => {
-                        updateLoadingBar(false);
-                        resolve(true);
-                    },
-                    // eslint-disable-next-line no-unused-vars
-                    onerror: (err) => {
-                        updateLoadingBar(false);
-                        resolve(true);
-
-                        // ! If the user cancels the download (when a "Save As" window is displayed), this area will be triggered incorrectly.
-                        // logger('saveFiles GM_download error', err);
-                        // updateLoadingBar(false);
-                        // fetch(downloadLink)
-                        //     .then(res => res.blob())
-                        //     .then(dwel => createSaveFileElement(downloadLink, dwel, metadata))
-                        //     .then(() => resolve(true))
-                        //     .catch(e => {
-                        //         console.error('saveFiles fallback failed', e);
-                        //         resolve(false);
-                        //     });
-                    },
-                });
+                if (USER_SETTING.USE_EXTERNAL_DOWNLOAD_MODE) {
+                    GM_download({
+                        url: downloadLink,
+                        name: downloadName,
+                        onload: () => {
+                            updateLoadingBar(false);
+                            resolve(true);
+                        },
+                        // eslint-disable-next-line no-unused-vars
+                        onerror: (err) => {
+                            updateLoadingBar(false);
+                            resolve(true);
+                        },
+                    });
+                }
+                else {
+                    updateLoadingBar(true);
+                    fetch(downloadLink)
+                        .then(res => res.blob())
+                        .then(dwel => {
+                            updateLoadingBar(false);
+                            return createSaveFileElement(downloadLink, dwel, metadata);
+                        })
+                        .then(() => resolve(true))
+                        .catch(err => {
+                            updateLoadingBar(false);
+                            console.error('saveFiles failed:', err);
+                            resolve(false);
+                        });
+                }
             }
         }, 50);
     });
@@ -715,34 +720,35 @@ export function triggerDownload(blob, filename) {
     return new Promise(resolve => {
         const url = URL.createObjectURL(blob);
 
-        GM_download({
-            url: url,
-            name: filename,
-            onload: () => {
+        if (USER_SETTING.USE_EXTERNAL_DOWNLOAD_MODE) {
+            GM_download({
+                url: url,
+                name: filename,
+                onload: () => {
+                    URL.revokeObjectURL(url);
+                    resolve();
+                },
+                onerror: () => {
+                    URL.revokeObjectURL(url);
+                    resolve();
+                },
+            });
+        }
+        else {
+            const link = document.createElement("a");
+            link.href = url;
+            link.download = filename;
+            link.rel = "noopener";
+            link.style.display = "none";
+            document.body.appendChild(link);
+            link.click();
+            setTimeout(() => {
+                // eslint-disable-next-line no-unused-vars
+                try { document.body.removeChild(link); } catch (e) { /* noop */ }
                 URL.revokeObjectURL(url);
                 resolve();
-            },
-            onerror: () => {
-                URL.revokeObjectURL(url);
-                resolve();
-
-                // ! If the user cancels the download (when a "Save As" window is displayed), this area will be triggered incorrectly.
-                // const blobUrl = URL.createObjectURL(blob);
-                // const link = document.createElement('a');
-                // link.href = blobUrl;
-                // link.download = filename;
-                // link.rel = 'noopener';
-                // link.style.display = 'none';
-                // document.body.appendChild(link);
-                // link.click();
-                // setTimeout(() => {
-                //     // eslint-disable-next-line no-unused-vars
-                //     try { document.body.removeChild(link); } catch (e) { /* noop */ }
-                //     URL.revokeObjectURL(blobUrl);
-                //     resolve();
-                // }, 250);
-            },
-        });
+            }, 250);
+        }
     });
 }
 
