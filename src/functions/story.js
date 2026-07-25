@@ -590,32 +590,36 @@ export async function onStory(isDownload, isForce, isPreview) {
                 //}
 
                 // Make sure to first remove thumbnail button if still exists and story is a picture
-                $element.find('img[referrerpolicy]').each(function () {
-                    $(this).on('load', function () {
-                        const $img = $(this);
-                        if (!$img.data('remove-thumbnail')) {
+                if ($element.find('img[referrerpolicy]').length) {
+                    $element.find('img[referrerpolicy]').each(function () {
+                        $(this).one('load', function () {
+                            const $img = $(this);
+                            if ($img.data('remove-thumbnail')) {
+                                return;
+                            }
+                            $img.data('remove-thumbnail', true);
                             if ($element.find('.IG_DWSTORY_THUMBNAIL').length === 0) {
-                                $img.data('remove-thumbnail', true);
-                                $('.IG_DWSTORY_THUMBNAIL').remove();
+								$('.IG_DWSTORY_THUMBNAIL').remove();
                                 logger('(story) Manually removing thumbnail button');
                             }
                             else {
-                                $img.data('remove-thumbnail', true);
                                 logger('(story) Thumbnail button is not present for this picture');
                             }
-                        }
+                        });
                     });
-                });
-
+                }
                 // If the story's <video> (blob src) is already present in the DOM by the time
                 // onStory runs (e.g. script initialized late, after 'timeupdate' already fired
                 // once), insert the thumbnail button immediately instead of relying on a
                 // future 'timeupdate' event that may never come. The MutationObserver-based
                 // listener elsewhere only attaches to <video> nodes that are added *after* it
                 // was created, so a late init otherwise misses the button entirely.
-                $element.find('video[src^="blob:"]').each(function () {
-                    const $video = $(this);
-                    if (!$video.data('modify-thumbnail')) {
+                else if ($element.find('video[src^="blob:"]').length) {
+                    $element.find('video[src^="blob:"]').each(function () {
+                        const $video = $(this);
+                        if ($video.data('modify-thumbnail')) {
+                            return;
+                        }
                         $video.data('modify-thumbnail', true);
                         if ($element.find('.IG_DWSTORY_THUMBNAIL').length === 0) {
                             onStoryThumbnail(false);
@@ -624,8 +628,8 @@ export async function onStory(isDownload, isForce, isPreview) {
                         else {
                             logger('(story) Thumbnail button already inserted');
                         }
-                    }
-                });
+                    });
+                }
 
                 // Try to use event listener 'timeupdate' in order to detect if story is a video
                 //$element.find('video').each(function(){
