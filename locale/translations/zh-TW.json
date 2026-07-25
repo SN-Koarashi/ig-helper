@@ -102,5 +102,5 @@
     "HOTKEY_CONFLICT_WARNING": "此快捷鍵可能與其他設定衝突。",
     "HOTKEY_RESET": "重置",
     "USE_EXTERNAL_DOWNLOAD_MODE": "使用外部下載模式",
-    "USE_EXTERNAL_DOWNLOAD_MODE_INTRO": "啟用此功能後，指令碼將使用擴充下載功能（例如 GM_download）來下載檔案，藉此解決下載多個檔案時遺漏檔案的問題。\n\n請注意：啟用此功能可能會導致檔案重新命名功能無法正常運作。請確認擴充功能設定中的下載模式已設為「原生（Native）」。"
+    "USE_EXTERNAL_DOWNLOAD_MODE_INTRO": "啟用此功能後，腳本將使用擴充功能的下載模式（例如 GM_download）來下載檔案，藉此解決下載多個檔案時遺漏檔案的問題。\n\n請注意：啟用此功能可能會導致檔案重新命名功能無法正常運作。請確認擴充功能設定中的下載模式已設為「原生（Native）」。"
 }
