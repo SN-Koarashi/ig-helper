@@ -100,5 +100,7 @@
     "HOTKEY_KEY_SETTINGS_KEY": "Paramètres des raccourcis clavier",
     "HOTKEY_DOWNLOAD_STORY_KEY": "Télécharger la story",
     "HOTKEY_CONFLICT_WARNING": "Ce raccourci clavier peut entrer en conflit avec d'autres paramètres.",
-    "HOTKEY_RESET": "Réinitialiser"
+    "HOTKEY_RESET": "Réinitialiser",
+    "USE_EXTERNAL_DOWNLOAD_MODE": "Utiliser le mode de téléchargement externe",
+    "USE_EXTERNAL_DOWNLOAD_MODE_INTRO": "L'activation de cette fonctionnalité permettra au script d'utiliser des fonctions de téléchargement étendues (telles que GM_download) pour télécharger des fichiers, ce qui résout le problème des fichiers manquants lors du téléchargement de plusieurs fichiers.\n\nRemarque : L'activation de cette fonctionnalité peut empêcher le bon fonctionnement de la fonction de renommage des fichiers. Assurez-vous que le mode de téléchargement dans les paramètres des fonctionnalités étendues est défini sur Natif."
 }

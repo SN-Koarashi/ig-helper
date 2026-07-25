@@ -100,5 +100,7 @@
     "HOTKEY_KEY_SETTINGS_KEY": "Kısayol tuşu ayarları",
     "HOTKEY_DOWNLOAD_STORY_KEY": "Hikayeyi indir",
     "HOTKEY_CONFLICT_WARNING": "Bu kısayol tuşu diğer ayarlarla çakışabilir.",
-    "HOTKEY_RESET": "Sıfırla"
+    "HOTKEY_RESET": "Sıfırla",
+    "USE_EXTERNAL_DOWNLOAD_MODE": "Harici İndirme Modunu Kullan",
+    "USE_EXTERNAL_DOWNLOAD_MODE_INTRO": "Bu özelliği etkinleştirmek, komut dosyasının dosyaları indirmek için GM_download gibi gelişmiş indirme işlevlerini kullanmasını sağlayarak birden fazla dosya indirilirken eksik dosya sorununu çözer.\n\nLütfen unutma: Bu özelliğin etkinleştirilmesi dosya yeniden adlandırma işlevinin düzgün çalışmamasına neden olabilir. Gelişmiş özellik ayarlarında indirme modunun Yerel olarak ayarlandığından emin ol."
 }

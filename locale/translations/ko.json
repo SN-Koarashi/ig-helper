@@ -100,5 +100,7 @@
     "HOTKEY_KEY_SETTINGS_KEY": "단축키 설정",
     "HOTKEY_DOWNLOAD_STORY_KEY": "스토리 다운로드",
     "HOTKEY_CONFLICT_WARNING": "이 단축키는 다른 설정과 충돌할 수 있습니다.",
-    "HOTKEY_RESET": "초기화"
+    "HOTKEY_RESET": "초기화",
+    "USE_EXTERNAL_DOWNLOAD_MODE": "외부 다운로드 모드 사용",
+    "USE_EXTERNAL_DOWNLOAD_MODE_INTRO": "이 기능을 활성화하면 스크립트가 파일을 다운로드할 때 GM_download와 같은 확장 다운로드 기능을 사용하여 여러 파일을 다운로드할 때 일부 파일이 누락되는 문제를 해결합니다.\n\n참고: 이 기능을 활성화하면 파일 이름 변경 기능이 제대로 작동하지 않을 수 있습니다. 확장 기능 설정에서 다운로드 모드가 '기본(Native)'으로 설정되어 있는지 확인하세요."
 }

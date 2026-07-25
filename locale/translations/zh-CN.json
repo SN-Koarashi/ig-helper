@@ -100,5 +100,7 @@
     "HOTKEY_KEY_SETTINGS_KEY": "快捷键设置",
     "HOTKEY_DOWNLOAD_STORY_KEY": "下载快拍",
     "HOTKEY_CONFLICT_WARNING": "此快捷键可能与其他设置冲突。",
-    "HOTKEY_RESET": "重设"
+    "HOTKEY_RESET": "重设",
+    "USE_EXTERNAL_DOWNLOAD_MODE": "使用外部下载模式",
+    "USE_EXTERNAL_DOWNLOAD_MODE_INTRO": "启用此功能后，脚本将使用扩展下载功能（如 GM_download）下载文件，从而解决下载多个文件时文件缺失的问题。\n\n请注意：启用此功能可能会导致文件重命名功能无法正常工作。请确保扩展功能设置中的下载模式已设置为“原生（Native）”。"
 }

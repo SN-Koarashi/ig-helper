@@ -100,5 +100,7 @@
     "HOTKEY_KEY_SETTINGS_KEY": "Pengaturan tombol pintas",
     "HOTKEY_DOWNLOAD_STORY_KEY": "Unduh cerita",
     "HOTKEY_CONFLICT_WARNING": "Tombol pintas ini mungkin bertentangan dengan pengaturan lain.",
-    "HOTKEY_RESET": "Atur ulang"
+    "HOTKEY_RESET": "Atur ulang",
+    "USE_EXTERNAL_DOWNLOAD_MODE": "Gunakan Mode Unduhan Eksternal",
+    "USE_EXTERNAL_DOWNLOAD_MODE_INTRO": "Mengaktifkan fitur ini akan membuat skrip menggunakan fungsi unduhan lanjutan (seperti GM_download) untuk mengunduh file, sehingga mengatasi masalah file yang hilang saat mengunduh beberapa file.\n\nHarap diperhatikan: Mengaktifkan fitur ini dapat menyebabkan fungsi penggantian nama file tidak berfungsi dengan baik. Pastikan mode unduhan di pengaturan fitur lanjutan diatur ke Native."
 }

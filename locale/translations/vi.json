@@ -100,5 +100,7 @@
     "HOTKEY_KEY_SETTINGS_KEY": "Cài đặt phím tắt",
     "HOTKEY_DOWNLOAD_STORY_KEY": "Tải xuống tin",
     "HOTKEY_CONFLICT_WARNING": "Phím tắt này có thể xung đột với các cài đặt khác.",
-    "HOTKEY_RESET": "Đặt lại"
+    "HOTKEY_RESET": "Đặt lại",
+    "USE_EXTERNAL_DOWNLOAD_MODE": "Sử dụng chế độ tải xuống bên ngoài",
+    "USE_EXTERNAL_DOWNLOAD_MODE_INTRO": "Việc bật tính năng này sẽ khiến tập lệnh sử dụng các chức năng tải xuống mở rộng (chẳng hạn như GM_download) để tải tệp xuống, giúp khắc phục tình trạng thiếu tệp khi tải nhiều tệp cùng lúc.\n\nLưu ý: Việc bật tính năng này có thể khiến chức năng đổi tên tệp hoạt động không chính xác. Hãy đảm bảo chế độ tải xuống trong phần cài đặt tính năng mở rộng được đặt thành Gốc (Native)."
 }
