@@ -100,5 +100,7 @@
     "HOTKEY_KEY_SETTINGS_KEY": "Tastenkürzel-Einstellungen",
     "HOTKEY_DOWNLOAD_STORY_KEY": "Story herunterladen",
     "HOTKEY_CONFLICT_WARNING": "Dieses Tastenkürzel kann mit anderen Einstellungen in Konflikt stehen.",
-    "HOTKEY_RESET": "Zurücksetzen"
+    "HOTKEY_RESET": "Zurücksetzen",
+    "USE_EXTERNAL_DOWNLOAD_MODE": "Externen Downloadmodus verwenden",
+    "USE_EXTERNAL_DOWNLOAD_MODE_INTRO": "Durch das Aktivieren dieser Funktion verwendet das Skript erweiterte Downloadfunktionen (wie GM_download), um Dateien herunterzuladen. Dadurch wird das Problem fehlender Dateien beim Herunterladen mehrerer Dateien behoben.\n\nBitte beachte: Das Aktivieren dieser Funktion kann dazu führen, dass die Funktion zum Umbenennen von Dateien nicht ordnungsgemäß funktioniert. Stelle sicher, dass der Downloadmodus in den Einstellungen der erweiterten Funktionen auf „Nativ“ eingestellt ist."
 }

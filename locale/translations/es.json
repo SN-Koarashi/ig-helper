@@ -100,5 +100,7 @@
     "HOTKEY_KEY_SETTINGS_KEY": "Configuración de atajos de teclado",
     "HOTKEY_DOWNLOAD_STORY_KEY": "Descargar historia",
     "HOTKEY_CONFLICT_WARNING": "Este atajo de teclado puede entrar en conflicto con otras configuraciones.",
-    "HOTKEY_RESET": "Restablecer"
+    "HOTKEY_RESET": "Restablecer",
+    "USE_EXTERNAL_DOWNLOAD_MODE": "Usar el modo de descarga externo",
+    "USE_EXTERNAL_DOWNLOAD_MODE_INTRO": "Al activar esta función, el script utilizará funciones de descarga ampliadas (como GM_download) para descargar archivos, resolviendo el problema de los archivos que faltan al descargar varios archivos.\n\nTen en cuenta: Activar esta función puede hacer que la función de cambio de nombre de archivos no funcione correctamente. Asegúrate de que el modo de descarga en la configuración de las funciones ampliadas esté establecido en Nativo."
 }

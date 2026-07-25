@@ -114,7 +114,7 @@ export function translateText() {
             "HOTKEY_CONFLICT_WARNING": "This hotkey may conflict with other settings.",
             "HOTKEY_RESET": "Reset",
             "USE_EXTERNAL_DOWNLOAD_MODE": "Use External Download Mode",
-            "USE_EXTERNAL_DOWNLOAD_MODE_INTRO": "Enabling this feature will cause the script to use extended download functions (such as GM_download) to download files, resolving the issue of missing files when download multiple files. \n\nPlease note: Enabling this feature may cause the file renaming function to malfunction. Please ensure that the download mode in your extended feature settings is set to Native."
+            "USE_EXTERNAL_DOWNLOAD_MODE_INTRO": "Enabling this feature will cause the script to use extended download functions (such as GM_download) to download files, resolving the issue of missing files when download multiple files.\n\nPlease note: Enabling this feature may cause the file renaming function to malfunction. Please ensure that the download mode in your extended feature settings is set to Native."
         }
     };
 
