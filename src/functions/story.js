@@ -614,19 +614,21 @@ export async function onStory(isDownload, isForce, isPreview) {
                 // future 'timeupdate' event that may never come. The MutationObserver-based
                 // listener elsewhere only attaches to <video> nodes that are added *after* it
                 // was created, so a late init otherwise misses the button entirely.
+                // Create separate late-thumbnail-insert flag to avoid conflict with
+                // insert-thumbnail, which may be misset prematurely to true.
+				// We also check for IG_DWSTORY_THUMBNAIL so the button is only added if necessary.
                 else if ($element.find('video[src^="blob:"]').length) {
                     $element.find('video[src^="blob:"]').each(function () {
                         const $video = $(this);
-                        if ($video.data('modify-thumbnail')) {
-                            return;
-                        }
-                        $video.data('modify-thumbnail', true);
-                        if ($element.find('.IG_DWSTORY_THUMBNAIL').length === 0) {
-                            onStoryThumbnail(false);
-                            logger('(story) Manually inserting thumbnail button (late init)');
-                        }
-                        else {
-                            logger('(story) Thumbnail button already inserted');
+                        if (!$video.data('late-thumbnail-insert')) {
+                            $video.data('late-thumbnail-insert', true);
+                            if ($element.find('.IG_DWSTORY_THUMBNAIL').length === 0) {
+                                onStoryThumbnail(false);
+                                logger('(story) Manually inserting thumbnail button (late init)');
+                            }
+                            else {
+                                logger('(story) Thumbnail button already inserted');
+                            }
                         }
                     });
                 }
