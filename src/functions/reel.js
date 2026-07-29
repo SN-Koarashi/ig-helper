@@ -174,7 +174,7 @@ function appendReelsButton($main) {
         // Disable video autoplay
         if (USER_SETTING.DISABLE_VIDEO_LOOPING) {
             $videos.each(function () {
-                $(this).one('ended', function () {
+                $(this).on('ended', function () {
                     const $this = $(this);
                     if (!$this.data('loop')) {
                         let $element_play_button = $this.next().find('div[role="presentation"] > div svg > path[d^="M5.888"]').parents('button[role="button"], div[role="button"]');

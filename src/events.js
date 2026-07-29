@@ -462,7 +462,7 @@ $(function () {
                         // Modify video volume
                         if (USER_SETTING.MODIFY_VIDEO_VOLUME) {
                             $videos.each(function () {
-                                $(this).one('play playing', function () {
+                                $(this).on('play playing', function () {
                                     const $this = $(this);
                                     if (!$this.data('modify')) {
                                         $this.data('modify', true);
@@ -478,14 +478,14 @@ $(function () {
                             const storyType = isHighlight ? 'highlight' : 'story';
 
                             $videos.each(function () {
-                                $(this).one('timeupdate', function () {
+                                $(this).on('timeupdate', function () {
                                     const $this = $(this);
-                                    if (!$this.data('insert-thumbnail')) {
+                                    if (!$this.data('modify-thumbnail')) {
                                         let $video = $this;
                                         if ($video.parents('div[style][class]').filter(function () {
                                             return $(this).width() == $video.width();
                                         }).find('.IG_DWSTORY_THUMBNAIL, .IG_DWHISTORY_THUMBNAIL').length === 0) {
-                                            $this.data('insert-thumbnail', true);
+                                            $this.data('modify-thumbnail', true);
 
                                             if (isHighlight) {
                                                 onHighlightsStoryThumbnail(false);
