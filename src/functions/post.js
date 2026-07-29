@@ -92,7 +92,7 @@ export function initPostVideoFunction($mainElement) {
     // Disable video autoplay
     if (USER_SETTING.DISABLE_VIDEO_LOOPING) {
         $videos.each(function () {
-            $(this).on('ended', function () {
+            $(this).one('ended', function () {
                 const $vid = $(this);
                 if (!$vid.data('loop')) {
                     $vid.data('loop', true);
@@ -106,7 +106,7 @@ export function initPostVideoFunction($mainElement) {
     // Modify video volume
     if (USER_SETTING.MODIFY_VIDEO_VOLUME) {
         $videos.each(function () {
-            $(this).on('play playing', function () {
+            $(this).one('play playing', function () {
                 const $vid = $(this);
                 if (!$vid.data('modify')) {
                     $vid.data('modify', true);
