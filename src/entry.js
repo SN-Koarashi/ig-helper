@@ -17,6 +17,7 @@ FS_IMPORT('./metadata.js');
     FS_IMPORT('./functions/story.js');
 
     /* utils */
+    FS_IMPORT('./utils/indexedDB.js');
     FS_IMPORT('./utils/api.js');
     FS_IMPORT('./utils/general.js');
     FS_IMPORT('./utils/dialog.js');
