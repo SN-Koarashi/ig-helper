@@ -92,13 +92,9 @@ export function initPostVideoFunction($mainElement) {
     // Disable video autoplay
     if (USER_SETTING.DISABLE_VIDEO_LOOPING) {
         $videos.each(function () {
-            $(this).one('ended', function () {
-                const $vid = $(this);
-                if (!$vid.data('loop')) {
-                    $vid.data('loop', true);
-                    this.pause();
-                    logger('(post) Added video event listener #loop');
-                }
+            $(this).on('ended', function () {
+                this.pause();
+                logger('(post) Stop video playing #loop');
             });
         });
     }
@@ -106,7 +102,7 @@ export function initPostVideoFunction($mainElement) {
     // Modify video volume
     if (USER_SETTING.MODIFY_VIDEO_VOLUME) {
         $videos.each(function () {
-            $(this).one('play playing', function () {
+            $(this).on('play playing', function () {
                 const $vid = $(this);
                 if (!$vid.data('modify')) {
                     $vid.data('modify', true);

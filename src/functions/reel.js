@@ -174,22 +174,20 @@ function appendReelsButton($main) {
         // Disable video autoplay
         if (USER_SETTING.DISABLE_VIDEO_LOOPING) {
             $videos.each(function () {
-                $(this).one('ended', function () {
+                $(this).on('ended', function () {
                     const $this = $(this);
-                    if (!$this.data('loop')) {
-                        let $element_play_button = $this.next().find('div[role="presentation"] > div svg > path[d^="M5.888"]').parents('button[role="button"], div[role="button"]');
-                        if ($element_play_button.length > 0) {
-                            $this.data('loop', true);
-                            $element_play_button.trigger("click");
-                            logger('Adding video event listener #loop, then paused click()');
-                        }
-                        else {
-                            $this.data('loop', true);
-                            $this.parent().find('.xpgaw4o').removeAttr('style');
-                            this.pause();
-                            logger('Adding video event listener #loop, then paused pause()');
-                        }
+
+                    let $element_play_button = $this.next().find('div[role="presentation"] > div svg > path[d^="M5.888"]').parents('button[role="button"], div[role="button"]');
+                    if ($element_play_button.length > 0) {
+                        $element_play_button.trigger("click");
+                        logger('(reel) Stop video playing #loop, then paused click()');
                     }
+                    else {
+                        $this.parent().find('.xpgaw4o').removeAttr('style');
+                        this.pause();
+                        logger('(reel) Stop video playing #loop, then paused pause()');
+                    }
+
                 });
             });
         }
