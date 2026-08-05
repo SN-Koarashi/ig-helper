@@ -24,6 +24,46 @@ export function purgeCache() {
     GM_setValue(IMAGE_CACHE_KEY, state.GL_imageCache);
 }
 
+/**
+ * getVisibleMediaIdFromArticle
+ * @description Extract mediaId of the currently visible resource inside a post.
+ *              Reads srcset/src of the visible <img> and decodes ig_cache_key.
+ *
+ * @param  {JQuery<HTMLElement>}  $article
+ * @return {?string}
+ */
+function getVisibleMediaIdFromArticle($article) {
+    if (!$article || $article.length === 0) return null;
+
+    // Try the currently visible <li> item first (carousel case)
+    let $visibleImg = $article.find(resourceCountSelector)
+        .filter(function () {
+            const rect = this.getBoundingClientRect();
+            return rect.width > 0 && rect.height > 0;
+        })
+        .find('img[srcset], img[src]')
+        .filter(function () {
+            const $img = $(this);
+            return ($img.attr('alt') || '').length > 0;
+        })
+        .first();
+
+    // Fallback: single-image post
+    if ($visibleImg.length === 0) {
+        $visibleImg = $article.find('img[srcset], img[src]').filter(function () {
+            const $img = $(this);
+            return ($img.attr('alt') || '').length > 0 && $img.width() > 100;
+        }).first();
+    }
+
+    if ($visibleImg.length === 0) return null;
+
+    const srcset = $visibleImg.attr('srcset');
+    const url = (srcset ? srcset.split(',').pop().trim().split(' ')[0] : $visibleImg.attr('src'));
+    if (!url) return null;
+
+    return mediaIdFromURL(url);
+}
 
 /**
  * mediaIdFromURL
