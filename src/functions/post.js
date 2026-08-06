@@ -543,6 +543,26 @@ export function registerPostClickHandlers() {
             state.GL_postPath = postPath;
             const index = getVisibleNodeIndex($article);
 
+            if (USER_SETTING.CAPTURE_IMAGE_VIA_MEDIA_CACHE) {
+                const $visible = $article.find(resourceCountSelector).filter(function () {
+                    const rect = this.getBoundingClientRect();
+                    return rect.width > 0 && rect.height > 0;
+                });
+                const hasVideo = ($visible.length > 0)
+                    ? $visible.find('video').length > 0
+                    : $article.find('video').length > 0;
+
+                if (!hasVideo) {
+                    const cachedMediaId = getVisibleMediaIdFromArticle($article);
+                    const cachedUrl = getImageFromCache(cachedMediaId);
+                    if (cachedUrl) {
+                        logger('[Restore Cached IG_NEWTAB_MAIN]', cachedMediaId);
+                        openNewTab(cachedUrl);
+                        return;
+                    }
+                }
+            }
+			
             IG_createDM(true, false);
 
             const totalInserted = await createMediaListDOM(
@@ -637,6 +657,45 @@ export function registerPostClickHandlers() {
 
             state.GL_username = $article.data('username');
             state.GL_postPath = postPath;
+			
+            if (
+                USER_SETTING.CAPTURE_IMAGE_VIA_MEDIA_CACHE &&
+                !USER_SETTING.DIRECT_DOWNLOAD_ALL
+            ) {
+                // Only single visible resource, not videos
+                const $visible = $article.find(resourceCountSelector).filter(function () {
+                    const rect = this.getBoundingClientRect();
+                    return rect.width > 0 && rect.height > 0;
+                });
+
+                const hasVideo = ($visible.length > 0)
+                    ? $visible.find('video').length > 0
+                    : $article.find('video').length > 0;
+
+                if (!hasVideo) {
+                    const cachedMediaId = getVisibleMediaIdFromArticle($article);
+                    const cachedUrl = getImageFromCache(cachedMediaId);
+
+                    if (cachedUrl) {
+                        logger('[Restore Cached IG_DW_MAIN]', cachedMediaId);
+
+                        let timestamp = Math.floor(Date.now() / 1000);
+                        if (USER_SETTING.RENAME_PUBLISH_DATE) {
+                            const dt = $article.find('a[href] time[datetime]').first().attr('datetime');
+                            if (dt) timestamp = Math.floor(new Date(dt).getTime() / 1000);
+                        }
+
+                        await saveFiles(cachedUrl, {
+                            username: state.GL_username,
+                            sourceType: 'photo',
+                            timestamp,
+                            filetype: 'jpg',
+                            shortcode: state.GL_postPath
+                        });
+                        return;
+                    }
+                }
+            }
 
             IG_createDM(USER_SETTING.DIRECT_DOWNLOAD_ALL, true);
             $("#article-id").html(`<a href="https://www.instagram.com/p/${state.GL_postPath}">${state.GL_postPath}</a>`);
