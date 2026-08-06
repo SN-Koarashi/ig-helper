@@ -1376,6 +1376,9 @@ export function reloadScript() {
     state.currentURL = location.href;
     state.GL_observer?.disconnect();
 
+    // Re-register delegated click handlers
+    registerPostClickHandlers();
+
     logger('main timer re-register completed');
 }
 
@@ -1479,7 +1482,9 @@ export function toggleVolumeSilder($videos, $buttonParent, loggerType, customCla
 }
 
 /**
+ * triggerReactClickHandler
  * @description Trigger React onClick event handler for the given element.
+ *
  * @param {HTMLElement} el 
  */
 export function triggerReactClickHandler(el) {
@@ -1502,7 +1507,9 @@ export function triggerReactClickHandler(el) {
 };
 
 // /**
+//  * getPointerElement
 //  * @description Get the element at the pointer position and check if it is the target element or if it is covered by another element.
+//  *
 //  * @param {JQuery<HTMLElement>} $target 
 //  * @param {number} clientX
 //  * @param {number} clientY
