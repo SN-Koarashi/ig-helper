@@ -6842,7 +6842,7 @@
                                             let $video = $this;
                                             if ($video.parents('div[style][class]').filter(function () {
                                                 return $(this).width() == $video.width();
-                                            }).find('.IG_DWSTORY_THUMBNAIL, .IG_DWHISTORY_THUMBNAIL').length === 0) {
+                                            }).find(isHighlight ? '.IG_DWHISTORY_THUMBNAIL' : '.IG_DWSTORY_THUMBNAIL').length === 0) {
                                                 $this.data('insert-thumbnail', true);
 
                                                 if (isHighlight) {
@@ -6855,7 +6855,7 @@
                                                 logger(`(${storyType})`, 'Manually inserting thumbnail button');
                                             }
                                             else {
-                                                $this.data('modify-thumbnail', true);
+                                                $this.data('insert-thumbnail', true);
                                                 logger(`(${storyType})`, 'Thumbnail button already inserted');
                                             }
                                         }
