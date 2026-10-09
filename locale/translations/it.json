@@ -100,5 +100,7 @@
     "HOTKEY_KEY_SETTINGS_KEY": "Impostazioni scorciatoie da tastiera",
     "HOTKEY_DOWNLOAD_STORY_KEY": "Scarica storia",
     "HOTKEY_CONFLICT_WARNING": "Questa scorciatoia da tastiera potrebbe entrare in conflitto con altre impostazioni.",
-    "HOTKEY_RESET": "Reimposta"
+    "HOTKEY_RESET": "Reimposta",
+    "USE_EXTERNAL_DOWNLOAD_MODE": "Usa la modalità di download esterna",
+    "USE_EXTERNAL_DOWNLOAD_MODE_INTRO": "L'attivazione di questa funzione farà sì che lo script utilizzi funzioni di download avanzate (come GM_download) per scaricare i file, risolvendo il problema dei file mancanti durante il download di più file.\n\nNota: L'attivazione di questa funzione potrebbe compromettere il corretto funzionamento della funzione di rinomina dei file. Assicurati che la modalità di download nelle impostazioni delle funzionalità avanzate sia impostata su Nativa."
 }

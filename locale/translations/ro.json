@@ -100,5 +100,7 @@
     "HOTKEY_KEY_SETTINGS_KEY": "Setări pentru taste rapide",
     "HOTKEY_DOWNLOAD_STORY_KEY": "Descarcă storyul",
     "HOTKEY_CONFLICT_WARNING": "Această tastă rapidă poate intra în conflict cu alte setări.",
-    "HOTKEY_RESET": "Resetează"
+    "HOTKEY_RESET": "Resetează",
+    "USE_EXTERNAL_DOWNLOAD_MODE": "Folosește modul de descărcare externă",
+    "USE_EXTERNAL_DOWNLOAD_MODE_INTRO": "Activarea acestei funcții va face ca scriptul să folosească funcții de descărcare extinse (precum GM_download) pentru a descărca fișiere, rezolvând problema fișierelor lipsă la descărcarea mai multor fișiere.\n\nTe rugăm să reții: Activarea acestei funcții poate cauza funcționarea defectuoasă a funcției de redenumire a fișierelor. Te rugăm să te asiguri că modul de descărcare din setările funcțiilor extinse este setat pe Nativ."
 }

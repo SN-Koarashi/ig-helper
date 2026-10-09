@@ -100,5 +100,7 @@
     "HOTKEY_KEY_SETTINGS_KEY": "Configurações de atalhos de teclado",
     "HOTKEY_DOWNLOAD_STORY_KEY": "Baixar story",
     "HOTKEY_CONFLICT_WARNING": "Este atalho de teclado pode entrar em conflito com outras configurações.",
-    "HOTKEY_RESET": "Redefinir"
+    "HOTKEY_RESET": "Redefinir",
+    "USE_EXTERNAL_DOWNLOAD_MODE": "Usar modo de download externo",
+    "USE_EXTERNAL_DOWNLOAD_MODE_INTRO": "Ativar este recurso fará com que o script utilize funções de download estendidas (como GM_download) para baixar arquivos, resolvendo o problema de arquivos ausentes ao baixar vários arquivos.\n\nObservação: Ativar este recurso pode fazer com que a função de renomeação de arquivos não funcione corretamente. Certifique-se de que o modo de download nas configurações dos recursos estendidos esteja definido como Nativo."
 }

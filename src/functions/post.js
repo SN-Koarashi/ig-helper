@@ -93,12 +93,8 @@ export function initPostVideoFunction($mainElement) {
     if (USER_SETTING.DISABLE_VIDEO_LOOPING) {
         $videos.each(function () {
             $(this).on('ended', function () {
-                const $vid = $(this);
-                if (!$vid.data('loop')) {
-                    $vid.data('loop', true);
-                    this.pause();
-                    logger('(post) Added video event listener #loop');
-                }
+                this.pause();
+                logger('(post) Stop video playing #loop');
             });
         });
     }
