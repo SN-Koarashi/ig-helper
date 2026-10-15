@@ -171,6 +171,7 @@ export var timer = setInterval(function () {
                 ) {
                     $('.IG_DWSTORY').remove();
                     $('.IG_DWNEWTAB').remove();
+                    $('.IG_DWSTORY_TAGGED_PROFILES').remove();
                     if ($('.IG_DWSTORY_THUMBNAIL').length) {
                         $('.IG_DWSTORY_THUMBNAIL').remove();
                     }
@@ -180,7 +181,7 @@ export var timer = setInterval(function () {
 
                     onStory(false);
 
-                    // Prevent buttons from being eaten by black holes sometimes
+                    // Prevent buttons from being eaten by black holes sometimes.
                     setTimeout(() => {
                         onStory(false);
                     }, 150);
@@ -205,7 +206,7 @@ export var timer = setInterval(function () {
                 // OPTIMIZATION: Single combined selector + .remove() — replaces 8 separate
                 // $('.CLASS').length checks + removes. Behavior is identical because
                 // .remove() is a no-op on an empty set.
-                $('.IG_DWSTORY, .IG_DWSTORY_ALL, .IG_DWNEWTAB, .IG_DWSTORY_THUMBNAIL, .IG_DWSTORY_POSITION, .IG_DWHISTORY, .IG_DWHISTORY_ALL, .IG_DWHINEWTAB, .IG_DWHISTORY_THUMBNAIL, .IG_DWHISTORY_POSITION').remove();
+                $('.IG_DWSTORY, .IG_DWSTORY_ALL, .IG_DWNEWTAB, .IG_DWSTORY_THUMBNAIL, .IG_DWSTORY_TAGGED_PROFILES, .IG_DWSTORY_POSITION, .IG_DWHISTORY, .IG_DWHISTORY_ALL, .IG_DWHINEWTAB, .IG_DWHISTORY_THUMBNAIL, .IG_DWHISTORY_POSITION').remove();
             }
         }
 

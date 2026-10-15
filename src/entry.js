@@ -14,6 +14,7 @@ FS_IMPORT('./metadata.js');
     FS_IMPORT('./functions/post.js');
     FS_IMPORT('./functions/profile.js');
     FS_IMPORT('./functions/reel.js');
+    FS_IMPORT('./functions/storyTaggedProfiles.js');
     FS_IMPORT('./functions/story.js');
 
     /* utils */

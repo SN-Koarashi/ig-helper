@@ -6,6 +6,7 @@ import {
     triggerReactClickHandler
 } from "./utils/general";
 import { onStory, onStoryAll, onStoryThumbnail } from "./functions/story";
+import { onStoryTaggedProfiles } from "./functions/storyTaggedProfiles";
 import { onProfileAvatar } from "./functions/profile";
 import { onHighlightsStory, onHighlightsStoryAll, onHighlightsStoryThumbnail } from "./functions/highlight";
 import { onReels } from "./functions/reel";
@@ -293,6 +294,19 @@ $(function () {
         e.preventDefault();
         onStory(true, true, true);
     });
+
+    // Prevent story navigation when pressing the tagged-profiles control
+    $body.on('pointerdown', '.IG_DWSTORY_TAGGED_PROFILES', function (e) {
+        e.stopPropagation();
+    });
+
+    // Running if user left-click tagged profiles icon in stories or highlights
+    $body.on('click', '.IG_DWSTORY_TAGGED_PROFILES', function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        onStoryTaggedProfiles(this);
+    });
+
 
     // Running if user left-click download thumbnail icon in stories
     $body.on('click', '.IG_DWSTORY_THUMBNAIL', function () {
