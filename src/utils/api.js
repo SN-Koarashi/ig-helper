@@ -67,6 +67,30 @@ export function getStories(userId) {
     });
 }
 
+export async function getUserIdViaProfileHtml(username) {
+    const res = await fetch(`https://www.instagram.com/${encodeURIComponent(username)}/`, {
+        credentials: 'include',
+        headers: { 'Accept': 'text/html' }
+    });
+    if (!res.ok) throw new Error('profile html HTTP ' + res.status);
+    const html = await res.text();
+
+    const patterns = [
+        /"profile_id":"(\d+)"/,
+        /"page_id":"profilePage_(\d+)"/,
+        /instapp:owner_user_id"\s+content="(\d+)"/
+    ];
+    let id = null;
+    for (const re of patterns) {
+        const m = html.match(re);
+        if (m) { id = m[1]; break; }
+    }
+    if (!id) throw new Error('profile html: no id found');
+
+    const og = html.match(/property="og:image"\s+content="([^"]+)"/)?.[1]?.replace(/&amp;/g, '&') || null;
+    return { user: { pk: id, id, username, profile_pic_url: og } };
+}
+
 /**
  * getUserId
  * @description Get user's id with username.
@@ -104,72 +128,34 @@ export function getUserId(username) {
                         resolve(result);
                     }
                     else {
-                        getUserIdWithAgent(username).then((result) => {
+                        getUserIdViaProfileHtml(username).then((result) => {
                             userIdCache.set(username, result);
                             resolve(result);
-                        // eslint-disable-next-line no-unused-vars
+                            // eslint-disable-next-line no-unused-vars
                         }).catch((err) => {
                             userIdCache.delete(username);
                             logger('getUserId()', 'fallback reject', err);
-							alert("Cannot find user info from getUserId()\nDetails may be in the console.");
+                            alert("Cannot find user info from getUserId()\nDetails may be in the console.");
                             reject(err);
                         });
                     }
+                    // eslint-disable-next-line no-unused-vars
                 } catch (err) {
-                    userIdCache.delete(username);
-                    logger('getUserId()', 'parse reject', err);
-                    reject(err);
+                    getUserIdViaProfileHtml(username).then((result) => {
+                        userIdCache.set(username, result);
+                        resolve(result);
+                        // eslint-disable-next-line no-unused-vars
+                    }).catch((err) => {
+                        userIdCache.delete(username);
+                        logger('getUserId()', 'fallback reject', err);
+                        alert("Cannot find user info from getUserId()\nDetails may be in the console.");
+                        reject(err);
+                    });
                 }
             },
             onerror: function (err) {
                 logger('getUserId()', 'reject', err);
                 userIdCache.delete(username);
-                reject(err);
-            }
-        });
-    });
-}
-
-/**
- * getUserIdWithAgent
- * @description Get user's id with username.
- *
- * @param  {String}  username
- * @return {Integer}
- */
-export function getUserIdWithAgent(username) {
-    return new Promise((resolve, reject) => {
-        const getURL = `https://i.instagram.com/api/v1/users/web_profile_info/?username=${username}`;
-
-        GM_xmlhttpRequest({
-            method: "GET",
-            url: getURL,
-            headers: {
-                'X-IG-App-ID': getAppID()
-            },
-            onload: function (response) {
-                try {
-                    let obj = JSON.parse(response.response);
-                    let hasUser = obj?.data?.user;
-
-                    if (hasUser != null) {
-                        let userInfo = obj?.data;
-                        userInfo.user.pk = userInfo.user.id;
-                        logger('getUserIdWithAgent()', obj);
-                        resolve(userInfo);
-                    }
-                    else {
-                        logger('getUserIdWithAgent()', 'reject', 'undefined');
-                        reject('undefined');
-                    }
-                }
-                catch (err) {
-                    logger('getUserIdWithAgent()', 'reject', err.message);
-                    reject(err);
-                }
-            },
-            onerror: function (err) {
-                logger('getUserIdWithAgent()', 'reject', err);
                 reject(err);
             }
         });
@@ -191,7 +177,7 @@ export function getUserHighSizeProfile(userId) {
             method: "GET",
             url: getURL,
             headers: {
-                'User-Agent': 'Mozilla/5.0 (Linux; Android 10; Pixel 7 XL)Build/RP1A.20845.002; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/5.0 Chrome/117.0.5938.60 Mobile Safari/537.36 Instagram 307.0.0.34.111'
+                'User-Agent': window.navigator.userAgent
             },
             onload: function (response) {
                 try {
