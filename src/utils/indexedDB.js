@@ -25,14 +25,20 @@ export function openDB() {
 }
 
 /**
+ * @param {string|number} id
  * @param {Object} data
  */
-export async function addData(data) {
+export async function addData(id, data) {
     const db = await openDB();
+
     return new Promise((resolve, reject) => {
         const transaction = db.transaction(STORE_NAME, 'readwrite');
         const store = transaction.objectStore(STORE_NAME);
-        const request = store.add(data);
+
+        const request = store.add({
+            ...data,
+            id
+        });
 
         request.onsuccess = () => resolve(request.result);
         request.onerror = (event) => reject(`Insert failed: ${event.target.error}`);
@@ -70,15 +76,20 @@ export async function getAllData() {
 }
 
 /**
+ * @param {number} id
  * @param {Object} data
  */
-export async function updateData(data) {
+export async function updateData(id, data) {
     const db = await openDB();
+
     return new Promise((resolve, reject) => {
         const transaction = db.transaction(STORE_NAME, 'readwrite');
         const store = transaction.objectStore(STORE_NAME);
 
-        const request = store.put(data);
+        const request = store.put({
+            ...data,
+            id
+        });
 
         request.onsuccess = () => resolve(request.result);
         request.onerror = (event) => reject(`Update failed: ${event.target.error}`);
