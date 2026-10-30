@@ -40,8 +40,8 @@ export async function createStoryListDOM(obj, type) {
             }
 
             item.image_versions2.candidates.sort(function (a, b) {
-                if (a.config_width < b.config_width) return 1;
-                if (a.config_width > b.config_width) return -1;
+                if (a.width < b.width) return 1;
+                if (a.width > b.width) return -1;
                 return 0;
             });
 
@@ -110,7 +110,7 @@ export async function onStoryAll() {
                 });
 
                 if (item.is_video || item.video_versions != null) {
-                    saveFiles(item.video_versions[0].src,
+                    saveFiles(item.video_versions[0].url,
                         {
                             username,
                             sourceType: "stories",
@@ -122,7 +122,7 @@ export async function onStoryAll() {
                         });
                 }
                 else {
-                    saveFiles(item.image_versions2[0].src, {
+                    saveFiles(item.image_versions2.candidates[0].url, {
                         username,
                         sourceType: "stories",
                         timestamp,
@@ -137,7 +137,7 @@ export async function onStoryAll() {
     }
     else {
         IG_createDM(false, true);
-        createStoryListDOM(stories.data.xdt_api__v1__feed__reels_media, 'stories');
+        createStoryListDOM(stories.data.xdt_api__v1__feed__reels_media.reels_media[0], 'stories');
     }
 }
 
