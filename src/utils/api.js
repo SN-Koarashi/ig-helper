@@ -1,4 +1,4 @@
-import { userIdCache } from "../settings";
+import { userIdCache, webViewAgent } from "../settings";
 import { logger, getAppID, updateLoadingBar } from "./general";
 /*! ESLINT IMPORT END !*/
 
@@ -177,7 +177,8 @@ export function getUserHighSizeProfile(userId) {
             method: "GET",
             url: getURL,
             headers: {
-                'User-Agent': window.navigator.userAgent
+                'User-Agent': webViewAgent,
+                'X-IG-App-ID': getAppID()
             },
             onload: function (response) {
                 try {
@@ -256,7 +257,8 @@ export function getBlobMedia(postPath) {
             method: "GET",
             url: getURL,
             headers: {
-                "User-Agent": "Mozilla/5.0 (Linux; Android 10; Pixel 7 XL)Build/RP1A.20845.002; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/5.0 Chrome/117.0.5938.60 Mobile Safari/537.36 Instagram 307.0.0.34.111"
+                "User-Agent": webViewAgent,
+                'X-IG-App-ID': getAppID()
             },
             onload: function (response) {
                 try {
@@ -306,7 +308,7 @@ export function getBlobMediaWithQueryID(postPath) {
             method: "GET",
             url: getURL,
             headers: {
-                "User-Agent": "Mozilla/5.0 (Linux; Android 10; Pixel 7 XL)Build/RP1A.20845.002; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/5.0 Chrome/117.0.5938.60 Mobile Safari/537.36 Instagram 307.0.0.34.111",
+                "User-Agent": webViewAgent,
                 'X-IG-App-ID': getAppID()
             },
             onload: function (response) {
@@ -368,7 +370,7 @@ export function getMediaInfo(mediaId) {
             method: "GET",
             url: getURL,
             headers: {
-                "User-Agent": window.navigator.userAgent,
+                "User-Agent": webViewAgent,
                 "Accept": "*/*",
                 'X-IG-App-ID': getAppID()
             },

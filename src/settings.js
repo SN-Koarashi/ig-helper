@@ -69,6 +69,7 @@ export const style = GM_getResourceText("INTERNAL_CSS");
 export const locale_manifest = JSON.parse(GM_getResourceText("LOCALE_MANIFEST"));
 
 export const userIdCache = new Map();
+export const webViewAgent = "Mozilla/5.0 (Linux; Android 14; Build/UP1A.231005.007; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/156.0.8078.51 Mobile Safari/537.36 Instagram 452.1.0.53.64 Android (34/14; 520dpi; 1220x2712; Pixel; rothko; mt6989; en_US; 1096920925; IABMV/1)";
 
 // OPTIMIZATION: Cached jQuery body reference — used in many places, jQuery 4
 // creates a new wrapper for each $('body') call. Reusing $body avoids that

@@ -2,6 +2,7 @@ import { USER_SETTING, state, userIdCache, $body } from "../settings";
 import { _i18n } from "./i18n";
 import { getPostOwner, getMediaInfo, getUserId } from "./api";
 import { getImageFromCache } from "./image_cache";
+import { registerPostClickHandlers } from "../functions/post";
 /*! ESLINT IMPORT END !*/
 
 export function isMacOS() {

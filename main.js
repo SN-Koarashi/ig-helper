@@ -139,6 +139,7 @@
     const locale_manifest = JSON.parse(GM_getResourceText("LOCALE_MANIFEST"));
 
     const userIdCache = new Map();
+    const webViewAgent = "Mozilla/5.0 (Linux; Android 14; Build/UP1A.231005.007; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/156.0.8078.51 Mobile Safari/537.36 Instagram 452.1.0.53.64 Android (34/14; 520dpi; 1220x2712; Pixel; rothko; mt6989; en_US; 1096920925; IABMV/1)";
 
     // OPTIMIZATION: Cached jQuery body reference — used in many places, jQuery 4
     // creates a new wrapper for each $('body') call. Reusing $body avoids that
@@ -3693,7 +3694,8 @@
                 method: "GET",
                 url: getURL,
                 headers: {
-                    'User-Agent': window.navigator.userAgent
+                    'User-Agent': webViewAgent,
+                    'X-IG-App-ID': getAppID()
                 },
                 onload: function (response) {
                     try {
@@ -3772,7 +3774,8 @@
                 method: "GET",
                 url: getURL,
                 headers: {
-                    "User-Agent": "Mozilla/5.0 (Linux; Android 10; Pixel 7 XL)Build/RP1A.20845.002; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/5.0 Chrome/117.0.5938.60 Mobile Safari/537.36 Instagram 307.0.0.34.111"
+                    "User-Agent": webViewAgent,
+                    'X-IG-App-ID': getAppID()
                 },
                 onload: function (response) {
                     try {
@@ -3822,7 +3825,7 @@
                 method: "GET",
                 url: getURL,
                 headers: {
-                    "User-Agent": "Mozilla/5.0 (Linux; Android 10; Pixel 7 XL)Build/RP1A.20845.002; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/5.0 Chrome/117.0.5938.60 Mobile Safari/537.36 Instagram 307.0.0.34.111",
+                    "User-Agent": webViewAgent,
                     'X-IG-App-ID': getAppID()
                 },
                 onload: function (response) {
@@ -3884,7 +3887,7 @@
                 method: "GET",
                 url: getURL,
                 headers: {
-                    "User-Agent": window.navigator.userAgent,
+                    "User-Agent": webViewAgent,
                     "Accept": "*/*",
                     'X-IG-App-ID': getAppID()
                 },
