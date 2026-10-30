@@ -54,10 +54,10 @@ export async function onHighlightsStoryAll() {
         items.forEach((item, idx) => {
             setTimeout(() => {
                 if (USER_SETTING.RENAME_PUBLISH_DATE) {
-                    timestamp = item.taken_at_timestamp;
+                    timestamp = item.taken_at_timestamp || item.taken_at;
                 }
 
-                item.display_resources.sort(function (a, b) {
+                item.image_versions2.candidates.sort(function (a, b) {
                     if (a.config_width < b.config_width) return 1;
                     if (a.config_width > b.config_width) return -1;
                     return 0;
@@ -99,7 +99,7 @@ export async function onHighlightsStoryAll() {
                     })();
                 }
                 else {
-                    saveFiles(item.display_resources[0].src,
+                    saveFiles(item.image_versions2.candidates[0].url,
                         {
                             username,
                             sourceType: "highlights",
@@ -115,7 +115,7 @@ export async function onHighlightsStoryAll() {
     }
     else {
         IG_createDM(false, true);
-        createStoryListDOM(highStories, 'highlights');
+        createStoryListDOM(highStories.data.xdt_api__v1__feed__reels_media__connection.edges[0].node, 'highlights');
     }
 }
 
@@ -247,12 +247,12 @@ export async function onHighlightsStory(isDownload, isPreview) {
             }
         }
         else {
-            if (target.is_video) {
+            if (target.is_video || target.video_versions != null) {
                 if (isPreview) {
-                    openNewTab(target.video_resources.at(-1).src, username);
+                    openNewTab(target.video_versions.at(-1).url, username);
                 }
                 else {
-                    saveFiles(target.video_resources.at(-1).src, {
+                    saveFiles(target.video_versions.at(-1).url, {
                         username,
                         sourceType: "highlights",
                         timestamp,
@@ -263,10 +263,10 @@ export async function onHighlightsStory(isDownload, isPreview) {
             }
             else {
                 if (isPreview) {
-                    openNewTab(target.display_resources.at(-1).src, username);
+                    openNewTab(target.image_versions2.candidates.at(-1).url, username);
                 }
                 else {
-                    saveFiles(target.display_resources.at(-1).src, {
+                    saveFiles(target.image_versions2.candidates.at(-1).url, {
                         username,
                         sourceType: "highlights",
                         timestamp,
@@ -489,7 +489,7 @@ export async function onHighlightsStoryThumbnail(isDownload) {
             }
         }
         else {
-            saveFiles(target.display_resources.at(-1).src, {
+            saveFiles(target.image_versions2.candidates.at(-1).url, {
                 username,
                 sourceType: "highlights",
                 timestamp,

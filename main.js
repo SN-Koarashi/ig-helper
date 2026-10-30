@@ -17,7 +17,7 @@
 // @name:zh-CN         IG小助手
 // @name:zh-TW         IG小精靈
 // @namespace          https://github.snkms.com/
-// @version            4.3.2
+// @version            4.3.3
 // @description        Download photos and videos from Instagram posts in one click, including Stories, Reels, and profile pictures.
 // @description:ar     نزّل صورًا ومقاطع فيديو من منشورات Instagram بنقرة واحدة، بما في ذلك القصص وReels وصور الملف الشخصي.
 // @description:de     Lade Fotos und Videos aus Instagram-Beiträgen mit einem Klick herunter, einschließlich Stories, Reels und Profilbildern.
@@ -456,10 +456,10 @@
             items.forEach((item, idx) => {
                 setTimeout(() => {
                     if (USER_SETTING.RENAME_PUBLISH_DATE) {
-                        timestamp = item.taken_at_timestamp;
+                        timestamp = item.taken_at_timestamp || item.taken_at;
                     }
 
-                    item.display_resources.sort(function (a, b) {
+                    item.image_versions2.candidates.sort(function (a, b) {
                         if (a.config_width < b.config_width) return 1;
                         if (a.config_width > b.config_width) return -1;
                         return 0;
@@ -501,7 +501,7 @@
                         })();
                     }
                     else {
-                        saveFiles(item.display_resources[0].src,
+                        saveFiles(item.image_versions2.candidates[0].url,
                             {
                                 username,
                                 sourceType: "highlights",
@@ -517,7 +517,7 @@
         }
         else {
             IG_createDM(false, true);
-            createStoryListDOM(highStories, 'highlights');
+            createStoryListDOM(highStories.data.xdt_api__v1__feed__reels_media__connection.edges[0].node, 'highlights');
         }
     }
 
@@ -649,12 +649,12 @@
                 }
             }
             else {
-                if (target.is_video) {
+                if (target.is_video || target.video_versions != null) {
                     if (isPreview) {
-                        openNewTab(target.video_resources.at(-1).src, username);
+                        openNewTab(target.video_versions.at(-1).url, username);
                     }
                     else {
-                        saveFiles(target.video_resources.at(-1).src, {
+                        saveFiles(target.video_versions.at(-1).url, {
                             username,
                             sourceType: "highlights",
                             timestamp,
@@ -665,10 +665,10 @@
                 }
                 else {
                     if (isPreview) {
-                        openNewTab(target.display_resources.at(-1).src, username);
+                        openNewTab(target.image_versions2.candidates.at(-1).url, username);
                     }
                     else {
-                        saveFiles(target.display_resources.at(-1).src, {
+                        saveFiles(target.image_versions2.candidates.at(-1).url, {
                             username,
                             sourceType: "highlights",
                             timestamp,
@@ -891,7 +891,7 @@
                 }
             }
             else {
-                saveFiles(target.display_resources.at(-1).src, {
+                saveFiles(target.image_versions2.candidates.at(-1).url, {
                     username,
                     sourceType: "highlights",
                     timestamp,
@@ -2525,35 +2525,34 @@
      */
     async function createStoryListDOM(obj, type) {
         try {
-            $('.IG_POPUP_DIG #post_info').text(`${type} ID: ${obj.data.reels_media[0].id}`);
+            $('.IG_POPUP_DIG #post_info').text(`${type} ID: ${obj.id}`);
             const selector = '.IG_POPUP_DIG .IG_POPUP_DIG_MAIN .IG_POPUP_DIG_BODY';
             // OPTIMIZATION: cache target once
             const $selector = $(selector);
 
             // OPTIMIZATION: cache reels_media[0] reference
-            const reel = obj.data.reels_media[0];
-            const items = reel.items;
+            const items = obj.items;
 
             items.forEach((item, idx) => {
                 let date = new Date().getTime();
                 let timestamp = Math.floor(date / 1000);
-                let username = reel?.user?.username || reel?.owner?.username;
+                let username = obj?.user?.username || obj?.owner?.username;
 
                 if (USER_SETTING.RENAME_PUBLISH_DATE) {
-                    timestamp = item.taken_at_timestamp;
+                    timestamp = item.taken_at_timestamp || item.taken_at;
                 }
 
-                item.display_resources.sort(function (a, b) {
+                item.image_versions2.candidates.sort(function (a, b) {
                     if (a.config_width < b.config_width) return 1;
                     if (a.config_width > b.config_width) return -1;
                     return 0;
                 });
 
-                if (item.is_video) {
-                    $selector.append(`<a media-id="${item.id}" datetime="${timestamp}" data-blob="true" data-needed="direct" data-name="${type}" data-type="mp4" data-username="${username}" data-path="${item.id}" data-globalIndex="${idx + 1}" href="javascript:;" data-href="${item.video_resources[0].src}"><img width="100" src="${item.display_resources[0].src}" /><br/>- <span data-ih-locale-title="VID">${_i18n("VID")}</span> ${idx} -</a>`);
+                if (item.is_video || item.video_versions != null) {
+                    $selector.append(`<a media-id="${item.id}" datetime="${timestamp}" data-blob="true" data-needed="direct" data-name="${type}" data-type="mp4" data-username="${username}" data-path="${item.id}" data-globalIndex="${idx + 1}" href="javascript:;" data-href="${item.video_versions[0].url}"><img width="100" src="${item.image_versions2.candidates[0].url}" /><br/>- <span data-ih-locale-title="VID">${_i18n("VID")}</span> ${idx} -</a>`);
                 }
                 else {
-                    $selector.append(`<a media-id="${item.id}" datetime="${timestamp}" data-blob="true" data-needed="direct" data-name="${type}" data-type="jpg" data-username="${username}" data-path="${item.id}" data-globalIndex="${idx + 1}" href="javascript:;" data-href="${item.display_resources[0].src}"><img width="100" src="${item.display_resources[0].src}" /><br/>- <span data-ih-locale-title="IMG">${_i18n("IMG")}</span> ${idx} -</a>`);
+                    $selector.append(`<a media-id="${item.id}" datetime="${timestamp}" data-blob="true" data-needed="direct" data-name="${type}" data-type="jpg" data-username="${username}" data-path="${item.id}" data-globalIndex="${idx + 1}" href="javascript:;" data-href="${item.image_versions2.candidates[0].url}"><img width="100" src="${item.image_versions2.candidates[0].url}" /><br/>- <span data-ih-locale-title="IMG">${_i18n("IMG")}</span> ${idx} -</a>`);
                 }
             });
 
@@ -2597,24 +2596,24 @@
         if (USER_SETTING.DIRECT_DOWNLOAD_STORY) {
             let complete = 0;
             // OPTIMIZATION: cache items array — repeatedly accessed inside setTimeout closures
-            const items = stories.data.reels_media[0].items;
+            const items = stories.data.xdt_api__v1__feed__reels_media.reels_media[0].items;
             const totalItems = items.length;
             setDownloadProgress(complete, totalItems);
 
             items.forEach((item, idx) => {
                 setTimeout(() => {
                     if (USER_SETTING.RENAME_PUBLISH_DATE) {
-                        timestamp = item.taken_at_timestamp;
+                        timestamp = item.taken_at_timestamp || item.taken_at;
                     }
 
-                    item.display_resources.sort(function (a, b) {
-                        if (a.config_width < b.config_width) return 1;
-                        if (a.config_width > b.config_width) return -1;
+                    item.image_versions2.candidates.sort(function (a, b) {
+                        if (a.width < b.width) return 1;
+                        if (a.width > b.width) return -1;
                         return 0;
                     });
 
-                    if (item.is_video) {
-                        saveFiles(item.video_resources[0].src,
+                    if (item.is_video || item.video_versions != null) {
+                        saveFiles(item.video_versions[0].src,
                             {
                                 username,
                                 sourceType: "stories",
@@ -2626,7 +2625,7 @@
                             });
                     }
                     else {
-                        saveFiles(item.display_resources[0].src, {
+                        saveFiles(item.image_versions2[0].src, {
                             username,
                             sourceType: "stories",
                             timestamp,
@@ -2641,7 +2640,7 @@
         }
         else {
             IG_createDM(false, true);
-            createStoryListDOM(stories, 'stories');
+            createStoryListDOM(stories.data.xdt_api__v1__feed__reels_media, 'stories');
         }
     }
 
@@ -2683,7 +2682,7 @@
         let minDiff = Infinity;
 
         items.forEach(item => {
-            const diff = Math.abs((item.taken_at_timestamp || 0) - visibleTs);
+            const diff = Math.abs((item.taken_at_timestamp || item.taken_at || 0) - visibleTs);
             if (diff < minDiff) {
                 minDiff = diff;
                 bestId = item.id;
@@ -2788,7 +2787,7 @@
                 let result = await getMediaInfo(mediaId);
 
                 if (USER_SETTING.RENAME_PUBLISH_DATE) {
-                    timestamp = result.items[0].taken_at;
+                    timestamp = result.items[0].taken_at || result.items[0].taken_at_timestamp;
                 }
 
                 if (result.status === 'ok') {
@@ -2860,11 +2859,11 @@
 
                 if (state.GL_dataCache.stories[username] && !isForce) {
                     logger('Fetch from memory cache:', username);
-                    state.GL_dataCache.stories[username].data.reels_media[0].items.forEach(item => {
+                    state.GL_dataCache.stories[username].data.xdt_api__v1__feed__reels_media.reels_media[0].items.forEach(item => {
                         if (item.id == targetURL) {
-                            videoURL = item.video_resources[0].src;
+                            videoURL = item.video_versions[0].src;
                             if (USER_SETTING.RENAME_PUBLISH_DATE) {
-                                timestamp = item.taken_at_timestamp;
+                                timestamp = item.taken_at_timestamp || item.taken_at;
                                 mediaId = item.id;
                             }
                         }
@@ -2885,9 +2884,9 @@
 
                     items.forEach(item => {
                         if (item.id == targetURL) {
-                            videoURL = item.video_resources[0].src;
+                            videoURL = item.video_versions[0].src;
                             if (USER_SETTING.RENAME_PUBLISH_DATE) {
-                                timestamp = item.taken_at_timestamp;
+                                timestamp = item.taken_at_timestamp || item.taken_at;
                                 mediaId = item.id;
                             }
                         }
@@ -2900,9 +2899,9 @@
 
                         $header.each(function (index) {
                             if ($(this).children().length > 0) {
-                                videoURL = items[index].video_resources[0].src;
+                                videoURL = items[index].video_versions[0].src;
                                 if (USER_SETTING.RENAME_PUBLISH_DATE) {
-                                    timestamp = items[index].taken_at_timestamp;
+                                    timestamp = items[index].taken_at_timestamp || items[index].taken_at;
                                     mediaId = items[index].id;
                                 }
                             }
@@ -2915,9 +2914,9 @@
                                 const $this = $(this);
                                 if ($this.hasClass('x1lix1fw')) {
                                     if ($this.children().length > 0) {
-                                        videoURL = items[index].video_resources[0].src;
+                                        videoURL = items[index].video_versions[0].src;
                                         if (USER_SETTING.RENAME_PUBLISH_DATE) {
-                                            timestamp = items[index].taken_at_timestamp;
+                                            timestamp = items[index].taken_at_timestamp || items[index].taken_at;
                                             mediaId = items[index].id;
                                         }
                                     }
@@ -2927,9 +2926,9 @@
                             // appear in from home page to story page
                             $('body > div section:visible ._ac0k > ._ac3r > div').each(function (index) {
                                 if ($(this).children().hasClass('_ac3q')) {
-                                    videoURL = items[index].video_resources[0].src;
+                                    videoURL = items[index].video_versions[0].src;
                                     if (USER_SETTING.RENAME_PUBLISH_DATE) {
-                                        timestamp = items[index].taken_at_timestamp;
+                                        timestamp = items[index].taken_at_timestamp || items[index].taken_at;
                                         mediaId = items[index].id;
                                     }
                                 }
@@ -3283,7 +3282,7 @@
 
             if (state.GL_dataCache.stories[username] && !isForce) {
                 logger('Fetch from memory cache:', username);
-                state.GL_dataCache.stories[username].data.reels_media[0].items.forEach(item => {
+                state.GL_dataCache.stories[username].data.xdt_api__v1__feed__reels_media.reels_media[0].items.forEach(item => {
                     if (item.id == targetURL) {
                         videoThumbnailURL = item.display_url;
                         if (USER_SETTING.RENAME_PUBLISH_DATE) {
