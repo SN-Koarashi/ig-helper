@@ -44,11 +44,50 @@ export function getHighlightStories(highlightId) {
  */
 export function getStories(userId) {
     return new Promise((resolve, reject) => {
-        const getURL = `https://www.instagram.com/graphql/query/?query_hash=15463e8449a83d3d60b06be7e90627c7&variables=%7B%22reel_ids%22:%5B%22${userId}%22%5D,%22precomposed_overlay%22:false%7D`;
+        const getURL = `https://www.instagram.com/graphql/query`;
+
+        const siteData = getSiteData();
+        const formData = new FormData();
+
+        formData.append('av', getCookie('ds_user_id') || '0');
+        formData.append('fb_api_caller_class', 'RelayModern');
+        formData.append('fb_api_req_friendly_name', 'PolarisStoriesV3ReelPageStandaloneQuery');
+        formData.append('server_timestamps', 'true');
+        formData.append('doc_id', '29170422829314651'); // This is dynamic, but we can use this for now. It may break in the future.
+        formData.append('lsd', getLSD());
+        formData.append('fb_dtsg', getDTSG());
+        formData.append('__hs', siteData?.haste_session || '');
+        formData.append('__hsi', siteData?.hsi || '');
+        formData.append('__rev', siteData?.client_revision || '');
+        formData.append('__spin_r', siteData?.__spin_r || '');
+        formData.append('__spin_b', siteData?.__spin_b || '');
+        formData.append('__spin_t', siteData?.__spin_t || '');
+        formData.append('__comet_req', siteData?.comet_env || '');
+        formData.append('__ccg', 'EXCELLENT');
+        formData.append('dpr', siteData?.pr);
+        formData.append('jazoest', getJazoest(getDTSG()));
+        formData.append('__user', '0');
+        formData.append('__a', '1');
+        formData.append('__d', 'www');
+        formData.append('__req', '1');
+        formData.append('__crn', 'comet.igweb.PolarisProfilePostsTabRoute');
+        formData.append('__s', genWebSessionId());
+        formData.append('variables', `{"reel_ids_arr":["${userId}"],"__relay_internal__pv__PolarisCommunityNoteStoriesLabelEnabledrelayprovider":true}`);
 
         GM_xmlhttpRequest({
-            method: "GET",
+            method: "POST",
             url: getURL,
+            data: formData,
+            headers: {
+                "User-Agent": webViewAgent,
+                'X-IG-App-ID': getAppID() || '0',
+                'X-Root-Field-Name': 'xdt_api__v1__feed__reels_media',
+                'X-CSRFToken': getCookie('csrftoken') || '',
+                'X-Fb-Friendly-Name': 'PolarisStoriesV3ReelPageStandaloneQuery',
+                'X-Fb-Lsd': getLSD(),
+                'X-Bloks-Version-ID': getBloks(),
+                'X-Asbd-ID': '359341'
+            },
             onload: function (response) {
                 try {
                     let obj = JSON.parse(response.response);
@@ -303,107 +342,6 @@ export function getMediaList(postPath) {
             },
             onerror: function (err) {
                 logger('getMediaList()', 'reject', err);
-                reject(err);
-            }
-        });
-    });
-}
-
-/**
- * getBlobMedia
- * @description Get list of all media files in post with post shortcode.
- * @deprecated Use getMediaList() instead.
- *
- * @param  {String}  postPath
- * @return {Object}
- */
-export function getBlobMedia(postPath) {
-    return new Promise((resolve, reject) => {
-        if (!postPath) reject("NOPATH");
-        const postShortCode = postPath;
-        const getURL = `https://www.instagram.com/graphql/query/?query_hash=2c4c2e343a8f64c625ba02b2aa12c7f8&variables=%7B%22shortcode%22:%22${postShortCode}%22}`;
-
-        GM_xmlhttpRequest({
-            method: "GET",
-            url: getURL,
-            headers: {
-                "User-Agent": webViewAgent,
-                'X-IG-App-ID': getAppID()
-            },
-            onload: function (response) {
-                try {
-                    let obj = JSON.parse(response.response);
-                    logger("getBlobMedia()", obj);
-
-                    if (obj.status === 'fail') {
-                        // alert(`Request failed with API response:\n${obj.message}: ${obj.feedback_message}`);
-                        logger('Request with:', 'getBlobMediaWithQuery()', postShortCode);
-                        getBlobMediaWithQueryID(postShortCode).then((res) => {
-                            resolve({ type: 'query_id', data: res.xdt_api__v1__media__shortcode__web_info.items[0] });
-                        }).catch((err) => {
-                            reject(err);
-                        })
-                    }
-                    else {
-                        resolve({ type: 'query_hash', data: obj.data });
-                    }
-                }
-                catch (err) {
-                    logger('getBlobMedia()', 'reject', err.message);
-                    reject(err);
-                }
-            },
-            onerror: function (err) {
-                logger('getBlobMedia()', 'reject', err);
-                reject(err);
-            }
-        });
-    });
-}
-
-/**
- * getBlobMediaWithQueryID
- * @description Get list of all media files in post with post shortcode.
- * @deprecated Use getMediaList() instead.
- *
- * @param  {String}  postPath
- * @return {Object}
- */
-export function getBlobMediaWithQueryID(postPath) {
-    return new Promise((resolve, reject) => {
-        if (!postPath) reject("NOPATH");
-        const postShortCode = postPath;
-        const getURL = `https://www.instagram.com/graphql/query/?query_id=9496392173716084&variables={%22shortcode%22:%22${postShortCode}%22,%22__relay_internal__pv__PolarisFeedShareMenurelayprovider%22:true,%22__relay_internal__pv__PolarisIsLoggedInrelayprovider%22:true}`;
-
-        GM_xmlhttpRequest({
-            method: "GET",
-            url: getURL,
-            headers: {
-                "User-Agent": webViewAgent,
-                'X-IG-App-ID': getAppID()
-            },
-            onload: function (response) {
-                try {
-                    let obj = JSON.parse(response.response);
-                    logger(obj);
-
-                    if (obj.status === 'fail') {
-                        alert(`getBlobMediaWithQueryID(): Request failed with API response:\n${obj.message}: ${obj.feedback_message}`);
-                        logger(`Request failed with API response ${obj.message}: ${obj.feedback_message}`);
-                        reject(response);
-                    }
-                    else {
-                        logger('getBlobMediaWithQueryID()', obj.data);
-                        resolve(obj.data);
-                    }
-                }
-                catch (err) {
-                    logger('getBlobMediaWithQueryID()', 'reject', err.message);
-                    reject(err);
-                }
-            },
-            onerror: function (err) {
-                logger('getBlobMediaWithQueryID()', 'reject', err);
                 reject(err);
             }
         });

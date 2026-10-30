@@ -216,14 +216,14 @@ export async function onStory(isDownload, isForce, isPreview) {
             let urlID = location.pathname.split('/').filter(s => s.length > 0 && s.match(/^([0-9]{10,})$/)).at(-1);
 
             // OPTIMIZATION: cache items reference (used 4+ times)
-            const items = stories.data.reels_media[0].items;
+            const items = stories.data.xdt_api__v1__feed__reels_media.reels_media[0].items;
 
             items.forEach(item => {
                 if (item.id == urlID) {
                     mediaId = item.id;
                 }
             });
-			
+
             // FIX: timestamp-based match before fragile index/CSS fallbacks
             if (mediaId == null) {
                 mediaId = resolveStoryMediaIdByTimestamp(stories);
@@ -378,7 +378,7 @@ export async function onStory(isDownload, isForce, isPreview) {
                 let userId = userInfo.user.pk;
                 let stories = await getStories(userId);
                 // OPTIMIZATION: cache items
-                const items = stories.data.reels_media[0].items;
+                const items = stories.data.xdt_api__v1__feed__reels_media.reels_media[0].items;
 
                 items.forEach(item => {
                     if (item.id == targetURL) {
@@ -599,7 +599,7 @@ export async function onStory(isDownload, isForce, isPreview) {
                             }
                             $img.data('remove-thumbnail', true);
                             if ($element.find('.IG_DWSTORY_THUMBNAIL').length === 0) {
-								$('.IG_DWSTORY_THUMBNAIL').remove();
+                                $('.IG_DWSTORY_THUMBNAIL').remove();
                                 logger('(story) Manually removing thumbnail button');
                             }
                             else {
@@ -616,7 +616,7 @@ export async function onStory(isDownload, isForce, isPreview) {
                 // was created, so a late init otherwise misses the button entirely.
                 // Create separate late-thumbnail-insert flag to avoid conflict with
                 // insert-thumbnail, which may be misset prematurely to true.
-				// We also check for IG_DWSTORY_THUMBNAIL so the button is only added if necessary.
+                // We also check for IG_DWSTORY_THUMBNAIL so the button is only added if necessary.
                 else if ($element.find('video[src^="blob:"]').length) {
                     $element.find('video[src^="blob:"]').each(function () {
                         const $video = $(this);
@@ -685,14 +685,14 @@ export async function onStoryThumbnail(isDownload, isForce) {
             let stories = await getStories(userId);
             let urlID = location.pathname.split('/').filter(s => s.length > 0 && s.match(/^([0-9]{10,})$/)).at(-1);
             // OPTIMIZATION: cache items reference
-            const items = stories.data.reels_media[0].items;
+            const items = stories.data.xdt_api__v1__feed__reels_media.reels_media[0].items;
 
             items.forEach(item => {
                 if (item.id == urlID) {
                     mediaId = item.id;
                 }
             });
-			
+
             // FIX: timestamp-based match before fragile index/CSS fallbacks
             if (mediaId == null) {
                 mediaId = resolveStoryMediaIdByTimestamp(stories);
@@ -801,7 +801,7 @@ export async function onStoryThumbnail(isDownload, isForce) {
             let userId = userInfo.user.pk;
             let stories = await getStories(userId);
             // OPTIMIZATION: cache items
-            const items = stories.data.reels_media[0].items;
+            const items = stories.data.xdt_api__v1__feed__reels_media.reels_media[0].items;
 
             items.forEach(item => {
                 if (item.id == targetURL) {
