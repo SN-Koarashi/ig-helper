@@ -1,4 +1,3 @@
-import { $ } from "jquery";
 import { userIdCache, webViewAgent } from "../settings";
 import { logger, getAppID, updateLoadingBar, getCookie, getLSD, getBloks, getDTSG, getSiteData, getJazoest, genWebSessionId } from "./general";
 /*! ESLINT IMPORT END !*/
@@ -12,14 +11,54 @@ import { logger, getAppID, updateLoadingBar, getCookie, getLSD, getBloks, getDTS
  */
 export function getHighlightStories(highlightId) {
     return new Promise((resolve, reject) => {
-        const getURL = `https://www.instagram.com/graphql/query/?query_hash=45246d3fe16ccc6577e0bd297a5db1ab&variables=%7B%22highlight_reel_ids%22:%5B%22${highlightId}%22%5D,%22precomposed_overlay%22:false%7D`;
+        const getURL = `https://www.instagram.com/graphql/query`;
+
+        const siteData = getSiteData();
+        const formData = new FormData();
+
+        formData.append('av', getCookie('ds_user_id') || '0');
+        formData.append('fb_api_caller_class', 'RelayModern');
+        formData.append('fb_api_req_friendly_name', 'PolarisStoriesV3HighlightsPageQuery');
+        formData.append('server_timestamps', 'true');
+        formData.append('doc_id', '29299425373007309'); // This is dynamic, but we can use this for now. It may break in the future.
+        formData.append('lsd', getLSD());
+        formData.append('fb_dtsg', getDTSG());
+        formData.append('__hs', siteData?.haste_session || '');
+        formData.append('__hsi', siteData?.hsi || '');
+        formData.append('__rev', siteData?.client_revision || '');
+        formData.append('__spin_r', siteData?.__spin_r || '');
+        formData.append('__spin_b', siteData?.__spin_b || '');
+        formData.append('__spin_t', siteData?.__spin_t || '');
+        formData.append('__comet_req', siteData?.comet_env || '');
+        formData.append('__ccg', 'EXCELLENT');
+        formData.append('dpr', siteData?.pr);
+        formData.append('jazoest', getJazoest(getDTSG()));
+        formData.append('__user', '0');
+        formData.append('__a', '1');
+        formData.append('__d', 'www');
+        formData.append('__req', '1');
+        formData.append('__crn', 'comet.igweb.PolarisProfilePostsTabRoute');
+        formData.append('__s', genWebSessionId());
+        formData.append('variables', `{"initial_reel_id":"highlight:${highlightId}","reel_ids":["highlight:${highlightId}"],"first":999,"last":0,"__relay_internal__pv__PolarisCommunityNoteStoriesLabelEnabledrelayprovider":true}`);
 
         GM_xmlhttpRequest({
-            method: "GET",
+            method: "POST",
             url: getURL,
+            data: formData,
+            headers: {
+                "User-Agent": webViewAgent,
+                'X-IG-App-ID': getAppID() || '0',
+                'X-Root-Field-Name': 'xdt_api__v1__feed__reels_media__connection',
+                'X-CSRFToken': getCookie('csrftoken') || '',
+                'X-Fb-Friendly-Name': 'PolarisStoriesV3HighlightsPageQuery',
+                'X-Fb-Lsd': getLSD(),
+                'X-Bloks-Version-ID': getBloks(),
+                'X-Asbd-ID': '359341'
+            },
             onload: function (response) {
                 try {
                     let obj = JSON.parse(response.response);
+                    console.log(obj);
                     resolve(obj);
                 }
                 catch (err) {

@@ -93,7 +93,8 @@ export var state = {
     GL_repeat: null,
     GL_dataCache: {
         stories: {},
-        highlights: {}
+        highlights: {},
+        highlightTotal: {}
     },
     GL_observer: new MutationObserver(function () {
         onReadyMyDW();

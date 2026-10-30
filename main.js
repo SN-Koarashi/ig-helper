@@ -163,7 +163,8 @@
         GL_repeat: null,
         GL_dataCache: {
             stories: {},
-            highlights: {}
+            highlights: {},
+            highlightTotal: {}
         },
         GL_observer: new MutationObserver(function () {
             onReadyMyDW();
@@ -441,14 +442,14 @@
         let timestamp = Math.floor(date / 1000);
         let highlightId = location.href.replace(/\/$/ig, '').split('/').at(-1);
         let highStories = await getHighlightStories(highlightId);
-        let username = highStories.data.reels_media[0].owner.username;
+        let username = highStories.data.xdt_api__v1__feed__reels_media__connection.edges[0].node.user.username;
 
         if (USER_SETTING.DIRECT_DOWNLOAD_STORY) {
 
             let complete = 0;
             // OPTIMIZATION: Cache items array — accessed inside per-item setTimeout closures,
             // avoids repeated .reels_media[0].items lookups (was 3 lookups per iteration).
-            const items = highStories.data.reels_media[0].items;
+            const items = highStories.data.xdt_api__v1__feed__reels_media__connection.edges[0].node.items;
             const totalItems = items.length;
             setDownloadProgress(complete, totalItems);
 
@@ -546,16 +547,16 @@
                 logger('Fetch from memory cache:', highlightId);
 
                 // OPTIMIZATION: cache items array — avoids 4 repeated property lookups
-                const items = state.GL_dataCache.highlights[highlightId].data.reels_media[0].items;
+                const items = state.GL_dataCache.highlights[highlightId].data.xdt_api__v1__feed__reels_media__connection.edges[0].node.items;
                 let totIndex = items.length;
-                username = state.GL_dataCache.highlights[highlightId].data.reels_media[0].owner.username;
+                username = state.GL_dataCache.highlights[highlightId].data.xdt_api__v1__feed__reels_media__connection.edges[0].node.user.username;
                 target = items[totIndex - nowIndex];
             }
             else {
                 let highStories = await getHighlightStories(highlightId);
-                const items = highStories.data.reels_media[0].items;
+                const items = highStories.data.xdt_api__v1__feed__reels_media__connection.edges[0].node.items.reverse();
                 let totIndex = items.length;
-                username = highStories.data.reels_media[0].owner.username;
+                username = highStories.data.xdt_api__v1__feed__reels_media__connection.edges[0].node.user.username;
                 target = items[totIndex - nowIndex];
 
                 state.GL_dataCache.highlights[highlightId] = highStories;
@@ -564,12 +565,12 @@
             logger('onHighlightsStory', highlightId, state.GL_dataCache.highlights[highlightId]);
 
             if (USER_SETTING.RENAME_PUBLISH_DATE) {
-                timestamp = target.taken_at_timestamp;
+                timestamp = target.taken_at_timestamp || target.taken_at;
             }
 
             if (USER_SETTING.CAPTURE_IMAGE_VIA_MEDIA_CACHE) {
                 const cached = getImageFromCache(target.id);
-                if (cached && !state.GL_dataCache.highlights[highlightId].data.reels_media[0].items.filter(item => item.id === target.id).at(0).is_video) {
+                if (cached && !state.GL_dataCache.highlights[highlightId].xdt_api__v1__feed__reels_media__connection.edges[0].node.items.filter(item => item.id === target.id).at(0).is_video) {
                     logger("[Restore Cached onHighlight]", target.id);
                     if (isPreview) {
                         openNewTab(cached);
@@ -768,7 +769,7 @@
                     // was created, so a late init otherwise misses the button entirely.
                     // Create separate late-thumbnail-insert flag to avoid conflict with
                     // insert-thumbnail, which may be misset prematurely to true.
-    				// We also check for IG_DWHISTORY_THUMBNAIL so the button is only added if necessary.
+                    // We also check for IG_DWHISTORY_THUMBNAIL so the button is only added if necessary.
                     else if ($element.find('video[src^="blob:"]').length) {
                         $element.find('video[src^="blob:"]').each(function () {
                             const $video = $(this);
@@ -829,23 +830,23 @@
             if (state.GL_dataCache.highlights[highlightId]) {
                 logger('Fetch from memory cache:', highlightId);
 
-                const items = state.GL_dataCache.highlights[highlightId].data.reels_media[0].items;
+                const items = state.GL_dataCache.highlights[highlightId].data.xdt_api__v1__feed__reels_media__connection.edges[0].node.items;
                 let totIndex = items.length;
-                username = state.GL_dataCache.highlights[highlightId].data.reels_media[0].owner.username;
+                username = state.GL_dataCache.highlights[highlightId].data.xdt_api__v1__feed__reels_media__connection.edges[0].node.user.username;
                 target = items[totIndex - nowIndex];
             }
             else {
                 let highStories = await getHighlightStories(highlightId);
-                const items = highStories.data.reels_media[0].items;
+                const items = highStories.data.xdt_api__v1__feed__reels_media__connection.edges[0].node.items.reverse();
                 let totIndex = items.length;
-                username = highStories.data.reels_media[0].owner.username;
+                username = highStories.data.xdt_api__v1__feed__reels_media__connection.edges[0].node.user.username;
                 target = items[totIndex - nowIndex];
 
                 state.GL_dataCache.highlights[highlightId] = highStories;
             }
 
             if (USER_SETTING.RENAME_PUBLISH_DATE) {
-                timestamp = target.taken_at_timestamp;
+                timestamp = target.taken_at_timestamp || target.taken_at;
             }
 
             if (USER_SETTING.CAPTURE_IMAGE_VIA_MEDIA_CACHE) {
@@ -3528,14 +3529,54 @@
      */
     function getHighlightStories(highlightId) {
         return new Promise((resolve, reject) => {
-            const getURL = `https://www.instagram.com/graphql/query/?query_hash=45246d3fe16ccc6577e0bd297a5db1ab&variables=%7B%22highlight_reel_ids%22:%5B%22${highlightId}%22%5D,%22precomposed_overlay%22:false%7D`;
+            const getURL = `https://www.instagram.com/graphql/query`;
+
+            const siteData = getSiteData();
+            const formData = new FormData();
+
+            formData.append('av', getCookie('ds_user_id') || '0');
+            formData.append('fb_api_caller_class', 'RelayModern');
+            formData.append('fb_api_req_friendly_name', 'PolarisStoriesV3HighlightsPageQuery');
+            formData.append('server_timestamps', 'true');
+            formData.append('doc_id', '29299425373007309'); // This is dynamic, but we can use this for now. It may break in the future.
+            formData.append('lsd', getLSD());
+            formData.append('fb_dtsg', getDTSG());
+            formData.append('__hs', siteData?.haste_session || '');
+            formData.append('__hsi', siteData?.hsi || '');
+            formData.append('__rev', siteData?.client_revision || '');
+            formData.append('__spin_r', siteData?.__spin_r || '');
+            formData.append('__spin_b', siteData?.__spin_b || '');
+            formData.append('__spin_t', siteData?.__spin_t || '');
+            formData.append('__comet_req', siteData?.comet_env || '');
+            formData.append('__ccg', 'EXCELLENT');
+            formData.append('dpr', siteData?.pr);
+            formData.append('jazoest', getJazoest(getDTSG()));
+            formData.append('__user', '0');
+            formData.append('__a', '1');
+            formData.append('__d', 'www');
+            formData.append('__req', '1');
+            formData.append('__crn', 'comet.igweb.PolarisProfilePostsTabRoute');
+            formData.append('__s', genWebSessionId());
+            formData.append('variables', `{"initial_reel_id":"highlight:${highlightId}","reel_ids":["highlight:${highlightId}"],"first":999,"last":0,"__relay_internal__pv__PolarisCommunityNoteStoriesLabelEnabledrelayprovider":true}`);
 
             GM_xmlhttpRequest({
-                method: "GET",
+                method: "POST",
                 url: getURL,
+                data: formData,
+                headers: {
+                    "User-Agent": webViewAgent,
+                    'X-IG-App-ID': getAppID() || '0',
+                    'X-Root-Field-Name': 'xdt_api__v1__feed__reels_media__connection',
+                    'X-CSRFToken': getCookie('csrftoken') || '',
+                    'X-Fb-Friendly-Name': 'PolarisStoriesV3HighlightsPageQuery',
+                    'X-Fb-Lsd': getLSD(),
+                    'X-Bloks-Version-ID': getBloks(),
+                    'X-Asbd-ID': '359341'
+                },
                 onload: function (response) {
                     try {
                         let obj = JSON.parse(response.response);
+                        console.log(obj);
                         resolve(obj);
                     }
                     catch (err) {

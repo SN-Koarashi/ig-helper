@@ -40,14 +40,14 @@ export async function onHighlightsStoryAll() {
     let timestamp = Math.floor(date / 1000);
     let highlightId = location.href.replace(/\/$/ig, '').split('/').at(-1);
     let highStories = await getHighlightStories(highlightId);
-    let username = highStories.data.reels_media[0].owner.username;
+    let username = highStories.data.xdt_api__v1__feed__reels_media__connection.edges[0].node.user.username;
 
     if (USER_SETTING.DIRECT_DOWNLOAD_STORY) {
 
         let complete = 0;
         // OPTIMIZATION: Cache items array — accessed inside per-item setTimeout closures,
         // avoids repeated .reels_media[0].items lookups (was 3 lookups per iteration).
-        const items = highStories.data.reels_media[0].items;
+        const items = highStories.data.xdt_api__v1__feed__reels_media__connection.edges[0].node.items;
         const totalItems = items.length;
         setDownloadProgress(complete, totalItems);
 
@@ -145,16 +145,16 @@ export async function onHighlightsStory(isDownload, isPreview) {
             logger('Fetch from memory cache:', highlightId);
 
             // OPTIMIZATION: cache items array — avoids 4 repeated property lookups
-            const items = state.GL_dataCache.highlights[highlightId].data.reels_media[0].items;
+            const items = state.GL_dataCache.highlights[highlightId].data.xdt_api__v1__feed__reels_media__connection.edges[0].node.items;
             let totIndex = items.length;
-            username = state.GL_dataCache.highlights[highlightId].data.reels_media[0].owner.username;
+            username = state.GL_dataCache.highlights[highlightId].data.xdt_api__v1__feed__reels_media__connection.edges[0].node.user.username;
             target = items[totIndex - nowIndex];
         }
         else {
             let highStories = await getHighlightStories(highlightId);
-            const items = highStories.data.reels_media[0].items;
+            const items = highStories.data.xdt_api__v1__feed__reels_media__connection.edges[0].node.items.reverse();
             let totIndex = items.length;
-            username = highStories.data.reels_media[0].owner.username;
+            username = highStories.data.xdt_api__v1__feed__reels_media__connection.edges[0].node.user.username;
             target = items[totIndex - nowIndex];
 
             state.GL_dataCache.highlights[highlightId] = highStories;
@@ -163,12 +163,12 @@ export async function onHighlightsStory(isDownload, isPreview) {
         logger('onHighlightsStory', highlightId, state.GL_dataCache.highlights[highlightId]);
 
         if (USER_SETTING.RENAME_PUBLISH_DATE) {
-            timestamp = target.taken_at_timestamp;
+            timestamp = target.taken_at_timestamp || target.taken_at;
         }
 
         if (USER_SETTING.CAPTURE_IMAGE_VIA_MEDIA_CACHE) {
             const cached = getImageFromCache(target.id);
-            if (cached && !state.GL_dataCache.highlights[highlightId].data.reels_media[0].items.filter(item => item.id === target.id).at(0).is_video) {
+            if (cached && !state.GL_dataCache.highlights[highlightId].xdt_api__v1__feed__reels_media__connection.edges[0].node.items.filter(item => item.id === target.id).at(0).is_video) {
                 logger("[Restore Cached onHighlight]", target.id);
                 if (isPreview) {
                     openNewTab(cached);
@@ -367,7 +367,7 @@ export async function onHighlightsStory(isDownload, isPreview) {
                 // was created, so a late init otherwise misses the button entirely.
                 // Create separate late-thumbnail-insert flag to avoid conflict with
                 // insert-thumbnail, which may be misset prematurely to true.
-				// We also check for IG_DWHISTORY_THUMBNAIL so the button is only added if necessary.
+                // We also check for IG_DWHISTORY_THUMBNAIL so the button is only added if necessary.
                 else if ($element.find('video[src^="blob:"]').length) {
                     $element.find('video[src^="blob:"]').each(function () {
                         const $video = $(this);
@@ -428,23 +428,23 @@ export async function onHighlightsStoryThumbnail(isDownload) {
         if (state.GL_dataCache.highlights[highlightId]) {
             logger('Fetch from memory cache:', highlightId);
 
-            const items = state.GL_dataCache.highlights[highlightId].data.reels_media[0].items;
+            const items = state.GL_dataCache.highlights[highlightId].data.xdt_api__v1__feed__reels_media__connection.edges[0].node.items;
             let totIndex = items.length;
-            username = state.GL_dataCache.highlights[highlightId].data.reels_media[0].owner.username;
+            username = state.GL_dataCache.highlights[highlightId].data.xdt_api__v1__feed__reels_media__connection.edges[0].node.user.username;
             target = items[totIndex - nowIndex];
         }
         else {
             let highStories = await getHighlightStories(highlightId);
-            const items = highStories.data.reels_media[0].items;
+            const items = highStories.data.xdt_api__v1__feed__reels_media__connection.edges[0].node.items.reverse();
             let totIndex = items.length;
-            username = highStories.data.reels_media[0].owner.username;
+            username = highStories.data.xdt_api__v1__feed__reels_media__connection.edges[0].node.user.username;
             target = items[totIndex - nowIndex];
 
             state.GL_dataCache.highlights[highlightId] = highStories;
         }
 
         if (USER_SETTING.RENAME_PUBLISH_DATE) {
-            timestamp = target.taken_at_timestamp;
+            timestamp = target.taken_at_timestamp || target.taken_at;
         }
 
         if (USER_SETTING.CAPTURE_IMAGE_VIA_MEDIA_CACHE) {
