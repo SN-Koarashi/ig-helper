@@ -17,7 +17,7 @@
 // @name:zh-CN         IG小助手
 // @name:zh-TW         IG小精靈
 // @namespace          https://github.snkms.com/
-// @version            4.3.1
+// @version            4.3.2
 // @description        Download photos and videos from Instagram posts in one click, including Stories, Reels, and profile pictures.
 // @description:ar     نزّل صورًا ومقاطع فيديو من منشورات Instagram بنقرة واحدة، بما في ذلك القصص وReels وصور الملف الشخصي.
 // @description:de     Lade Fotos und Videos aus Instagram-Beiträgen mit einem Klick herunter, einschließlich Stories, Reels und Profilbildern.
@@ -3774,8 +3774,12 @@
                 method: "GET",
                 url: getURL,
                 headers: {
-                    'User-Agent': webViewAgent,
-                    'X-IG-App-ID': getAppID()
+                    "User-Agent": webViewAgent,
+                    'X-IG-App-ID': getAppID() || '0',
+                    'X-CSRFToken': getCookie('csrftoken') || '',
+                    'X-Fb-Lsd': getLSD(),
+                    'X-Bloks-Version-ID': getBloks(),
+                    'X-Asbd-ID': '359341'
                 },
                 onload: function (response) {
                     try {

@@ -256,8 +256,12 @@ export function getUserHighSizeProfile(userId) {
             method: "GET",
             url: getURL,
             headers: {
-                'User-Agent': webViewAgent,
-                'X-IG-App-ID': getAppID()
+                "User-Agent": webViewAgent,
+                'X-IG-App-ID': getAppID() || '0',
+                'X-CSRFToken': getCookie('csrftoken') || '',
+                'X-Fb-Lsd': getLSD(),
+                'X-Bloks-Version-ID': getBloks(),
+                'X-Asbd-ID': '359341'
             },
             onload: function (response) {
                 try {
