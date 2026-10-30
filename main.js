@@ -17,7 +17,7 @@
 // @name:zh-CN         IG小助手
 // @name:zh-TW         IG小精靈
 // @namespace          https://github.snkms.com/
-// @version            4.2.2
+// @version            4.3.1
 // @description        Download photos and videos from Instagram posts in one click, including Stories, Reels, and profile pictures.
 // @description:ar     نزّل صورًا ومقاطع فيديو من منشورات Instagram بنقرة واحدة، بما في ذلك القصص وReels وصور الملف الشخصي.
 // @description:de     Lade Fotos und Videos aus Instagram-Beiträgen mit einem Klick herunter, einschließlich Stories, Reels und Profilbildern.
@@ -1777,7 +1777,7 @@
             $target.find('a').remove();
             $target.append('<p id="_SNLOAD">' + message + '</p>');
             $('.IG_POPUP_DIG #batch_download_selected, .IG_POPUP_DIG #batch_download_direct').prop('disabled', true);
-            let result = await getBlobMedia(postURL);
+            let result = await getMediaList(postURL);
             let resource = filterResourceData(result.data);
 
             if (result.type === 'query_hash') {
@@ -2238,7 +2238,7 @@
                 updateLoadingBar(true);
 
                 let reelsPath = location.href.split('?').at(0).split('instagram.com/reels/').at(-1).replaceAll('/', '');
-                let result = await getBlobMedia(reelsPath);
+                let result = await getMediaList(reelsPath);
                 let media = filterResourceData(result.data);
 
                 let timestamp = new Date().getTime();
@@ -3757,9 +3757,78 @@
         });
     }
 
+
+    function getMediaList(postPath) {
+        return new Promise((resolve, reject) => {
+            if (!postPath) reject("NOPATH");
+            const getURL = `https://www.instagram.com/graphql/query`;
+
+            const siteData = getSiteData();
+            const formData = new FormData();
+
+            formData.append('av', getCookie('ds_user_id') || '0');
+            formData.append('fb_api_caller_class', 'RelayModern');
+            formData.append('fb_api_req_friendly_name', 'PolarisPostRootQuery');
+            formData.append('server_timestamps', 'true');
+            formData.append('doc_id', '39422285384081769'); // This is dynamic, but we can use this for now. It may break in the future.
+            formData.append('lsd', getLSD());
+            formData.append('fb_dtsg', getDTSG());
+            formData.append('__hs', siteData?.haste_session || '');
+            formData.append('__hsi', siteData?.hsi || '');
+            formData.append('__rev', siteData?.client_revision || '');
+            formData.append('__spin_r', siteData?.__spin_r || '');
+            formData.append('__spin_b', siteData?.__spin_b || '');
+            formData.append('__spin_t', siteData?.__spin_t || '');
+            formData.append('__comet_req', siteData?.comet_env || '');
+            formData.append('__ccg', 'EXCELLENT');
+            formData.append('dpr', siteData?.pr);
+            formData.append('jazoest', getJazoest(getDTSG()));
+            formData.append('__user', '0');
+            formData.append('__a', '1');
+            formData.append('__d', 'www');
+            formData.append('__req', '1');
+            formData.append('__crn', 'comet.igweb.PolarisFeedRoute');
+            formData.append('__s', genWebSessionId());
+            formData.append('variables', `{"shortcode":"${postPath}","__relay_internal__pv__PolarisShortDramaEnabledrelayprovider":true,"__relay_internal__pv__PolarisThreadsStyleCommentsEnabledrelayprovider":false,"__relay_internal__pv__PolarisMultiCaptionCarouselEnabledrelayprovider":true}`);
+
+            GM_xmlhttpRequest({
+                method: "POST",
+                url: getURL,
+                data: formData,
+                headers: {
+                    "User-Agent": webViewAgent,
+                    'X-IG-App-ID': getAppID() || '0',
+                    'X-Root-Field-Name': 'xdt_api__v1__media__shortcode__web_info',
+                    'X-CSRFToken': getCookie('csrftoken') || '',
+                    'X-Fb-Friendly-Name': 'PolarisPostRootQuery',
+                    'X-Fb-Lsd': getLSD(),
+                    'X-Bloks-Version-ID': getBloks(),
+                    'X-Asbd-ID': '359341'
+                },
+                onload: function (response) {
+                    try {
+                        let obj = JSON.parse(response.response);
+                        logger("getMediaList()", obj);
+
+                        resolve({ type: 'query_id', data: obj.data.xdt_api__v1__media__shortcode__web_info.items[0] });
+                    }
+                    catch (err) {
+                        logger('getMediaList()', 'reject', err.message);
+                        reject(err);
+                    }
+                },
+                onerror: function (err) {
+                    logger('getMediaList()', 'reject', err);
+                    reject(err);
+                }
+            });
+        });
+    }
+
     /**
      * getBlobMedia
      * @description Get list of all media files in post with post shortcode.
+     * @deprecated Use getMediaList() instead.
      *
      * @param  {String}  postPath
      * @return {Object}
@@ -3780,7 +3849,7 @@
                 onload: function (response) {
                     try {
                         let obj = JSON.parse(response.response);
-                        logger(obj);
+                        logger("getBlobMedia()", obj);
 
                         if (obj.status === 'fail') {
                             // alert(`Request failed with API response:\n${obj.message}: ${obj.feedback_message}`);
@@ -3811,6 +3880,7 @@
     /**
      * getBlobMediaWithQueryID
      * @description Get list of all media files in post with post shortcode.
+     * @deprecated Use getMediaList() instead.
      *
      * @param  {String}  postPath
      * @return {Object}
@@ -3888,8 +3958,13 @@
                 url: getURL,
                 headers: {
                     "User-Agent": webViewAgent,
-                    "Accept": "*/*",
-                    'X-IG-App-ID': getAppID()
+                    'X-IG-App-ID': getAppID() || '0',
+                    'X-CSRFToken': getCookie('csrftoken') || '',
+                    'X-Asbd-ID': '359341',
+                    'X-Ig-Max-Touch-Points': '0',
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-Ig-Www-Claim': sessionStorage.getItem('www-claim-v2') || '0',
+                    'X-Web-Session-Id': genWebSessionId()
                 },
                 onload: function (response) {
                     if (response.finalUrl == getURL) {
@@ -3964,6 +4039,143 @@
         })
 
         return (result) ? result.at(0).at(-1) : null;
+    }
+
+    /**
+     * getLSD
+     * @description Get Instagram LSD.
+     *
+     * @return {?string}
+     */
+    function getLSD() {
+        let result = null;
+        $('script[type="application/json"][data-sjs]').each(function () {
+            const regexp = /\["LSD",\[\],\{"token":"([0-9a-z_-]+)"\}/i;
+            const $this = $(this);
+            const text = $this.text();
+            const matcher = text.match(regexp);
+            if (matcher != null && result == null) {
+                result = matcher[1];
+            }
+        })
+
+        return result;
+    }
+
+    /**
+     * getBloks
+     * @description Get Instagram Bloks.
+     *
+     * @return {?string}
+     */
+    function getBloks() {
+        let result = null;
+        $('script[type="application/json"][data-sjs]').each(function () {
+            const regexp = /"WebBloksVersioningID",\[\],\{"versioningID":"([0-9a-z_-]+)"\}/i;
+            const $this = $(this);
+            const text = $this.text();
+            const matcher = text.match(regexp);
+            if (matcher != null && result == null) {
+                result = matcher[1];
+            }
+        })
+
+        return result;
+    }
+
+    /**
+     * getDTSG
+     * @description Get Instagram DTSG.
+     *
+     * @return {?string}
+     */
+    function getDTSG() {
+        let result = null;
+        $('script[type="application/json"][data-sjs]').each(function () {
+            const regexp = /"DTSGInitialData",\[\],\{"token":"([0-9a-z_:-]+)"\}/i;
+            const $this = $(this);
+            const text = $this.text();
+            const matcher = text.match(regexp);
+            if (matcher != null && result == null) {
+                result = matcher[1];
+            }
+        })
+
+        return result;
+    }
+
+    /**
+     * getSiteData
+     * @description Get Instagram SiteData.
+     *
+     * @return {?string}
+     */
+    function getSiteData() {
+        let result = null;
+        $('script[type="application/json"][data-sjs]').each(function () {
+            const regexp = /"SiteData",\[\],\{/i;
+            const $this = $(this);
+            const text = $this.text();
+            const matcher = text.match(regexp);
+            if (matcher != null && result == null) {
+                result = text;
+            }
+        })
+
+        const siteData = findConfig(JSON.parse(result), "SiteData");
+        return siteData;
+    }
+
+    /**
+     * getJazoest
+     * @description Get Instagram jazoest.
+     *
+     * @return {?string}
+     */
+    function getJazoest(fbDtsg) {
+        let sum = 0;
+        for (let i = 0; i < fbDtsg.length; i++) {
+            sum += fbDtsg.charCodeAt(i);
+        }
+        return "2" + sum;
+    }
+
+    /**
+     * findConfig
+     * @description Find the configuration object with the specified name in the given data structure.
+     *
+     * @return {?string}
+     */
+    function findConfig(data, name) {
+        const stack = [data];
+        while (stack.length) {
+            const node = stack.pop();
+            if (Array.isArray(node)) {
+                if (node[0] === name && node.length >= 3 &&
+                    node[2] && typeof node[2] === "object" && !Array.isArray(node[2])) {
+                    return node[2];
+                }
+                stack.push(...node);
+            } else if (node && typeof node === "object") {
+                stack.push(...Object.values(node));
+            }
+        }
+        return null;
+    }
+
+    /**
+     * rand6
+     * @description Generate a random 6-character string.
+     *
+     * @return {string}
+     */
+    function rand6() {
+        return Math.floor(Math.random() * 2 ** 31).toString(36).padStart(6, "0");
+    }
+
+
+    function genWebSessionId() {
+        return `${rand6()}:${rand6()}:${rand6()}`;
     }
 
     /**
@@ -5420,6 +5632,11 @@
             logger('No React click handler found for the element:', el);
         }
     };
+
+    function getCookie(name) {
+        const m = document.cookie.match(new RegExp('(?:^|; )' + name + '=([^;]*)'));
+        return m ? decodeURIComponent(m[1]) : null;
+    }
 
     // /**
     //  * getPointerElement

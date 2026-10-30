@@ -7,10 +7,10 @@ import {
     setDownloadProgress,
     triggerReactClickHandler
 } from "../utils/general";
-import { getBlobMedia } from "../utils/api";
 import { _i18n } from "../utils/i18n";
 import { openImageViewer } from "../utils/image_viewer";
 import { IG_createDM, IG_setDM } from "../utils/dialog";
+import { getMediaList } from "../utils/api";
 /*! ESLINT IMPORT END !*/
 
 /**
@@ -845,7 +845,7 @@ export async function createMediaListDOM(postURL, selector, message) {
         $target.find('a').remove();
         $target.append('<p id="_SNLOAD">' + message + '</p>');
         $('.IG_POPUP_DIG #batch_download_selected, .IG_POPUP_DIG #batch_download_direct').prop('disabled', true);
-        let result = await getBlobMedia(postURL);
+        let result = await getMediaList(postURL);
         let resource = filterResourceData(result.data);
 
         if (result.type === 'query_hash') {

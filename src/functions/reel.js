@@ -1,6 +1,6 @@
 import { USER_SETTING, SVG, state } from "../settings";
 import { updateLoadingBar, saveFiles, openNewTab, logger, toggleVolumeSilder, triggerReactClickHandler } from "../utils/general";
-import { getBlobMedia } from "../utils/api";
+import { getMediaList } from "../utils/api";
 import { filterResourceData } from "./post";
 import { _i18n } from "../utils/i18n";
 /*! ESLINT IMPORT END !*/
@@ -20,7 +20,7 @@ export async function onReels(isDownload, isVideo, isPreview) {
             updateLoadingBar(true);
 
             let reelsPath = location.href.split('?').at(0).split('instagram.com/reels/').at(-1).replaceAll('/', '');
-            let result = await getBlobMedia(reelsPath);
+            let result = await getMediaList(reelsPath);
             let media = filterResourceData(result.data);
 
             let timestamp = new Date().getTime();

@@ -53,6 +53,143 @@ export function getAppID() {
 }
 
 /**
+ * getLSD
+ * @description Get Instagram LSD.
+ *
+ * @return {?string}
+ */
+export function getLSD() {
+    let result = null;
+    $('script[type="application/json"][data-sjs]').each(function () {
+        const regexp = /\["LSD",\[\],\{"token":"([0-9a-z_-]+)"\}/i;
+        const $this = $(this);
+        const text = $this.text();
+        const matcher = text.match(regexp);
+        if (matcher != null && result == null) {
+            result = matcher[1];
+        }
+    })
+
+    return result;
+}
+
+/**
+ * getBloks
+ * @description Get Instagram Bloks.
+ *
+ * @return {?string}
+ */
+export function getBloks() {
+    let result = null;
+    $('script[type="application/json"][data-sjs]').each(function () {
+        const regexp = /"WebBloksVersioningID",\[\],\{"versioningID":"([0-9a-z_-]+)"\}/i;
+        const $this = $(this);
+        const text = $this.text();
+        const matcher = text.match(regexp);
+        if (matcher != null && result == null) {
+            result = matcher[1];
+        }
+    })
+
+    return result;
+}
+
+/**
+ * getDTSG
+ * @description Get Instagram DTSG.
+ *
+ * @return {?string}
+ */
+export function getDTSG() {
+    let result = null;
+    $('script[type="application/json"][data-sjs]').each(function () {
+        const regexp = /"DTSGInitialData",\[\],\{"token":"([0-9a-z_:-]+)"\}/i;
+        const $this = $(this);
+        const text = $this.text();
+        const matcher = text.match(regexp);
+        if (matcher != null && result == null) {
+            result = matcher[1];
+        }
+    })
+
+    return result;
+}
+
+/**
+ * getSiteData
+ * @description Get Instagram SiteData.
+ *
+ * @return {?string}
+ */
+export function getSiteData() {
+    let result = null;
+    $('script[type="application/json"][data-sjs]').each(function () {
+        const regexp = /"SiteData",\[\],\{/i;
+        const $this = $(this);
+        const text = $this.text();
+        const matcher = text.match(regexp);
+        if (matcher != null && result == null) {
+            result = text;
+        }
+    })
+
+    const siteData = findConfig(JSON.parse(result), "SiteData");
+    return siteData;
+}
+
+/**
+ * getJazoest
+ * @description Get Instagram jazoest.
+ *
+ * @return {?string}
+ */
+export function getJazoest(fbDtsg) {
+    let sum = 0;
+    for (let i = 0; i < fbDtsg.length; i++) {
+        sum += fbDtsg.charCodeAt(i);
+    }
+    return "2" + sum;
+}
+
+/**
+ * findConfig
+ * @description Find the configuration object with the specified name in the given data structure.
+ *
+ * @return {?string}
+ */
+export function findConfig(data, name) {
+    const stack = [data];
+    while (stack.length) {
+        const node = stack.pop();
+        if (Array.isArray(node)) {
+            if (node[0] === name && node.length >= 3 &&
+                node[2] && typeof node[2] === "object" && !Array.isArray(node[2])) {
+                return node[2];
+            }
+            stack.push(...node);
+        } else if (node && typeof node === "object") {
+            stack.push(...Object.values(node));
+        }
+    }
+    return null;
+}
+
+/**
+ * rand6
+ * @description Generate a random 6-character string.
+ *
+ * @return {string}
+ */
+function rand6() {
+    return Math.floor(Math.random() * 2 ** 31).toString(36).padStart(6, "0");
+}
+
+
+export function genWebSessionId() {
+    return `${rand6()}:${rand6()}:${rand6()}`;
+}
+
+/**
  * getTimeElementBaseDateSource
  * @description Get the base date text source and cache key from a time element.
  *
@@ -1506,6 +1643,11 @@ export function triggerReactClickHandler(el) {
         logger('No React click handler found for the element:', el);
     }
 };
+
+export function getCookie(name) {
+    const m = document.cookie.match(new RegExp('(?:^|; )' + name + '=([^;]*)'));
+    return m ? decodeURIComponent(m[1]) : null;
+}
 
 // /**
 //  * getPointerElement
