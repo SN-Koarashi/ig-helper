@@ -358,7 +358,7 @@ export async function onStory(isDownload, isForce, isPreview) {
                 logger('Fetch from memory cache:', username);
                 state.GL_dataCache.stories[username].data.xdt_api__v1__feed__reels_media.reels_media[0].items.forEach(item => {
                     if (item.id == targetURL) {
-                        videoURL = item.video_versions[0].src;
+                        videoURL = item.video_versions[0].url;
                         if (USER_SETTING.RENAME_PUBLISH_DATE) {
                             timestamp = item.taken_at_timestamp || item.taken_at;
                             mediaId = item.id;
@@ -381,7 +381,7 @@ export async function onStory(isDownload, isForce, isPreview) {
 
                 items.forEach(item => {
                     if (item.id == targetURL) {
-                        videoURL = item.video_versions[0].src;
+                        videoURL = item.video_versions[0].url;
                         if (USER_SETTING.RENAME_PUBLISH_DATE) {
                             timestamp = item.taken_at_timestamp || item.taken_at;
                             mediaId = item.id;
@@ -396,7 +396,7 @@ export async function onStory(isDownload, isForce, isPreview) {
 
                     $header.each(function (index) {
                         if ($(this).children().length > 0) {
-                            videoURL = items[index].video_versions[0].src;
+                            videoURL = items[index].video_versions[0].url;
                             if (USER_SETTING.RENAME_PUBLISH_DATE) {
                                 timestamp = items[index].taken_at_timestamp || items[index].taken_at;
                                 mediaId = items[index].id;
@@ -411,7 +411,7 @@ export async function onStory(isDownload, isForce, isPreview) {
                             const $this = $(this);
                             if ($this.hasClass('x1lix1fw')) {
                                 if ($this.children().length > 0) {
-                                    videoURL = items[index].video_versions[0].src;
+                                    videoURL = items[index].video_versions[0].url;
                                     if (USER_SETTING.RENAME_PUBLISH_DATE) {
                                         timestamp = items[index].taken_at_timestamp || items[index].taken_at;
                                         mediaId = items[index].id;
@@ -423,7 +423,7 @@ export async function onStory(isDownload, isForce, isPreview) {
                         // appear in from home page to story page
                         $('body > div section:visible ._ac0k > ._ac3r > div').each(function (index) {
                             if ($(this).children().hasClass('_ac3q')) {
-                                videoURL = items[index].video_versions[0].src;
+                                videoURL = items[index].video_versions[0].url;
                                 if (USER_SETTING.RENAME_PUBLISH_DATE) {
                                     timestamp = items[index].taken_at_timestamp || items[index].taken_at;
                                     mediaId = items[index].id;

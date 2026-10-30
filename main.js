@@ -17,7 +17,7 @@
 // @name:zh-CN         IG小助手
 // @name:zh-TW         IG小精靈
 // @namespace          https://github.snkms.com/
-// @version            4.3.3
+// @version            4.3.4
 // @description        Download photos and videos from Instagram posts in one click, including Stories, Reels, and profile pictures.
 // @description:ar     نزّل صورًا ومقاطع فيديو من منشورات Instagram بنقرة واحدة، بما في ذلك القصص وReels وصور الملف الشخصي.
 // @description:de     Lade Fotos und Videos aus Instagram-Beiträgen mit einem Klick herunter, einschließlich Stories, Reels und Profilbildern.
@@ -488,7 +488,7 @@
                             }
 
                             await saveFiles(
-                                item.video_resources[0].src,
+                                item.video_versions[0].url,
                                 {
                                     username,
                                     sourceType: "highlights",
@@ -2861,7 +2861,7 @@
                     logger('Fetch from memory cache:', username);
                     state.GL_dataCache.stories[username].data.xdt_api__v1__feed__reels_media.reels_media[0].items.forEach(item => {
                         if (item.id == targetURL) {
-                            videoURL = item.video_versions[0].src;
+                            videoURL = item.video_versions[0].url;
                             if (USER_SETTING.RENAME_PUBLISH_DATE) {
                                 timestamp = item.taken_at_timestamp || item.taken_at;
                                 mediaId = item.id;
@@ -2884,7 +2884,7 @@
 
                     items.forEach(item => {
                         if (item.id == targetURL) {
-                            videoURL = item.video_versions[0].src;
+                            videoURL = item.video_versions[0].url;
                             if (USER_SETTING.RENAME_PUBLISH_DATE) {
                                 timestamp = item.taken_at_timestamp || item.taken_at;
                                 mediaId = item.id;
@@ -2899,7 +2899,7 @@
 
                         $header.each(function (index) {
                             if ($(this).children().length > 0) {
-                                videoURL = items[index].video_versions[0].src;
+                                videoURL = items[index].video_versions[0].url;
                                 if (USER_SETTING.RENAME_PUBLISH_DATE) {
                                     timestamp = items[index].taken_at_timestamp || items[index].taken_at;
                                     mediaId = items[index].id;
@@ -2914,7 +2914,7 @@
                                 const $this = $(this);
                                 if ($this.hasClass('x1lix1fw')) {
                                     if ($this.children().length > 0) {
-                                        videoURL = items[index].video_versions[0].src;
+                                        videoURL = items[index].video_versions[0].url;
                                         if (USER_SETTING.RENAME_PUBLISH_DATE) {
                                             timestamp = items[index].taken_at_timestamp || items[index].taken_at;
                                             mediaId = items[index].id;
@@ -2926,7 +2926,7 @@
                             // appear in from home page to story page
                             $('body > div section:visible ._ac0k > ._ac3r > div').each(function (index) {
                                 if ($(this).children().hasClass('_ac3q')) {
-                                    videoURL = items[index].video_versions[0].src;
+                                    videoURL = items[index].video_versions[0].url;
                                     if (USER_SETTING.RENAME_PUBLISH_DATE) {
                                         timestamp = items[index].taken_at_timestamp || items[index].taken_at;
                                         mediaId = items[index].id;
@@ -3444,14 +3444,20 @@
     }
 
     /**
+     * @param {string|number} id
      * @param {Object} data
      */
-    async function addData(data) {
+    async function addData(id, data) {
         const db = await openDB();
+
         return new Promise((resolve, reject) => {
             const transaction = db.transaction(STORE_NAME, 'readwrite');
             const store = transaction.objectStore(STORE_NAME);
-            const request = store.add(data);
+
+            const request = store.add({
+                ...data,
+                id
+            });
 
             request.onsuccess = () => resolve(request.result);
             request.onerror = (event) => reject(`Insert failed: ${event.target.error}`);
@@ -3489,15 +3495,20 @@
     }
 
     /**
+     * @param {number} id
      * @param {Object} data
      */
-    async function updateData(data) {
+    async function updateData(id, data) {
         const db = await openDB();
+
         return new Promise((resolve, reject) => {
             const transaction = db.transaction(STORE_NAME, 'readwrite');
             const store = transaction.objectStore(STORE_NAME);
 
-            const request = store.put(data);
+            const request = store.put({
+                ...data,
+                id
+            });
 
             request.onsuccess = () => resolve(request.result);
             request.onerror = (event) => reject(`Update failed: ${event.target.error}`);

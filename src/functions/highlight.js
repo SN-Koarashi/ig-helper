@@ -86,7 +86,7 @@ export async function onHighlightsStoryAll() {
                         }
 
                         await saveFiles(
-                            item.video_resources[0].src,
+                            item.video_versions[0].url,
                             {
                                 username,
                                 sourceType: "highlights",
