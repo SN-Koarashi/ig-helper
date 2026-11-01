@@ -5182,12 +5182,10 @@
         if (exifChunk.length & 1) exifChunk = concat(exifChunk, Uint8Array.of(0));
         if (vp8xIdx !== -1) {
             const vp8x = new Uint8Array(chunks[vp8xIdx]);
-            vp8x[8] |= 0x10;
+            vp8x[8] = (vp8x[8] & ~0x04) | 0x08; // EXIF on, XMP off (stripped above)
             chunks[vp8xIdx] = vp8x;
-            chunks.splice(vp8xIdx + 1, 0, exifChunk);
-        } else {
-            chunks.push(exifChunk);
         }
+        chunks.push(exifChunk);
         const payload = chunks.reduce((s, c) => s + c.length, 0);
         const riffHeader = concat(enc('RIFF'), u32le(payload + 4), enc('WEBP'));
         const finalBuf = concat(riffHeader, ...chunks);
