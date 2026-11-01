@@ -4954,6 +4954,9 @@
      * @return {void}
      */
     async function createSaveFileElement(downloadLink, object, metadata) {
+        if (metadata.filetype === 'jpg' && object.type === 'image/webp') {
+            metadata.filetype = 'webp';
+        }
         let { username, sourceType, filetype, shortcode } = metadata;
 
         if (metadata.uid == null) {
@@ -4975,7 +4978,7 @@
 
         if (
             USER_SETTING.MODIFY_RESOURCE_EXIF &&
-            filetype === 'jpg' &&
+            (filetype === 'jpg' || filetype === 'webp') &&
             shortcode &&
             sourceType === 'photo' &&
             (object.type === 'image/jpeg' || object.type === 'image/webp')
