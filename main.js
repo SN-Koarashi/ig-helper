@@ -3186,7 +3186,7 @@
                 if (videoThumbnailURL) {
                     mediaId = item.id;
                     if (USER_SETTING.RENAME_PUBLISH_DATE) {
-                        timestamp = item.taken_at_timestamp ?? item.taken_at ?? timestamp;
+                        timestamp = item.taken_at_timestamp || item.taken_at;
                     }
                 }
             };
@@ -3302,7 +3302,8 @@
 
                 if (videoThumbnailURL.length == 0) {
                     logger('Memory cache not found, try fetch from API:', username);
-                    return onStoryThumbnail(true, true);
+                    onStoryThumbnail(true, true);
+                    return;
                 }
             }
             else {
