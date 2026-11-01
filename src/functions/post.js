@@ -5,7 +5,8 @@ import {
     updatePopupSelectionSummary,
     replaceSameOriginHost,
     setDownloadProgress,
-    triggerReactClickHandler
+    triggerReactClickHandler,
+    getLargestSrc
 } from "../utils/general";
 import { _i18n } from "../utils/i18n";
 import { openImageViewer } from "../utils/image_viewer";
@@ -716,7 +717,7 @@ export function registerPostClickHandlers() {
                             const $this = $(this);
                             let element_videos = $this.find('video');
                             let element_images = $this.find('._aagv img');
-                            let imgLink = (element_images.attr('srcset')) ? element_images.attr('srcset').split(" ")[0] : element_images.attr('src');
+                            let imgLink = (element_images.attr('srcset')) ? getLargestSrc(element_images.attr('srcset')) : element_images.attr('src');
 
                             if (element_videos && element_videos.attr('src')) {
                                 blob = true;
@@ -747,7 +748,7 @@ export function registerPostClickHandlers() {
                         s++;
                         let element_videos = $article.find('video');
                         let element_images = $article.find('._aagv img');
-                        let imgLink = (element_images.attr('srcset')) ? element_images.attr('srcset').split(" ")[0] : element_images.attr('src');
+                        let imgLink = (element_images.attr('srcset')) ? getLargestSrc(element_images.attr('srcset')) : element_images.attr('src');
 
                         if (element_videos && element_videos.attr('src')) {
                             await createMediaListDOM(

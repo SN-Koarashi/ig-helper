@@ -1649,7 +1649,7 @@
                                 const $this = $(this);
                                 let element_videos = $this.find('video');
                                 let element_images = $this.find('._aagv img');
-                                let imgLink = (element_images.attr('srcset')) ? element_images.attr('srcset').split(" ")[0] : element_images.attr('src');
+                                let imgLink = (element_images.attr('srcset')) ? getLargestSrc(element_images.attr('srcset')) : element_images.attr('src');
 
                                 if (element_videos && element_videos.attr('src')) {
                                     blob = true;
@@ -1680,7 +1680,7 @@
                             s++;
                             let element_videos = $article.find('video');
                             let element_images = $article.find('._aagv img');
-                            let imgLink = (element_images.attr('srcset')) ? element_images.attr('srcset').split(" ")[0] : element_images.attr('src');
+                            let imgLink = (element_images.attr('srcset')) ? getLargestSrc(element_images.attr('srcset')) : element_images.attr('src');
 
                             if (element_videos && element_videos.attr('src')) {
                                 await createMediaListDOM(
@@ -2959,7 +2959,7 @@
             }
             else {
                 // Download stories if it is image
-                let srcset = $('body > div section:visible img[referrerpolicy][class], body > div section:visible img[crossorigin][class]:not([alt])').attr('srcset')?.split(',')[0]?.split(' ')[0];
+                let srcset = getLargestSrc($('body > div section:visible img[referrerpolicy][class], body > div section:visible img[crossorigin][class]:not([alt])').attr('srcset'));
                 let link = (srcset) ? srcset : $('body > div section:visible img[referrerpolicy][class], body > div section:visible img[crossorigin][class]:not([alt])').filter(function () {
                     const $this = $(this);
                     return $this.parents('a').length === 0 && $this.width() === $this.parent().width();
@@ -2968,7 +2968,7 @@
                 if (!link) {
                     // _aa63 mean stories picture in stories page (not avatar)
                     let $element = $('body > div section:visible img._aa63');
-                    link = ($element.attr('srcset')) ? $element.attr('srcset')?.split(',')[0]?.split(' ')[0] : $element.attr('src');
+                    link = ($element.attr('srcset')) ? getLargestSrc($element.attr('srcset')) : $element.attr('src');
                 }
 
                 if (USER_SETTING.RENAME_PUBLISH_DATE) {
@@ -5452,6 +5452,24 @@
                 }
             }
         });
+    }
+
+    /**
+     * getLargestSrc
+     * @description Get the URL of the widest candidate in a srcset attribute, instead of trusting the first one.
+     *
+     * @param  {String}  srcset
+     * @return {String|undefined}
+     */
+    function getLargestSrc(srcset) {
+        let best, bestWidth = -1;
+        for (const [, url, width] of (srcset || '').matchAll(/([^\s,]+)\s+(\d+)w/g)) {
+            if (+width > bestWidth) {
+                best = url;
+                bestWidth = +width;
+            }
+        }
+        return best ?? srcset?.split(' ')[0];
     }
 
     /**

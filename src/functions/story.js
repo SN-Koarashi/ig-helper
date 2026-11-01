@@ -6,7 +6,8 @@ import {
     tryHandleDashFromMediaItem,
     updatePopupSelectionSummary,
     setStoryProgressIndexText,
-    setStoryProgressIndexByUsername
+    setStoryProgressIndexByUsername,
+    getLargestSrc
 } from "../utils/general";
 import { getUserId, getStories, getMediaInfo } from "../utils/api";
 import { _i18n } from "../utils/i18n";
@@ -456,7 +457,7 @@ export async function onStory(isDownload, isForce, isPreview) {
         }
         else {
             // Download stories if it is image
-            let srcset = $('body > div section:visible img[referrerpolicy][class], body > div section:visible img[crossorigin][class]:not([alt])').attr('srcset')?.split(',')[0]?.split(' ')[0];
+            let srcset = getLargestSrc($('body > div section:visible img[referrerpolicy][class], body > div section:visible img[crossorigin][class]:not([alt])').attr('srcset'));
             let link = (srcset) ? srcset : $('body > div section:visible img[referrerpolicy][class], body > div section:visible img[crossorigin][class]:not([alt])').filter(function () {
                 const $this = $(this);
                 return $this.parents('a').length === 0 && $this.width() === $this.parent().width();
@@ -465,7 +466,7 @@ export async function onStory(isDownload, isForce, isPreview) {
             if (!link) {
                 // _aa63 mean stories picture in stories page (not avatar)
                 let $element = $('body > div section:visible img._aa63');
-                link = ($element.attr('srcset')) ? $element.attr('srcset')?.split(',')[0]?.split(' ')[0] : $element.attr('src');
+                link = ($element.attr('srcset')) ? getLargestSrc($element.attr('srcset')) : $element.attr('src');
             }
 
             if (USER_SETTING.RENAME_PUBLISH_DATE) {

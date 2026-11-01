@@ -1475,6 +1475,24 @@ export function callNotification() {
 }
 
 /**
+ * getLargestSrc
+ * @description Get the URL of the widest candidate in a srcset attribute, instead of trusting the first one.
+ *
+ * @param  {String}  srcset
+ * @return {String|undefined}
+ */
+export function getLargestSrc(srcset) {
+    let best, bestWidth = -1;
+    for (const [, url, width] of (srcset || '').matchAll(/([^\s,]+)\s+(\d+)w/g)) {
+        if (+width > bestWidth) {
+            best = url;
+            bestWidth = +width;
+        }
+    }
+    return best ?? srcset?.split(' ')[0];
+}
+
+/**
  * openNewTab
  * @description Open URL in new tab.
  *
