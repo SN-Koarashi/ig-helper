@@ -1317,8 +1317,8 @@ export async function triggerLinkElement($element, isPreview = false) {
                             if (aSTP.length > bSTP.length) return 1;
                             if (aSTP.length < bSTP.length) return -1;
                         } else {
-                            if ((a.width || 0) > (b.width || 0)) return 1;
-                            if ((a.width || 0) < (b.width || 0)) return -1;
+                            if ((a.width || 0) < (b.width || 0)) return 1;
+                            if ((a.width || 0) > (b.width || 0)) return -1;
                         }
 
                         return 0;
