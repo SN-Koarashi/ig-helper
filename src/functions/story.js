@@ -675,6 +675,18 @@ export async function onStoryThumbnail(isDownload, isForce) {
         let targetURL = location.pathname.replace(/\/$/ig, '').split("/").at(-1);
         let videoThumbnailURL = "";
         let mediaId = null;
+        const selectThumbnail = item => {
+            const candidates = item?.image_versions2?.candidates || [];
+            const image = candidates.filter(candidate => candidate.url).reduce((best, candidate) =>
+                !best || candidate.width > best.width ? candidate : best, null);
+            videoThumbnailURL = image?.url || item?.display_url || '';
+            if (videoThumbnailURL) {
+                mediaId = item.id;
+                if (USER_SETTING.RENAME_PUBLISH_DATE) {
+                    timestamp = item.taken_at_timestamp ?? item.taken_at ?? timestamp;
+                }
+            }
+        };
 
         updateLoadingBar(true);
 
@@ -781,18 +793,13 @@ export async function onStoryThumbnail(isDownload, isForce) {
             logger('Fetch from memory cache:', username);
             state.GL_dataCache.stories[username].data.xdt_api__v1__feed__reels_media.reels_media[0].items.forEach(item => {
                 if (item.id == targetURL) {
-                    videoThumbnailURL = item.display_url;
-                    if (USER_SETTING.RENAME_PUBLISH_DATE) {
-                        timestamp = item.taken_at_timestamp;
-                        mediaId = item.id;
-                    }
+                    selectThumbnail(item);
                 }
             });
 
             if (videoThumbnailURL.length == 0) {
                 logger('Memory cache not found, try fetch from API:', username);
-                onStoryThumbnail(true, true);
-                return;
+                return onStoryThumbnail(true, true);
             }
         }
         else {
@@ -804,11 +811,7 @@ export async function onStoryThumbnail(isDownload, isForce) {
 
             items.forEach(item => {
                 if (item.id == targetURL) {
-                    videoThumbnailURL = item.display_url;
-                    if (USER_SETTING.RENAME_PUBLISH_DATE) {
-                        timestamp = item.taken_at_timestamp;
-                        mediaId = item.id;
-                    }
+                    selectThumbnail(item);
                 }
             });
 
@@ -818,11 +821,7 @@ export async function onStoryThumbnail(isDownload, isForce) {
 
                 $header.each(function (index) {
                     if ($(this).children().length > 0) {
-                        videoThumbnailURL = items[index].display_url;
-                        if (USER_SETTING.RENAME_PUBLISH_DATE) {
-                            timestamp = items[index].taken_at_timestamp;
-                            mediaId = items[index].id;
-                        }
+                        selectThumbnail(items[index]);
                     }
                 });
 
@@ -832,11 +831,7 @@ export async function onStoryThumbnail(isDownload, isForce) {
                         const $this = $(this);
                         if ($this.hasClass('x1lix1fw')) {
                             if ($this.children().length > 0) {
-                                videoThumbnailURL = items[index].display_url;
-                                if (USER_SETTING.RENAME_PUBLISH_DATE) {
-                                    timestamp = items[index].taken_at_timestamp;
-                                    mediaId = items[index].id;
-                                }
+                                selectThumbnail(items[index]);
                             }
                         }
                     });
@@ -844,18 +839,20 @@ export async function onStoryThumbnail(isDownload, isForce) {
                     // appear in from home page to story page
                     $('body > div section:visible ._ac0k > ._ac3r > div').each(function (index) {
                         if ($(this).children().hasClass('_ac3q')) {
-                            videoThumbnailURL = items[index].display_url;
-                            if (USER_SETTING.RENAME_PUBLISH_DATE) {
-                                timestamp = items[index].taken_at_timestamp;
-                                mediaId = items[index].id;
-                            }
+                            selectThumbnail(items[index]);
                         }
                     });
                 }
             }
         }
 
-        saveFiles(videoThumbnailURL, {
+        if (!videoThumbnailURL) {
+            updateLoadingBar(false);
+            alert('Cannot find a thumbnail URL for this story.');
+            return;
+        }
+
+        await saveFiles(videoThumbnailURL, {
             username,
             sourceType: "thumbnail",
             timestamp,
