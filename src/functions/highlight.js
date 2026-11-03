@@ -120,22 +120,20 @@ export async function onHighlightsStoryAll() {
  * @param  {Boolean}  isPreview - Check if it is need to open new tab
  * @return {void}
  */
-export async function onHighlightsStory(isDownload, isPreview, isInternalRetry) {
+export async function onHighlightsStory(isDownload, isPreview) {
     var username = getHighlightsStoryUsername();
 
     if (isDownload) {
         // FIX: same mutex + try/catch/finally pattern as onStory(), for the
         // same reason (prevents overlapping concurrent downloads and guarantees
         // the loading bar is reset even if an unexpected exception occurs).
-        if (!isInternalRetry) {
-            if (state.highlightDownloadInProgress) {
-                logger('onHighlightsStory', 'Download already in progress, ignoring additional call');
-                return;
-            }
-
-            state.highlightDownloadInProgress = true;
-            updateLoadingBar(true);
+        if (state.highlightDownloadInProgress) {
+            logger('onHighlightsStory', 'Download already in progress, ignoring additional call');
+            return;
         }
+
+        state.highlightDownloadInProgress = true;
+        updateLoadingBar(true);
 
         let date = new Date().getTime();
         let timestamp = Math.floor(date / 1000);
@@ -143,9 +141,6 @@ export async function onHighlightsStory(isDownload, isPreview, isInternalRetry) 
         const visibleStoryTimestamp = getVisibleStoryTimestamp();
 
         try {
-
-            const useStoriesGraphQL = (USER_SETTING.FORCE_GRAPHQL_QUERY_FOR_STORIES_AND_HIGHLIGHTS || (isPreview && USER_SETTING.NEW_TAB_ALWAYS_FORCE_GRAPHQL_IN_STORIES_AND_HIGHLIGHTS)) && !state.tempFetchGraphQLUnavailable;
-
             /*
          * mediaId candidate resolution, run BEFORE the highlight fetch
          * when possible, in the same priority order as onStory():
@@ -245,14 +240,8 @@ export async function onHighlightsStory(isDownload, isPreview, isInternalRetry) 
                     highStories = await getHighlightStories(highlightId);
                 }
                 catch (err) {
-                    logger('[Instagram Stories GraphQL]', 'fetch highlight failed', err);
-                    if (useStoriesGraphQL && USER_SETTING.FALLBACK_TO_BLOB_FETCH_IF_STORIES_GRAPHQL_UNAVAILABLE) {
-                        state.tempFetchGraphQLUnavailable = true;
-                        await onHighlightsStory(isDownload, isPreview, true);
-                    }
-                    else {
-                        alert('Fetch failed for highlight.');
-                    }
+                    logger('onHighlightsStory', 'getHighlightStories() failed', err);
+                    alert('Fetch failed for highlight.');
                     return;
                 }
 
@@ -270,10 +259,8 @@ export async function onHighlightsStory(isDownload, isPreview, isInternalRetry) 
             let target = (mediaId != null ? items.find(item => String(item.pk ?? item.id) === String(mediaId)) : null) || null;
 
             /*
-         * 2) resolveMediaIdOfStoryOrHighlightByTimestamp() — the
-         * highlight cache is API-agnostic: always resolve the visible
-         * item the same way, regardless of whether the response came
-         * from Instagram Stories GraphQL or GraphQL.
+         * 2) resolveMediaIdOfStoryOrHighlightByTimestamp() — compare
+         * the visible <time> element against the fetched items.
          */
             if (target == null) {
                 const bestId = resolveMediaIdOfStoryOrHighlightByTimestamp(highStories, visibleStoryTimestamp);
@@ -417,10 +404,8 @@ export async function onHighlightsStory(isDownload, isPreview, isInternalRetry) 
             alert('Fetch failed for highlight.');
         }
         finally {
-            if (!isInternalRetry) {
-                state.highlightDownloadInProgress = false;
-                updateLoadingBar(false);
-            }
+            state.highlightDownloadInProgress = false;
+            updateLoadingBar(false);
         }
     }
     else {
@@ -507,8 +492,6 @@ export async function onHighlightsStoryThumbnail(isDownload) {
 
         updateLoadingBar(true);
 
-        const useStoriesGraphQL = USER_SETTING.FORCE_GRAPHQL_QUERY_FOR_STORIES_AND_HIGHLIGHTS && !state.tempFetchGraphQLUnavailable;
-
         /*
          * mediaId candidate resolution, run BEFORE the highlight fetch
          * when possible, in the same priority order as
@@ -553,7 +536,6 @@ export async function onHighlightsStoryThumbnail(isDownload) {
                         shortcode: candidateId
                     });
 
-                    state.tempFetchGraphQLUnavailable = false;
                     updateLoadingBar(false);
                     return;
                 }
@@ -596,15 +578,9 @@ export async function onHighlightsStoryThumbnail(isDownload) {
                 highStories = await getHighlightStories(highlightId);
             }
             catch (err) {
-                logger('[Instagram Stories GraphQL]', 'fetch highlight thumbnail failed', err);
-                if (useStoriesGraphQL && USER_SETTING.FALLBACK_TO_BLOB_FETCH_IF_STORIES_GRAPHQL_UNAVAILABLE) {
-                    state.tempFetchGraphQLUnavailable = true;
-                    onHighlightsStoryThumbnail(isDownload);
-                }
-                else {
-                    alert('Fetch failed for highlight.');
-                    updateLoadingBar(false);
-                }
+                logger('onHighlightsStoryThumbnail', 'getHighlightStories() failed', err);
+                alert('Fetch failed for highlight.');
+                updateLoadingBar(false);
                 return;
             }
 
@@ -685,14 +661,12 @@ export async function onHighlightsStoryThumbnail(isDownload) {
                     filetype: 'jpg',
                     shortcode: mediaId
                 });
-                state.tempFetchGraphQLUnavailable = false;
                 updateLoadingBar(false);
                 return;
             }
         }
 
-        // Thumbnail is always an image — this must never enter the DASH/video path,
-        // regardless of which source (Instagram Stories GraphQL or classic GraphQL) resolved `target`.
+        // Thumbnail is always an image — this must never enter the DASH/video path.
         const thumbnailURL = target.image_versions2?.candidates?.at(-1)?.url ||
             target.image_versions2?.candidates?.[0]?.url ||
             target.display_url ||
@@ -712,7 +686,6 @@ export async function onHighlightsStoryThumbnail(isDownload) {
             shortcode: mediaId
         });
 
-        state.tempFetchGraphQLUnavailable = false;
         updateLoadingBar(false);
     }
     else {

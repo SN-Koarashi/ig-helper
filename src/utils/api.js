@@ -14,7 +14,7 @@ import { filterResourceData } from "../functions/post";
  * getHighlightStories
  * @description Get a list of all stories in highlight Id. A highlightId isn't a
  *              userId, so there's no "expected username" to check the request
- *              against before it's made (unlike getStoriesGraphQL/getStories). Once
+ *              against before it's made (unlike getStories). Once
  *              the response arrives, its owner is used to opportunistically
  *              validate/self-heal the username -> userId cache via
  *              reconcileOwnerFromApiResponse() — this never blocks or delays
@@ -109,8 +109,7 @@ export function getHighlightStories(highlightId) {
  *              against it; on disagreement the cached user id is refreshed live
  *              (see resolveUserIdLive()) and the request is retried once. On
  *              agreement, or once already verified this session, the mapping is
- *              trusted without re-checking until the tab is refreshed. Mirrors
- *              getStoriesGraphQL()'s owner-mismatch handling.
+ *              trusted without re-checking until the tab is refreshed.
  *
  * @param  {Integer}  userId
  * @param  {String=}  expectedUsername - Optional owner-mismatch guard.
@@ -181,14 +180,14 @@ export function getStories(userId, expectedUsername, _retried) {
                     if (ownerMismatch) {
                         logger('getStories()', `owner mismatch: expected "${expectedUsername}", got "${reelOwner.username}" — refreshing id`);
                         resolveUserIdLive(expectedUsername).then((freshUserInfo) => {
-                            const fresh = freshUserInfo?.user?.id ? freshUserInfo : null;
+                            const freshId = freshUserInfo?.user?.pk ?? freshUserInfo?.user?.id;
 
-                            if (fresh && putUserIdInCache(expectedUsername, fresh.user.id)) {
-                                userIdCache.set(expectedUsername, fresh);
+                            if (freshId && putUserIdInCache(expectedUsername, freshId)) {
+                                userIdCache.set(expectedUsername.toLowerCase(), freshUserInfo);
                             }
 
-                            if (fresh && String(fresh.user.id) !== String(userId)) {
-                                getStories(String(fresh.user.id), expectedUsername, true).then(resolve, reject);
+                            if (freshId && String(freshId) !== String(userId)) {
+                                getStories(String(freshId), expectedUsername, true).then(resolve, reject);
                             }
                             else {
                                 reject('user_mismatch');
@@ -754,7 +753,7 @@ function extractMediaIdsFromLegacyQueryHash(data) {
  *              its owner is used to opportunistically validate/self-heal the
  *              username -> userId cache via reconcileOwnerFromApiResponse(). Shortcode
  *              posts/reels have no "expected username" known ahead of the request
- *              (unlike getStoriesGraphQL/getStories), so this never blocks or delays
+ *              (unlike getStories), so this never blocks or delays
  *              serving the resource — the shortcode already fully determines the
  *              correct content on its own.
  *

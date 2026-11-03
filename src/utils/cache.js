@@ -195,7 +195,7 @@ export function removeUserIdCacheEntry(username) {
  *              this user ID is currently assigned to a different username (Instagram
  *              reassigned the ID, or the username changed), that stale mapping is
  *              dropped and replaced, since every caller here supplies live/confirmed
- *              data (getUserId()'s live fetch, getStoriesGraphQL()/getStories()'s
+ *              data (getUserId()'s live fetch, getStories()'s
  *              owner-mismatch refresh, reconcileOwnerFromApiResponse()). The persistent
  *              bucket is capped at USER_ID_MAX_CACHE_ITEMS entries; once full, a random
  *              existing entry is evicted to make room for the new one.

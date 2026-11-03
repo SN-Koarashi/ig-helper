@@ -1,7 +1,4 @@
-import {
-    state, USER_SETTING, $body, PARENT_CHILD_MAPPING, SETTING_DEPENDENCIES,
-    SETTING_DISABLE_DEPENDENCIES
-} from "./settings";
+import { state, USER_SETTING, $body, PARENT_CHILD_MAPPING } from "./settings";
 import {
     reloadScript,
     triggerLinkElement, openNewTab, saveFiles, logger, updatePopupSelectionSummary,
@@ -178,35 +175,10 @@ $(function () {
                         $(`.IG_POPUP_DIG input#${parent}`).prop('checked', true);
                     }
                 }
-
-                // Keep prerequisite settings visibly enabled when a dependent
-                // setting is checked. This is intentionally a UI + persisted-state
-                // dependency, not merely a runtime fallback.
-                for (const dependency of (SETTING_DEPENDENCIES[name] || [])) {
-                    if (USER_SETTING[dependency] !== true) {
-                        USER_SETTING[dependency] = true;
-                        GM_setValue(dependency, true);
-                        $(`.IG_POPUP_DIG input#${dependency}`).prop('checked', true);
-                    }
-                }
             }
             else {
-                // Disabling a setting invalidates only the settings that
-                // explicitly depend on it. Keep this separate from the
-                // parent/child loop above because `children` is scoped to
-                // that loop and is not available here.
-                const dependentSettings = SETTING_DISABLE_DEPENDENCIES[name] || [];
-
-                // Also preserve the original parent -> child behavior: if
-                // the setting being disabled is itself a parent, disable
-                // all of its mapped children as well.
-                const mappedChildren = PARENT_CHILD_MAPPING[name] || [];
-                const settingsToDisable = [...new Set([
-                    ...mappedChildren,
-                    ...dependentSettings
-                ])];
-
-                for (const child of settingsToDisable) {
+                // Disabling a parent setting also disables all of its children.
+                for (const child of (PARENT_CHILD_MAPPING[name] || [])) {
                     USER_SETTING[child] = false;
                     GM_setValue(child, false);
                     $(`.IG_POPUP_DIG input#${child}`).prop('checked', false);

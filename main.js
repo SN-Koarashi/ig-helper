@@ -53,7 +53,7 @@
 // @connect            raw.githubusercontent.com
 // @require            https://cdn.jsdelivr.net/npm/mediabunny@1.34.5/dist/bundles/mediabunny.min.cjs#sha256-wUFR+x2bDvpqgMAVGy2CvGvULyjTGvGy4UUAm8rae5U=
 // @require            https://code.jquery.com/jquery-4.0.0.min.js#sha256-OaVG6prZf4v69dPg6PhVattBXkcOWQB62pdZ3ORyrao=
-// @resource           INTERNAL_CSS https://cdn.jsdelivr.net/gh/SN-Koarashi/ig-helper@master/style.css
+// @resource           INTERNAL_CSS https://cdn.jsdelivr.net/gh/SN-Koarashi/ig-helper@master/style.css?v=5.0.0
 // @resource           LOCALE_MANIFEST https://cdn.jsdelivr.net/gh/SN-Koarashi/ig-helper@master/locale/manifest.json
 // @supportURL         https://github.com/SN-Koarashi/ig-helper/
 // @contributionURL    https://ko-fi.com/snkoarashi
@@ -83,14 +83,11 @@
         'DIRECT_DOWNLOAD_STORY': false,
         'DIRECT_DOWNLOAD_VISIBLE_RESOURCE': false,
         'DISABLE_VIDEO_LOOPING': false,
-        'FALLBACK_TO_BLOB_FETCH_IF_STORIES_GRAPHQL_UNAVAILABLE': false,
         'FORCE_FETCH_ALL_RESOURCES': false,
         'FORCE_POLARIS_POST_ROOT_QUERY_FOR_POSTS_AND_REELS': true,
-        'FORCE_GRAPHQL_QUERY_FOR_STORIES_AND_HIGHLIGHTS': true,
         'HTML5_VIDEO_CONTROL': false,
         'MODIFY_RESOURCE_EXIF': false,
         'MODIFY_VIDEO_VOLUME': false,
-        'NEW_TAB_ALWAYS_FORCE_GRAPHQL_IN_STORIES_AND_HIGHLIGHTS': false,
         'PREFER_DASH_MANIFEST_FOR_STORIES_AND_HIGHLIGHTS': false,
         'NEW_TAB_OPEN_HIGHEST_VIDEO_VIA_GRAPHQL': false,
         'REDIRECT_CLICK_USER_STORY_PICTURE': false,
@@ -105,36 +102,12 @@
         'AUTO_RENAME': [
             'RENAME_PUBLISH_DATE'
         ],
-        'FORCE_GRAPHQL_QUERY_FOR_STORIES_AND_HIGHLIGHTS': [
-            'FALLBACK_TO_BLOB_FETCH_IF_STORIES_GRAPHQL_UNAVAILABLE',
-            'NEW_TAB_ALWAYS_FORCE_GRAPHQL_IN_STORIES_AND_HIGHLIGHTS',
-            'PREFER_DASH_MANIFEST_FOR_STORIES_AND_HIGHLIGHTS',
-            'NEW_TAB_OPEN_HIGHEST_VIDEO_VIA_GRAPHQL'
-        ]
-    };
-
-    // Some settings have a direct dependency even though they are not parent/child
-    // entries in the visual hierarchy. When the dependent setting is enabled,
-    // automatically enable its prerequisite in both the setting state and the UI.
-    const SETTING_DEPENDENCIES = {
-        'NEW_TAB_OPEN_HIGHEST_VIDEO_VIA_GRAPHQL': [
-            'NEW_TAB_ALWAYS_FORCE_GRAPHQL_IN_STORIES_AND_HIGHLIGHTS'
-        ]
-    };
-
-    // Some settings also invalidate dependent options when they are disabled.
-    // Disabling the New Tab Instagram Stories GraphQL switch must therefore disable the
-    // highest-quality video option, which relies on that switch.
-    const SETTING_DISABLE_DEPENDENCIES = {
-        'NEW_TAB_ALWAYS_FORCE_GRAPHQL_IN_STORIES_AND_HIGHLIGHTS': [
+        'PREFER_DASH_MANIFEST_FOR_STORIES_AND_HIGHLIGHTS': [
             'NEW_TAB_OPEN_HIGHEST_VIDEO_VIA_GRAPHQL'
         ]
     };
 
     const LEGACY_SETTING_MIGRATIONS = {
-        'FALLBACK_TO_BLOB_FETCH_IF_REELS_MEDIA_API_THROTTLED': 'FALLBACK_TO_BLOB_FETCH_IF_STORIES_GRAPHQL_UNAVAILABLE',
-        'FORCE_REELS_MEDIA_API_FOR_STORIES_AND_HIGHLIGHTS': 'FORCE_GRAPHQL_QUERY_FOR_STORIES_AND_HIGHLIGHTS',
-        'NEW_TAB_ALWAYS_FORCE_REELS_MEDIA_API_IN_STORIES_AND_HIGHLIGHTS': 'NEW_TAB_ALWAYS_FORCE_GRAPHQL_IN_STORIES_AND_HIGHLIGHTS',
         'PREFER_DASH_MANIFEST_FOR_REELS_MEDIA_API': 'PREFER_DASH_MANIFEST_FOR_STORIES_AND_HIGHLIGHTS',
         'NEW_TAB_OPEN_HIGHEST_VIDEO_VIA_REELS_MEDIA_API': 'NEW_TAB_OPEN_HIGHEST_VIDEO_VIA_GRAPHQL'
     };
@@ -187,7 +160,6 @@
 
     var state = {
         videoVolume: (GM_getValue('G_VIDEO_VOLUME')) ? GM_getValue('G_VIDEO_VOLUME') : 1,
-        tempFetchGraphQLUnavailable: false,
         // FIX: simple mutexes for onStory()/onHighlightsStory() to prevent
         // two concurrent downloads from starting when the user clicks/presses Alt+S
         // rapidly on successive stories.
@@ -1457,22 +1429,20 @@
      * @param  {Boolean}  isPreview - Check if it is need to open new tab
      * @return {void}
      */
-    async function onHighlightsStory(isDownload, isPreview, isInternalRetry) {
+    async function onHighlightsStory(isDownload, isPreview) {
         var username = getHighlightsStoryUsername();
 
         if (isDownload) {
             // FIX: same mutex + try/catch/finally pattern as onStory(), for the
             // same reason (prevents overlapping concurrent downloads and guarantees
             // the loading bar is reset even if an unexpected exception occurs).
-            if (!isInternalRetry) {
-                if (state.highlightDownloadInProgress) {
-                    logger('onHighlightsStory', 'Download already in progress, ignoring additional call');
-                    return;
-                }
-
-                state.highlightDownloadInProgress = true;
-                updateLoadingBar(true);
+            if (state.highlightDownloadInProgress) {
+                logger('onHighlightsStory', 'Download already in progress, ignoring additional call');
+                return;
             }
+
+            state.highlightDownloadInProgress = true;
+            updateLoadingBar(true);
 
             let date = new Date().getTime();
             let timestamp = Math.floor(date / 1000);
@@ -1480,9 +1450,6 @@
             const visibleStoryTimestamp = getVisibleStoryTimestamp();
 
             try {
-
-                const useStoriesGraphQL = (USER_SETTING.FORCE_GRAPHQL_QUERY_FOR_STORIES_AND_HIGHLIGHTS || (isPreview && USER_SETTING.NEW_TAB_ALWAYS_FORCE_GRAPHQL_IN_STORIES_AND_HIGHLIGHTS)) && !state.tempFetchGraphQLUnavailable;
-
                 /*
              * mediaId candidate resolution, run BEFORE the highlight fetch
              * when possible, in the same priority order as onStory():
@@ -1579,19 +1546,11 @@
                 }
                 else {
                     try {
-                        highStories = useStoriesGraphQL
-                            ? await getStoriesGraphQL(`highlight:${highlightId}`)
-                            : await getHighlightStories(highlightId);
+                        highStories = await getHighlightStories(highlightId);
                     }
                     catch (err) {
-                        logger('[Instagram Stories GraphQL]', 'fetch highlight failed', err);
-                        if (useStoriesGraphQL && USER_SETTING.FALLBACK_TO_BLOB_FETCH_IF_STORIES_GRAPHQL_UNAVAILABLE) {
-                            state.tempFetchGraphQLUnavailable = true;
-                            await onHighlightsStory(isDownload, isPreview, true);
-                        }
-                        else {
-                            alert('Fetch failed for highlight.');
-                        }
+                        logger('onHighlightsStory', 'getHighlightStories() failed', err);
+                        alert('Fetch failed for highlight.');
                         return;
                     }
 
@@ -1609,10 +1568,8 @@
                 let target = (mediaId != null ? items.find(item => String(item.pk ?? item.id) === String(mediaId)) : null) || null;
 
                 /*
-             * 2) resolveMediaIdOfStoryOrHighlightByTimestamp() — the
-             * highlight cache is API-agnostic: always resolve the visible
-             * item the same way, regardless of whether the response came
-             * from Instagram Stories GraphQL or GraphQL.
+             * 2) resolveMediaIdOfStoryOrHighlightByTimestamp() — compare
+             * the visible <time> element against the fetched items.
              */
                 if (target == null) {
                     const bestId = resolveMediaIdOfStoryOrHighlightByTimestamp(highStories, visibleStoryTimestamp);
@@ -1756,10 +1713,8 @@
                 alert('Fetch failed for highlight.');
             }
             finally {
-                if (!isInternalRetry) {
-                    state.highlightDownloadInProgress = false;
-                    updateLoadingBar(false);
-                }
+                state.highlightDownloadInProgress = false;
+                updateLoadingBar(false);
             }
         }
         else {
@@ -1846,8 +1801,6 @@
 
             updateLoadingBar(true);
 
-            const useStoriesGraphQL = USER_SETTING.FORCE_GRAPHQL_QUERY_FOR_STORIES_AND_HIGHLIGHTS && !state.tempFetchGraphQLUnavailable;
-
             /*
              * mediaId candidate resolution, run BEFORE the highlight fetch
              * when possible, in the same priority order as
@@ -1892,7 +1845,6 @@
                             shortcode: candidateId
                         });
 
-                        state.tempFetchGraphQLUnavailable = false;
                         updateLoadingBar(false);
                         return;
                     }
@@ -1932,20 +1884,12 @@
             }
             else {
                 try {
-                    highStories = useStoriesGraphQL
-                        ? await getStoriesGraphQL(`highlight:${highlightId}`)
-                        : await getHighlightStories(highlightId);
+                    highStories = await getHighlightStories(highlightId);
                 }
                 catch (err) {
-                    logger('[Instagram Stories GraphQL]', 'fetch highlight thumbnail failed', err);
-                    if (useStoriesGraphQL && USER_SETTING.FALLBACK_TO_BLOB_FETCH_IF_STORIES_GRAPHQL_UNAVAILABLE) {
-                        state.tempFetchGraphQLUnavailable = true;
-                        onHighlightsStoryThumbnail(isDownload);
-                    }
-                    else {
-                        alert('Fetch failed for highlight.');
-                        updateLoadingBar(false);
-                    }
+                    logger('onHighlightsStoryThumbnail', 'getHighlightStories() failed', err);
+                    alert('Fetch failed for highlight.');
+                    updateLoadingBar(false);
                     return;
                 }
 
@@ -2026,14 +1970,12 @@
                         filetype: 'jpg',
                         shortcode: mediaId
                     });
-                    state.tempFetchGraphQLUnavailable = false;
                     updateLoadingBar(false);
                     return;
                 }
             }
 
-            // Thumbnail is always an image — this must never enter the DASH/video path,
-            // regardless of which source (Instagram Stories GraphQL or classic GraphQL) resolved `target`.
+            // Thumbnail is always an image — this must never enter the DASH/video path.
             const thumbnailURL = target.image_versions2?.candidates?.at(-1)?.url ||
                 target.image_versions2?.candidates?.[0]?.url ||
                 target.display_url ||
@@ -2053,7 +1995,6 @@
                 shortcode: mediaId
             });
 
-            state.tempFetchGraphQLUnavailable = false;
             updateLoadingBar(false);
         }
         else {
@@ -4425,31 +4366,27 @@
      * @description Trigger user's story download event or button display event.
      *
      * @param  {Boolean}  isDownload - Check if it is a download operation
-     * @param  {Boolean}  isForce - Force a fresh Instagram Stories GraphQL tray fetch
+     * @param  {Boolean}  isForce - Force a fresh getStories() tray fetch
      *                    instead of reusing state.GL_dataCache.stories. Does
      *                    NOT bypass the persistent media cache — a cached
      *                    resource is still served with no API call at all.
      * @param  {Boolean}  isPreview - Check if it is need to open new tab
      * @return {void}
      */
-    async function onStory(isDownload, isForce, isPreview, isInternalRetry) {
+    async function onStory(isDownload, isForce, isPreview) {
         var username = $("body > div section._ac0a header._ac0k ._ac0l a + div a").first().text() || location.pathname.split("/").filter(s => s.length > 0).at(1);
 
         if (isDownload) {
             // FIX (freeze during rapid story navigation): a simple mutex
             // prevents two concurrent downloads from overlapping (rapid clicks
-            // + Alt+S on successive stories). isInternalRetry=true is used only
-            // by this function's own internal retries (see below) and does not
-            // re-acquire the mutex / loading bar, preventing a self-deadlock.
-            if (!isInternalRetry) {
-                if (state.storyDownloadInProgress) {
-                    logger('onStory', 'Download already in progress, ignoring additional call');
-                    return;
-                }
-
-                state.storyDownloadInProgress = true;
-                updateLoadingBar(true);
+            // + Alt+S on successive stories).
+            if (state.storyDownloadInProgress) {
+                logger('onStory', 'Download already in progress, ignoring additional call');
+                return;
             }
+
+            state.storyDownloadInProgress = true;
+            updateLoadingBar(true);
 
             let date = new Date().getTime();
             let timestamp = Math.floor(date / 1000);
@@ -4461,16 +4398,15 @@
             // and mutex are now guaranteed to reset regardless of how the function
             // exits.
             try {
-                if ((USER_SETTING.FORCE_GRAPHQL_QUERY_FOR_STORIES_AND_HIGHLIGHTS || (isPreview && USER_SETTING.NEW_TAB_ALWAYS_FORCE_GRAPHQL_IN_STORIES_AND_HIGHLIGHTS)) && !state.tempFetchGraphQLUnavailable) {
-                    let mediaId = null;
+                let mediaId = null;
 
-                    const urlID = location.pathname
-                        .split('/')
-                        .filter(s => s.length > 0 && /^\d{10,}$/.test(s))
-                        .at(-1);
+                const urlID = location.pathname
+                    .split('/')
+                    .filter(s => s.length > 0 && /^\d{10,}$/.test(s))
+                    .at(-1);
 
-                    /*
-                 * Candidate mediaId gathering, run BEFORE any Instagram Stories GraphQL
+                /*
+                 * Candidate mediaId gathering, run BEFORE any getStories()
                  * call, in priority order:
                  *   1) numeric mediaId embedded in the Story URL (urlID)
                  *   2) DOM JSON fast path — mandatory whenever the URL
@@ -4480,7 +4416,7 @@
                  *      works for video Stories too (unlike the ig_cache_key
                  *      technique below, which needs an <img>).
                  *   3) resolveMediaIdOfStoryOrHighlightByTimestamp() — tried
-                 *      further below, once the Instagram Stories GraphQL response is
+                 *      further below, once the getStories() response is
                  *      available (it needs the fetched items to compare
                  *      timestamps against, so it cannot run in this
                  *      pre-fetch section).
@@ -4494,8 +4430,8 @@
                  * lookup right below — it intentionally also includes the
                  * step-4 candidate (domMediaId), since checking the cache is
                  * a pure optimization independent of resolution priority: if
-                 * ANY candidate is already cached, we can avoid the Reels
-                 * Media API call entirely, regardless of that candidate's
+                 * ANY candidate is already cached, we can avoid the
+                 * getStories() call entirely, regardless of that candidate's
                  * priority. Priority order only matters for which candidate
                  * becomes the AUTHORITATIVE mediaId when nothing is cached
                  * (see below) — there, domMediaId (step 4) is deliberately
@@ -4515,478 +4451,48 @@
                  * cached resource is served regardless of whether the Story
                  * is currently an image or a video. Only if none of the
                  * candidates are cached (or caching is off) do we fall
-                 * through to getUserId()/getStoriesGraphQL() below.
+                 * through to getUserId()/getStories() below.
                  *
                  * FIX (isForce bypassed the cache): this must run regardless
                  * of isForce. isForce=true (e.g. .IG_DWNEWTAB, which calls
                  * onStory(true, true, true)) means "force a fresh tray fetch
                  * below, don't reuse state.GL_dataCache.stories" — it never
                  * meant "skip a resource we already have cached". Gating this
-                 * check on !isForce made New Tab always hit the Reels Media
-                 * API even when the exact mediaId was already cached.
+                 * check on !isForce made New Tab always call getStories()
+                 * even when the exact mediaId was already cached.
                  */
-                    const candidateIds = [];
-                    let domJsonMediaId = null;
-                    let domMediaId = null;
-                    const visibleStoryTimestamp = getVisibleStoryTimestamp();
+                const candidateIds = [];
+                let domJsonMediaId = null;
+                let domMediaId = null;
+                const visibleStoryTimestamp = getVisibleStoryTimestamp();
 
-                    if (urlID) {
-                        candidateIds.push(urlID);
-                    }
-                    else {
-                        // FIX (always read reels_media[0].items[0]): the embedded
-                        // payload lists ALL of the user's story items, but only the
-                        // one matching the visible progress-bar segment
-                        // (IG_DWSTORY_POSITION, e.g. "1/2") is the one actually on
-                        // screen. Resolve that index first so multi-story trays
-                        // don't always resolve to the first item.
-                        const storyItemIndex = getCurrentStoryItemIndex(username);
-                        domJsonMediaId = getMediaIdOfStoryOrHighlightFromEmbeddedJSON(storyItemIndex ?? 0, username);
-                        if (domJsonMediaId) candidateIds.push(domJsonMediaId);
-
-                        domMediaId = getVisibleImageMediaId();
-                        if (domMediaId) candidateIds.push(domMediaId);
-                    }
-
-                    const currentStoryHasVideo = $('body > div section:visible video[playsinline]').length > 0;
-
-                    if (USER_SETTING.CAPTURE_IMAGE_VIA_MEDIA_CACHE) {
-                        for (const candidateId of candidateIds) {
-                            const cached = getImageFromCache(candidateId);
-
-                            if (cached && !currentStoryHasVideo) {
-                                logger("[Restore Cached onStory]", candidateId);
-
-                                if (isPreview) {
-                                    openNewTab(cached);
-                                }
-                                else {
-                                    saveFiles(cached, {
-                                        username,
-                                        sourceType: "stories",
-                                        timestamp,
-                                        filetype: 'jpg',
-                                        shortcode: candidateId
-                                    });
-                                }
-
-                                return;
-                            }
-                        }
-
-                        /*
-                     * Nothing cached — keep the best AUTHORITATIVE local
-                     * candidate (if any) as a known mediaId for the Reels
-                     * Media API fallback below, so it isn't re-derived from
-                     * scratch. domMediaId (step 4, the ig_cache_key trick)
-                     * is deliberately NOT considered here — see the
-                     * resolution-priority note above.
-                     */
-                        if (urlID) {
-                            mediaId = urlID;
-                        }
-                        else if (domJsonMediaId) {
-                            mediaId = domJsonMediaId;
-                        }
-                    }
-                    else if (domJsonMediaId) {
-                        /*
-                     * CAPTURE_IMAGE_VIA_MEDIA_CACHE off — no cache lookup, but
-                     * we already have a precise pk straight from IG's own
-                     * embedded reels_media JSON. Use it directly instead of
-                     * falling through to the resolution chain below, which
-                     * only kicks in once resolveMediaIdOfStoryOrHighlightByTimestamp()
-                     * and domMediaId (step 4) also fail to resolve anything.
-                     */
-                        mediaId = domJsonMediaId;
-                    }
-
-                    /*
-                 * Instagram Stories GraphQL path. Only reached once the cache
-                 * verification step above found nothing cached (or
-                 * CAPTURE_IMAGE_VIA_MEDIA_CACHE is off).
-                 */
-                    let stories;
-
-                    /*
-                 * Session tray cache. getStoriesGraphQL() has no caching of its own,
-                 * so state.GL_dataCache.stories[username] — the same in-session
-                 * tray cache used by the highlights branches above — is reused
-                 * here, avoiding a re-fetch when the tray for this username was
-                 * already fetched in the current session and isForce was not
-                 * requested.
-                 */
-                    if (!isForce && state.GL_dataCache.stories[username]) {
-                        logger('[Instagram Stories GraphQL]', 'Fetch from memory cache:', username);
-                        stories = state.GL_dataCache.stories[username];
-                    }
-                    else {
-                        try {
-                            const userInfo = await getUserId(username);
-                            const userId = userInfo?.user?.pk ?? userInfo?.user?.id;
-
-                            if (!userId) {
-                                throw new Error(`Could not resolve userId for @${username}`);
-                            }
-
-                            stories = await getStoriesGraphQL(String(userId), username);
-
-                            // Persist the freshly-fetched tray so subsequent onStory() calls
-                            // for the same username reuse it instead of re-hitting the API.
-                            state.GL_dataCache.stories[username] = stories;
-                        }
-                        catch (err) {
-                            logger('[Instagram Stories GraphQL]', 'getStories() failed', err);
-
-                            if (USER_SETTING.FALLBACK_TO_BLOB_FETCH_IF_STORIES_GRAPHQL_UNAVAILABLE) {
-                                state.tempFetchGraphQLUnavailable = true;
-                                await onStory(isDownload, isForce, isPreview, true);
-                            }
-                            else {
-                                alert('Fetch failed from Instagram Stories GraphQL.');
-                            }
-
-                            return;
-                        }
-                    }
-
-                    const items = stories?.data?.xdt_api__v1__feed__reels_media?.reels_media?.[0]?.items || [];
-
-                    /*
-                 * 1) Match directly by story media ID from URL. Only
-                 * reached when the cache-verification step above did not
-                 * already resolve a mediaId (isForce, cache disabled, or no
-                 * local candidate at all).
-                 */
-                    if (mediaId == null) {
-                        items.forEach(item => {
-                            if ((item.pk ?? item.id) == urlID) {
-                                mediaId = item.pk ?? item.id;
-                            }
-                        });
-                    }
-
-                    /*
-                 * 2) resolveMediaIdOfStoryOrHighlightByTimestamp() — only
-                 * reachable here when neither urlID nor the DOM JSON fast
-                 * path (domJsonMediaId) resolved anything above. Compares
-                 * the visible <time> element against the items just fetched.
-                 */
-                    if (mediaId == null) {
-                        mediaId = resolveMediaIdOfStoryOrHighlightByTimestamp(stories, visibleStoryTimestamp);
-                    }
-
-                    /*
-                 * 3) DOM-derived id from the currently visible <img>
-                 * (domMediaId, the ig_cache_key trick — already computed in
-                 * the pre-fetch candidate gathering above). Last local
-                 * resort before falling back to pure DOM-position matching
-                 * below.
-                 */
-                    if (mediaId == null && domMediaId) {
-                        mediaId = domMediaId;
-                    }
-
-                    /*
-                 * 4) Fallback to visible Story progress.
-                 *
-                 * FIX (align with onStoryThumbnail): guard added so the loop
-                 * keeps the FIRST matching segment instead of letting a
-                 * later one silently overwrite mediaId (could happen if two
-                 * segments briefly both read as "filled" mid-transition).
-                 */
-                    if (mediaId == null) {
-                        let $header = getStoryProgress(username);
-
-                        $header.each(function (index) {
-                            if (mediaId) return;
-
-                            if ($(this).children().length > 0 && items[index]) {
-                                mediaId = items[index].pk ?? items[index].id;
-                            }
-                        });
-                    }
-
-                    /*
-                 * 5) Fallback to the old profile-page layout.
-                 * 6) Fallback to the home-page layout.
-                 *
-                 * FIX (align with onStoryThumbnail): both loops guarded so
-                 * they keep the FIRST matching segment instead of letting a
-                 * later one silently overwrite mediaId.
-                 */
-                    if (mediaId == null) {
-                        $('body > div section:visible div.x1ned7t2.x78zum5 > div').each(function (index) {
-                            if (mediaId) return;
-
-                            const $this = $(this);
-
-                            if ($this.hasClass('x1lix1fw')) {
-                                if ($this.children().length > 0 && items[index]) {
-                                    mediaId = items[index].pk ?? items[index].id;
-                                }
-                            }
-                        });
-
-                        $('body > div section:visible ._ac0k > ._ac3r > div').each(function (index) {
-                            if (mediaId) return;
-
-                            if ($(this).children().hasClass('_ac3q') && items[index]) {
-                                mediaId = items[index].pk ?? items[index].id;
-                            }
-                        });
-                    }
-
-                    if (mediaId == null) {
-                        mediaId = location.pathname
-                            .split('/')
-                            .filter(s => s.length > 0 && s.match(/^([0-9]{10,})$/))
-                            .at(-1);
-                    }
-
-                    // Resolve the story item from the already-fetched reels_media payload.
-                    const resolvedMediaItem = items.find(item => String(item.pk ?? item.id) === String(mediaId));
-
-                    const result = {
-                        status: resolvedMediaItem ? 'ok' : 'fail',
-                        items: resolvedMediaItem ? [resolvedMediaItem] : [],
-                        message: resolvedMediaItem
-                            ? ''
-                            : 'Media item not found in getStoriesGraphQL() cache for id ' + mediaId
-                    };
-
-                    if (USER_SETTING.RENAME_PUBLISH_DATE) {
-                        timestamp = result.items?.[0]?.taken_at || result.items?.[0]?.taken_at_timestamp || timestamp;
-                    }
-
-                    if (result.status === 'ok') {
-                        const mediaItem = result.items[0];
-
-                        if (isReelsMediaVideo(mediaItem)) {
-                            // onStory's Instagram Stories GraphQL branch — tag as reels_media.
-                            const handled = await tryHandleDashFromMediaItem({
-                                mediaItem: mediaItem,
-                                username,
-                                sourceType: "stories",
-                                timestamp,
-                                shortcode: mediaId,
-                                isPreview,
-                            });
-
-                            if (handled) {
-                                return;
-                            }
-
-                            if (isPreview) {
-                                openNewTab(mediaItem.video_versions[0].url);
-                            }
-                            else {
-                                saveFiles(mediaItem.video_versions[0].url, {
-                                    username,
-                                    sourceType: "stories",
-                                    timestamp,
-                                    filetype: 'mp4',
-                                    shortcode: mediaId,
-                                    thumbnailURL: mediaItem.image_versions2?.candidates?.[0]?.url
-                                });
-                            }
-                        }
-                        else {
-                            if (isPreview) {
-                                openNewTab(mediaItem.image_versions2.candidates[0].url);
-                            }
-                            else {
-                                saveFiles(mediaItem.image_versions2.candidates[0].url, {
-                                    username,
-                                    sourceType: "stories",
-                                    timestamp,
-                                    filetype: 'jpg',
-                                    shortcode: mediaId
-                                });
-                            }
-                        }
-                    }
-                    else {
-                        alert('Fetch failed from Instagram Stories GraphQL. API response message: ' + result.message);
-                        logger(result);
-                    }
-
-                    return;
-                }
-
-                /*
-             * Normal Media API / in-memory story cache path.
-             */
-                if ($('body > div section:visible video[playsinline]').length > 0) {
-                    // Download stories if it is video
-                    let type = "mp4";
-                    let videoURL = "";
-                    let videoThumbnailSrc = "";
-                    let targetURL = location.pathname.replace(/\/$/ig, '').split("/").at(-1);
-                    let mediaId = null;
-
-                    if (state.GL_dataCache.stories[username] && !isForce) {
-                        logger('Fetch from memory cache:', username);
-
-                        state.GL_dataCache.stories[username].data.xdt_api__v1__feed__reels_media.reels_media[0].items.forEach(item => {
-                            if (item.id == targetURL) {
-                                videoURL = item.video_versions[0].url;
-                                videoThumbnailSrc = item.image_versions2?.candidates?.[0]?.url || '';
-
-                                if (USER_SETTING.RENAME_PUBLISH_DATE) {
-                                    timestamp = item.taken_at_timestamp || item.taken_at;
-                                    mediaId = item.id;
-                                }
-                            }
-                        });
-
-                        if (videoURL.length == 0) {
-                            logger('Memory cache not found, try fetch from API:', username);
-                            // FIX: also pass isPreview through (it was previously lost on retry)
-                            await onStory(true, true, isPreview, true);
-                            return;
-                        }
-                    }
-                    else {
-                        let userInfo = await getUserId(username);
-                        let userId = userInfo?.user?.pk;
-
-                        if (!userId) {
-                            throw new Error(`Could not resolve userId for @${username}`);
-                        }
-                        let stories = await getStories(userId, username);
-
-                        // OPTIMIZATION: cache items
-                        const items = stories.data.xdt_api__v1__feed__reels_media.reels_media[0].items;
-
-                        items.forEach(item => {
-                            if (item.id == targetURL) {
-                                videoURL = item.video_versions[0].url;
-                                videoThumbnailSrc = item.image_versions2?.candidates?.[0]?.url || '';
-
-                                if (USER_SETTING.RENAME_PUBLISH_DATE) {
-                                    timestamp = item.taken_at_timestamp || item.taken_at;
-                                    mediaId = item.id;
-                                }
-                            }
-                        });
-
-                        // GitHub issue #4: thinkpad4
-                        if (videoURL.length == 0) {
-
-                            let $header = getStoryProgress(username);
-
-                            // FIX (align with onStoryThumbnail): guard added so the
-                            // loop keeps the FIRST matching segment instead of
-                            // letting a later one silently overwrite videoURL/mediaId.
-                            $header.each(function (index) {
-                                if (videoURL.length > 0) return;
-
-                                if ($(this).children().length > 0) {
-                                    videoURL = items[index].video_versions[0].url;
-                                    videoThumbnailSrc = items[index].image_versions2?.candidates?.[0]?.url || '';
-
-                                    if (USER_SETTING.RENAME_PUBLISH_DATE) {
-                                        timestamp = items[index].taken_at_timestamp || items[index].taken_at;
-                                        mediaId = items[index].id;
-                                    }
-                                }
-                            });
-
-
-                            if (videoURL.length == 0) {
-                                // appear in from profile page to story page
-                                // FIX (align with onStoryThumbnail): guards added
-                                // so both loops keep the FIRST matching segment.
-                                $('body > div section:visible div.x1ned7t2.x78zum5 > div').each(function (index) {
-                                    if (videoURL.length > 0) return;
-
-                                    const $this = $(this);
-
-                                    if ($this.hasClass('x1lix1fw')) {
-                                        if ($this.children().length > 0) {
-                                            videoURL = items[index].video_versions[0].url;
-                                            videoThumbnailSrc = items[index].image_versions2?.candidates?.[0]?.url || '';
-
-                                            if (USER_SETTING.RENAME_PUBLISH_DATE) {
-                                                timestamp = items[index].taken_at_timestamp || items[index].taken_at;
-                                                mediaId = items[index].id;
-                                            }
-                                        }
-                                    }
-                                });
-
-                                // appear in from home page to story page
-                                $('body > div section:visible ._ac0k > ._ac3r > div').each(function (index) {
-                                    if (videoURL.length > 0) return;
-
-                                    if ($(this).children().hasClass('_ac3q')) {
-                                        videoURL = items[index].video_versions[0].url;
-                                        videoThumbnailSrc = items[index].image_versions2?.candidates?.[0]?.url || '';
-
-                                        if (USER_SETTING.RENAME_PUBLISH_DATE) {
-                                            timestamp = items[index].taken_at_timestamp || items[index].taken_at;
-                                            mediaId = items[index].id;
-                                        }
-                                    }
-                                });
-                            }
-                        }
-
-                        state.GL_dataCache.stories[username] = stories;
-                    }
-
-                    if (videoURL.length == 0) {
-                        alert(_i18n("NO_VID_URL"));
-                    }
-                    else {
-                        if (isPreview) {
-                            openNewTab(videoURL);
-                        }
-                        else {
-                            saveFiles(videoURL, {
-                                username,
-                                sourceType: "stories",
-                                timestamp,
-                                filetype: type,
-                                shortcode: mediaId,
-                                thumbnailURL: videoThumbnailSrc
-                            });
-                        }
-                    }
+                if (urlID) {
+                    candidateIds.push(urlID);
                 }
                 else {
-                    // Download stories if it is image
-                    let srcset = $('body > div section:visible img[referrerpolicy][class], body > div section:visible img[crossorigin][class]:not([alt])').attr('srcset')?.split(',')[0]?.split(' ')[0];
+                    // FIX (always read reels_media[0].items[0]): the embedded
+                    // payload lists ALL of the user's story items, but only the
+                    // one matching the visible progress-bar segment
+                    // (IG_DWSTORY_POSITION, e.g. "1/2") is the one actually on
+                    // screen. Resolve that index first so multi-story trays
+                    // don't always resolve to the first item.
+                    const storyItemIndex = getCurrentStoryItemIndex(username);
+                    domJsonMediaId = getMediaIdOfStoryOrHighlightFromEmbeddedJSON(storyItemIndex ?? 0, username);
+                    if (domJsonMediaId) candidateIds.push(domJsonMediaId);
 
-                    let link = (srcset)
-                        ? srcset
-                        : $('body > div section:visible img[referrerpolicy][class], body > div section:visible img[crossorigin][class]:not([alt])').filter(function () {
-                            const $this = $(this);
-                            return $this.parents('a').length === 0 && $this.width() === $this.parent().width();
-                        }).attr('src');
+                    domMediaId = getVisibleImageMediaId();
+                    if (domMediaId) candidateIds.push(domMediaId);
+                }
 
-                    if (!link) {
-                        // _aa63 mean stories picture in stories page (not avatar)
-                        let $element = $('body > div section:visible img._aa63');
-                        link = ($element.attr('srcset'))
-                            ? $element.attr('srcset')?.split(',')[0]?.split(' ')[0]
-                            : $element.attr('src');
-                    }
+                const currentStoryHasVideo = $('body > div section:visible video[playsinline]').length > 0;
 
-                    if (USER_SETTING.RENAME_PUBLISH_DATE) {
-                        timestamp = new Date($('body > div section:visible time[datetime][class]').first().attr('datetime')).getTime();
-                    }
+                if (USER_SETTING.CAPTURE_IMAGE_VIA_MEDIA_CACHE) {
+                    for (const candidateId of candidateIds) {
+                        const cached = getImageFromCache(candidateId);
 
-                    let downloadLink = link;
-                    let type = 'jpg';
+                        if (cached && !currentStoryHasVideo) {
+                            logger("[Restore Cached onStory]", candidateId);
 
-                    const mediaId = getStoryId(downloadLink) || mediaIdFromURL(downloadLink);
-
-                    if (USER_SETTING.CAPTURE_IMAGE_VIA_MEDIA_CACHE && mediaId) {
-                        const cached = getImageFromCache(mediaId);
-
-                        if (cached) {
                             if (isPreview) {
                                 openNewTab(cached);
                             }
@@ -4996,7 +4502,7 @@
                                     sourceType: "stories",
                                     timestamp,
                                     filetype: 'jpg',
-                                    shortcode: mediaId
+                                    shortcode: candidateId
                                 });
                             }
 
@@ -5004,31 +4510,242 @@
                         }
                     }
 
-                    if (isPreview) {
-                        openNewTab(downloadLink);
+                    /*
+                     * Nothing cached — keep the best AUTHORITATIVE local
+                     * candidate (if any) as a known mediaId for the getStories()
+                     * lookup below, so it isn't re-derived from
+                     * scratch. domMediaId (step 4, the ig_cache_key trick)
+                     * is deliberately NOT considered here — see the
+                     * resolution-priority note above.
+                     */
+                    if (urlID) {
+                        mediaId = urlID;
                     }
-                    else {
-                        saveFiles(downloadLink, {
-                            username,
-                            sourceType: "stories",
-                            timestamp,
-                            filetype: type,
-                            shortcode: mediaId
-                        });
+                    else if (domJsonMediaId) {
+                        mediaId = domJsonMediaId;
+                    }
+                }
+                else if (domJsonMediaId) {
+                    /*
+                     * CAPTURE_IMAGE_VIA_MEDIA_CACHE off — no cache lookup, but
+                     * we already have a precise pk straight from IG's own
+                     * embedded reels_media JSON. Use it directly instead of
+                     * falling through to the resolution chain below, which
+                     * only kicks in once resolveMediaIdOfStoryOrHighlightByTimestamp()
+                     * and domMediaId (step 4) also fail to resolve anything.
+                     */
+                    mediaId = domJsonMediaId;
+                }
+
+                /*
+                 * getStories() path. Only reached once the cache
+                 * verification step above found nothing cached (or
+                 * CAPTURE_IMAGE_VIA_MEDIA_CACHE is off).
+                 */
+                let stories;
+
+                /*
+                 * Session tray cache. getStories() has no caching of its own,
+                 * so state.GL_dataCache.stories[username] — the same in-session
+                 * tray cache used by the highlights branches above — is reused
+                 * here, avoiding a re-fetch when the tray for this username was
+                 * already fetched in the current session and isForce was not
+                 * requested.
+                 */
+                if (!isForce && state.GL_dataCache.stories[username]) {
+                    logger('Fetch from memory cache:', username);
+                    stories = state.GL_dataCache.stories[username];
+                }
+                else {
+                    try {
+                        const userInfo = await getUserId(username);
+                        const userId = userInfo?.user?.pk ?? userInfo?.user?.id;
+
+                        if (!userId) {
+                            throw new Error(`Could not resolve userId for @${username}`);
+                        }
+
+                        stories = await getStories(String(userId), username);
+
+                        // Persist the freshly-fetched tray so subsequent onStory() calls
+                        // for the same username reuse it instead of re-hitting the API.
+                        state.GL_dataCache.stories[username] = stories;
+                    }
+                    catch (err) {
+                        logger('onStory', 'getStories() failed', err);
+                        alert('Fetch failed for story.');
+                        return;
                     }
                 }
 
-                state.tempFetchGraphQLUnavailable = false;
+                const items = stories?.data?.xdt_api__v1__feed__reels_media?.reels_media?.[0]?.items || [];
+
+                /*
+                 * 1) Match directly by story media ID from URL. Only
+                 * reached when the cache-verification step above did not
+                 * already resolve a mediaId (isForce, cache disabled, or no
+                 * local candidate at all).
+                 */
+                if (mediaId == null) {
+                    items.forEach(item => {
+                        if ((item.pk ?? item.id) == urlID) {
+                            mediaId = item.pk ?? item.id;
+                        }
+                    });
+                }
+
+                /*
+                 * 2) resolveMediaIdOfStoryOrHighlightByTimestamp() — only
+                 * reachable here when neither urlID nor the DOM JSON fast
+                 * path (domJsonMediaId) resolved anything above. Compares
+                 * the visible <time> element against the items just fetched.
+                 */
+                if (mediaId == null) {
+                    mediaId = resolveMediaIdOfStoryOrHighlightByTimestamp(stories, visibleStoryTimestamp);
+                }
+
+                /*
+                 * 3) DOM-derived id from the currently visible <img>
+                 * (domMediaId, the ig_cache_key trick — already computed in
+                 * the pre-fetch candidate gathering above). Last local
+                 * resort before falling back to pure DOM-position matching
+                 * below.
+                 */
+                if (mediaId == null && domMediaId) {
+                    mediaId = domMediaId;
+                }
+
+                /*
+                 * 4) Fallback to visible Story progress.
+                 *
+                 * FIX (align with onStoryThumbnail): guard added so the loop
+                 * keeps the FIRST matching segment instead of letting a
+                 * later one silently overwrite mediaId (could happen if two
+                 * segments briefly both read as "filled" mid-transition).
+                 */
+                if (mediaId == null) {
+                    let $header = getStoryProgress(username);
+
+                    $header.each(function (index) {
+                        if (mediaId) return;
+
+                        if ($(this).children().length > 0 && items[index]) {
+                            mediaId = items[index].pk ?? items[index].id;
+                        }
+                    });
+                }
+
+                /*
+                 * 5) Fallback to the old profile-page layout.
+                 * 6) Fallback to the home-page layout.
+                 *
+                 * FIX (align with onStoryThumbnail): both loops guarded so
+                 * they keep the FIRST matching segment instead of letting a
+                 * later one silently overwrite mediaId.
+                 */
+                if (mediaId == null) {
+                    $('body > div section:visible div.x1ned7t2.x78zum5 > div').each(function (index) {
+                        if (mediaId) return;
+
+                        const $this = $(this);
+
+                        if ($this.hasClass('x1lix1fw')) {
+                            if ($this.children().length > 0 && items[index]) {
+                                mediaId = items[index].pk ?? items[index].id;
+                            }
+                        }
+                    });
+
+                    $('body > div section:visible ._ac0k > ._ac3r > div').each(function (index) {
+                        if (mediaId) return;
+
+                        if ($(this).children().hasClass('_ac3q') && items[index]) {
+                            mediaId = items[index].pk ?? items[index].id;
+                        }
+                    });
+                }
+
+                if (mediaId == null) {
+                    mediaId = location.pathname
+                        .split('/')
+                        .filter(s => s.length > 0 && s.match(/^([0-9]{10,})$/))
+                        .at(-1);
+                }
+
+                // Resolve the story item from the already-fetched reels_media payload.
+                const resolvedMediaItem = items.find(item => String(item.pk ?? item.id) === String(mediaId));
+
+                const result = {
+                    status: resolvedMediaItem ? 'ok' : 'fail',
+                    items: resolvedMediaItem ? [resolvedMediaItem] : [],
+                    message: resolvedMediaItem
+                        ? ''
+                        : 'Media item not found in getStories() response for id ' + mediaId
+                };
+
+                if (USER_SETTING.RENAME_PUBLISH_DATE) {
+                    timestamp = result.items?.[0]?.taken_at || result.items?.[0]?.taken_at_timestamp || timestamp;
+                }
+
+                if (result.status === 'ok') {
+                    const mediaItem = result.items[0];
+
+                    if (isReelsMediaVideo(mediaItem)) {
+                        // Video item — try the DASH manifest first.
+                        const handled = await tryHandleDashFromMediaItem({
+                            mediaItem: mediaItem,
+                            username,
+                            sourceType: "stories",
+                            timestamp,
+                            shortcode: mediaId,
+                            isPreview,
+                        });
+
+                        if (handled) {
+                            return;
+                        }
+
+                        if (isPreview) {
+                            openNewTab(mediaItem.video_versions[0].url);
+                        }
+                        else {
+                            saveFiles(mediaItem.video_versions[0].url, {
+                                username,
+                                sourceType: "stories",
+                                timestamp,
+                                filetype: 'mp4',
+                                shortcode: mediaId,
+                                thumbnailURL: mediaItem.image_versions2?.candidates?.[0]?.url
+                            });
+                        }
+                    }
+                    else {
+                        if (isPreview) {
+                            openNewTab(mediaItem.image_versions2.candidates[0].url);
+                        }
+                        else {
+                            saveFiles(mediaItem.image_versions2.candidates[0].url, {
+                                username,
+                                sourceType: "stories",
+                                timestamp,
+                                filetype: 'jpg',
+                                shortcode: mediaId
+                            });
+                        }
+                    }
+                }
+                else {
+                    alert('Fetch failed for story. API response message: ' + result.message);
+                    logger(result);
+                }
             }
             catch (err) {
                 logger('onStory', 'Unexpected error while downloading story', err);
-                alert('Fetch failed from Instagram Stories GraphQL.');
+                alert('Fetch failed for story.');
             }
             finally {
-                if (!isInternalRetry) {
-                    state.storyDownloadInProgress = false;
-                    updateLoadingBar(false);
-                }
+                state.storyDownloadInProgress = false;
+                updateLoadingBar(false);
             }
         }
         else {
@@ -5108,7 +4825,7 @@
      * @description Trigger user's story video thumbnail download event or button display event.
      *
      * @param  {Boolean}  isDownload - Check if it is a download operation
-     * @param  {Boolean}  isForce - Force a fresh Instagram Stories GraphQL tray fetch
+     * @param  {Boolean}  isForce - Force a fresh getStories() tray fetch
      *                    instead of reusing state.GL_dataCache.stories. Does
      *                    NOT bypass the persistent media cache — a cached
      *                    resource is still served with no API call at all.
@@ -5124,7 +4841,6 @@
             let username = $("body > div section._ac0a header._ac0k ._ac0l a + div a").first().text() || location.pathname.split('/').at(2);
 
             // Download thumbnail
-            let targetURL = location.pathname.replace(/\/$/ig, '').split("/").at(-1);
             let videoThumbnailURL = "";
             let mediaId = null;
             const selectThumbnail = item => {
@@ -5143,7 +4859,7 @@
             updateLoadingBar(true);
 
             /*
-             * Candidate mediaId gathering, run BEFORE any Instagram Stories GraphQL
+             * Candidate mediaId gathering, run BEFORE any getStories()
              * call, in priority order:
              *   1) numeric mediaId embedded in the Story URL (urlID)
              *   2) DOM JSON fast path — mandatory whenever the URL carries
@@ -5151,7 +4867,7 @@
              *      embedded reels_media payload
              *      (getMediaIdOfStoryOrHighlightFromEmbeddedJSON).
              *   3) resolveMediaIdOfStoryOrHighlightByTimestamp() — tried
-             *      further below, once the Instagram Stories GraphQL response is
+             *      further below, once the getStories() response is
              *      available (it needs the fetched items to compare
              *      timestamps against, so it cannot run in this pre-fetch
              *      section).
@@ -5182,7 +4898,7 @@
              * actual cache lookup stays behind CAPTURE_IMAGE_VIA_MEDIA_CACHE;
              * the mediaId itself, when resolvable, is used either way. Only
              * if none of the candidates are cached (or caching is off) do we
-             * fall through to getUserId()/getStoriesGraphQL() below.
+             * fall through to getUserId()/getStories() below.
              *
              * FIX (isForce bypassed the cache): this must run regardless of
              * isForce — see the matching fix in onStory() for why.
@@ -5226,7 +4942,6 @@
                             shortcode: candidateId
                         });
 
-                        state.tempFetchGraphQLUnavailable = false;
                         updateLoadingBar(false);
                         return;
                     }
@@ -5234,8 +4949,8 @@
 
                 /*
                  * Nothing cached — keep the best AUTHORITATIVE local
-                 * candidate (if any) as a known mediaId for the Reels Media
-                 * API fallback below, so it isn't re-derived from scratch.
+                 * candidate (if any) as a known mediaId for the getStories()
+                 * lookup below, so it isn't re-derived from scratch.
                  * domMediaIds (step 4, the poster trick) are deliberately
                  * NOT considered here — see the resolution-priority note
                  * above.
@@ -5260,223 +4975,122 @@
             }
 
             /*
-             * Instagram Stories GraphQL path. Only reached once the cache verification
+             * getStories() path. Only reached once the cache verification
              * step above found nothing cached (or CAPTURE_IMAGE_VIA_MEDIA_CACHE
              * is off). mediaId is resolved independently of
              * RENAME_PUBLISH_DATE below.
              */
-            if (USER_SETTING.FORCE_GRAPHQL_QUERY_FOR_STORIES_AND_HIGHLIGHTS && !state.tempFetchGraphQLUnavailable) {
-                let stories;
-
-                /*
-                 * Session tray cache. Same as onStory(): reuse
-                 * state.GL_dataCache.stories[username] when the tray for this
-                 * username was already fetched in the current session and
-                 * isForce was not requested, instead of re-hitting
-                 * getStoriesGraphQL().
-                 */
-                if (!isForce && state.GL_dataCache.stories[username]) {
-                    logger('[Instagram Stories GraphQL]', 'Fetch from memory cache:', username);
-                    stories = state.GL_dataCache.stories[username];
-                }
-                else {
-                    let userInfo = await getUserId(username);
-                    let userId = userInfo.user.pk;
-                    stories = await getStoriesGraphQL(String(userId), username);
-
-                    // Persist the freshly-fetched tray so subsequent calls for
-                    // the same username reuse it instead of re-hitting the API.
-                    state.GL_dataCache.stories[username] = stories;
-                }
-
-                const items = stories.data.xdt_api__v1__feed__reels_media.reels_media[0].items;
-
-                /*
-                 * 1) Match directly by story media ID from URL. Only reached
-                 * when the cache-verification step above did not already
-                 * resolve a mediaId (isForce, cache disabled, or no local
-                 * candidate at all).
-                 */
-                if (!mediaId && urlID) {
-                    for (const item of items) {
-                        if (String(item.pk ?? item.id) === String(urlID)) {
-                            mediaId = item.pk ?? item.id;
-                            break;
-                        }
-                    }
-                }
-
-                /*
-                 * 2) resolveMediaIdOfStoryOrHighlightByTimestamp() — only
-                 * reachable here when neither urlID nor domJsonMediaId
-                 * resolved anything above.
-                 */
-                if (!mediaId) {
-                    mediaId = resolveMediaIdOfStoryOrHighlightByTimestamp(stories, visibleStoryTimestamp);
-                }
-
-                /*
-                 * 3) DOM-derived id(s) from the currently-visible <video>
-                 * poster(s) (domMediaIds — already computed in the
-                 * pre-fetch candidate gathering above). Last local resort
-                 * before falling back to pure DOM-position matching below.
-                 */
-                if (!mediaId) {
-                    for (const domMediaId of domMediaIds) {
-                        if (items.some(item => String(item.pk ?? item.id) === String(domMediaId))) {
-                            mediaId = domMediaId;
-                            break;
-                        }
-                    }
-                }
-
-                // 4) Fallback to visible story progress.
-                if (!mediaId) {
-                    let $header = getStoryProgress(username);
-
-                    $header.each(function (index) {
-                        if (mediaId) return;
-
-                        if ($(this).children().length > 0 && items[index]) {
-                            mediaId = items[index].pk ?? items[index].id;
-                        }
-                    });
-                }
-
-                // 5) Fallback to the old profile-page layout.
-                if (!mediaId) {
-                    $('body > div section:visible div.x1ned7t2.x78zum5 > div').each(function (index) {
-                        if (mediaId) return;
-
-                        const $this = $(this);
-
-                        if ($this.hasClass('x1lix1fw') && $this.children().length > 0 && items[index]) {
-                            mediaId = items[index].pk ?? items[index].id;
-                        }
-                    });
-
-                    // 6) Fallback to the home-page layout.
-                    if (!mediaId) {
-                        $('body > div section:visible ._ac0k > ._ac3r > div').each(function (index) {
-                            if (mediaId) return;
-
-                            if ($(this).children().hasClass('_ac3q') && items[index]) {
-                                mediaId = items[index].pk ?? items[index].id;
-                            }
-                        });
-                    }
-                }
-
-                // Not cached — derive the thumbnail URL from the resolved item.
-                const resolvedItem = items.find(item => String(item.pk ?? item.id) === String(mediaId));
-
-                if (resolvedItem) {
-                    selectThumbnail(resolvedItem);
-                }
-
-                if (!videoThumbnailURL) {
-                    logger('[Instagram Stories GraphQL] Story thumbnail URL not found:', mediaId || urlID);
-                    alert('Cannot find story video thumbnail URL.');
-                    state.tempFetchGraphQLUnavailable = false;
-                    updateLoadingBar(false);
-                    return;
-                }
-
-                await saveFiles(videoThumbnailURL, {
-                    username,
-                    sourceType: "thumbnail",
-                    timestamp,
-                    filetype: type,
-                    shortcode: mediaId
-                });
-
-                state.tempFetchGraphQLUnavailable = false;
-                updateLoadingBar(false);
-                return;
-            }
-
-            // Same mutual-exclusion guard as in onHighlightsStory / onStory.
+            let stories;
 
             /*
-             * Normal Media API / in-memory story cache path.
+             * Session tray cache. Same as onStory(): reuse
+             * state.GL_dataCache.stories[username] when the tray for this
+             * username was already fetched in the current session and
+             * isForce was not requested, instead of re-hitting
+             * getStories().
              */
-            if (state.GL_dataCache.stories[username] && !isForce) {
+            if (!isForce && state.GL_dataCache.stories[username]) {
                 logger('Fetch from memory cache:', username);
-
-                const items = state.GL_dataCache.stories[username].data.xdt_api__v1__feed__reels_media.reels_media[0].items;
-
-                items.forEach(item => {
-                    if (String(item.id ?? item.pk) === String(targetURL)) {
-                        selectThumbnail(item);
-                    }
-                });
-
-                if (videoThumbnailURL.length === 0 || !mediaId) {
-                    logger('Memory cache not found, try fetch from API:', username);
-                    onStoryThumbnail(true, true);
-                    return;
-                }
+                stories = state.GL_dataCache.stories[username];
             }
             else {
                 let userInfo = await getUserId(username);
                 let userId = userInfo.user.pk;
-                let stories = await getStories(userId, username);
+                stories = await getStories(String(userId), username);
 
-                // OPTIMIZATION: cache items
-                const items = stories.data.xdt_api__v1__feed__reels_media.reels_media[0].items;
+                // Persist the freshly-fetched tray so subsequent calls for
+                // the same username reuse it instead of re-hitting the API.
+                state.GL_dataCache.stories[username] = stories;
+            }
 
-                items.forEach(item => {
-                    if (String(item.id ?? item.pk) === String(targetURL)) {
-                        selectThumbnail(item);
-                    }
-                });
+            const items = stories.data.xdt_api__v1__feed__reels_media.reels_media[0].items;
 
-                // GitHub issue #4: thinkpad4
-                if (videoThumbnailURL.length === 0 || !mediaId) {
-                    let $header = getStoryProgress(username);
-
-                    $header.each(function (index) {
-                        if (mediaId && videoThumbnailURL) {
-                            return;
-                        }
-
-                        if ($(this).children().length > 0 && items[index]) {
-                            selectThumbnail(items[index]);
-                        }
-                    });
-
-                    if (videoThumbnailURL.length === 0 || !mediaId) {
-                        // Appear in from profile page to story page
-                        $('body > div section:visible div.x1ned7t2.x78zum5 > div').each(function (index) {
-                            if (mediaId && videoThumbnailURL) {
-                                return;
-                            }
-
-                            const $this = $(this);
-
-                            if ($this.hasClass('x1lix1fw') && $this.children().length > 0 && items[index]) {
-                                selectThumbnail(items[index]);
-                            }
-                        });
-
-                        // Appear in from home page to story page
-                        $('body > div section:visible ._ac0k > ._ac3r > div').each(function (index) {
-                            if (mediaId && videoThumbnailURL) {
-                                return;
-                            }
-
-                            if ($(this).children().hasClass('_ac3q') && items[index]) {
-                                selectThumbnail(items[index]);
-                            }
-                        });
+            /*
+             * 1) Match directly by story media ID from URL. Only reached
+             * when the cache-verification step above did not already
+             * resolve a mediaId (isForce, cache disabled, or no local
+             * candidate at all).
+             */
+            if (!mediaId && urlID) {
+                for (const item of items) {
+                    if (String(item.pk ?? item.id) === String(urlID)) {
+                        mediaId = item.pk ?? item.id;
+                        break;
                     }
                 }
             }
 
+            /*
+             * 2) resolveMediaIdOfStoryOrHighlightByTimestamp() — only
+             * reachable here when neither urlID nor domJsonMediaId
+             * resolved anything above.
+             */
+            if (!mediaId) {
+                mediaId = resolveMediaIdOfStoryOrHighlightByTimestamp(stories, visibleStoryTimestamp);
+            }
+
+            /*
+             * 3) DOM-derived id(s) from the currently-visible <video>
+             * poster(s) (domMediaIds — already computed in the
+             * pre-fetch candidate gathering above). Last local resort
+             * before falling back to pure DOM-position matching below.
+             */
+            if (!mediaId) {
+                for (const domMediaId of domMediaIds) {
+                    if (items.some(item => String(item.pk ?? item.id) === String(domMediaId))) {
+                        mediaId = domMediaId;
+                        break;
+                    }
+                }
+            }
+
+            // 4) Fallback to visible story progress.
+            if (!mediaId) {
+                let $header = getStoryProgress(username);
+
+                $header.each(function (index) {
+                    if (mediaId) return;
+
+                    if ($(this).children().length > 0 && items[index]) {
+                        mediaId = items[index].pk ?? items[index].id;
+                    }
+                });
+            }
+
+            // 5) Fallback to the old profile-page layout.
+            if (!mediaId) {
+                $('body > div section:visible div.x1ned7t2.x78zum5 > div').each(function (index) {
+                    if (mediaId) return;
+
+                    const $this = $(this);
+
+                    if ($this.hasClass('x1lix1fw') && $this.children().length > 0 && items[index]) {
+                        mediaId = items[index].pk ?? items[index].id;
+                    }
+                });
+
+                // 6) Fallback to the home-page layout.
+                if (!mediaId) {
+                    $('body > div section:visible ._ac0k > ._ac3r > div').each(function (index) {
+                        if (mediaId) return;
+
+                        if ($(this).children().hasClass('_ac3q') && items[index]) {
+                            mediaId = items[index].pk ?? items[index].id;
+                        }
+                    });
+                }
+            }
+
+            // Not cached — derive the thumbnail URL from the resolved item.
+            const resolvedItem = items.find(item => String(item.pk ?? item.id) === String(mediaId));
+
+            if (resolvedItem) {
+                selectThumbnail(resolvedItem);
+            }
+
             if (!videoThumbnailURL) {
-                logger('Story thumbnail URL not found:', mediaId || targetURL);
-                alert('Cannot find a thumbnail URL for this story.');
-                state.tempFetchGraphQLUnavailable = false;
+                logger('Story thumbnail URL not found:', mediaId || urlID);
+                alert('Cannot find story video thumbnail URL.');
                 updateLoadingBar(false);
                 return;
             }
@@ -5489,7 +5103,6 @@
                 shortcode: mediaId
             });
 
-            state.tempFetchGraphQLUnavailable = false;
             updateLoadingBar(false);
         }
         else {
@@ -5689,7 +5302,7 @@
      *              this user ID is currently assigned to a different username (Instagram
      *              reassigned the ID, or the username changed), that stale mapping is
      *              dropped and replaced, since every caller here supplies live/confirmed
-     *              data (getUserId()'s live fetch, getStoriesGraphQL()/getStories()'s
+     *              data (getUserId()'s live fetch, getStories()'s
      *              owner-mismatch refresh, reconcileOwnerFromApiResponse()). The persistent
      *              bucket is capped at USER_ID_MAX_CACHE_ITEMS entries; once full, a random
      *              existing entry is evicted to make room for the new one.
@@ -5870,7 +5483,7 @@
      * getHighlightStories
      * @description Get a list of all stories in highlight Id. A highlightId isn't a
      *              userId, so there's no "expected username" to check the request
-     *              against before it's made (unlike getStoriesGraphQL/getStories). Once
+     *              against before it's made (unlike getStories). Once
      *              the response arrives, its owner is used to opportunistically
      *              validate/self-heal the username -> userId cache via
      *              reconcileOwnerFromApiResponse() — this never blocks or delays
@@ -5965,8 +5578,7 @@
      *              against it; on disagreement the cached user id is refreshed live
      *              (see resolveUserIdLive()) and the request is retried once. On
      *              agreement, or once already verified this session, the mapping is
-     *              trusted without re-checking until the tab is refreshed. Mirrors
-     *              getStoriesGraphQL()'s owner-mismatch handling.
+     *              trusted without re-checking until the tab is refreshed.
      *
      * @param  {Integer}  userId
      * @param  {String=}  expectedUsername - Optional owner-mismatch guard.
@@ -6037,14 +5649,14 @@
                         if (ownerMismatch) {
                             logger('getStories()', `owner mismatch: expected "${expectedUsername}", got "${reelOwner.username}" — refreshing id`);
                             resolveUserIdLive(expectedUsername).then((freshUserInfo) => {
-                                const fresh = freshUserInfo?.user?.id ? freshUserInfo : null;
+                                const freshId = freshUserInfo?.user?.pk ?? freshUserInfo?.user?.id;
 
-                                if (fresh && putUserIdInCache(expectedUsername, fresh.user.id)) {
-                                    userIdCache.set(expectedUsername, fresh);
+                                if (freshId && putUserIdInCache(expectedUsername, freshId)) {
+                                    userIdCache.set(expectedUsername.toLowerCase(), freshUserInfo);
                                 }
 
-                                if (fresh && String(fresh.user.id) !== String(userId)) {
-                                    getStories(String(fresh.user.id), expectedUsername, true).then(resolve, reject);
+                                if (freshId && String(freshId) !== String(userId)) {
+                                    getStories(String(freshId), expectedUsername, true).then(resolve, reject);
                                 }
                                 else {
                                     reject('user_mismatch');
@@ -6610,7 +6222,7 @@
      *              its owner is used to opportunistically validate/self-heal the
      *              username -> userId cache via reconcileOwnerFromApiResponse(). Shortcode
      *              posts/reels have no "expected username" known ahead of the request
-     *              (unlike getStoriesGraphQL/getStories), so this never blocks or delays
+     *              (unlike getStories), so this never blocks or delays
      *              serving the resource — the shortcode already fully determines the
      *              correct content on its own.
      *
@@ -6718,50 +6330,24 @@
     function getMediaList(postPath) {
         return new Promise((resolve, reject) => {
             if (!postPath) reject("NOPATH");
-            const getURL = `https://www.instagram.com/graphql/query`;
-
-            const siteData = getSiteData();
-            const formData = new FormData();
-
-            formData.append('av', getCookie('ds_user_id') || '0');
-            formData.append('fb_api_caller_class', 'RelayModern');
-            formData.append('fb_api_req_friendly_name', 'PolarisPostRootQuery');
-            formData.append('server_timestamps', 'true');
-            formData.append('doc_id', '39422285384081769'); // This is dynamic, but we can use this for now. It may break in the future.
-            formData.append('lsd', getLSD());
-            formData.append('fb_dtsg', getDTSG());
-            formData.append('__hs', siteData?.haste_session || '');
-            formData.append('__hsi', siteData?.hsi || '');
-            formData.append('__rev', siteData?.client_revision || '');
-            formData.append('__spin_r', siteData?.__spin_r || '');
-            formData.append('__spin_b', siteData?.__spin_b || '');
-            formData.append('__spin_t', siteData?.__spin_t || '');
-            formData.append('__comet_req', siteData?.comet_env || '');
-            formData.append('__ccg', 'EXCELLENT');
-            formData.append('dpr', siteData?.pr);
-            formData.append('jazoest', getJazoest(getDTSG()));
-            formData.append('__user', '0');
-            formData.append('__a', '1');
-            formData.append('__d', 'www');
-            formData.append('__req', '1');
-            formData.append('__crn', 'comet.igweb.PolarisFeedRoute');
-            formData.append('__s', genWebSessionId());
-            formData.append('variables', `{"shortcode":"${postPath}","__relay_internal__pv__PolarisShortDramaEnabledrelayprovider":true,"__relay_internal__pv__PolarisThreadsStyleCommentsEnabledrelayprovider":false,"__relay_internal__pv__PolarisMultiCaptionCarouselEnabledrelayprovider":true}`);
+            const api = buildGraphQLData(
+                '39422285384081769',
+                {
+                    "shortcode": postPath,
+                    "__relay_internal__pv__PolarisShortDramaEnabledrelayprovider": true,
+                    "__relay_internal__pv__PolarisThreadsStyleCommentsEnabledrelayprovider": false,
+                    "__relay_internal__pv__PolarisMultiCaptionCarouselEnabledrelayprovider": true
+                },
+                'PolarisPostRootQuery',
+                'comet.igweb.PolarisFeedRoute',
+                'xdt_api__v1__media__shortcode__web_info'
+            );
 
             GM_xmlhttpRequest({
                 method: "POST",
-                url: getURL,
-                data: formData,
-                headers: {
-                    "User-Agent": webViewAgent,
-                    'X-IG-App-ID': getAppID() || '0',
-                    'X-Root-Field-Name': 'xdt_api__v1__media__shortcode__web_info',
-                    'X-CSRFToken': getCookie('csrftoken') || '',
-                    'X-Fb-Friendly-Name': 'PolarisPostRootQuery',
-                    'X-Fb-Lsd': getLSD(),
-                    'X-Bloks-Version-ID': getBloks(),
-                    'X-Asbd-ID': '359341'
-                },
+                url: api.url,
+                data: api.body,
+                headers: api.headers,
                 onload: function (response) {
                     try {
                         let obj = JSON.parse(response.response);
@@ -6782,204 +6368,55 @@
         });
     }
 
-    /**
-     * getStoriesGraphQL
-     * @description Fetch a Stories or Highlights tray through Instagram's current
-     *              Polaris GraphQL query and normalize its response for existing
-     *              story download handlers.
-     *
-     * @param  {String}   reelId           - Numeric user id or `highlight:{id}`.
-     * @param  {String=}  expectedUsername - Optional owner-mismatch guard.
-     * @param  {Boolean=} _retried         - Internal retry guard.
-     * @return {Promise<Object>}
-     */
-    async function getStoriesGraphQL(reelId, expectedUsername, _retried) {
-        const isHighlight = String(reelId).startsWith('highlight:');
-        const friendlyName = isHighlight
-            ? 'PolarisStoriesV3HighlightsPageQuery'
-            : 'PolarisStoriesV3ReelPageGalleryQuery';
-        const docId = isHighlight ? '28325328583775973' : '28262315486766731';
-        const tokens = {
-            lsd: getLSD(),
-            dtsg: getDTSG() || document.querySelector('input[name="fb_dtsg"]')?.value || null
-        };
 
-        const variables = {
-            initial_reel_id: String(reelId),
-            reel_ids: [String(reelId)],
-            first: 3,
-            last: 2,
-            __relay_internal__pv__PolarisCommunityNoteStoriesLabelEnabledrelayprovider: true
-        };
-        const body = new URLSearchParams({
-            __d: 'www',
-            __user: '0',
-            __a: '1',
-            __req: '1',
-            __comet_req: '7',
+    function buildGraphQLData(docId, variables, friendlyName, crn, rootName) {
+        const siteData = getSiteData();
+        let body = {
+            av: getCookie('ds_user_id') || '0',
             fb_api_caller_class: 'RelayModern',
             fb_api_req_friendly_name: friendlyName,
             server_timestamps: 'true',
             doc_id: docId,
+            lsd: getLSD(),
+            fb_dtsg: getDTSG(),
+            __hs: siteData?.haste_session || '',
+            __hsi: siteData?.hsi || '',
+            __rev: siteData?.client_revision || '',
+            __spin_r: siteData?.__spin_r || '',
+            __spin_b: siteData?.__spin_b || '',
+            __spin_t: siteData?.__spin_t || '',
+            __comet_req: siteData?.comet_env || '',
+            __ccg: 'EXCELLENT',
+            dpr: siteData?.pr,
+            jazoest: getJazoest(getDTSG()),
+            __user: '0',
+            __a: '1',
+            __d: 'www',
+            __req: '1',
+            __s: genWebSessionId(),
             variables: JSON.stringify(variables)
-        });
-
-        if (tokens.dtsg) {
-            body.set('fb_dtsg', tokens.dtsg);
-            body.set('jazoest', getJazoest(tokens.dtsg));
-        }
-
-        if (tokens.lsd) {
-            body.set('lsd', tokens.lsd);
-        }
-
-        const headers = {
-            'Content-Type': 'application/x-www-form-urlencoded',
-            'X-FB-Friendly-Name': friendlyName
         };
 
-        if (tokens.lsd) {
-            headers['X-FB-LSD'] = tokens.lsd;
+        if (crn) {
+            body.__crn = crn;
         }
 
-        const apiURL = new URL('/graphql/query', window.location.origin);
-        const response = await fetch(apiURL.href, {
-            method: 'POST',
-            credentials: 'include',
-            headers,
-            body: body.toString()
-        });
-
-        let responseText = await response.text();
-        responseText = responseText.replace(/^\s*for\s*\(\s*;;\s*\)\s*;\s*/, '');
-
-        let json;
-        try {
-            json = JSON.parse(responseText);
-        }
-        // eslint-disable-next-line no-unused-vars
-        catch (parseError) {
-            throw new Error(`Stories GraphQL returned non-JSON (HTTP ${response.status})`);
-        }
-
-        if (!response.ok || json?.errors?.length) {
-            const apiError = json?.errors
-                ?.map((error) => error?.message)
-                .filter(Boolean)
-                .join('; ');
-            throw new Error(
-                `Stories GraphQL failed with HTTP ${response.status}` +
-                (apiError ? `: ${apiError}` : '')
-            );
-        }
-
-        const connection = json?.data?.['xdt_api__v1__feed__reels_media__connection'];
-        const node = connection?.edges?.[0]?.node;
-
-        if (!node || !Array.isArray(node.items)) {
-            throw new Error('Stories GraphQL response did not contain a reel node with items');
-        }
-
-        const rawOwner = node.user || node.owner || {};
-        const owner = {
-            ...rawOwner,
-            id: rawOwner.id ?? rawOwner.pk,
-            pk: rawOwner.pk ?? rawOwner.id
-        };
-        const reel = {
-            ...node,
-            id: node.id ?? owner.pk ?? owner.id ?? String(reelId),
-            items: node.items.map(normalizeReelsMediaItem),
-            owner,
-            user: owner
+        let headers = {
+            "User-Agent": webViewAgent,
+            'X-IG-App-ID': getAppID() || '0',
+            'X-Root-Field-Name': rootName,
+            'X-CSRFToken': getCookie('csrftoken') || '',
+            'X-Fb-Friendly-Name': friendlyName,
+            'X-Fb-Lsd': getLSD(),
+            'X-Bloks-Version-ID': getBloks(),
+            'X-Asbd-ID': '359341'
         };
 
-        const ownerCheckNeeded =
-            !!expectedUsername &&
-            !isHighlight &&
-            !_retried &&
-            !isOwnerVerifiedThisSession(expectedUsername);
-        const canCompareOwner = ownerCheckNeeded && !!owner.username;
-        const ownerMismatch =
-            canCompareOwner &&
-            owner.username.toLowerCase() !== expectedUsername.toLowerCase();
-
-        if (ownerMismatch) {
-            logger(
-                'getStoriesGraphQL()',
-                `owner mismatch: expected "${expectedUsername}", got "${owner.username}" — refreshing id`
-            );
-            const freshUserInfo = await resolveUserIdLive(expectedUsername);
-            const freshId = freshUserInfo?.user?.pk ?? freshUserInfo?.user?.id;
-
-            if (freshId && putUserIdInCache(expectedUsername, freshId)) {
-                userIdCache.set(expectedUsername.toLowerCase(), freshUserInfo);
-            }
-
-            if (freshId && String(freshId) !== String(reelId)) {
-                return getStoriesGraphQL(String(freshId), expectedUsername, true);
-            }
-
-            throw new Error('Stories GraphQL returned a different user than requested');
-        }
-
-        if (canCompareOwner) {
-            markOwnerVerified(expectedUsername);
-        }
-
-        const result = {
-            data: {
-                reels_media: [reel],
-                xdt_api__v1__feed__reels_media: { reels_media: [reel] },
-                xdt_api__v1__feed__reels_media__connection: { edges: [{ node: reel }] }
-            }
+        return {
+            url: new URL('/graphql/query', window.location.origin).href,
+            body: new URLSearchParams(body).toString(),
+            headers
         };
-        logger('getStoriesGraphQL()', reelId, result);
-        return result;
-    }
-
-    /**
-     * normalizeReelsMediaItem
-     * @description Bridge a Instagram Stories GraphQL item (image_versions2 / video_versions /
-     *              pk / taken_at schema) into the shape older code paths expect
-     *              (display_resources / video_resources / id / taken_at_timestamp /
-     *              is_video). Non-destructive: returns a shallow copy augmented with
-     *              the synthesized fields, leaving the original untouched.
-     *
-     * @param  {Object}  item - Raw reels_media item from getStoriesGraphQL().
-     * @return {Object}        Normalized item safe to pass to legacy helpers.
-     */
-    function normalizeReelsMediaItem(item) {
-        if (!item) return item;
-
-        const id = item.pk ?? item.id;
-        const candidates = item.image_versions2?.candidates || [];
-        const imageUrl = candidates[0]?.url || item.display_url || item.display_resources?.[0]?.src || '';
-        const videoUrl = item.video_versions?.[0]?.url || item.video_resources?.[0]?.src || '';
-
-        const displayResources = item.display_resources?.length
-            ? item.display_resources
-            : (candidates.length
-                ? candidates.map(c => ({ src: c.url, config_width: c.width ?? 0 }))
-                : (imageUrl ? [{ src: imageUrl, config_width: 0 }] : []));
-
-        const videoResources = item.video_resources?.length
-            ? item.video_resources
-            : (videoUrl ? [{ src: videoUrl }] : []);
-
-        return Object.assign({}, item, {
-            id,
-            pk: id,
-            is_video: item.is_video ?? (item.media_type != null ? item.media_type !== 1 : !!(videoUrl || item.video_dash_manifest)),
-            taken_at_timestamp: item.taken_at_timestamp ?? item.taken_at ?? Math.floor(Date.now() / 1000),
-            display_url: item.display_url || imageUrl,
-            image_versions2: item.image_versions2 || (imageUrl ? { candidates: [{ url: imageUrl, width: 0, height: 0 }] } : item.image_versions2),
-            video_versions: item.video_versions || (videoUrl ? [{ url: videoUrl, width: 0, height: 0 }] : item.video_versions),
-            display_resources: displayResources,
-            video_resources: videoResources,
-            owner: item.owner || item.user,
-            user: item.user || item.owner
-        });
     }
 
     /**
@@ -7783,8 +7220,7 @@
      *              More reliable than index-based DOM mapping because it does
      *              not depend on CSS class names or progress-bar structure.
      *
-     * @param  {Object}  mediaResponse - Full getStories() / getHighlightStories()
-     *                    / getStoriesGraphQL() response
+     * @param  {Object}  mediaResponse - Full getStories() / getHighlightStories() response
      * @param  {?Number} visibleTs     - Timestamp captured before the API request
      * @return {?String}                - Best-matching item id, or null if undetermined
      */
@@ -8458,8 +7894,6 @@
                 USER_SETTING.PREFER_DASH_MANIFEST_FOR_STORIES_AND_HIGHLIGHTS ||
                 USER_SETTING.NEW_TAB_OPEN_HIGHEST_VIDEO_VIA_GRAPHQL;
             if (!dashEnabled) return false;
-
-            if (!USER_SETTING.FORCE_GRAPHQL_QUERY_FOR_STORIES_AND_HIGHLIGHTS) return false;
 
             if (!mediaItem?.video_dash_manifest) {
                 logger('[DASH]', 'No video_dash_manifest available; falling back to progressive video_versions[0]', { apiKind: 'reels_media' });
@@ -10195,11 +9629,8 @@
                 "MODIFY_VIDEO_VOLUME": "Modify Video Volume (Right-Click to Set)",
                 "MODIFY_RESOURCE_EXIF": "Modify Resource EXIF Properties",
                 "SCROLL_BUTTON": "Enable Scroll Buttons for Reels Page",
-                "FORCE_GRAPHQL_QUERY_FOR_STORIES_AND_HIGHLIGHTS": "Fetch Stories/Highlights via Polaris GraphQL",
                 "PREFER_DASH_MANIFEST_FOR_STORIES_AND_HIGHLIGHTS": "Prefer DASH Manifest for Higher-Quality Story/Highlight Video",
-                "FALLBACK_TO_BLOB_FETCH_IF_STORIES_GRAPHQL_UNAVAILABLE": "Use Alternative Story Methods When GraphQL Is Unavailable",
-                "NEW_TAB_ALWAYS_FORCE_GRAPHQL_IN_STORIES_AND_HIGHLIGHTS": "Use Instagram's GraphQL for [Open in New Tab] in Stories/Highlights",
-                "NEW_TAB_OPEN_HIGHEST_VIDEO_VIA_GRAPHQL": "Open the highest-quality Story/Highlight video in New Tab, without audio, via GraphQL",
+                "NEW_TAB_OPEN_HIGHEST_VIDEO_VIA_GRAPHQL": "Open the Highest-Quality Story/Highlight Video in New Tab (Without Audio)",
                 "SKIP_VIEW_STORY_CONFIRM": "Skip the Confirmation Page for Viewing a Story/Highlight",
                 "SKIP_SHARED_WITH_YOU_DIALOG": "Skip \"shared this with you\" dialog on shared profile links",
                 "CAPTURE_IMAGE_VIA_MEDIA_CACHE": "Capture Image Resource Using Media Cache",
@@ -10236,17 +9667,14 @@
                 "DIRECT_DOWNLOAD_ALL_INTRO": "When you click the download button, all resources in the post will be forcibly fetched and downloaded.",
                 "MODIFY_VIDEO_VOLUME_INTRO": "Modify the video playback volume in Reels and posts (right-click to open the volume setting slider).",
                 "SCROLL_BUTTON_INTRO": "Enable scroll buttons for the lower right corner of the Reels page.",
-                "FORCE_GRAPHQL_QUERY_FOR_STORIES_AND_HIGHLIGHTS_INTRO": "Use Instagram's Polaris GraphQL query to fetch Story and Highlight media. The new tab and normal download flows use this query first, with the existing GraphQL response path retained as a fallback.",
-                "PREFER_DASH_MANIFEST_FOR_STORIES_AND_HIGHLIGHTS_INTRO": "Prefer the DASH manifest when GraphQL returns one for a Story or Highlight video. The highest-quality video and audio tracks are downloaded separately and muxed into one MP4.",
-                "FALLBACK_TO_BLOB_FETCH_IF_STORIES_GRAPHQL_UNAVAILABLE_INTRO": "If the primary Instagram Polaris GraphQL query is unavailable, try the older GraphQL or visible-page media path for Stories and Highlights.",
-                "NEW_TAB_ALWAYS_FORCE_GRAPHQL_IN_STORIES_AND_HIGHLIGHTS_INTRO": "Use Instagram’s Polaris GraphQL query when opening a Story or Highlight in a new tab. A cached image may still be used when available.",
-                "NEW_TAB_OPEN_HIGHEST_VIDEO_VIA_GRAPHQL_INTRO": "Open the highest-quality video-only resource in a new tab using the Polaris GraphQL response. Requires the DASH manifest option and a manifest in Instagram’s response.",
+                "PREFER_DASH_MANIFEST_FOR_STORIES_AND_HIGHLIGHTS_INTRO": "Prefer the DASH manifest when Instagram returns one for a Story or Highlight video. The highest-quality video and audio tracks are downloaded separately and muxed into one MP4. If no manifest is available, the regular video file is downloaded instead.",
+                "NEW_TAB_OPEN_HIGHEST_VIDEO_VIA_GRAPHQL_INTRO": "When opening a Story or Highlight video in a new tab, open the highest-quality video-only track from the DASH manifest instead of the regular video file. The opened video has no audio.\n\nThis feature only works when [Prefer DASH Manifest for Higher-Quality Story/Highlight Video] is set to TRUE.",
                 "CHECK_FOR_UPDATE_INTRO": "Check for updates when the script is triggered (check every 300 seconds).\nUpdate notifications will be sent as desktop notifications through the browser.",
                 "SKIP_VIEW_STORY_CONFIRM_INTRO": "Automatically skip when confirmation page is shown in story or highlight.",
                 "SKIP_SHARED_WITH_YOU_DIALOG_INTRO": "Automatically click \"Not now\" on the \"X shared this with you\" dialog when opening any ?igsh= links.",
                 "MODIFY_RESOURCE_EXIF_INTRO": "Modify the EXIF attribute of the image resource to include metadata such as post link, shooting date, and author.",
                 "DIRECT_DOWNLOAD_STORY_INTRO": "When you click [Download All Resources], all stories/highlights are downloaded directly, without showing the image selection dialog.",
-                "CAPTURE_IMAGE_VIA_MEDIA_CACHE_INTRO": "Cache images loaded by Instagram for later reuse. When a cached image is available, this can avoid unnecessary requests to the Stories GraphQL query.",
+                "CAPTURE_IMAGE_VIA_MEDIA_CACHE_INTRO": "Cache images loaded by Instagram for later reuse. When a cached image is available, this can avoid unnecessary requests to the Stories/Highlights API.",
                 "HOTKEY_DEBUG_KEY": "Debug Window",
                 "HOTKEY_SETTINGS_KEY": "Preference Settings",
                 "HOTKEY_KEY_SETTINGS_KEY": "Hotkey Settings",
@@ -10511,35 +9939,10 @@
                             $(`.IG_POPUP_DIG input#${parent}`).prop('checked', true);
                         }
                     }
-
-                    // Keep prerequisite settings visibly enabled when a dependent
-                    // setting is checked. This is intentionally a UI + persisted-state
-                    // dependency, not merely a runtime fallback.
-                    for (const dependency of (SETTING_DEPENDENCIES[name] || [])) {
-                        if (USER_SETTING[dependency] !== true) {
-                            USER_SETTING[dependency] = true;
-                            GM_setValue(dependency, true);
-                            $(`.IG_POPUP_DIG input#${dependency}`).prop('checked', true);
-                        }
-                    }
                 }
                 else {
-                    // Disabling a setting invalidates only the settings that
-                    // explicitly depend on it. Keep this separate from the
-                    // parent/child loop above because `children` is scoped to
-                    // that loop and is not available here.
-                    const dependentSettings = SETTING_DISABLE_DEPENDENCIES[name] || [];
-
-                    // Also preserve the original parent -> child behavior: if
-                    // the setting being disabled is itself a parent, disable
-                    // all of its mapped children as well.
-                    const mappedChildren = PARENT_CHILD_MAPPING[name] || [];
-                    const settingsToDisable = [...new Set([
-                        ...mappedChildren,
-                        ...dependentSettings
-                    ])];
-
-                    for (const child of settingsToDisable) {
+                    // Disabling a parent setting also disables all of its children.
+                    for (const child of (PARENT_CHILD_MAPPING[name] || [])) {
                         USER_SETTING[child] = false;
                         GM_setValue(child, false);
                         $(`.IG_POPUP_DIG input#${child}`).prop('checked', false);

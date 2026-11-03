@@ -787,8 +787,7 @@ export function getVisibleStoryTimestamp() {
  *              More reliable than index-based DOM mapping because it does
  *              not depend on CSS class names or progress-bar structure.
  *
- * @param  {Object}  mediaResponse - Full getStories() / getHighlightStories()
- *                    / getStoriesGraphQL() response
+ * @param  {Object}  mediaResponse - Full getStories() / getHighlightStories() response
  * @param  {?Number} visibleTs     - Timestamp captured before the API request
  * @return {?String}                - Best-matching item id, or null if undetermined
  */
@@ -1462,8 +1461,6 @@ export async function tryHandleDashFromMediaItem({
             USER_SETTING.PREFER_DASH_MANIFEST_FOR_STORIES_AND_HIGHLIGHTS ||
             USER_SETTING.NEW_TAB_OPEN_HIGHEST_VIDEO_VIA_GRAPHQL;
         if (!dashEnabled) return false;
-
-        if (!USER_SETTING.FORCE_GRAPHQL_QUERY_FOR_STORIES_AND_HIGHLIGHTS) return false;
 
         if (!mediaItem?.video_dash_manifest) {
             logger('[DASH]', 'No video_dash_manifest available; falling back to progressive video_versions[0]', { apiKind: 'reels_media' });

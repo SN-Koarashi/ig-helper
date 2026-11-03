@@ -12,14 +12,11 @@ export const USER_SETTING = {
     'DIRECT_DOWNLOAD_STORY': false,
     'DIRECT_DOWNLOAD_VISIBLE_RESOURCE': false,
     'DISABLE_VIDEO_LOOPING': false,
-    'FALLBACK_TO_BLOB_FETCH_IF_STORIES_GRAPHQL_UNAVAILABLE': false,
     'FORCE_FETCH_ALL_RESOURCES': false,
     'FORCE_POLARIS_POST_ROOT_QUERY_FOR_POSTS_AND_REELS': true,
-    'FORCE_GRAPHQL_QUERY_FOR_STORIES_AND_HIGHLIGHTS': true,
     'HTML5_VIDEO_CONTROL': false,
     'MODIFY_RESOURCE_EXIF': false,
     'MODIFY_VIDEO_VOLUME': false,
-    'NEW_TAB_ALWAYS_FORCE_GRAPHQL_IN_STORIES_AND_HIGHLIGHTS': false,
     'PREFER_DASH_MANIFEST_FOR_STORIES_AND_HIGHLIGHTS': false,
     'NEW_TAB_OPEN_HIGHEST_VIDEO_VIA_GRAPHQL': false,
     'REDIRECT_CLICK_USER_STORY_PICTURE': false,
@@ -34,36 +31,12 @@ export const PARENT_CHILD_MAPPING = {
     'AUTO_RENAME': [
         'RENAME_PUBLISH_DATE'
     ],
-    'FORCE_GRAPHQL_QUERY_FOR_STORIES_AND_HIGHLIGHTS': [
-        'FALLBACK_TO_BLOB_FETCH_IF_STORIES_GRAPHQL_UNAVAILABLE',
-        'NEW_TAB_ALWAYS_FORCE_GRAPHQL_IN_STORIES_AND_HIGHLIGHTS',
-        'PREFER_DASH_MANIFEST_FOR_STORIES_AND_HIGHLIGHTS',
-        'NEW_TAB_OPEN_HIGHEST_VIDEO_VIA_GRAPHQL'
-    ]
-};
-
-// Some settings have a direct dependency even though they are not parent/child
-// entries in the visual hierarchy. When the dependent setting is enabled,
-// automatically enable its prerequisite in both the setting state and the UI.
-export const SETTING_DEPENDENCIES = {
-    'NEW_TAB_OPEN_HIGHEST_VIDEO_VIA_GRAPHQL': [
-        'NEW_TAB_ALWAYS_FORCE_GRAPHQL_IN_STORIES_AND_HIGHLIGHTS'
-    ]
-};
-
-// Some settings also invalidate dependent options when they are disabled.
-// Disabling the New Tab Instagram Stories GraphQL switch must therefore disable the
-// highest-quality video option, which relies on that switch.
-export const SETTING_DISABLE_DEPENDENCIES = {
-    'NEW_TAB_ALWAYS_FORCE_GRAPHQL_IN_STORIES_AND_HIGHLIGHTS': [
+    'PREFER_DASH_MANIFEST_FOR_STORIES_AND_HIGHLIGHTS': [
         'NEW_TAB_OPEN_HIGHEST_VIDEO_VIA_GRAPHQL'
     ]
 };
 
 export const LEGACY_SETTING_MIGRATIONS = {
-    'FALLBACK_TO_BLOB_FETCH_IF_REELS_MEDIA_API_THROTTLED': 'FALLBACK_TO_BLOB_FETCH_IF_STORIES_GRAPHQL_UNAVAILABLE',
-    'FORCE_REELS_MEDIA_API_FOR_STORIES_AND_HIGHLIGHTS': 'FORCE_GRAPHQL_QUERY_FOR_STORIES_AND_HIGHLIGHTS',
-    'NEW_TAB_ALWAYS_FORCE_REELS_MEDIA_API_IN_STORIES_AND_HIGHLIGHTS': 'NEW_TAB_ALWAYS_FORCE_GRAPHQL_IN_STORIES_AND_HIGHLIGHTS',
     'PREFER_DASH_MANIFEST_FOR_REELS_MEDIA_API': 'PREFER_DASH_MANIFEST_FOR_STORIES_AND_HIGHLIGHTS',
     'NEW_TAB_OPEN_HIGHEST_VIDEO_VIA_REELS_MEDIA_API': 'NEW_TAB_OPEN_HIGHEST_VIDEO_VIA_GRAPHQL'
 };
@@ -116,7 +89,6 @@ export const $body = $('body');
 
 export var state = {
     videoVolume: (GM_getValue('G_VIDEO_VOLUME')) ? GM_getValue('G_VIDEO_VOLUME') : 1,
-    tempFetchGraphQLUnavailable: false,
     // FIX: simple mutexes for onStory()/onHighlightsStory() to prevent
     // two concurrent downloads from starting when the user clicks/presses Alt+S
     // rapidly on successive stories.
