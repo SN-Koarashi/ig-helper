@@ -26,50 +26,25 @@ import { filterResourceData } from "../functions/post";
  */
 export function getHighlightStories(highlightId) {
     return new Promise((resolve, reject) => {
-        const getURL = `https://www.instagram.com/graphql/query`;
-
-        const siteData = getSiteData();
-        const formData = new FormData();
-
-        formData.append('av', getCookie('ds_user_id') || '0');
-        formData.append('fb_api_caller_class', 'RelayModern');
-        formData.append('fb_api_req_friendly_name', 'PolarisStoriesV3HighlightsPageQuery');
-        formData.append('server_timestamps', 'true');
-        formData.append('doc_id', '29299425373007309'); // This is dynamic, but we can use this for now. It may break in the future.
-        formData.append('lsd', getLSD());
-        formData.append('fb_dtsg', getDTSG());
-        formData.append('__hs', siteData?.haste_session || '');
-        formData.append('__hsi', siteData?.hsi || '');
-        formData.append('__rev', siteData?.client_revision || '');
-        formData.append('__spin_r', siteData?.__spin_r || '');
-        formData.append('__spin_b', siteData?.__spin_b || '');
-        formData.append('__spin_t', siteData?.__spin_t || '');
-        formData.append('__comet_req', siteData?.comet_env || '');
-        formData.append('__ccg', 'EXCELLENT');
-        formData.append('dpr', siteData?.pr);
-        formData.append('jazoest', getJazoest(getDTSG()));
-        formData.append('__user', '0');
-        formData.append('__a', '1');
-        formData.append('__d', 'www');
-        formData.append('__req', '1');
-        formData.append('__crn', 'comet.igweb.PolarisProfilePostsTabRoute');
-        formData.append('__s', genWebSessionId());
-        formData.append('variables', `{"initial_reel_id":"highlight:${highlightId}","reel_ids":["highlight:${highlightId}"],"first":999,"last":0,"__relay_internal__pv__PolarisCommunityNoteStoriesLabelEnabledrelayprovider":true}`);
+        const api = buildGraphQLData(
+            '29299425373007309',
+            {
+                "initial_reel_id": `highlight:${highlightId}`,
+                "reel_ids": [`highlight:${highlightId}`],
+                "first": 999,
+                "last": 0,
+                "__relay_internal__pv__PolarisCommunityNoteStoriesLabelEnabledrelayprovider": true
+            },
+            "PolarisStoriesV3HighlightsPageQuery",
+            "comet.igweb.PolarisProfilePostsTabRoute",
+            "xdt_api__v1__feed__reels_media__connection"
+        );
 
         GM_xmlhttpRequest({
             method: "POST",
-            url: getURL,
-            data: formData,
-            headers: {
-                "User-Agent": webViewAgent,
-                'X-IG-App-ID': getAppID() || '0',
-                'X-Root-Field-Name': 'xdt_api__v1__feed__reels_media__connection',
-                'X-CSRFToken': getCookie('csrftoken') || '',
-                'X-Fb-Friendly-Name': 'PolarisStoriesV3HighlightsPageQuery',
-                'X-Fb-Lsd': getLSD(),
-                'X-Bloks-Version-ID': getBloks(),
-                'X-Asbd-ID': '359341'
-            },
+            url: api.url,
+            data: api.body,
+            headers: api.headers,
             onload: async function (response) {
                 try {
                     let obj = JSON.parse(response.response);
@@ -118,50 +93,22 @@ export function getHighlightStories(highlightId) {
  */
 export function getStories(userId, expectedUsername, _retried) {
     return new Promise((resolve, reject) => {
-        const getURL = `https://www.instagram.com/graphql/query`;
-
-        const siteData = getSiteData();
-        const formData = new FormData();
-
-        formData.append('av', getCookie('ds_user_id') || '0');
-        formData.append('fb_api_caller_class', 'RelayModern');
-        formData.append('fb_api_req_friendly_name', 'PolarisStoriesV3ReelPageStandaloneQuery');
-        formData.append('server_timestamps', 'true');
-        formData.append('doc_id', '29170422829314651'); // This is dynamic, but we can use this for now. It may break in the future.
-        formData.append('lsd', getLSD());
-        formData.append('fb_dtsg', getDTSG());
-        formData.append('__hs', siteData?.haste_session || '');
-        formData.append('__hsi', siteData?.hsi || '');
-        formData.append('__rev', siteData?.client_revision || '');
-        formData.append('__spin_r', siteData?.__spin_r || '');
-        formData.append('__spin_b', siteData?.__spin_b || '');
-        formData.append('__spin_t', siteData?.__spin_t || '');
-        formData.append('__comet_req', siteData?.comet_env || '');
-        formData.append('__ccg', 'EXCELLENT');
-        formData.append('dpr', siteData?.pr);
-        formData.append('jazoest', getJazoest(getDTSG()));
-        formData.append('__user', '0');
-        formData.append('__a', '1');
-        formData.append('__d', 'www');
-        formData.append('__req', '1');
-        formData.append('__crn', 'comet.igweb.PolarisProfilePostsTabRoute');
-        formData.append('__s', genWebSessionId());
-        formData.append('variables', `{"reel_ids_arr":["${userId}"],"__relay_internal__pv__PolarisCommunityNoteStoriesLabelEnabledrelayprovider":true}`);
+        const api = buildGraphQLData(
+            "29170422829314651",
+            {
+                "reel_ids_arr": [userId],
+                "__relay_internal__pv__PolarisCommunityNoteStoriesLabelEnabledrelayprovider": true
+            },
+            "PolarisStoriesV3ReelPageStandaloneQuery",
+            "comet.igweb.PolarisProfilePostsTabRoute",
+            "xdt_api__v1__feed__reels_media"
+        );
 
         GM_xmlhttpRequest({
             method: "POST",
-            url: getURL,
-            data: formData,
-            headers: {
-                "User-Agent": webViewAgent,
-                'X-IG-App-ID': getAppID() || '0',
-                'X-Root-Field-Name': 'xdt_api__v1__feed__reels_media',
-                'X-CSRFToken': getCookie('csrftoken') || '',
-                'X-Fb-Friendly-Name': 'PolarisStoriesV3ReelPageStandaloneQuery',
-                'X-Fb-Lsd': getLSD(),
-                'X-Bloks-Version-ID': getBloks(),
-                'X-Asbd-ID': '359341'
-            },
+            url: api.url,
+            data: api.body,
+            headers: api.headers,
             onload: function (response) {
                 try {
                     let obj = JSON.parse(response.response);
@@ -943,9 +890,15 @@ export function buildGraphQLData(docId, variables, friendlyName, crn, rootName) 
         'X-Asbd-ID': '359341'
     };
 
+    const formData = new FormData();
+
+    for (const [key, value] of Object.entries(body)) {
+        formData.append(key, value);
+    }
+
     return {
         url: new URL('/graphql/query', window.location.origin).href,
-        body: new URLSearchParams(body).toString(),
+        body: formData,
         headers
     };
 }
