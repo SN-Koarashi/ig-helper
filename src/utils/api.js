@@ -1,4 +1,4 @@
-import { userIdCache, webViewAgent, state, USER_SETTING, POST_CACHE_MAX_ITEMS } from "../settings";
+import { userIdCache, webViewAgent, state, POST_CACHE_MAX_ITEMS } from "../settings";
 import {
     logger, getAppID, getCookie, getLSD, getBloks, getDTSG, getSiteData, getJazoest,
     genWebSessionId
@@ -581,117 +581,6 @@ export function getPostOwner(postPath) {
 }
 
 /**
- * getPolarisPostRootQuery
- * @description Resolve a post/reel through Instagram's PolarisPostRootQuery.
- * Include LSD/DTSG extraction and the current doc_id.
- *
- * @param {String} postPath - Instagram post/reel shortcode.
- * @return {Promise<{ type: 'polaris', data: Object }>}
- */
-async function getPolarisPostRootQuery(postPath) {
-    if (!postPath) throw new Error('NOPATH');
-
-    // Doc ID (needs to be updated when Instagram rotates it)
-    const IG_POST_ROOT_QUERY_DOC_ID = '27852811784380813';
-
-    const lsd = getLSD();
-    const dtsg = getDTSG();
-
-    const apiURL = new URL('/graphql/query', window.location.origin);
-    const variables = {
-        shortcode: postPath,
-        __relay_internal__pv__PolarisShortDramaEnabledrelayprovider: false,
-        __relay_internal__pv__PolarisMultiCaptionCarouselEnabledrelayprovider: false
-    };
-
-    const body = new URLSearchParams({
-        __d: 'www',
-        __user: '0',
-        __a: '1',
-        __req: '1',
-        __comet_req: '7',
-        fb_dtsg: dtsg ?? '',
-        lsd: lsd ?? '',
-        jazoest: dtsg ? getJazoest(dtsg) : '',
-        fb_api_caller_class: 'RelayModern',
-        fb_api_req_friendly_name: 'PolarisPostRootQuery',
-        server_timestamps: 'true',
-        doc_id: IG_POST_ROOT_QUERY_DOC_ID,
-        variables: JSON.stringify(variables)
-    }).toString();
-
-    const headers = {
-        'Content-Type': 'application/x-www-form-urlencoded',
-        'X-FB-Friendly-Name': 'PolarisPostRootQuery',
-        'X-ASBD-ID': '129477'
-    };
-    if (lsd) headers['X-FB-LSD'] = lsd;
-
-    const response = await fetch(apiURL.href, {
-        method: 'POST',
-        credentials: 'include',
-        headers,
-        body
-    });
-
-    const responseText = await response.text();
-    let json;
-    try {
-        json = JSON.parse(responseText);
-        // eslint-disable-next-line no-unused-vars
-    } catch (err) {
-        throw new Error(`PolarisPostRootQuery returned non-JSON (${response.status})`);
-    }
-
-    logger('getPolarisPostRootQuery()', postPath, json);
-
-    if (!response.ok) {
-        throw new Error(`PolarisPostRootQuery failed with HTTP ${response.status}`);
-    }
-
-    const item = json?.data?.xdt_api__v1__media__shortcode__web_info?.items?.[0];
-    if (!item) {
-        throw new Error('PolarisPostRootQuery returned no media item');
-    }
-
-    return { type: 'polaris', data: item };
-}
-
-/**
- * extractMediaIdsFromLegacyQueryHash
- * @description Extract the media IDs exposed by the legacy shortcode_media
- *              response. The IDs are used as a discovery/ordering hint for the
- *              Polaris path; PolarisPostRootQuery itself is shortcode-scoped.
- *
- * @param  {Object} data
- * @return {String[]}
- */
-function extractMediaIdsFromLegacyQueryHash(data) {
-    const resource = filterResourceData(data || {});
-    const ids = [];
-
-    const pushId = (value) => {
-        if (value == null) return;
-        const id = String(value);
-        if (id && !ids.includes(id)) ids.push(id);
-    };
-
-    if (resource.carousel_media && Array.isArray(resource.carousel_media)) {
-        resource.carousel_media.forEach((item) => pushId(item.pk ?? item.id));
-    }
-
-    if (resource.edge_sidecar_to_children?.edges) {
-        resource.edge_sidecar_to_children.edges.forEach((edge) => {
-            const node = edge?.node;
-            pushId(node?.id ?? node?.pk);
-        });
-    }
-
-    pushId(resource.pk ?? resource.id);
-    return ids;
-}
-
-/**
  * getPostMediaWithProvider
  * @description Resolve post/reel media through the selected provider. When the
  *              Polaris setting is disabled this preserves the legacy path.
@@ -709,81 +598,15 @@ function extractMediaIdsFromLegacyQueryHash(data) {
  *              correct content on its own.
  *
  * @param  {String}  postPath
- * @param  {{discoverMediaIds?: Boolean}} options
- * @return {Promise<{ type: 'polaris'|'query_id'|'query_hash', data: Object, mediaIds?: String[] }>}
+ * @return {Promise<{ type: 'polaris'|'query_id'|'query_hash', data: Object }>}
  */
-export async function getPostMediaWithProvider(postPath, options = {}) {
+export async function getPostMediaWithProvider(postPath) {
     if (state.GL_dataCache.posts && state.GL_dataCache.posts[postPath]) {
         logger('getPostMediaWithProvider() Fetch from memory cache:', postPath);
         return state.GL_dataCache.posts[postPath];
     }
 
-    let result;
-
-    if (!USER_SETTING.FORCE_POLARIS_POST_ROOT_QUERY_FOR_POSTS_AND_REELS) {
-        result = await getMediaList(postPath);
-    }
-    else {
-        let discoveredMediaIds = null;
-
-        if (options.discoverMediaIds) {
-            try {
-                const queryIdResult = await getMediaList(postPath);
-
-                const queryIdResource = queryIdResult?.data;
-
-                if (queryIdResource) {
-                    discoveredMediaIds = extractMediaIdsFromLegacyQueryHash(queryIdResource);
-                }
-
-                logger('[PolarisPostRootQuery] query_id media-id discovery', {
-                    postPath,
-                    mediaIds: discoveredMediaIds
-                });
-            }
-            catch (err) {
-                // QueryID is discovery-only here. Polaris remains the authoritative
-                // source for media URLs, so a failed discovery request must not prevent
-                // the Polaris request from being attempted.
-                logger(
-                    '[PolarisPostRootQuery] query_id discovery failed; continuing with Polaris',
-                    postPath,
-                    err
-                );
-            }
-        }
-
-        result = await getPolarisPostRootQuery(postPath);
-
-        if (discoveredMediaIds?.length) {
-            const resource = filterResourceData(result.data);
-            const idSet = new Set(discoveredMediaIds);
-
-            if (Array.isArray(resource.carousel_media)) {
-                const matching = resource.carousel_media.filter((item) =>
-                    idSet.has(String(item.pk ?? item.id))
-                );
-
-                if (matching.length) {
-                    resource.carousel_media = matching;
-                }
-            }
-
-            if (resource.edge_sidecar_to_children?.edges) {
-                const matchingEdges = resource.edge_sidecar_to_children.edges.filter((edge) => {
-                    const node = edge?.node;
-
-                    return idSet.has(String(node?.id ?? node?.pk));
-                });
-
-                if (matchingEdges.length) {
-                    resource.edge_sidecar_to_children.edges = matchingEdges;
-                }
-            }
-
-            result.mediaIds = discoveredMediaIds;
-        }
-    }
+    let result = await getMediaList(postPath);
 
     try {
         const resource = filterResourceData(result.data);

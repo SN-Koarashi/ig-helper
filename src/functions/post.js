@@ -959,9 +959,7 @@ export async function createMediaListDOM(postURL, selector, message) {
         // PolarisPostRootQuery. DIRECT_DOWNLOAD_ALL additionally uses the legacy
         // query_hash response only to discover the media IDs before resolving URLs
         // through Polaris.
-        let result = await getPostMediaWithProvider(postURL, {
-            discoverMediaIds: USER_SETTING.DIRECT_DOWNLOAD_ALL
-        });
+        let result = await getPostMediaWithProvider(postURL);
         let resource = filterResourceData(result.data);
         const resourceShortcode = resource.code || resource.shortcode || postURL;
 
