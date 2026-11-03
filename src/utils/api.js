@@ -546,41 +546,6 @@ export function getUserHighSizeProfile(userId) {
 }
 
 /**
- * getPostOwner
- * @description Get post's author with post shortcode.
- *
- * @param  {String}  postPath
- * @return {String}
- */
-export function getPostOwner(postPath) {
-    return new Promise((resolve, reject) => {
-        if (!postPath) reject("NOPATH");
-        const postShortCode = postPath;
-        const getURL = `https://www.instagram.com/graphql/query/?query_hash=2c4c2e343a8f64c625ba02b2aa12c7f8&variables=%7B%22shortcode%22:%22${postShortCode}%22}`;
-
-        GM_xmlhttpRequest({
-            method: "GET",
-            url: getURL,
-            onload: function (response) {
-                try {
-                    let obj = JSON.parse(response.response);
-                    logger('getPostOwner()', obj);
-                    resolve(obj.data.shortcode_media.owner.username);
-                }
-                catch (err) {
-                    logger('getPostOwner()', 'reject', err.message);
-                    reject(err);
-                }
-            },
-            onerror: function (err) {
-                logger('getPostOwner()', 'reject', err);
-                reject(err);
-            }
-        });
-    });
-}
-
-/**
  * getPostMediaWithProvider
  * @description Resolve post/reel media through the selected provider. When the
  *              Polaris setting is disabled this preserves the legacy path.

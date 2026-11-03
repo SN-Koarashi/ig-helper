@@ -83,7 +83,7 @@
         'DIRECT_DOWNLOAD_STORY': false,
         'DIRECT_DOWNLOAD_VISIBLE_RESOURCE': false,
         'DISABLE_VIDEO_LOOPING': false,
-        'FORCE_FETCH_ALL_RESOURCES': false,
+        'FORCE_FETCH_ALL_RESOURCES': true,
         'HTML5_VIDEO_CONTROL': false,
         'MODIFY_RESOURCE_EXIF': false,
         'MODIFY_VIDEO_VOLUME': false,
@@ -6012,41 +6012,6 @@
     }
 
     /**
-     * getPostOwner
-     * @description Get post's author with post shortcode.
-     *
-     * @param  {String}  postPath
-     * @return {String}
-     */
-    function getPostOwner(postPath) {
-        return new Promise((resolve, reject) => {
-            if (!postPath) reject("NOPATH");
-            const postShortCode = postPath;
-            const getURL = `https://www.instagram.com/graphql/query/?query_hash=2c4c2e343a8f64c625ba02b2aa12c7f8&variables=%7B%22shortcode%22:%22${postShortCode}%22}`;
-
-            GM_xmlhttpRequest({
-                method: "GET",
-                url: getURL,
-                onload: function (response) {
-                    try {
-                        let obj = JSON.parse(response.response);
-                        logger('getPostOwner()', obj);
-                        resolve(obj.data.shortcode_media.owner.username);
-                    }
-                    catch (err) {
-                        logger('getPostOwner()', 'reject', err.message);
-                        reject(err);
-                    }
-                },
-                onerror: function (err) {
-                    logger('getPostOwner()', 'reject', err);
-                    reject(err);
-                }
-            });
-        });
-    }
-
-    /**
      * getPostMediaWithProvider
      * @description Resolve post/reel media through the selected provider. When the
      *              Polaris setting is disabled this preserves the legacy path.
@@ -8137,14 +8102,6 @@
             let timestamp = Math.floor(date / 1000);
             let username = $el.data('username') ? $el.data('username') : state.GL_username;
             let index = parseInt($el.attr('data-globalindex') || 0, 10) || 0;
-
-            if (!username && $el.data('path')) {
-                logger('catching owner name from shortcode', $el.data('href'));
-                username = await getPostOwner($el.data('path')).catch(err => {
-                    logger('get username failed, replace with default string, error message', err?.message);
-                    return null;
-                });
-            }
 
             if (username == null) username = 'NONE';
 

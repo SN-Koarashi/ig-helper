@@ -1,6 +1,6 @@
 import { USER_SETTING, state, userIdCache, $body, SVG, LEGACY_SETTING_MIGRATIONS } from "../settings";
 import { _i18n } from "./i18n";
-import { getPostOwner, getUserId } from "./api";
+import { getUserId } from "./api";
 import { getImageFromCache, mediaIdFromURL } from "./image_cache";
 import { registerPostClickHandlers } from "../functions/post";
 import { cleanupPostObservers, stopAllObservers, scheduleRouteCheck } from "../timer";
@@ -1924,14 +1924,6 @@ export async function triggerLinkElement($element, isPreview = false) {
         let timestamp = Math.floor(date / 1000);
         let username = $el.data('username') ? $el.data('username') : state.GL_username;
         let index = parseInt($el.attr('data-globalindex') || 0, 10) || 0;
-
-        if (!username && $el.data('path')) {
-            logger('catching owner name from shortcode', $el.data('href'));
-            username = await getPostOwner($el.data('path')).catch(err => {
-                logger('get username failed, replace with default string, error message', err?.message);
-                return null;
-            });
-        }
 
         if (username == null) username = 'NONE';
 
