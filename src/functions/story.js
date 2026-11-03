@@ -12,7 +12,7 @@ import {
     resolveMediaIdOfStoryOrHighlightByTimestamp, getStoryButtonContainer,
     markContainerPositioned, updateStoryThumbnailButton, getVisibleVideoPosterMediaIds
 } from "../utils/general";
-import { getUserId, getStories, getStoriesGraphQL, isReelsMediaVideo } from "../utils/api";
+import { getUserId, getStories, isReelsMediaVideo } from "../utils/api";
 import { _i18n } from "../utils/i18n";
 import { getImageFromCache, mediaIdFromURL } from "../utils/image_cache";
 import { IG_createDM } from "../utils/dialog";
@@ -373,7 +373,7 @@ export async function onStory(isDownload, isForce, isPreview, isInternalRetry) {
                             throw new Error(`Could not resolve userId for @${username}`);
                         }
 
-                        stories = await getStoriesGraphQL(String(userId), username);
+                        stories = await getStories(String(userId), username);
 
                         // Persist the freshly-fetched tray so subsequent onStory() calls
                         // for the same username reuse it instead of re-hitting the API.
@@ -1026,7 +1026,7 @@ export async function onStoryThumbnail(isDownload, isForce) {
             else {
                 let userInfo = await getUserId(username);
                 let userId = userInfo.user.pk;
-                stories = await getStoriesGraphQL(String(userId), username);
+                stories = await getStories(String(userId), username);
 
                 // Persist the freshly-fetched tray so subsequent calls for
                 // the same username reuse it instead of re-hitting the API.

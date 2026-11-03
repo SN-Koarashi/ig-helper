@@ -862,50 +862,24 @@ export async function getPostMediaWithProvider(postPath, options = {}) {
 export function getMediaList(postPath) {
     return new Promise((resolve, reject) => {
         if (!postPath) reject("NOPATH");
-        const getURL = `https://www.instagram.com/graphql/query`;
-
-        const siteData = getSiteData();
-        const formData = new FormData();
-
-        formData.append('av', getCookie('ds_user_id') || '0');
-        formData.append('fb_api_caller_class', 'RelayModern');
-        formData.append('fb_api_req_friendly_name', 'PolarisPostRootQuery');
-        formData.append('server_timestamps', 'true');
-        formData.append('doc_id', '39422285384081769'); // This is dynamic, but we can use this for now. It may break in the future.
-        formData.append('lsd', getLSD());
-        formData.append('fb_dtsg', getDTSG());
-        formData.append('__hs', siteData?.haste_session || '');
-        formData.append('__hsi', siteData?.hsi || '');
-        formData.append('__rev', siteData?.client_revision || '');
-        formData.append('__spin_r', siteData?.__spin_r || '');
-        formData.append('__spin_b', siteData?.__spin_b || '');
-        formData.append('__spin_t', siteData?.__spin_t || '');
-        formData.append('__comet_req', siteData?.comet_env || '');
-        formData.append('__ccg', 'EXCELLENT');
-        formData.append('dpr', siteData?.pr);
-        formData.append('jazoest', getJazoest(getDTSG()));
-        formData.append('__user', '0');
-        formData.append('__a', '1');
-        formData.append('__d', 'www');
-        formData.append('__req', '1');
-        formData.append('__crn', 'comet.igweb.PolarisFeedRoute');
-        formData.append('__s', genWebSessionId());
-        formData.append('variables', `{"shortcode":"${postPath}","__relay_internal__pv__PolarisShortDramaEnabledrelayprovider":true,"__relay_internal__pv__PolarisThreadsStyleCommentsEnabledrelayprovider":false,"__relay_internal__pv__PolarisMultiCaptionCarouselEnabledrelayprovider":true}`);
+        const api = buildGraphQLData(
+            '39422285384081769',
+            {
+                "shortcode": postPath,
+                "__relay_internal__pv__PolarisShortDramaEnabledrelayprovider": true,
+                "__relay_internal__pv__PolarisThreadsStyleCommentsEnabledrelayprovider": false,
+                "__relay_internal__pv__PolarisMultiCaptionCarouselEnabledrelayprovider": true
+            },
+            'PolarisPostRootQuery',
+            'comet.igweb.PolarisFeedRoute',
+            'xdt_api__v1__media__shortcode__web_info'
+        );
 
         GM_xmlhttpRequest({
             method: "POST",
-            url: getURL,
-            data: formData,
-            headers: {
-                "User-Agent": webViewAgent,
-                'X-IG-App-ID': getAppID() || '0',
-                'X-Root-Field-Name': 'xdt_api__v1__media__shortcode__web_info',
-                'X-CSRFToken': getCookie('csrftoken') || '',
-                'X-Fb-Friendly-Name': 'PolarisPostRootQuery',
-                'X-Fb-Lsd': getLSD(),
-                'X-Bloks-Version-ID': getBloks(),
-                'X-Asbd-ID': '359341'
-            },
+            url: api.url,
+            data: api.body,
+            headers: api.headers,
             onload: function (response) {
                 try {
                     let obj = JSON.parse(response.response);
@@ -926,204 +900,55 @@ export function getMediaList(postPath) {
     });
 }
 
-/**
- * getStoriesGraphQL
- * @description Fetch a Stories or Highlights tray through Instagram's current
- *              Polaris GraphQL query and normalize its response for existing
- *              story download handlers.
- *
- * @param  {String}   reelId           - Numeric user id or `highlight:{id}`.
- * @param  {String=}  expectedUsername - Optional owner-mismatch guard.
- * @param  {Boolean=} _retried         - Internal retry guard.
- * @return {Promise<Object>}
- */
-export async function getStoriesGraphQL(reelId, expectedUsername, _retried) {
-    const isHighlight = String(reelId).startsWith('highlight:');
-    const friendlyName = isHighlight
-        ? 'PolarisStoriesV3HighlightsPageQuery'
-        : 'PolarisStoriesV3ReelPageGalleryQuery';
-    const docId = isHighlight ? '28325328583775973' : '28262315486766731';
-    const tokens = {
-        lsd: getLSD(),
-        dtsg: getDTSG() || document.querySelector('input[name="fb_dtsg"]')?.value || null
-    };
 
-    const variables = {
-        initial_reel_id: String(reelId),
-        reel_ids: [String(reelId)],
-        first: 3,
-        last: 2,
-        __relay_internal__pv__PolarisCommunityNoteStoriesLabelEnabledrelayprovider: true
-    };
-    const body = new URLSearchParams({
-        __d: 'www',
-        __user: '0',
-        __a: '1',
-        __req: '1',
-        __comet_req: '7',
+export function buildGraphQLData(docId, variables, friendlyName, crn, rootName) {
+    const siteData = getSiteData();
+    let body = {
+        av: getCookie('ds_user_id') || '0',
         fb_api_caller_class: 'RelayModern',
         fb_api_req_friendly_name: friendlyName,
         server_timestamps: 'true',
         doc_id: docId,
+        lsd: getLSD(),
+        fb_dtsg: getDTSG(),
+        __hs: siteData?.haste_session || '',
+        __hsi: siteData?.hsi || '',
+        __rev: siteData?.client_revision || '',
+        __spin_r: siteData?.__spin_r || '',
+        __spin_b: siteData?.__spin_b || '',
+        __spin_t: siteData?.__spin_t || '',
+        __comet_req: siteData?.comet_env || '',
+        __ccg: 'EXCELLENT',
+        dpr: siteData?.pr,
+        jazoest: getJazoest(getDTSG()),
+        __user: '0',
+        __a: '1',
+        __d: 'www',
+        __req: '1',
+        __s: genWebSessionId(),
         variables: JSON.stringify(variables)
-    });
-
-    if (tokens.dtsg) {
-        body.set('fb_dtsg', tokens.dtsg);
-        body.set('jazoest', getJazoest(tokens.dtsg));
-    }
-
-    if (tokens.lsd) {
-        body.set('lsd', tokens.lsd);
-    }
-
-    const headers = {
-        'Content-Type': 'application/x-www-form-urlencoded',
-        'X-FB-Friendly-Name': friendlyName
     };
 
-    if (tokens.lsd) {
-        headers['X-FB-LSD'] = tokens.lsd;
+    if (crn) {
+        body.__crn = crn;
     }
 
-    const apiURL = new URL('/graphql/query', window.location.origin);
-    const response = await fetch(apiURL.href, {
-        method: 'POST',
-        credentials: 'include',
-        headers,
-        body: body.toString()
-    });
-
-    let responseText = await response.text();
-    responseText = responseText.replace(/^\s*for\s*\(\s*;;\s*\)\s*;\s*/, '');
-
-    let json;
-    try {
-        json = JSON.parse(responseText);
-    }
-    // eslint-disable-next-line no-unused-vars
-    catch (parseError) {
-        throw new Error(`Stories GraphQL returned non-JSON (HTTP ${response.status})`);
-    }
-
-    if (!response.ok || json?.errors?.length) {
-        const apiError = json?.errors
-            ?.map((error) => error?.message)
-            .filter(Boolean)
-            .join('; ');
-        throw new Error(
-            `Stories GraphQL failed with HTTP ${response.status}` +
-            (apiError ? `: ${apiError}` : '')
-        );
-    }
-
-    const connection = json?.data?.['xdt_api__v1__feed__reels_media__connection'];
-    const node = connection?.edges?.[0]?.node;
-
-    if (!node || !Array.isArray(node.items)) {
-        throw new Error('Stories GraphQL response did not contain a reel node with items');
-    }
-
-    const rawOwner = node.user || node.owner || {};
-    const owner = {
-        ...rawOwner,
-        id: rawOwner.id ?? rawOwner.pk,
-        pk: rawOwner.pk ?? rawOwner.id
-    };
-    const reel = {
-        ...node,
-        id: node.id ?? owner.pk ?? owner.id ?? String(reelId),
-        items: node.items.map(normalizeReelsMediaItem),
-        owner,
-        user: owner
+    let headers = {
+        "User-Agent": webViewAgent,
+        'X-IG-App-ID': getAppID() || '0',
+        'X-Root-Field-Name': rootName,
+        'X-CSRFToken': getCookie('csrftoken') || '',
+        'X-Fb-Friendly-Name': friendlyName,
+        'X-Fb-Lsd': getLSD(),
+        'X-Bloks-Version-ID': getBloks(),
+        'X-Asbd-ID': '359341'
     };
 
-    const ownerCheckNeeded =
-        !!expectedUsername &&
-        !isHighlight &&
-        !_retried &&
-        !isOwnerVerifiedThisSession(expectedUsername);
-    const canCompareOwner = ownerCheckNeeded && !!owner.username;
-    const ownerMismatch =
-        canCompareOwner &&
-        owner.username.toLowerCase() !== expectedUsername.toLowerCase();
-
-    if (ownerMismatch) {
-        logger(
-            'getStoriesGraphQL()',
-            `owner mismatch: expected "${expectedUsername}", got "${owner.username}" — refreshing id`
-        );
-        const freshUserInfo = await resolveUserIdLive(expectedUsername);
-        const freshId = freshUserInfo?.user?.pk ?? freshUserInfo?.user?.id;
-
-        if (freshId && putUserIdInCache(expectedUsername, freshId)) {
-            userIdCache.set(expectedUsername.toLowerCase(), freshUserInfo);
-        }
-
-        if (freshId && String(freshId) !== String(reelId)) {
-            return getStoriesGraphQL(String(freshId), expectedUsername, true);
-        }
-
-        throw new Error('Stories GraphQL returned a different user than requested');
-    }
-
-    if (canCompareOwner) {
-        markOwnerVerified(expectedUsername);
-    }
-
-    const result = {
-        data: {
-            reels_media: [reel],
-            xdt_api__v1__feed__reels_media: { reels_media: [reel] },
-            xdt_api__v1__feed__reels_media__connection: { edges: [{ node: reel }] }
-        }
+    return {
+        url: new URL('/graphql/query', window.location.origin).href,
+        body: new URLSearchParams(body).toString(),
+        headers
     };
-    logger('getStoriesGraphQL()', reelId, result);
-    return result;
-}
-
-/**
- * normalizeReelsMediaItem
- * @description Bridge a Instagram Stories GraphQL item (image_versions2 / video_versions /
- *              pk / taken_at schema) into the shape older code paths expect
- *              (display_resources / video_resources / id / taken_at_timestamp /
- *              is_video). Non-destructive: returns a shallow copy augmented with
- *              the synthesized fields, leaving the original untouched.
- *
- * @param  {Object}  item - Raw reels_media item from getStoriesGraphQL().
- * @return {Object}        Normalized item safe to pass to legacy helpers.
- */
-function normalizeReelsMediaItem(item) {
-    if (!item) return item;
-
-    const id = item.pk ?? item.id;
-    const candidates = item.image_versions2?.candidates || [];
-    const imageUrl = candidates[0]?.url || item.display_url || item.display_resources?.[0]?.src || '';
-    const videoUrl = item.video_versions?.[0]?.url || item.video_resources?.[0]?.src || '';
-
-    const displayResources = item.display_resources?.length
-        ? item.display_resources
-        : (candidates.length
-            ? candidates.map(c => ({ src: c.url, config_width: c.width ?? 0 }))
-            : (imageUrl ? [{ src: imageUrl, config_width: 0 }] : []));
-
-    const videoResources = item.video_resources?.length
-        ? item.video_resources
-        : (videoUrl ? [{ src: videoUrl }] : []);
-
-    return Object.assign({}, item, {
-        id,
-        pk: id,
-        is_video: item.is_video ?? (item.media_type != null ? item.media_type !== 1 : !!(videoUrl || item.video_dash_manifest)),
-        taken_at_timestamp: item.taken_at_timestamp ?? item.taken_at ?? Math.floor(Date.now() / 1000),
-        display_url: item.display_url || imageUrl,
-        image_versions2: item.image_versions2 || (imageUrl ? { candidates: [{ url: imageUrl, width: 0, height: 0 }] } : item.image_versions2),
-        video_versions: item.video_versions || (videoUrl ? [{ url: videoUrl, width: 0, height: 0 }] : item.video_versions),
-        display_resources: displayResources,
-        video_resources: videoResources,
-        owner: item.owner || item.user,
-        user: item.user || item.owner
-    });
 }
 
 /**

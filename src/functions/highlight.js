@@ -11,7 +11,7 @@ import {
     updateHighlightThumbnailButton, getVisibleVideoPosterMediaIds
 } from "../utils/general";
 import { _i18n } from "../utils/i18n";
-import { getHighlightStories, getStoriesGraphQL, isReelsMediaVideo } from "../utils/api";
+import { getHighlightStories, isReelsMediaVideo } from "../utils/api";
 import { createStoryListDOM } from "./story";
 import { getImageFromCache } from "../utils/image_cache";
 import { IG_createDM } from "../utils/dialog";
@@ -242,9 +242,7 @@ export async function onHighlightsStory(isDownload, isPreview, isInternalRetry) 
             }
             else {
                 try {
-                    highStories = useStoriesGraphQL
-                        ? await getStoriesGraphQL(`highlight:${highlightId}`)
-                        : await getHighlightStories(highlightId);
+                    highStories = await getHighlightStories(highlightId);
                 }
                 catch (err) {
                     logger('[Instagram Stories GraphQL]', 'fetch highlight failed', err);
@@ -595,9 +593,7 @@ export async function onHighlightsStoryThumbnail(isDownload) {
         }
         else {
             try {
-                highStories = useStoriesGraphQL
-                    ? await getStoriesGraphQL(`highlight:${highlightId}`)
-                    : await getHighlightStories(highlightId);
+                highStories = await getHighlightStories(highlightId);
             }
             catch (err) {
                 logger('[Instagram Stories GraphQL]', 'fetch highlight thumbnail failed', err);
