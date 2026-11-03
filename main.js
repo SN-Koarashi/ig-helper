@@ -6138,7 +6138,7 @@
         }
 
         let headers = {
-            "User-Agent": webViewAgent,
+            // "User-Agent": webViewAgent,
             'X-IG-App-ID': getAppID() || '0',
             'X-CSRFToken': getCookie('csrftoken') || '',
             'X-Fb-Friendly-Name': friendlyName,

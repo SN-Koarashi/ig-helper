@@ -1,5 +1,6 @@
 [data-ih-locale-title] svg {
     vertical-align: middle;
+    color: rgb(var(--ig-primary-text));
 }
 
 .IG_POPUP_DIG {
@@ -116,6 +117,7 @@
     width: 18px;
     height: 18px;
     display: block;
+    color: #fff;
 }
 
 #_SNLOAD {

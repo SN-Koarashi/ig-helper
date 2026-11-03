@@ -1,4 +1,4 @@
-import { userIdCache, webViewAgent, state, POST_CACHE_MAX_ITEMS } from "../settings";
+import { userIdCache, state, POST_CACHE_MAX_ITEMS } from "../settings";
 import {
     logger, getAppID, getCookie, getLSD, getBloks, getDTSG, getSiteData, getJazoest,
     genWebSessionId
@@ -672,7 +672,7 @@ export function buildGraphQLData(docId, variables, friendlyName, crn, rootName) 
     }
 
     let headers = {
-        "User-Agent": webViewAgent,
+        // "User-Agent": webViewAgent,
         'X-IG-App-ID': getAppID() || '0',
         'X-CSRFToken': getCookie('csrftoken') || '',
         'X-Fb-Friendly-Name': friendlyName,
