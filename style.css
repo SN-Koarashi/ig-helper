@@ -8,7 +8,7 @@
     right: 0px;
     bottom: 0px;
     top: 0px;
-    z-index: 500;
+    z-index: 2147483000;
 }
 
 .IG_POPUP_DIG.hidden {
@@ -27,12 +27,12 @@
     right: 0px;
     bottom: 0px;
     top: 0px;
-    z-index: 502;
+    z-index: 2147483000;
     background: rgba(0, 0, 0, .75);
 }
 
 .IG_POPUP_DIG_MAIN {
-    z-index: 510;
+    z-index: 2147483000;
     padding: 10px 15px;
     top: 7%;
     position: absolute;
@@ -718,7 +718,7 @@ div[class]:hover+.volume_slider>div,
     display: none;
     justify-content: center;
     align-items: center;
-    z-index: 600001;
+    z-index: 2147480000;
     transform: scale(1);
     transition: transform 0.15s;
 
@@ -762,4 +762,22 @@ div[class]:hover+.volume_slider>div,
 
 #iv_close {
     filter: invert(1);
+}
+
+#IG_HELPER_LOADING_OVERLAY {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 0%;
+    height: 3px;
+    background: #0095f6;
+    z-index: 2147483000;
+    pointer-events: none;
+    opacity: 0;
+    transition: width 0.2s ease, opacity 0.2s ease;
+}
+
+#IG_HELPER_LOADING_OVERLAY.is-active {
+    width: 100%;
+    opacity: 1;
 }

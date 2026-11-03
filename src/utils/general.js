@@ -1,14 +1,29 @@
-import { USER_SETTING, state, userIdCache, $body } from "../settings";
+import { USER_SETTING, state, userIdCache, $body, SVG, LEGACY_SETTING_MIGRATIONS } from "../settings";
 import { _i18n } from "./i18n";
-import { getPostOwner, getMediaInfo, getUserId } from "./api";
-import { getImageFromCache } from "./image_cache";
+import { getPostOwner, getUserId } from "./api";
+import { getImageFromCache, mediaIdFromURL } from "./image_cache";
 import { registerPostClickHandlers } from "../functions/post";
+import { cleanupPostObservers, stopAllObservers, scheduleRouteCheck } from "../timer";
 /*! ESLINT IMPORT END !*/
 
+/**
+ * isMacOS
+ * @description Detect whether the current browser runs on macOS. Used to pick the
+ *              correct modifier-key glyph in tooltips and hotkey labels.
+ *
+ * @return {boolean}
+ */
 export function isMacOS() {
     return /Macintosh|Mac OS/i.test(navigator.userAgent);
 }
 
+/**
+ * getPlatformModifierKey
+ * @description Return the display glyph for the Alt/Option modifier key, matching
+ *              the current operating system's conventions.
+ *
+ * @return {string}
+ */
 export function getPlatformModifierKey() {
     return isMacOS() ? '⌥' : 'Alt';
 }
@@ -133,7 +148,7 @@ export function getSiteData() {
         }
     })
 
-    const siteData = findConfig(JSON.parse(result), "SiteData");
+    const siteData = result ? findConfig(JSON.parse(result), "SiteData") : null;
     return siteData;
 }
 
@@ -144,6 +159,7 @@ export function getSiteData() {
  * @return {?string}
  */
 export function getJazoest(fbDtsg) {
+    if (!fbDtsg) return "";
     let sum = 0;
     for (let i = 0; i < fbDtsg.length; i++) {
         sum += fbDtsg.charCodeAt(i);
@@ -337,20 +353,34 @@ export function getHighlightCurrentTimeElement($element) {
  * updateLoadingBar
  * @description Update loading state.
  *
+ * FIX: this function previously manipulated Instagram's root application
+ * container directly (div[id^="mount"] > div > div > div:first),
+ * removing a layout class and increasing its z-index to 20000. If
+ * updateLoadingBar(false) failed to run for any reason (for example, an
+ * unexpected exception somewhere in the async download chain), Instagram's
+ * container remained permanently in the "modified" state, which broke its
+ * own click/key dispatch until refresh — exactly the freeze bug seen during
+ * rapid navigation between stories.
+ *
+ * The function now uses a dedicated script element instead (see the CSS
+ * for #IG_HELPER_LOADING_OVERLAY injected below), which has
+ * pointer-events: none. This guarantees that, regardless of what happens
+ * next (including if the "loading" state remains stuck at true for an
+ * unexpected reason), the overlay can never intercept clicks or key presses —
+ * at worst, a loading bar remains visible; the Instagram application itself
+ * does not become blocked.
+ *
  * @param  {Boolean}  isLoading - Check if loading state
  * @return {void}
  */
 export function updateLoadingBar(isLoading) {
-    // OPTIMIZATION: cache the mount root selection (called every time)
-    const $mountDiv = $('div[id^="mount"] > div > div > div:first');
-    if (isLoading) {
-        $mountDiv.removeClass('x1s85apg');
-        $mountDiv.css('z-index', '20000');
+    let $overlay = $('#IG_HELPER_LOADING_OVERLAY');
+
+    if ($overlay.length === 0) {
+        $overlay = $('<div id="IG_HELPER_LOADING_OVERLAY"></div>').appendTo(document.body);
     }
-    else {
-        $mountDiv.addClass('x1s85apg');
-        $mountDiv.css('z-index', '');
-    }
+
+    $overlay.toggleClass('is-active', !!isLoading);
 }
 
 /**
@@ -425,15 +455,19 @@ export function getStoryProgressIndex($header) {
  */
 export function setStoryProgressIndexText($element, $header, className) {
     let progress = getStoryProgressIndex($header);
-    let $counter = $element.find('.' + className).first();
 
-    if (progress == null || progress.total < 2) {
-        if ($counter.length > 0) {
-            $counter.remove();
-        }
+    if (progress == null) {
+        // Don't tear the counter down reactively during transient header-detection
+        // mid-transition — leave whatever's there untouched so it updates smoothly in-place.
         return;
     }
 
+    if (progress.total < 2) {
+        $element.find('.' + className).remove();
+        return;
+    }
+
+    let $counter = $element.find('.' + className).first();
     let text = progress.current + '/' + progress.total;
     let title = _i18n('ITEM_POSITION')
         .replace('%CURRENT%', progress.current)
@@ -473,6 +507,628 @@ export function setStoryProgressIndexByUsername($element, username, className) {
 
     let $header = getStoryProgress(username);
     setStoryProgressIndexText($element, $header, className);
+}
+
+/**
+ * getMediaIdOfStoryOrHighlightFromEmbeddedJSON
+ * @description Reads the pk of the currently-viewed Story OR Highlight
+ *              item straight out of Instagram's own server-rendered
+ *              xdt_api__v1__feed__reels_media payload.
+ *
+ *              For Highlights, the embedded payload is accepted only
+ *              when its highlight node id exactly matches the numeric
+ *              highlight ID from the current /stories/highlights/<id>/ URL.
+ *              This prevents a stale DOM payload from another highlight
+ *              being used after client-side navigation.
+ *
+ *              For Stories, the existing reels_media[0].items shape
+ *              remains supported.
+ *
+ * @param  {Number}  [itemIndex=0] - 0-based index of the Story/Highlight
+ *                    item currently visible in the viewer (see
+ *                    getCurrentStoryItemIndex()). Defaults to 0.
+ * @param  {?String}  [expectedUsername=null] - Expected Story owner. On regular
+ *                    Story pages, when omitted, it is derived from the current
+ *                    /stories/<username>/... URL and must match the embedded
+ *                    payload owner. Ignored for Highlights.
+ * @return {?string}  pk of the embedded item, or null if absent/unparseable or
+ *                    the Story owner does not match the current URL.
+ */
+export function getMediaIdOfStoryOrHighlightFromEmbeddedJSON(itemIndex = 0, expectedUsername = null) {
+    const idx = Number.isInteger(itemIndex) && itemIndex >= 0 ? itemIndex : 0;
+    const isHighlightPage = location.pathname.startsWith('/stories/highlights/');
+
+    // For regular Stories, always derive the expected owner from the current
+    // /stories/<username>/... URL when the caller did not provide one. This
+    // prevents a stale embedded payload from another user's story tray from
+    // being accepted merely because it contains a valid reels_media item.
+    if (!isHighlightPage && !expectedUsername) {
+        const pathParts = location.pathname.split('/').filter(Boolean);
+        if (pathParts[0] === 'stories' && pathParts[1]) {
+            expectedUsername = decodeURIComponent(pathParts[1]);
+        }
+    }
+    const highlightId = isHighlightPage
+        ? location.pathname.replace(/\/+$/, '').split('/').filter(Boolean).at(-1)
+        : null;
+    const expectedHighlightNodeId = /^\d+$/.test(highlightId || '')
+        ? `highlight:${highlightId}`
+        : null;
+
+    function findKeyDeep(obj, key, depth = 12) {
+        if (!obj || typeof obj !== 'object' || depth < 0) return undefined;
+        if (Object.prototype.hasOwnProperty.call(obj, key)) return obj[key];
+
+        for (const k in obj) {
+            const val = obj[k];
+            if (val && typeof val === 'object') {
+                const found = findKeyDeep(val, key, depth - 1);
+                if (found !== undefined) return found;
+            }
+        }
+
+        return undefined;
+    }
+
+    /*
+     * extractPkFromCompositeStoryId: some single-item Story payloads omit
+     * "pk" entirely and only carry a composite "id" shaped like
+     * "<pk>_<userId>" (e.g. "3980127151482536531_4032195876"). Returns
+     * the numeric part before the first underscore, or null if the id
+     * doesn't match that shape.
+     */
+    function extractPkFromCompositeStoryId(id) {
+        if (typeof id !== 'string') return null;
+
+        const underscorePos = id.indexOf('_');
+        if (underscorePos === -1) return null;
+
+        const candidate = id.slice(0, underscorePos);
+        return /^\d+$/.test(candidate) ? candidate : null;
+    }
+
+    /*
+     * getDirectItemPk: resolves an item's own "pk" (never item.user.pk).
+     * Falls back to extractPkFromCompositeStoryId() whenever an item
+     * has no "pk" of its own but does have a composite "id" — this
+     * fallback only ever activates in the absence of a direct "pk", so
+     * it applies the same way to both Stories and Highlights.
+     */
+    function getDirectItemPk(item) {
+        if (!item || typeof item !== 'object') return null;
+        if (Object.prototype.hasOwnProperty.call(item, 'pk')) return item.pk;
+
+        return extractPkFromCompositeStoryId(item.id);
+    }
+
+    /*
+     * countDirectItemPks: counts how many entries in the `items` array
+     * resolve to a usable, item-level pk via getDirectItemPk() — i.e.
+     * their OWN "pk" (deliberately ignoring anything nested deeper, like
+     * item.user.pk), or the composite-id fallback above. Used to tell
+     * whether the embedded payload actually reaches as far as the item
+     * we need — IG's server-rendered payload is not guaranteed to
+     * contain every item of a long Highlight/Story, so a raw
+     * items.length check would still trust an array that looks
+     * complete but silently stops short of the visible item.
+     */
+    function countDirectItemPks(items) {
+        if (!Array.isArray(items)) return 0;
+        return items.reduce((count, item) => (
+            count + (getDirectItemPk(item) ? 1 : 0)
+        ), 0);
+    }
+
+    /*
+     * FIX (truncated data-sjs recovery): large Highlights (many items,
+     * each with a huge video_dash_manifest) can get cut off mid-string
+     * by IG's own rendering — the tag's real textContent.length ends up
+     * shorter than its own data-content-len attribute says it should
+     * be. JSON.parse() on such a tag always throws, even though the
+     * item we actually need (index 0's pk) usually sits well BEFORE the
+     * point of truncation. This does a narrow string-search recovery
+     * for that one specific, common case — first item only, Highlight
+     * pages only, since the node.id used to pick the right edge is also
+     * near the front of the string. Anything else (itemIndex > 0, or a
+     * truncated Story tag) safely returns null and falls through to
+     * resolveMediaIdOfStoryOrHighlightByTimestamp() same as before.
+     */
+    function recoverFirstItemPkFromTruncatedHighlight(text, nodeIdMarker) {
+        const nodePos = text.indexOf(nodeIdMarker);
+        if (nodePos === -1) return null;
+
+        const itemsMarker = '"items":[';
+        const itemsPos = text.indexOf(itemsMarker, nodePos);
+        if (itemsPos === -1) return null;
+
+        const slice = text.slice(itemsPos + itemsMarker.length, itemsPos + itemsMarker.length + 200);
+        const m = slice.match(/^\{"pk":"(\d+)"/);
+        return m ? m[1] : null;
+    }
+
+    let result = null;
+
+    $('script[type="application/json"][data-sjs]').each(function () {
+        if (result) return;
+
+        const text = $(this).text();
+        if (!text.includes('xdt_api__v1__feed__reels_media')) return;
+
+        try {
+            const parsed = JSON.parse(text);
+            const reelsMedia = findKeyDeep(parsed, isHighlightPage ? 'xdt_api__v1__feed__reels_media__connection' : 'xdt_api__v1__feed__reels_media')
+                || findKeyDeep(parsed, 'xdt_api__v1__feed__reels_media')
+                || findKeyDeep(parsed, 'xdt_api__v1__feed__reels_media__connection');
+            if (!reelsMedia) return;
+
+            let items = null;
+
+            if (isHighlightPage) {
+                // A Highlight payload may remain in the DOM after SPA navigation.
+                // Accept it only when the embedded node belongs to the current URL.
+                if (!expectedHighlightNodeId) return;
+
+                const edges = reelsMedia?.edges;
+                const matchingEdge = Array.isArray(edges)
+                    ? edges.find(edge => String(edge?.node?.id ?? '') === expectedHighlightNodeId)
+                    : null;
+
+                if (!matchingEdge) {
+                    logger('[getMediaIdOfStoryOrHighlightFromEmbeddedJSON]', 'stale/mismatched highlight node, expected:', expectedHighlightNodeId, 'edges:', edges?.map(e => e?.node?.id));
+                    return;
+                }
+
+                items = matchingEdge.node?.items;
+            }
+            else {
+                items = reelsMedia?.reels_media?.[0]?.items;
+
+                const ownerUsername = reelsMedia?.reels_media?.[0]?.user?.username;
+                if (expectedUsername) {
+                    if (!ownerUsername || ownerUsername.toLowerCase() !== expectedUsername.toLowerCase()) {
+                        logger('[getMediaIdOfStoryOrHighlightFromEmbeddedJSON]', 'stale/mismatched story owner, expected:', expectedUsername, 'got:', ownerUsername ?? null);
+                        return;
+                    }
+                }
+            }
+
+            const pkCount = countDirectItemPks(items);
+
+            if (idx >= pkCount) {
+                logger('[getMediaIdOfStoryOrHighlightFromEmbeddedJSON]', 'payload incomplete: only', pkCount, 'direct pk(s) present, requested index:', idx);
+                return;
+            }
+
+            const item = items[idx];
+            const pk = getDirectItemPk(item);
+
+            if (pk) result = String(pk);
+        }
+        catch (e) {
+            const declaredLen = parseInt(this.getAttribute('data-content-len') || '', 10);
+            const isTruncated = Number.isFinite(declaredLen) && text.length < declaredLen;
+
+            logger('[getMediaIdOfStoryOrHighlightFromEmbeddedJSON]', isTruncated ? 'tag truncated:' : 'tag not parseable, len:', text.length, isTruncated ? `/ ${declaredLen}` : e.message);
+
+            if (isTruncated && isHighlightPage && idx === 0 && expectedHighlightNodeId) {
+                const recoveredPk = recoverFirstItemPkFromTruncatedHighlight(text, `"id":"${expectedHighlightNodeId}"`);
+                if (recoveredPk) {
+                    logger('[getMediaIdOfStoryOrHighlightFromEmbeddedJSON]', 'recovered pk from truncated tag:', recoveredPk);
+                    result = recoveredPk;
+                }
+            }
+        }
+    });
+
+    if (result) {
+        logger('[getMediaIdOfStoryOrHighlightFromEmbeddedJSON]', 'found:', result, 'at index:', idx);
+    }
+
+    return result;
+}
+
+/**
+ * getCurrentStoryItemIndex
+ * @description Resolves the 0-based index of the Story/Highlight item
+ *              currently visible in the viewer, read from Instagram's
+ *              own progress-bar segments — the same data
+ *              IG_DWSTORY_POSITION (setStoryProgressIndexText/
+ *              getStoryProgressIndex) uses to show "current/total".
+ *              Used so getMediaIdOfStoryOrHighlightFromEmbeddedJSON()
+ *              picks the item matching what's on screen instead of
+ *              always assuming the first one in the embedded payload.
+ *
+ * @param  {String}  username - Story/Highlight owner's username
+ * @return {?Number}          - 0-based index, or null if undetermined
+ *                    (no progress bar found — caller should fall back
+ *                    to index 0)
+ */
+export function getCurrentStoryItemIndex(username) {
+    const $header = getStoryProgress(username);
+    const progress = getStoryProgressIndex($header);
+
+    return progress ? progress.current - 1 : null;
+}
+
+/**
+ * getVisibleStoryTimestamp
+ * @description Captures the currently visible Story/Highlight <time datetime>
+ *              value before any asynchronous API request can change the DOM.
+ *              The captured Unix timestamp is later passed to the media-id
+ *              resolver so it does not re-read a potentially changed Story.
+ *
+ * @return {?Number} Unix timestamp in seconds, or null if unavailable/invalid
+ */
+export function getVisibleStoryTimestamp() {
+    const $time = $(
+        'body > div section:visible time[datetime]'
+    ).filter(function () {
+        const $this = $(this);
+        return (
+            $this.is(':visible') &&
+            $this.closest('a[href^="/stories/highlights/"]').length === 0 &&
+            $this.closest('[role="button"]').length === 0
+        );
+    }).first();
+
+    if ($time.length === 0) return null;
+
+    const visibleTs = Math.floor(new Date($time.attr('datetime')).getTime() / 1000);
+    return Number.isFinite(visibleTs) && visibleTs !== 0
+        ? visibleTs
+        : null;
+}
+
+/**
+ * resolveMediaIdOfStoryOrHighlightByTimestamp
+ * @description Identifies the currently visible Story or Highlight item by
+ *              comparing a timestamp captured from the viewer DOM before
+ *              the API request with the timestamps in the fetched items.
+ *              More reliable than index-based DOM mapping because it does
+ *              not depend on CSS class names or progress-bar structure.
+ *
+ * @param  {Object}  mediaResponse - Full getStories() / getHighlightStories()
+ *                    / getStoriesGraphQL() response
+ * @param  {?Number} visibleTs     - Timestamp captured before the API request
+ * @return {?String}                - Best-matching item id, or null if undetermined
+ */
+export function resolveMediaIdOfStoryOrHighlightByTimestamp(mediaResponse, visibleTs) {
+    const items =
+        mediaResponse?.data?.xdt_api__v1__feed__reels_media__connection?.edges?.[0]?.node?.items ||
+        mediaResponse?.data?.xdt_api__v1__feed__reels_media?.reels_media?.[0]?.items ||
+        mediaResponse?.data?.reels_media?.[0]?.items;
+    if (!items || items.length === 0) return null;
+    if (!Number.isFinite(visibleTs) || visibleTs === 0) return null;
+
+    let bestId = null;
+    let minDiff = Infinity;
+
+    items.forEach(item => {
+        const diff = Math.abs((item.taken_at_timestamp || item.taken_at || 0) - visibleTs);
+        if (diff < minDiff) {
+            minDiff = diff;
+            bestId = item.pk ?? item.id;
+        }
+    });
+
+    logger('[resolveMediaIdOfStoryOrHighlightByTimestamp]', 'best match:', bestId, 'diff(s):', minDiff);
+    return bestId;  // always return best match, better than any index heuristic
+}
+
+/**
+ * getVisibleImageMediaId
+ * @description DOM-derived last-resort candidate: extracts a mediaId
+ *              from the ig_cache_key query param of the currently-visible
+ *              <img> in the Story/Highlight viewer (same technique v4
+ *              used). Works for the visible resource regardless of
+ *              whether it turns out to be a photo or a video item —
+ *              IG still renders a poster-like <img> either way — so it
+ *              is used by both onStory() and onHighlightsStory(), which
+ *              each handle photo AND video items in one function.
+ *              Tried only when both the DOM JSON fast path
+ *              (getMediaIdOfStoryOrHighlightFromEmbeddedJSON) and
+ *              resolveMediaIdOfStoryOrHighlightByTimestamp() found
+ *              nothing.
+ *
+ * @return {?String} mediaId decoded from the visible <img>, or null if none found
+ */
+export function getVisibleImageMediaId() {
+    let domSrcset = $('body > div section:visible img[referrerpolicy][class], body > div section:visible img[crossorigin][class]:not([alt])').attr('srcset')?.split(',')[0]?.split(' ')[0];
+
+    let domLink = (domSrcset)
+        ? domSrcset
+        : $('body > div section:visible img[referrerpolicy][class], body > div section:visible img[crossorigin][class]:not([alt])').filter(function () {
+            const $this = $(this);
+            return $this.parents('a').length === 0 && $this.width() === $this.parent().width();
+        }).attr('src');
+
+    if (!domLink) {
+        // _aa63 mean stories picture in stories page (not avatar)
+        let $domElement = $('body > div section:visible img._aa63');
+        domLink = ($domElement.attr('srcset'))
+            ? $domElement.attr('srcset')?.split(',')[0]?.split(' ')[0]
+            : $domElement.attr('src');
+    }
+
+    return domLink ? getStoryId(domLink) : null;
+}
+
+/**
+ * getVisibleVideoPosterMediaIds
+ * @description DOM-derived last-resort candidate(s): the currently-visible
+ *              <video>'s <video src="blob:..."> has no ig_cache_key of
+ *              its own, but its `poster` attribute IS a real IG image
+ *              URL that does carry one, decoded via mediaIdFromURL()
+ *              (same technique v4 used, and the same one onReels() uses
+ *              for Reel thumbnails). Shared between onStoryThumbnail()
+ *              and onHighlightsStoryThumbnail(), which both target VIDEO
+ *              items specifically. Tried only when both the DOM JSON
+ *              fast path (getMediaIdOfStoryOrHighlightFromEmbeddedJSON)
+ *              and resolveMediaIdOfStoryOrHighlightByTimestamp() found
+ *              nothing.
+ *
+ * @return {String[]} deduplicated mediaIds, in DOM order, decoded from
+ *                    every currently-visible <video>'s poster (may be empty)
+ */
+export function getVisibleVideoPosterMediaIds() {
+    const posterMediaIds = [];
+    const seenIds = new Set();
+
+    $('body > div section:visible video').each(function () {
+        const poster = this.getAttribute('poster') || this.poster;
+        if (!poster) return;
+
+        const domMediaId = mediaIdFromURL(poster);
+        if (!domMediaId || seenIds.has(domMediaId)) return;
+
+        seenIds.add(domMediaId);
+        posterMediaIds.push(domMediaId);
+    });
+
+    return posterMediaIds;
+}
+
+/**
+ * markContainerPositioned / restoreMarkedContainers
+ * @description FIX (freeze when story buttons spawn): onStory()
+ *              used to unconditionally force position:relative on Instagram's
+ *              NATIVE container (needed to absolutely position our buttons
+ *              inside it) without ever restoring it.
+ *              This meant that on EVERY navigation between stories, at the
+ *              exact moment Instagram was building/rendering the container
+ *              (i.e. the exact window described as "when the buttons spawn"),
+ *              we changed its stacking context live — creating a real risk of
+ *              colliding with Instagram's own invisible click zones
+ *              (prev/next) if the change happened while Instagram was still
+ *              initializing that element.
+ *
+ *              markContainerPositioned() applies position:relative ONLY
+ *              if the element does not already have a computed position other
+ *              than static (so we do not perform a redundant mutation every
+ *              time), and marks the element as "ours" with an attribute.
+ *              restoreMarkedContainers() restores those elements to their
+ *              initial state — called at every point where we remove the
+ *              buttons (including navigation between stories and leaving
+ *              the page).
+ *
+ * @param  {jQuery}  $el
+ * @return {void}
+ */
+export function markContainerPositioned($el) {
+    if (!$el || $el.length === 0) {
+        return;
+    }
+
+    $el.each(function () {
+        const $this = $(this);
+
+        if ($this.attr('data-ihelper-owns-position') === '1') {
+            return;
+        }
+
+        if ($this.css('position') === 'static') {
+            $this.attr('data-ihelper-owns-position', '1');
+            $this.css('position', 'relative');
+        }
+    });
+}
+
+export function restoreMarkedContainers() {
+    $('[data-ihelper-owns-position="1"]').each(function () {
+        $(this).css('position', '').removeAttr('data-ihelper-owns-position');
+    });
+}
+
+/**
+ * getHighlightButtonContainer
+ * @description Resolve the container element where onHighlightsStory(false)
+ *              attaches the .IG_DWHISTORY button, using the same fallback chain
+ *              onHighlightsStory() uses. Extracted for the same reason as
+ *              getStoryButtonContainer() below: so the persistent watcher
+ *              (startStoryObserver) and onHighlightsStory() can never
+ *              disagree about where the button belongs.
+ *
+ *              Note: position:relative is applied only on the "single story
+ *              layout mode" fallback branch, matching the original inline
+ *              logic exactly (the section._ac0a branch and the div-layout-mode
+ *              branch never had it applied either) — this is a preserved quirk
+ *              of the original code, not a new behavior.
+ *
+ * @return {jQuery}  Empty jQuery object if no container is currently resolvable.
+ */
+export function getHighlightButtonContainer() {
+    let $element = null;
+
+    // Default detector (section layout mode)
+    if ($('body > div section._ac0a').length > 0) {
+        $element = $('body > div section:visible._ac0a');
+    }
+    else {
+        $element = $('body > div section:visible > div > div[style]:not([class])');
+        markContainerPositioned($element);
+    }
+
+    // Detector for div layout mode
+    if ($element.length === 0) {
+        let $$element = $('body > div div:not([hidden]) section:visible > div div[class][style] > div[style]:not([class])');
+        let nowSize = 0;
+
+        $$element.each(function () {
+            const $this = $(this);
+            const width = $this.width();
+
+            if (width > nowSize) {
+                nowSize = width;
+                $element = $this.children('div').first();
+            }
+        });
+    }
+
+    return $element != null ? $element.first() : $();
+}
+
+/**
+ * getStoryButtonContainer
+ * @description Resolve the container element where onStory(false) attaches the
+ *              .IG_DWSTORY button, using the same fallback chain onStory() uses.
+ *              Extracted so the persistent watcher (startStoryObserver)
+ *              can watch/verify the exact container, instead of the whole mount tree,
+ *              and so onStory() and the watcher can never disagree about where the
+ *              button belongs.
+ *
+ * @return {jQuery}  Empty jQuery object if no container is currently resolvable.
+ */
+export function getStoryButtonContainer() {
+    let $element = null;
+
+    // Default detector (section layout mode)
+    if ($('body > div section._ac0a').length > 0) {
+        $element = $('body > div section:visible._ac0a');
+    }
+    // detector (single story layout mode)
+    else {
+        $element = $('body > div section:visible > div > div[style]:not([class])');
+    }
+
+    if ($element.length === 0) {
+        $element = $('div[id^="mount"] section > div > a[href="/"]').parent().parent().parent().find('section:visible > div > div[style]:not([class])');
+    }
+
+    if ($element.length === 0) {
+        $element = $('div[id^="mount"] section > div > a[href="/"]').parent().parent().parent().find('section:visible > div div[style]:not([class]) > div:not([data-visualcompletion="loading-state"])');
+    }
+
+    if ($element.length === 0) {
+        $element = $('div[id^="mount"] section > div a[href="/"]').parents('section:visible').find('div[style]:not([class])');
+    }
+
+    // Detecter for div layout mode
+    if ($element.length === 0) {
+        let $$element = $('body > div div:not([hidden]) section:visible > div div[class][style] > div[style]:not([class])');
+        let nowSize = 0;
+
+        $$element.each(function () {
+            const $this = $(this);
+            const width = $this.width();
+
+            if (width > nowSize) {
+                nowSize = width;
+                $element = $this.children('div').first();
+            }
+        });
+    }
+
+    return $element != null ? $element.first() : $();
+}
+
+/**
+ * updateStoryThumbnailButton
+ * @description Smoothly manages the presence of the story video thumbnail button.
+ *              Keeps the button intact across video-to-video transitions to eliminate
+ *              flicker, and fades it out smoothly when the active story is an image.
+ *
+ * @return {void}
+ */
+export function updateStoryThumbnailButton() {
+    let $container = $('.IG_DWSTORY').parent();
+
+    if ($container.length === 0) {
+        $container = getStoryButtonContainer().first();
+    }
+
+    if ($container.length === 0) {
+        return;
+    }
+
+    const $section = $container.closest('section:visible');
+    const $scope = $section.length ? $section : $('body > div section:visible');
+
+    // Treat presence of the volume slider or a visible video element as active video content
+    const hasVideo = $scope.find('[role="slider"]').length > 0 || $scope.find('video').filter(function () {
+        return $(this).is(':visible') && this.getClientRects().length > 0;
+    }).length > 0;
+
+    const $thumb = $('.IG_DWSTORY_THUMBNAIL');
+
+    if (hasVideo) {
+        if ($thumb.length === 0) {
+            markContainerPositioned($container);
+
+            $container.append(
+                `<div data-ih-locale-title="VIDEO_THUMBNAIL" title="${_i18n("VIDEO_THUMBNAIL")}" class="IG_DWSTORY_THUMBNAIL">${SVG.THUMBNAIL}</div>`
+            );
+        } else {
+            $thumb.stop(true, true).show();
+        }
+    } else {
+        // Active story is an image -> remove any stale thumbnail.
+        $thumb.remove();
+    }
+}
+
+/**
+ * updateHighlightThumbnailButton
+ * @description Smoothly manages the presence of the highlight video thumbnail button.
+ *              Keeps the button intact across video-to-video transitions to eliminate
+ *              flicker, and fades it out smoothly when the active highlight is an image.
+ *
+ * @return {void}
+ */
+export function updateHighlightThumbnailButton() {
+    let $container = $('.IG_DWHISTORY').parent();
+
+    if ($container.length === 0) {
+        $container = getHighlightButtonContainer().first();
+    }
+
+    if ($container.length === 0) {
+        return;
+    }
+
+    const $section = $container.closest('section:visible');
+    const $scope = $section.length ? $section : $('body > div section:visible');
+
+    // Treat presence of the volume slider or a visible video element as active video content
+    const hasVideo = $scope.find('[role="slider"]').length > 0 || $scope.find('video').filter(function () {
+        return $(this).is(':visible') && this.getClientRects().length > 0;
+    }).length > 0;
+
+    const $thumb = $('.IG_DWHISTORY_THUMBNAIL');
+
+    if (hasVideo) {
+        if ($thumb.length === 0) {
+            markContainerPositioned($container);
+
+            $container.append(
+                `<div data-ih-locale-title="VIDEO_THUMBNAIL" title="${_i18n("VIDEO_THUMBNAIL")}" class="IG_DWHISTORY_THUMBNAIL">${SVG.THUMBNAIL}</div>`
+            );
+        } else {
+            $thumb.stop(true, true).show();
+        }
+    } else {
+        // Active highlight is an image -> remove any stale thumbnail.
+        $thumb.remove();
+    }
 }
 
 /**
@@ -523,12 +1179,29 @@ export function saveFiles(downloadLink, metadata) {
             const downloadName = getSaveFileName(downloadLink, metadata);
             const { filetype, shortcode, sourceType } = metadata;
 
-            if (
+            // JPEG photos that need their EXIF rewritten must go through fetch()
+            const needsExifRewrite =
                 USER_SETTING.MODIFY_RESOURCE_EXIF &&
                 filetype === 'jpg' &&
                 shortcode &&
-                sourceType === 'photo'
-            ) {
+                sourceType === 'photo';
+
+            if (USER_SETTING.USE_EXTERNAL_DOWNLOAD_MODE && !needsExifRewrite) {
+                GM_download({
+                    url: downloadLink,
+                    name: downloadName,
+                    onload: () => {
+                        updateLoadingBar(false);
+                        resolve(true);
+                    },
+                    // eslint-disable-next-line no-unused-vars
+                    onerror: (err) => {
+                        updateLoadingBar(false);
+                        resolve(true);
+                    },
+                });
+            }
+            else {
                 fetch(downloadLink)
                     .then(res => res.blob())
                     .then(dwel => {
@@ -538,40 +1211,9 @@ export function saveFiles(downloadLink, metadata) {
                     .then(() => resolve(true))
                     .catch(err => {
                         updateLoadingBar(false);
-                        console.error('saveFiles failed', err);
+                        console.error('saveFiles failed:', err);
                         resolve(false);
                     });
-            } else {
-                if (USER_SETTING.USE_EXTERNAL_DOWNLOAD_MODE) {
-                    GM_download({
-                        url: downloadLink,
-                        name: downloadName,
-                        onload: () => {
-                            updateLoadingBar(false);
-                            resolve(true);
-                        },
-                        // eslint-disable-next-line no-unused-vars
-                        onerror: (err) => {
-                            updateLoadingBar(false);
-                            resolve(true);
-                        },
-                    });
-                }
-                else {
-                    updateLoadingBar(true);
-                    fetch(downloadLink)
-                        .then(res => res.blob())
-                        .then(dwel => {
-                            updateLoadingBar(false);
-                            return createSaveFileElement(downloadLink, dwel, metadata);
-                        })
-                        .then(() => resolve(true))
-                        .catch(err => {
-                            updateLoadingBar(false);
-                            console.error('saveFiles failed:', err);
-                            resolve(false);
-                        });
-                }
             }
         }, 50);
     });
@@ -597,7 +1239,7 @@ async function fetchArrayBuffer(url) {
 
 /**
  * parseDashManifest
- * @description Parse Media API video_dash_manifest (MPD XML).
+ * @description Parse Instagram Stories GraphQL video_dash_manifest (MPD XML).
  *              Returns best video/audio representation URLs.
  *
  * @param  {string} mpdXml
@@ -729,7 +1371,7 @@ async function muxDashVideoAudioToMp4(videoBuf, audioBuf) {
     throw new Error('Unexpected output buffer type');
 }
 
-async function downloadDashStreams(videoUrl, audioUrl, username, sourceType, timestamp, shortcode) {
+async function downloadDashStreams(videoUrl, audioUrl, username, sourceType, timestamp, shortcode, thumbnailURL) {
     logger('[DASH]', 'downloadDashStreams()', {
         videoUrl: videoUrl,
         audioUrl: audioUrl || null,
@@ -744,7 +1386,8 @@ async function downloadDashStreams(videoUrl, audioUrl, username, sourceType, tim
             sourceType,
             timestamp,
             filetype: 'mp4',
-            shortcode
+            shortcode,
+            thumbnailURL
         });
         return true;
     }
@@ -760,7 +1403,7 @@ async function downloadDashStreams(videoUrl, audioUrl, username, sourceType, tim
         const mergedBuf = await muxDashVideoAudioToMp4(vBuf, aBuf);
         const mergedBlob = new Blob([mergedBuf], { type: 'video/mp4' });
 
-        await createSaveFileElement(videoUrl, mergedBlob, { username, sourceType, timestamp, filetype: 'mp4', shortcode });
+        await createSaveFileElement(videoUrl, mergedBlob, { username, sourceType, timestamp, filetype: 'mp4', shortcode, thumbnailURL });
         logger('[DASH]', 'Merged MP4 download triggered.');
         return true;
     } catch (e) {
@@ -770,14 +1413,19 @@ async function downloadDashStreams(videoUrl, audioUrl, username, sourceType, tim
             sourceType,
             timestamp,
             filetype: 'mp4',
-            shortcode
+            shortcode,
+            thumbnailURL
         });
+        // Same base name as the video (extension aside) is intentional here,
+        // consistent with how these two fallback downloads already shared a
+        // base name under AUTO_RENAME before this setting existed.
         await saveFiles(audioUrl, {
             username,
             sourceType,
             timestamp,
             filetype: 'm4a',
-            shortcode
+            shortcode,
+            thumbnailURL
         });
         return true;
     }
@@ -785,12 +1433,20 @@ async function downloadDashStreams(videoUrl, audioUrl, username, sourceType, tim
 
 /**
  * tryHandleDashFromMediaItem
- * @description Centralized DASH handling for Media API items.
+ * @description Centralized DASH handling for Instagram Stories GraphQL items.
  *              Uses video_dash_manifest when present.
  *              Picks best video by resolution (height/width), then bandwidth.
  *              Audio is optional.
  *
- * @return {Promise<boolean>} true if DASH path handled it, false to let caller fallback.
+ * @param   {Object}                    args
+ * @param   {Object}                    args.mediaItem   - Instagram Stories GraphQL item.
+ * @param   {string}                    args.username
+ * @param   {string}                    args.sourceType
+ * @param   {number}                    args.timestamp
+ * @param   {string}                    args.shortcode
+ * @param   {boolean}                   args.isPreview   - true = new tab; false = download.
+ * @param   {number=}                   args.index
+ * @return  {Promise<boolean>} true if DASH path handled it, false to let caller fallback.
  */
 export async function tryHandleDashFromMediaItem({
     mediaItem,
@@ -802,9 +1458,17 @@ export async function tryHandleDashFromMediaItem({
     index
 }) {
     try {
-        if (!USER_SETTING.PREFER_DASH_MANIFEST) return false;
-        if (!USER_SETTING.FORCE_RESOURCE_VIA_MEDIA) return false;
-        if (!mediaItem?.video_dash_manifest) return false;
+        const dashEnabled =
+            USER_SETTING.PREFER_DASH_MANIFEST_FOR_STORIES_AND_HIGHLIGHTS ||
+            USER_SETTING.NEW_TAB_OPEN_HIGHEST_VIDEO_VIA_GRAPHQL;
+        if (!dashEnabled) return false;
+
+        if (!USER_SETTING.FORCE_GRAPHQL_QUERY_FOR_STORIES_AND_HIGHLIGHTS) return false;
+
+        if (!mediaItem?.video_dash_manifest) {
+            logger('[DASH]', 'No video_dash_manifest available; falling back to progressive video_versions[0]', { apiKind: 'reels_media' });
+            return false;
+        }
         if (!mediaItem?.video_versions) return false;
 
         const best = parseDashManifest(mediaItem.video_dash_manifest);
@@ -815,13 +1479,28 @@ export async function tryHandleDashFromMediaItem({
             return false;
         }
 
+        const thumbnailURL = mediaItem?.image_versions2?.candidates?.[0]?.url || mediaItem?.display_url || mediaItem?.display_resources?.[0]?.src;
+
         logger('[DASH]', 'best reps selected', {
+            apiKind: 'reels_media',
             video: best.video ? { height: best.video.height, width: best.video.width, bandwidth: best.video.bandwidth, codecs: best.video.codecs } : null,
             audio: best.audio ? { bandwidth: best.audio.bandwidth, codecs: best.audio.codecs } : '(none)'
         });
 
         if (isPreview) {
-            openNewTab(vUrl);
+            // When "open highest-quality video in new tab (no
+            // audio)" option is on, open the highest-bitrate video-only track;
+            // otherwise fall back to the standard preview URL (video_versions[0]).
+            const openHighestVideoOnly = USER_SETTING.NEW_TAB_OPEN_HIGHEST_VIDEO_VIA_GRAPHQL;
+
+            if (openHighestVideoOnly) {
+                logger('[DASH]', 'preview -> open highest-quality VIDEO-ONLY track (no audio)');
+                openNewTab(vUrl);
+            } else {
+                const fallbackUrl = mediaItem.video_versions?.[0]?.url || vUrl;
+                logger('[DASH]', 'preview -> open progressive video_versions[0] (default)');
+                openNewTab(fallbackUrl);
+            }
             return true;
         }
 
@@ -833,13 +1512,14 @@ export async function tryHandleDashFromMediaItem({
                 timestamp,
                 filetype: 'mp4',
                 shortcode,
-                index
+                index,
+                thumbnailURL
             });
             return true;
         }
 
         logger('[DASH]', 'download mode -> DASH video+audio');
-        await downloadDashStreams(vUrl, aUrl, username, sourceType, timestamp, shortcode);
+        await downloadDashStreams(vUrl, aUrl, username, sourceType, timestamp, shortcode, thumbnailURL);
         return true;
     } catch (e) {
         logger('[DASH]', 'tryHandleDashFromMediaItem failed -> fallback', e?.message || e);
@@ -850,7 +1530,7 @@ export async function tryHandleDashFromMediaItem({
 /**
  * triggerDownload
  * @description Trigger download from Blob with filename.
- * 
+ *
  * @param {Blob} blob
  * @param {string} filename
  */
@@ -906,7 +1586,22 @@ export function triggerDownload(blob, filename) {
  * @return {String}  The generated filename
  */
 export function getSaveFileName(downloadLink, metadata) {
-    let { username, sourceType, timestamp, filetype, shortcode, index, uid } = metadata;
+    let { username, sourceType, timestamp, filetype, shortcode, index, uid, thumbnailURL } = metadata;
+
+    /*
+     * MATCH_VIDEO_FILENAME_TO_THUMBNAIL: for video files (and the .m4a
+     * fallback saved when DASH mux fails), derive the filename from the
+     * video's own thumbnail URL instead of the rename template, taking
+     * priority over AUTO_RENAME/RENAME_PUBLISH_DATE. ThumbnailURL is
+     * whatever the caller resolved directly from the API response/DOM.
+     * If it's missing for any reason, this falls through unchanged to
+     * the normal naming logic below.
+     */
+    if (USER_SETTING.MATCH_VIDEO_FILENAME_TO_THUMBNAIL && (filetype === 'mp4' || filetype === 'm4a') && thumbnailURL) {
+        const thumbnailName = new URL(thumbnailURL).pathname.split('/').at(-1).split('.').slice(0, -1).join('.');
+        return username + '_' + thumbnailName + '.' + filetype;
+    }
+
     timestamp = parseInt(timestamp.toString().padEnd(13, '0'));
     index = (index != null) ? index : 0;
 
@@ -1252,28 +1947,16 @@ export async function triggerLinkElement($element, isPreview = false) {
         const filetype = $el.data('type') || 'jpg';
         const shortcode = $el.data('path');
         const href = $el.data('href');
+        // Every video entry in these popup/batch lists renders its own thumbnail
+        // as the <img> inside the same <a> (see the .videoThumbnail button, which
+        // already reads this exact same src to download it directly).
+        const thumbnailURL = filetype === 'mp4' ? $el.find('img').first().attr('src') : undefined;
 
         const downloadOnly = !isPreview;
 
         if (!isPreview && index < 0) {
             alert(_i18n('NO_CHECK_RESOURCE'));
             return;
-        }
-
-        if (USER_SETTING.PREFER_DASH_MANIFEST && state.GL_mediaDataCache[mediaId]) {
-            logger('Video Dash Stream, Processing video with DASH manifest', 'mediaId', mediaId);
-
-            const handled = await tryHandleDashFromMediaItem(
-                state.GL_mediaDataCache[mediaId],
-                username,
-                sourceType,
-                timestamp,
-                shortcode,
-                downloadOnly ? false : isPreview,
-                index
-            );
-
-            if (handled) return;
         }
 
         if (USER_SETTING.CAPTURE_IMAGE_VIA_MEDIA_CACHE) {
@@ -1296,78 +1979,6 @@ export async function triggerLinkElement($element, isPreview = false) {
             }
         }
 
-        if (USER_SETTING.FORCE_RESOURCE_VIA_MEDIA && mediaId) {
-            updateLoadingBar(true);
-            let result = await getMediaInfo(mediaId);
-            updateLoadingBar(false);
-
-            if (result?.status === 'ok') {
-                let resource_url = null;
-                // OPTIMIZATION: cache result.items[0]
-                const mediaItem = result.items?.[0];
-
-                if (mediaItem?.video_versions?.length) {
-                    resource_url = mediaItem.video_versions[0].url;
-                } else if (mediaItem?.image_versions2?.candidates?.length) {
-                    mediaItem.image_versions2.candidates.sort(function (a, b) {
-                        let aSTP = new URL(a.url).searchParams.get('stp');
-                        let bSTP = new URL(b.url).searchParams.get('stp');
-
-                        if (aSTP && bSTP) {
-                            if (aSTP.length > bSTP.length) return 1;
-                            if (aSTP.length < bSTP.length) return -1;
-                        } else {
-                            if ((a.width || 0) > (b.width || 0)) return 1;
-                            if ((a.width || 0) < (b.width || 0)) return -1;
-                        }
-
-                        return 0;
-                    });
-
-                    resource_url = mediaItem.image_versions2.candidates[0].url;
-                }
-
-                if (!resource_url) {
-                    alert('Cannot find download URL.');
-                    return;
-                }
-
-                if (!downloadOnly && isPreview) {
-                    openNewTab(replaceSameOriginHost(resource_url));
-                } else {
-                    await saveFiles(resource_url, {
-                        username,
-                        sourceType,
-                        timestamp,
-                        filetype,
-                        shortcode,
-                        index
-                    });
-                }
-                return;
-            }
-
-            if (USER_SETTING.FALLBACK_TO_BLOB_FETCH_IF_MEDIA_API_THROTTLED && href) {
-                if (!downloadOnly && isPreview) {
-                    openNewTab(replaceSameOriginHost(href));
-                } else {
-                    await saveFiles(href, {
-                        username,
-                        sourceType,
-                        timestamp,
-                        filetype,
-                        shortcode,
-                        index
-                    });
-                }
-                return;
-            }
-
-            alert(`Fetch failed from Media API. API response message: ${result?.message}`);
-            logger(result);
-            return;
-        }
-
         if (href) {
             if (!downloadOnly && isPreview) {
                 openNewTab(replaceSameOriginHost(href));
@@ -1378,7 +1989,8 @@ export async function triggerLinkElement($element, isPreview = false) {
                     timestamp,
                     filetype,
                     shortcode,
-                    index
+                    index,
+                    thumbnailURL
                 });
             }
             return;
@@ -1494,12 +2106,17 @@ export function openNewTab(link) {
 
 /**
  * reloadScript
- * @description Re-register main timer.
+ * @description Reset all injected UI and state, then re-run the route handler
+ *              (replaces the old "re-register main timer" behavior).
  *
  * @return {void}
  */
 export function reloadScript() {
     clearInterval(state.GL_repeat);
+    clearInterval(state.GL_dialogTimer);
+    clearInterval(state.GL_profileTimer);
+    clearInterval(state.GL_reelsTimer);
+    cleanupPostObservers();
 
     // OPTIMIZATION: use cached $body and combine .off() calls
     $body.off('.igHelperPost');
@@ -1507,17 +2124,41 @@ export function reloadScript() {
 
     $('.button_wrapper').remove();
     $('.IG_DWPROFILE, .IG_DWPROFILE, .IG_DWSTORY, .IG_DWSTORY_ALL, .IG_DWSTORY_THUMBNAIL, .IG_DWSTORY_POSITION, .IG_DWNEWTAB, .IG_DWHISTORY, .IG_DWHISTORY_ALL, .IG_DWHINEWTAB, .IG_DWHISTORY_THUMBNAIL, .IG_DWHISTORY_POSITION, .IG_REELS, .IG_REELS_NEWTAB, .IG_REELS_THUMBNAIL').remove();
+    restoreMarkedContainers();
     $('[data-snig]').removeAttr('data-snig');
 
     state.pageLoaded = false;
     state.firstStarted = false;
     state.currentURL = location.href;
-    state.GL_observer?.disconnect();
+    stopAllObservers();
 
     // Re-register delegated click handlers
     registerPostClickHandlers();
 
-    logger('main timer re-register completed');
+    // Re-run the route handler (also reconnects the right observer)
+    scheduleRouteCheck();
+
+    logger('script reload completed');
+}
+
+/**
+ * sanitizeForLog
+ * @description Convert DOM nodes and jQuery objects into short strings, so the
+ *              in-memory log never keeps detached DOM trees alive.
+ *
+ * @param  {*}  item
+ * @return {*}
+ */
+function sanitizeForLog(item) {
+    if (item == null) return item;
+    if (item instanceof jQuery) {
+        const el = item[0];
+        return `[jQuery: ${el ? el.tagName + (el.id ? '#' + el.id : '') + (el.className ? '.' + String(el.className).trim().split(/\s+/).slice(0, 3).join('.') : '') : 'empty'}]`;
+    }
+    if (item instanceof Element) {
+        return `[Element: ${item.tagName}${item.id ? '#' + item.id : ''}${item.className ? '.' + String(item.className).trim().split(/\s+/).slice(0, 3).join('.') : ''}]`;
+    }
+    return item;
 }
 
 /**
@@ -1530,14 +2171,11 @@ export function logger(...messages) {
     var dd = new Date();
     state.GL_logger.push({
         time: dd.getTime(),
-        content: [...messages]
+        content: messages.map(sanitizeForLog)
     });
 
-    if (state.GL_logger.length > 1000) {
-        state.GL_logger = [{
-            time: dd.getTime(),
-            content: ['logger sliced']
-        }, ...state.GL_logger.slice(-999)];
+    if (state.GL_logger.length > 200) {
+        state.GL_logger.splice(0, state.GL_logger.length - 200);
     }
 
     console.log(`[${dd.toISOString()}]`, ...messages);
@@ -1550,6 +2188,13 @@ export function logger(...messages) {
  * @return {void}
  */
 export function initSettings() {
+    for (const [legacyName, currentName] of Object.entries(LEGACY_SETTING_MIGRATIONS)) {
+        const legacyValue = GM_getValue(legacyName);
+        if (GM_getValue(currentName) == null && typeof legacyValue === 'boolean') {
+            GM_setValue(currentName, legacyValue);
+        }
+    }
+
     for (let name in USER_SETTING) {
         if (GM_getValue(name) != null && typeof GM_getValue(name) === 'boolean') {
             USER_SETTING[name] = GM_getValue(name);
@@ -1573,57 +2218,71 @@ export function initSettings() {
  * @return {void}
  */
 export function toggleVolumeSilder($videos, $buttonParent, loggerType, customClass = "") {
-    // OPTIMIZATION: cache the volume_slider lookup
-    let $existingSlider = $buttonParent.find('div.volume_slider');
-    if ($existingSlider.length === 0) {
-        $buttonParent.append(`<div class="volume_slider ${customClass}" />`);
-        const $newSlider = $buttonParent.find('div.volume_slider');
-        $newSlider.append(`<div><input type="range" max="1" min="0" step="0.05" value="${state.videoVolume}" /></div>`);
-        const $sliderInput = $newSlider.find('input');
-        $sliderInput.attr('style', `--ig-track-progress: ${(state.videoVolume * 100) + '%'}`);
-        $sliderInput.on('input', function () {
-            const $this = $(this);
-            var percent = ($this.val() * 100) + '%';
-
-            state.videoVolume = $this.val();
-            GM_setValue('G_VIDEO_VOLUME', $this.val());
-
-            $this.attr('style', `--ig-track-progress: ${percent}`);
-
-            $videos.each(function () {
-                logger(`(${loggerType})`, 'video volume changed #slider');
+    // Set initial volume listener only once per video
+    $videos.each(function () {
+        const $this = $(this);
+        $this.one('play playing', function () {
+            if (!$this.data('volume-slider')) {
+                $this.data('volume-slider', true);
                 this.volume = state.videoVolume;
-            });
+                //logger(`(${loggerType})`, 'video volume changed #volume-slider');
+            }
         });
+    });
 
-        $sliderInput.on('mouseenter', function () {
-            const $this = $(this);
-            var percent = (state.videoVolume * 100) + '%';
-            $this.attr('style', `--ig-track-progress: ${percent}`);
-            $this.val(state.videoVolume);
-
-
-            $videos.each(function () {
-                logger(`(${loggerType})`, 'video volume changed #slider');
-                this.volume = state.videoVolume;
-            });
-        });
-
-        $newSlider.on('click', function (e) {
-            e.stopPropagation();
-            e.preventDefault();
-        });
+    if ($buttonParent.find('div.volume_slider').length > 0) {
+        return;
     }
-    else {
-        $existingSlider.remove();
-    }
+
+    const $newSlider = $('<div class="volume_slider ' + customClass + '" />');
+    $buttonParent.append($newSlider);
+
+    $newSlider.append('<div><input type="range" max="1" min="0" step="0.05" value="' + state.videoVolume + '" /></div>');
+    const $sliderInput = $newSlider.find('input');
+
+    const syncSliderUI = (val) => {
+        const percent = (val * 100) + '%';
+        $sliderInput.val(val);
+        $sliderInput.attr('style', '--ig-track-progress: ' + percent);
+    };
+
+    const applyVolumeToVideos = (val) => {
+        state.videoVolume = val;
+        GM_setValue('G_VIDEO_VOLUME', val);
+
+        $videos.each(function () {
+            //logger(`(${loggerType})`, 'video volume changed #slider');
+            this.volume = val;
+        });
+    };
+
+    syncSliderUI(state.videoVolume);
+
+    $sliderInput.on('input', function () {
+        const val = parseFloat(this.value);
+        syncSliderUI(val);
+        applyVolumeToVideos(val);
+    });
+
+    $sliderInput.on('mouseenter', function () {
+        syncSliderUI(state.videoVolume);
+    });
+
+    $newSlider.on('click', function (e) {
+        e.stopPropagation();
+        e.preventDefault();
+    });
 }
 
 /**
  * triggerReactClickHandler
- * @description Trigger React onClick event handler for the given element.
+ * @description Trigger the React synthetic onClick handler bound to the given DOM
+ *              node. Locates the internal __reactProps* or __reactEventHandlers*
+ *              key React attaches to each fiber-linked node and calls onClick with
+ *              a minimal synthetic event.
  *
- * @param {HTMLElement} el 
+ * @param  {HTMLElement}  el
+ * @return {void}
  */
 export function triggerReactClickHandler(el) {
     const reactKey = Object.keys(el).find(k => k.startsWith('__reactProps') || k.startsWith('__reactEventHandlers'));
@@ -1653,7 +2312,7 @@ export function getCookie(name) {
 //  * getPointerElement
 //  * @description Get the element at the pointer position and check if it is the target element or if it is covered by another element.
 //  *
-//  * @param {JQuery<HTMLElement>} $target 
+//  * @param {JQuery<HTMLElement>} $target
 //  * @param {number} clientX
 //  * @param {number} clientY
 //  */
@@ -1703,22 +2362,27 @@ export function getCookie(name) {
 
 /**
  * updatePopupSelectionSummary
- * @description Update selection summary in popup dialog.
+ * @description Updates selection summary text and dynamically manages the
+ *              enabled/disabled states of the batch download buttons in the popup dialog.
  *
- * @param {string|JQuery} root
+ * @param {string|JQuery} [root='.IG_POPUP_DIG'] - Selector or jQuery object for the popup root.
  * @return {void}
  */
 export function updatePopupSelectionSummary(root = '.IG_POPUP_DIG') {
     const $root = (typeof root === 'string') ? $(root) : root;
     if (!$root || $root.length === 0) return;
 
-    const $titleCheckbox = $root.find('.IG_POPUP_DIG_TITLE .checkbox');
-    const $countSpan = $titleCheckbox.find('.item-count');
-    if ($titleCheckbox.length === 0 || $countSpan.length === 0) return;
-
     const $items = $root.find('.IG_POPUP_DIG_BODY .inner_box');
     const total = $items.length;
     const selected = $items.filter(':checked').length;
+    const isLoading = $root.find('#_SNLOAD').length > 0;
+
+    $root.find('#batch_download_direct').prop('disabled', isLoading || total === 0);
+    $root.find('#batch_download_selected').prop('disabled', isLoading || selected === 0);
+
+    const $titleCheckbox = $root.find('.IG_POPUP_DIG_TITLE .checkbox');
+    const $countSpan = $titleCheckbox.find('.item-count');
+    if ($titleCheckbox.length === 0 || $countSpan.length === 0) return;
 
     $titleCheckbox.find('input').prop('checked', total > 0 && selected === total);
 

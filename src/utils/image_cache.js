@@ -4,7 +4,9 @@
 ────────────────────────────────────────────────────────────── 
 */
 
-import { IMAGE_CACHE_KEY, IMAGE_CACHE_MAX_AGE, IMAGE_MAX_CACHE_ITEMS, state, USER_SETTING } from "../settings";
+import {
+    IMAGE_CACHE_KEY, IMAGE_CACHE_MAX_AGE, IMAGE_MAX_CACHE_ITEMS, state, USER_SETTING, mediaCache
+} from "../settings";
 /*! ESLINT IMPORT END !*/
 
 let mediaCacheDirty = false;
@@ -18,27 +20,81 @@ let mediaCacheSaveTimer = null;
  */
 export function purgeCache() {
     const now = Date.now();
+    let changed = false;
+
     for (const id in state.GL_imageCache) {
-        if ((now - state.GL_imageCache[id].ts) > IMAGE_CACHE_MAX_AGE) delete state.GL_imageCache[id];
+        if ((now - state.GL_imageCache[id].ts) > IMAGE_CACHE_MAX_AGE) {
+            delete state.GL_imageCache[id];
+            changed = true;
+        }
     }
-    GM_setValue(IMAGE_CACHE_KEY, state.GL_imageCache);
+
+    for (const [id, entry] of mediaCache) {
+        if ((now - entry.ts) > IMAGE_CACHE_MAX_AGE) {
+            mediaCache.delete(id);
+        }
+    }
+
+    if (changed) {
+        GM_setValue(IMAGE_CACHE_KEY, state.GL_imageCache);
+    }
 }
 
 
 /**
  * mediaIdFromURL
- * @description Decode mediaId from ig_cache_key parameter that Instagram includes in the URL.
+ * @description Decode mediaId from the ig_cache_key parameter that Instagram
+ *              embeds in image resource URLs.
+ *
+ *              The base64-encoded key decodes to either:
+ *                a) a single media pk (stories/highlights/profile items) — e.g.
+ *                   "3670776772828545770" (19 digits);
+ *                b) TWO concatenated ids for feed posts / reels — the media pk
+ *                   followed by an internal image upload id, e.g.
+ *                   "3953597008038636195" + "18015836522857835".
+ *
+ *              For the two-id form, only the first (media pk) part is returned
+ *              so it matches the id the userscript queries the cache with
+ *              (mda.pk / mediaItem.id / resource.pk).
+ *
+ *              IG media pks are globally unique across all media types (post,
+ *              reel, story, highlight item) so the sliced 19-digit prefix
+ *              cannot collide with a story id.
  *
  * @param  {string}  url
  * @return {?string}
  */
 export function mediaIdFromURL(url) {
+    if (!url || typeof url !== 'string') return null;
     try {
         const u = new URL(url);
         const key = u.searchParams.get('ig_cache_key');
-        if (!key) return null;
-        const b64 = key.split('.')[0];          // Part before “.3-ccb7…”
-        return atob(b64);                       // e.g., “3670776772828545770”
+        if (key) {
+            const decoded = atob(key.split('.')[0]);   // Part before “.3-ccb7…”
+            if (/^\d+$/.test(decoded)) {
+                if (decoded.length > 19) return decoded.slice(0, 19);
+                return decoded;
+            }
+            return decoded;
+        }
+
+        // Fallback: extract numeric media pk from filename in pathname
+        // e.g. .../482025345_18037192348572835_3953597008038636195_n.jpg
+        const filename = u.pathname.split('/').filter(Boolean).at(-1) || '';
+        const nameNoExt = filename.split('.')[0] || '';
+        const parts = nameNoExt.split('_');
+
+        for (let i = parts.length - 1; i >= 0; i--) {
+            if (/^3\d{18}$/.test(parts[i])) {
+                return parts[i];
+            }
+        }
+        for (let i = parts.length - 1; i >= 0; i--) {
+            if (/^\d{17,20}$/.test(parts[i])) {
+                return parts[i];
+            }
+        }
+        return null;
     } catch { return null; }
 }
 
@@ -51,16 +107,37 @@ export function mediaIdFromURL(url) {
  * @return {void}
  */
 export function putInCache(mediaId, url) {
-    if (!mediaId) return;
+    if (!mediaId || !url) return;
+
+    const entry = { url, ts: Date.now() };
+    const isNewPersistentEntry = !state.GL_imageCache[mediaId];
+
+    // Keep the current session's hot cache independent from persistent storage.
+    mediaCache.set(mediaId, entry);
+
+    if (mediaCache.size > IMAGE_MAX_CACHE_ITEMS) {
+        const oldestKey = mediaCache.keys().next().value;
+        mediaCache.delete(oldestKey);
+    }
 
     const keys = Object.keys(state.GL_imageCache);
-    if (keys.length >= IMAGE_MAX_CACHE_ITEMS) {
-        keys.sort((a, b) => state.GL_imageCache[a].ts - state.GL_imageCache[b].ts);
-        delete state.GL_imageCache[keys[0]];
+    if (isNewPersistentEntry && keys.length >= IMAGE_MAX_CACHE_ITEMS) {
+        // Linear scan for the oldest entry (no need to sort the whole list)
+        let oldestId = keys[0];
+        let oldestTs = state.GL_imageCache[oldestId]?.ts ?? 0;
+        for (let i = 1; i < keys.length; i++) {
+            const ts = state.GL_imageCache[keys[i]]?.ts ?? 0;
+            if (ts < oldestTs) {
+                oldestTs = ts;
+                oldestId = keys[i];
+            }
+        }
+        delete state.GL_imageCache[oldestId];
+        mediaCache.delete(oldestId);
     }
 
     mediaCacheDirty = true;
-    state.GL_imageCache[mediaId] = { url, ts: Date.now() };
+    state.GL_imageCache[mediaId] = entry;
 
     if (!mediaCacheSaveTimer) {
         mediaCacheSaveTimer = setTimeout(() => {
@@ -69,7 +146,7 @@ export function putInCache(mediaId, url) {
                 mediaCacheDirty = false;
             }
             mediaCacheSaveTimer = null;
-        }, 500); // write in script storage per 500 ms
+        }, 500); // write in script storage every 500 ms
     }
 }
 
@@ -82,9 +159,21 @@ export function putInCache(mediaId, url) {
  */
 export function getImageFromCache(mediaId) {
     if (!mediaId) return null;
-    const entry = state.GL_imageCache[mediaId];
+
+    let entry = mediaCache.get(mediaId);
+
+    if (!entry) {
+        entry = state.GL_imageCache[mediaId];
+    }
+
     if (!entry) return null;
-    if ((Date.now() - entry.ts) > IMAGE_CACHE_MAX_AGE) { delete state.GL_imageCache[mediaId]; return null; }
+
+    if ((Date.now() - entry.ts) > IMAGE_CACHE_MAX_AGE) {
+        mediaCache.delete(mediaId);
+        delete state.GL_imageCache[mediaId];
+        return null;
+    }
+
     return entry.url;
 }
 
@@ -111,7 +200,7 @@ export function registerPerformanceObserver() {
                 }
 
                 const id = mediaIdFromURL(u);
-                if (id && !state.GL_imageCache[id]) putInCache(id, u);
+                if (id && !mediaCache.has(id)) putInCache(id, u);
             }
         });
     });

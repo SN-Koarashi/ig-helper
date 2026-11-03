@@ -1,5 +1,5 @@
-import { SVG, USER_SETTING } from "../settings";
-import { updateLoadingBar, saveFiles, logger } from "../utils/general";
+import { SVG, USER_SETTING, state } from "../settings";
+import { updateLoadingBar, saveFiles, logger, markContainerPositioned } from "../utils/general";
 import { _i18n } from "../utils/i18n";
 import { getUserId, getUserHighSizeProfile } from "../utils/api";
 /*! ESLINT IMPORT END !*/
@@ -45,9 +45,12 @@ export async function onProfileAvatar(isDownload) {
     else {
         // Add the profile download button
         if (!$('.IG_DWPROFILE').length) {
-            let profileTimer = setInterval(() => {
-                if ($('.IG_DWPROFILE').length) {
-                    clearInterval(profileTimer);
+            let profileTries = 0;
+            clearInterval(state.GL_profileTimer);
+            state.GL_profileTimer = setInterval(() => {
+                // Stop once the button exists or after ~15s, so it can never run forever
+                if ($('.IG_DWPROFILE').length || ++profileTries > 100) {
+                    clearInterval(state.GL_profileTimer);
                     return;
                 }
 
@@ -55,9 +58,9 @@ export async function onProfileAvatar(isDownload) {
                 const $draggableElements = $(`${selector}[draggable]`).parent().parent();
                 const $nonDraggableElements = $(`${selector}:not([draggable])`).parent().parent().parent();
                 $draggableElements.append(`<div data-ih-locale-title="DW" title="${_i18n("DW")}" class="IG_DWPROFILE">${SVG.DOWNLOAD}</div>`);
-                $draggableElements.css('position', 'relative');
+                markContainerPositioned($draggableElements);
                 $nonDraggableElements.append(`<div data-ih-locale-title="DW" title="${_i18n("DW")}" class="IG_DWPROFILE">${SVG.DOWNLOAD}</div>`);
-                $nonDraggableElements.css('position', 'relative');
+                markContainerPositioned($nonDraggableElements);
             }, 150);
         }
     }

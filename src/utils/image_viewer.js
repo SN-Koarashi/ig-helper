@@ -8,14 +8,14 @@ export function openImageViewer(imageUrl) {
 
     $body.append(
         `<div id="imageViewer">
-	<div id="iv_header">
-		<div style="flex:1;">Image Viewer</div>
-		<div style="display: flex;filter: invert(1);gap: 8px;margin-right: 8px;">
+    <div id="iv_header">
+    <div style="flex:1;">Image Viewer</div>
+    <div style="display: flex;filter: invert(1);gap: 8px;margin-right: 8px;">
             <div id="rotate_left" style="cursor: pointer;">${SVG.TURN_DEG}</div>
             <div id="rotate_right" style="transform: scaleX(-1);cursor: pointer;">${SVG.TURN_DEG}</div>
         </div>
-		<div id="iv_close">${SVG.CLOSE}</div>
-	</div>
+    <div id="iv_close" style="display: flex; filter: invert(1); cursor: pointer;">${SVG.CLOSE.replace('fill="#ffffff"', 'fill="#1f1f1f"')}</div>
+    </div>
     <section>
         <div id="iv_transform">
             <div id="iv_rotate">

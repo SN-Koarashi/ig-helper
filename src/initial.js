@@ -4,11 +4,15 @@ import { style, state } from "./settings";
 import { purgeCache } from "./utils/image_cache";
 import { registerMenuCommand } from "./utils/dialog";
 import { registerPostClickHandlers } from "./functions/post";
+import { initRouteWatcher } from "./timer";
 /*! ESLINT IMPORT END !*/
 
 // initialization script
 initSettings();
 GM_addStyle(style);
+GM_addStyle(`
+    ._acay + .x24i39r { top: 37px !important; }
+`);
 registerMenuCommand();
 
 getTranslationText(state.lang).then((res) => {
@@ -28,4 +32,5 @@ getTranslationText(state.lang).then((res) => {
 logger('Script Loaded', GM_info.script.name, 'version:', GM_info.script.version);
 registerPostClickHandlers();
 purgeCache();
+initRouteWatcher();
 /*******************************/

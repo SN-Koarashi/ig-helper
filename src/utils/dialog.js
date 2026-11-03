@@ -280,7 +280,7 @@ export function showSetting() {
 
 /**
  * arrangeSettingHierarchy
- * @description Arrange specific settings under the corresponding setting. 
+ * @description Arrange specific settings under the corresponding setting.
  *
  * @return {void}
  */

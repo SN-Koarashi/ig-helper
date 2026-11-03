@@ -1,9 +1,11 @@
-import { state, USER_SETTING, $body } from "./settings";
+import {
+    state, USER_SETTING, $body, PARENT_CHILD_MAPPING, SETTING_DEPENDENCIES,
+    SETTING_DISABLE_DEPENDENCIES
+} from "./settings";
 import {
     reloadScript,
-    triggerLinkElement, openNewTab, saveFiles, logger, toggleVolumeSilder, updatePopupSelectionSummary,
-    replaceSameOriginHost, setTimeElementDateAndLocaleTime, getHighlightCurrentTimeElement,
-    triggerReactClickHandler
+    triggerLinkElement, openNewTab, saveFiles, logger, updatePopupSelectionSummary,
+    replaceSameOriginHost
 } from "./utils/general";
 import { onStory, onStoryAll, onStoryThumbnail } from "./functions/story";
 import { onProfileAvatar } from "./functions/profile";
@@ -11,7 +13,7 @@ import { onHighlightsStory, onHighlightsStoryAll, onHighlightsStoryThumbnail } f
 import { onReels } from "./functions/reel";
 import { _i18n, getTranslationText, repaintingTranslations } from "./utils/i18n";
 import { getImageFromCache, registerPerformanceObserver } from "./utils/image_cache";
-import { batchDownloadPostFiles } from "./functions/post";
+import { batchDownloadPostFiles, shortcodeToId } from "./functions/post";
 import { registerMenuCommand, showDebugDOM, showHotkeySetting, showSetting } from "./utils/dialog";
 /*! ESLINT IMPORT END !*/
 
@@ -168,6 +170,49 @@ $(function () {
             GM_setValue(name, isChecked);
             USER_SETTING[name] = isChecked;
 
+            if (isChecked) {
+                for (const [parent, children] of Object.entries(PARENT_CHILD_MAPPING)) {
+                    if (children.includes(name) && USER_SETTING[parent] !== true) {
+                        USER_SETTING[parent] = true;
+                        GM_setValue(parent, true);
+                        $(`.IG_POPUP_DIG input#${parent}`).prop('checked', true);
+                    }
+                }
+
+                // Keep prerequisite settings visibly enabled when a dependent
+                // setting is checked. This is intentionally a UI + persisted-state
+                // dependency, not merely a runtime fallback.
+                for (const dependency of (SETTING_DEPENDENCIES[name] || [])) {
+                    if (USER_SETTING[dependency] !== true) {
+                        USER_SETTING[dependency] = true;
+                        GM_setValue(dependency, true);
+                        $(`.IG_POPUP_DIG input#${dependency}`).prop('checked', true);
+                    }
+                }
+            }
+            else {
+                // Disabling a setting invalidates only the settings that
+                // explicitly depend on it. Keep this separate from the
+                // parent/child loop above because `children` is scoped to
+                // that loop and is not available here.
+                const dependentSettings = SETTING_DISABLE_DEPENDENCIES[name] || [];
+
+                // Also preserve the original parent -> child behavior: if
+                // the setting being disabled is itself a parent, disable
+                // all of its mapped children as well.
+                const mappedChildren = PARENT_CHILD_MAPPING[name] || [];
+                const settingsToDisable = [...new Set([
+                    ...mappedChildren,
+                    ...dependentSettings
+                ])];
+
+                for (const child of settingsToDisable) {
+                    USER_SETTING[child] = false;
+                    GM_setValue(child, false);
+                    $(`.IG_POPUP_DIG input#${child}`).prop('checked', false);
+                }
+            }
+
             console.log('user settings', name, isChecked);
         }
     });
@@ -231,12 +276,19 @@ $(function () {
     $body.on('click', '.IG_POPUP_DIG_BODY .newTab', function () {
         const $this = $(this);
         const $linkA = $this.parent().children('a');
-        if (USER_SETTING.FORCE_RESOURCE_VIA_MEDIA && USER_SETTING.NEW_TAB_ALWAYS_FORCE_MEDIA_IN_POST) {
-            triggerLinkElement($linkA.first()[0], true);
+        const mediaId = $linkA.attr('media-id');
+        const postPath = $linkA.data('path');
+        const isVideo = $linkA.data('name') === 'video' || $linkA.data('type') === 'mp4';
+
+        if (USER_SETTING.CAPTURE_IMAGE_VIA_MEDIA_CACHE && !isVideo) {
+            const cached = (mediaId ? getImageFromCache(mediaId) : null) || (postPath ? getImageFromCache(shortcodeToId(postPath)) : null);
+            if (cached) {
+                openNewTab(cached);
+                return;
+            }
         }
-        else {
-            openNewTab(replaceSameOriginHost($linkA.data('href')));
-        }
+
+        openNewTab(replaceSameOriginHost($linkA.data('href')));
     });
 
     $body.on('click', '.IG_POPUP_DIG_BODY .videoThumbnail', function () {
@@ -252,10 +304,10 @@ $(function () {
 
         if (USER_SETTING.CAPTURE_IMAGE_VIA_MEDIA_CACHE) {
             const mediaId = $linkA.first().attr('media-id');
-            const cached = getImageFromCache(mediaId);
+            const cached = (mediaId ? getImageFromCache(mediaId) : null) || (postPath ? getImageFromCache(shortcodeToId(postPath)) : null);
 
             if (cached) {
-                logger("[Restore Cached postThumbnail]", mediaId);
+                logger("[Restore Cached postThumbnail]", mediaId || postPath);
                 saveFiles(cached, {
                     username: $linkA.data('username'),
                     sourceType: 'thumbnail',
@@ -338,7 +390,7 @@ $(function () {
 
     // Running if user left-click download icon in reels
     $body.on('click', '.IG_REELS_THUMBNAIL', function () {
-        onReels(true, false);
+        onReels(true, false, false, this);
     });
 
     // Running if user right-click profile picture in stories area
@@ -438,207 +490,4 @@ $(function () {
     });
 
     registerPerformanceObserver();
-
-    const element_observer = new MutationObserver((mutationsList) => {
-        for (const mutation of mutationsList) {
-            if (mutation.type === 'childList') {
-                mutation.addedNodes.forEach((node) => {
-                    const $node = $(node);
-                    const $videos = $node.find('video').addBack('video');
-
-                    if (location.pathname.startsWith("/stories/highlights/")) {
-                        if (
-                            $node.attr("data-ih-locale-title") == null &&
-                            $node.attr("data-visualcompletion") == null &&
-                            node.tagName === "DIV"
-                        ) {
-                            // replace something times ago format to publish time when switch highlight
-                            var $time = getHighlightCurrentTimeElement($node);
-                            setTimeElementDateAndLocaleTime($time);
-                        }
-                    }
-
-                    if ($videos.length > 0) {
-                        // Modify video volume
-                        if (USER_SETTING.MODIFY_VIDEO_VOLUME) {
-                            $videos.each(function () {
-                                $(this).one('play playing', function () {
-                                    const $this = $(this);
-                                    if (!$this.data('modify')) {
-                                        $this.data('modify', true);
-                                        this.volume = state.videoVolume;
-                                        logger('(audio_observer) Added video event listener #modify');
-                                    }
-                                });
-                            });
-                        }
-
-                        if (location.pathname.match(/^(\/stories\/)/ig)) {
-                            const isHighlight = location.pathname.match(/^(\/stories\/highlights\/)/ig) != null;
-                            const storyType = isHighlight ? 'highlight' : 'story';
-
-                            $videos.each(function () {
-                                $(this).one('timeupdate', function () {
-                                    const $this = $(this);
-                                    if (!$this.data('insert-thumbnail')) {
-                                        let $video = $this;
-                                        if ($video.parents('div[style][class]').filter(function () {
-                                            return $(this).width() == $video.width();
-                                        }).find(isHighlight ? '.IG_DWHISTORY_THUMBNAIL' : '.IG_DWSTORY_THUMBNAIL').length === 0) {
-                                            $this.data('insert-thumbnail', true);
-
-                                            if (isHighlight) {
-                                                onHighlightsStoryThumbnail(false);
-                                            }
-                                            else {
-                                                onStoryThumbnail(false);
-                                            }
-
-                                            logger(`(${storyType})`, 'Manually inserting thumbnail button');
-                                        }
-                                        else {
-                                            $this.data('insert-thumbnail', true);
-                                            logger(`(${storyType})`, 'Thumbnail button already inserted');
-                                        }
-                                    }
-                                });
-
-                                var $video = $(this);
-
-                                if (USER_SETTING.HTML5_VIDEO_CONTROL) {
-                                    if (!$video.data('controls')) {
-                                        logger(`(${storyType})`, 'Added video html5 contorller #modify');
-
-                                        if (USER_SETTING.MODIFY_VIDEO_VOLUME) {
-                                            this.volume = state.videoVolume;
-
-                                            $video.on('loadstart', function () {
-                                                this.volume = state.videoVolume;
-                                            });
-                                        }
-
-                                        let $videoParent = $video.parents('div').filter(function () {
-                                            const $this = $(this);
-                                            return $this.attr('class') == null && $this.attr('style') == null;
-                                        }).first();
-
-                                        // This is mute/unmute's icon
-                                        let $element_mute_button = $videoParent.parent().find('svg > path[d^="M1.5 13.3c-.8 0-1.5.7-1.5 1.5v18.4c0"], svg > path[d^="M16.636 7.028a1.5 1.5"]').parents('[role="button"]').first();
-                                        state.GL_weakCache.mutedButton.set($video[0], $element_mute_button);
-
-                                        // story bottom bar
-                                        let $bottomBar = $videoParent.next();
-
-                                        // read more button in center
-                                        let $readMoreButton = $videoParent.find('div[class][role="button"]');
-
-                                        let $targets = $video.parent().find('video + div');
-
-                                        const hideContextmenu = function (e) {
-                                            e.preventDefault();
-                                            e.stopPropagation();
-
-                                            let $overlayElement = null;
-
-                                            if ($overlayElement == null) {
-                                                $overlayElement = $(e.target).parent().find('div[aria-label][data-visualcompletion="ignore"]').first();
-
-                                                if ($overlayElement.length === 0) {
-                                                    $overlayElement = $(e.target).first();
-                                                }
-                                            }
-
-                                            state.GL_weakCache.overlay.set($video[0], $overlayElement);
-
-                                            $video.css('z-index', '2');
-                                            $video.attr('controls', true);
-                                            $targets.css('z-index', '-10');
-                                            $overlayElement.css('z-index', '-10');
-
-                                            $readMoreButton.hide();
-                                            $bottomBar.hide();
-
-                                            toggleVolumeSilder($video, $video.parents('div[style][class]').filter(function () {
-                                                return $(this).width() == $video.width();
-                                            }).first(), storyType, 'vertical');
-                                        };
-
-                                        // Hide layout to show controller
-                                        $targets.off('contextmenu.IG_videoControl').on('contextmenu.IG_videoControl', hideContextmenu);
-                                        $readMoreButton.off('contextmenu.IG_videoControl').on('contextmenu.IG_videoControl', hideContextmenu);
-                                        $bottomBar.off('contextmenu.IG_videoControl').on('contextmenu.IG_videoControl', hideContextmenu);
-                                        $videoParent.off('contextmenu.IG_videoControl').on('contextmenu.IG_videoControl', hideContextmenu);
-
-                                        // Restore layout to show details interface
-                                        $video.on('contextmenu', function (e) {
-                                            e.preventDefault();
-                                            e.stopPropagation();
-
-                                            $video.css('z-index', '-1');
-                                            $video.removeAttr('controls');
-                                            $targets.css('z-index', '1');
-                                            state.GL_weakCache.overlay.get($video[0])?.css('z-index', '1');
-
-                                            $bottomBar.show();
-                                            $readMoreButton.show();
-
-                                            toggleVolumeSilder($video, $video.parents('div[style][class]').filter(function () {
-                                                return $(this).width() == $video.width();
-                                            }).first(), storyType, 'vertical');
-                                        });
-
-                                        $video.on('volumechange', function () {
-                                            let $element_mute_button = state.GL_weakCache.mutedButton.get(this) || {};
-                                            var is_element_muted = $element_mute_button?.find && $element_mute_button.find('svg > path[d^="M16.636"]').length === 0;
-
-                                            if (this.muted != is_element_muted) {
-                                                this.volume = state.videoVolume;
-
-                                                triggerReactClickHandler($element_mute_button.first()[0]);
-                                            }
-
-                                            const $v = $(this);
-                                            if ($v.data('completed')) {
-                                                state.videoVolume = this.volume;
-                                                GM_setValue('G_VIDEO_VOLUME', this.volume);
-                                            }
-
-                                            if (this.volume == state.videoVolume) {
-                                                $v.data('completed', true);
-                                            }
-                                        });
-
-                                        $video.css('position', 'absolute');
-                                        $video.data('controls', true);
-
-                                        toggleVolumeSilder($video, $video.parents('div[style][class]').filter(function () {
-                                            return $(this).width() == $video.width();
-                                        }).first(), storyType, 'vertical');
-                                    }
-                                }
-                                else {
-                                    toggleVolumeSilder($video, $video.parents('div[style][class]').filter(function () {
-                                        return $(this).width() == $video.width();
-                                    }).first(), storyType, 'vertical');
-                                }
-                            });
-                        }
-                    }
-                });
-            }
-        }
-    });
-
-    (function installElementObserver(attempts) {
-        const mountRoot = $('div[id^="mount"]')[0];
-        if (mountRoot) {
-            element_observer.observe(mountRoot, { childList: true, subtree: true });
-            logger('[element_observer] installed on mount root');
-        } else if (attempts > 0) {
-            setTimeout(() => installElementObserver(attempts - 1), 250);
-            logger('[element_observer] mount root not ready, retrying...');
-        } else {
-            logger('[element_observer] mount root not found after multiple retries');
-        }
-    })(20);
 });
