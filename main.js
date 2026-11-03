@@ -17,7 +17,7 @@
 // @name:zh-CN         IG小助手
 // @name:zh-TW         IG小精靈
 // @namespace          https://github.snkms.com/
-// @version            5.0.0
+// @version            5.1.0
 // @description        Download photos and videos from Instagram posts in one click, including Stories, Reels, and profile pictures.
 // @description:ar     نزّل صورًا ومقاطع فيديو من منشورات Instagram بنقرة واحدة، بما في ذلك القصص وReels وصور الملف الشخصي.
 // @description:de     Lade Fotos und Videos aus Instagram-Beiträgen mit einem Klick herunter, einschließlich Stories, Reels und Profilbildern.
@@ -5972,30 +5972,34 @@
      */
     function getUserHighSizeProfile(userId) {
         return new Promise((resolve, reject) => {
-            const getURL = `https://www.instagram.com/api/v1/users/${userId}/info/`;
+            const api = buildGraphQLData(
+                "40158838120366999",
+                {
+                    "enable_integrity_filters": true,
+                    "id": userId,
+                    "__relay_internal__pv__PolarisCannesGuardianExperienceEnabledrelayprovider": true,
+                    "__relay_internal__pv__PolarisCASB976ProfileEnabledrelayprovider": false,
+                    "__relay_internal__pv__PolarisProfileInformTreatmentBannerEnabledrelayprovider": false,
+                    "__relay_internal__pv__PolarisWebSchoolsEnabledrelayprovider": false,
+                    "__relay_internal__pv__PolarisProfileRingsGradientEnabledrelayprovider": true,
+                    "__relay_internal__pv__PolarisRepostsConsumptionEnabledrelayprovider": true,
+                    "__relay_internal__pv__PolarisShortDramaEnabledrelayprovider": true
+                },
+                "PolarisProfilePageContentQuery",
+                "comet.igweb.PolarisExploreRoute",
+                null
+            );
 
             GM_xmlhttpRequest({
-                method: "GET",
-                url: getURL,
-                headers: {
-                    "User-Agent": webViewAgent,
-                    'X-IG-App-ID': getAppID() || '0',
-                    'X-CSRFToken': getCookie('csrftoken') || '',
-                    'X-Fb-Lsd': getLSD(),
-                    'X-Bloks-Version-ID': getBloks(),
-                    'X-Asbd-ID': '359341'
-                },
+                method: "POST",
+                url: api.url,
+                data: api.body,
+                headers: api.headers,
                 onload: function (response) {
                     try {
                         let obj = JSON.parse(response.response);
-                        if (obj.status !== 'ok') {
-                            logger('getUserHighSizeProfile()', 'reject', obj);
-                            reject('faild');
-                        }
-                        else {
-                            logger('getUserHighSizeProfile()', obj);
-                            resolve(obj.user.hd_profile_pic_url_info?.url);
-                        }
+                        logger('getUserHighSizeProfile()', obj);
+                        resolve(obj.data.user.hd_profile_pic_url_info?.url);
                     }
                     catch (err) {
                         logger('getUserHighSizeProfile()', 'reject', err);
@@ -6351,13 +6355,16 @@
         let headers = {
             "User-Agent": webViewAgent,
             'X-IG-App-ID': getAppID() || '0',
-            'X-Root-Field-Name': rootName,
             'X-CSRFToken': getCookie('csrftoken') || '',
             'X-Fb-Friendly-Name': friendlyName,
             'X-Fb-Lsd': getLSD(),
             'X-Bloks-Version-ID': getBloks(),
             'X-Asbd-ID': '359341'
         };
+
+        if (rootName) {
+            headers['X-Root-Field-Name'] = rootName;
+        }
 
         const formData = new FormData();
 
