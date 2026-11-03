@@ -13,6 +13,7 @@ import {
 import { _i18n } from "../utils/i18n";
 import { getHighlightStories, isReelsMediaVideo } from "../utils/api";
 import { createStoryListDOM } from "./story";
+import { setStoryTaggedProfilesButton } from "./storyTaggedProfiles";
 import { getImageFromCache } from "../utils/image_cache";
 import { IG_createDM } from "../utils/dialog";
 /*! ESLINT IMPORT END !*/
@@ -429,6 +430,7 @@ export async function onHighlightsStory(isDownload, isPreview) {
                 }
 
                 setStoryProgressIndexText($element, $header, 'IG_DWHISTORY_POSITION');
+                setStoryTaggedProfilesButton($element, username);
 
                 // replace something times ago format to publish time in first init
                 setTimeElementDateAndLocaleTime(getHighlightCurrentTimeElement($header));
@@ -466,6 +468,7 @@ export async function onHighlightsStory(isDownload, isPreview) {
         }
         else {
             setStoryProgressIndexByUsername($('.IG_DWHISTORY').parent(), getHighlightsStoryUsername(), 'IG_DWHISTORY_POSITION');
+            setStoryTaggedProfilesButton($('.IG_DWHISTORY').parent(), username);
             updateHighlightThumbnailButton();
         }
     }

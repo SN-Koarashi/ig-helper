@@ -1,4 +1,4 @@
-import { userIdCache, state, POST_CACHE_MAX_ITEMS } from "../settings";
+import { userIdCache, state, POST_CACHE_MAX_ITEMS, webViewAgent } from "../settings";
 import {
     logger, getAppID, getCookie, getLSD, getBloks, getDTSG, getSiteData, getJazoest,
     genWebSessionId
@@ -161,6 +161,100 @@ export function getStories(userId, expectedUsername, _retried) {
             },
             onerror: function (err) {
                 logger('getStories()', 'reject', err);
+                reject(err);
+            }
+        });
+    });
+}
+
+/**
+ * getMediaInfo
+ * @description Get metadata for a single media item via the mobile endpoint.
+ *              Used as a fallback for Story/Highlight tagged-profile lookup.
+ *
+ * @param  {String}  mediaId
+ * @return {Promise<Object>}
+ */
+export function getMediaInfo(mediaId) {
+    return new Promise((resolve, reject) => {
+        const appId = getAppID();
+        if (!mediaId || !appId) {
+            reject(new Error('Cannot call media-info API without a media ID and app ID.'));
+            return;
+        }
+
+        const url = `https://i.instagram.com/api/v1/media/${encodeURIComponent(mediaId)}/info/`;
+        GM_xmlhttpRequest({
+            method: "GET",
+            url,
+            headers: {
+                "User-Agent": webViewAgent,
+                "X-IG-App-ID": appId,
+                "X-CSRFToken": getCookie("csrftoken") || "",
+                "X-Asbd-ID": "359341",
+                "X-Ig-Max-Touch-Points": "0",
+                "X-Requested-With": "XMLHttpRequest",
+                "X-Ig-Www-Claim": sessionStorage.getItem("www-claim-v2") || "0",
+                "X-Web-Session-Id": genWebSessionId()
+            },
+            onload: function (response) {
+                try {
+                    if (response.finalUrl && response.finalUrl !== url) {
+                        throw new Error(`Media-info request redirected to "${response.finalUrl}".`);
+                    }
+                    resolve(JSON.parse(response.responseText ?? response.response));
+                }
+                catch (err) {
+                    logger('getMediaInfo()', 'reject', err);
+                    reject(err);
+                }
+            },
+            onerror: function (err) {
+                logger('getMediaInfo()', 'reject', err);
+                reject(err);
+            }
+        });
+    });
+}
+
+/**
+ * getReelsMedia
+ * @description Retrieve the mobile reels-media payload as a final Story fallback.
+ *
+ * @param  {String|Integer}  userId
+ * @return {Promise<Object>}
+ */
+export function getReelsMedia(userId) {
+    return new Promise((resolve, reject) => {
+        const appId = getAppID();
+        if (!userId || !appId) {
+            reject(new Error('Cannot call reels-media API without a user ID and app ID.'));
+            return;
+        }
+
+        const url = `https://i.instagram.com/api/v1/feed/reels_media/?reel_ids=${encodeURIComponent(userId)}`;
+        GM_xmlhttpRequest({
+            method: "GET",
+            url,
+            headers: {
+                "User-Agent": window.navigator.userAgent,
+                Accept: "*/*",
+                "X-IG-App-ID": appId
+            },
+            onload: function (response) {
+                try {
+                    if (response.finalUrl && response.finalUrl !== url) {
+                        throw new Error(`Reels-media request redirected to "${response.finalUrl}".`);
+                    }
+                    resolve(JSON.parse(response.responseText ?? response.response));
+                }
+                catch (err) {
+                    logger('getReelsMedia()', 'reject', err);
+                    reject(err);
+                }
+            },
+            onerror: function (err) {
+                logger('getReelsMedia()', 'reject', err);
                 reject(err);
             }
         });
