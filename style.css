@@ -255,15 +255,24 @@
     min-height: 0;
 }
 
-.IG_TAGGED_PROFILE_MEDIA_ID {
+.IG_TAGGED_PROFILE_META {
     display: flex;
     align-items: baseline;
-    gap: 4px;
+    justify-content: space-between;
+    gap: 12px;
     margin: 0 0 8px;
     padding: 0 0 8px;
     border-bottom: 1px solid rgba(0, 0, 0, 0.16);
     border-color: rgba(var(--ig-primary-text), 0.16);
     font-size: 12px;
+}
+
+.IG_TAGGED_PROFILE_MEDIA_ID {
+    display: flex;
+    align-items: baseline;
+    gap: 4px;
+    min-width: 0;
+    margin: 0;
     overflow-wrap: anywhere;
 }
 
@@ -273,8 +282,10 @@
 }
 
 .IG_TAGGED_PROFILE_SOURCE {
-    margin: 0 0 8px;
-    font-size: 12px;
+    min-width: 0;
+    margin: 0;
+    text-align: right;
+    overflow-wrap: anywhere;
 }
 
 .IG_TAGGED_PROFILE_LIST {

@@ -1077,14 +1077,15 @@ function showStoryTaggedProfilesDialog(profiles, mediaId = null, errorMessage = 
 
     $dialog.find('#post_info').text(_i18n('TAGGED_PROFILES'));
     $body.append(
-        $('<p />', { class: 'IG_TAGGED_PROFILE_MEDIA_ID' })
-            .append($('<span />', { text: `${_i18n('MEDIA_ID')}:` }))
-            .append($('<code />', { text: displayMediaId }))
+        $('<section />', { class: 'IG_TAGGED_PROFILE_META' })
+            .append($('<p />', { class: 'IG_TAGGED_PROFILE_MEDIA_ID' })
+                .append($('<span />', { text: `${_i18n('MEDIA_ID')}:` }))
+                .append($('<code />', { text: displayMediaId })))
+            .append($('<p />', {
+                class: 'IG_TAGGED_PROFILE_SOURCE',
+                text: `${_i18n('DETECTION_METHOD')}: ${source || '-'}`
+            }))
     );
-    $body.append($('<p />', {
-        class: 'IG_TAGGED_PROFILE_SOURCE',
-        text: `${_i18n('DETECTION_METHOD')}: ${source || '-'}`
-    }));
 
     if (errorMessage || !profiles.length) {
         $body.append($('<p />', {
