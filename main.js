@@ -17,7 +17,7 @@
 // @name:zh-CN         IG小助手
 // @name:zh-TW         IG小精靈
 // @namespace          https://github.snkms.com/
-// @version            5.1.1
+// @version            5.1.2
 // @description        Download photos and videos from Instagram posts in one click, including Stories, Reels, and profile pictures.
 // @description:ar     نزّل صورًا ومقاطع فيديو من منشورات Instagram بنقرة واحدة، بما في ذلك القصص وReels وصور الملف الشخصي.
 // @description:de     Lade Fotos und Videos aus Instagram-Beiträgen mit einem Klick herunter, einschließlich Stories, Reels und Profilbildern.
@@ -3339,6 +3339,44 @@
             mediaId = mediaId * base + BigInt(idx);
         }
         return mediaId.toString();
+    }
+
+    /**
+     * idToShortcode
+     * @description Converts numeric media ID to Instagram post shortcode.
+     *              Uses BigInt to avoid 64-bit integer precision loss.
+     *
+     * @param  {String|BigInt} id
+     * @return {?String}
+     */
+    function idToShortcode(id) {
+        if (id === null || id === undefined) return null;
+
+        const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_';
+        const base = BigInt(64);
+
+        let mediaId;
+
+        try {
+            const clean = String(id).trim();
+            if (!/^\d+$/.test(clean)) return null;
+            mediaId = BigInt(clean);
+        } catch {
+            return null;
+        }
+
+        if (mediaId < 0n) return null;
+        if (mediaId === 0n) return alphabet[0];
+
+        let shortcode = '';
+
+        while (mediaId > 0n) {
+            const remainder = Number(mediaId % base);
+            shortcode = alphabet[remainder] + shortcode;
+            mediaId /= base;
+        }
+
+        return shortcode;
     }
 
     /**
@@ -7354,7 +7392,11 @@
                 updateLoadingBar(true);
 
                 const downloadName = getSaveFileName(downloadLink, metadata);
-                const { filetype, shortcode, sourceType } = metadata;
+                let { filetype, shortcode, sourceType } = metadata;
+
+                if (shortcode.match(/^\d+$/)) {
+                    shortcode = idToShortcode(shortcode);
+                }
 
                 // JPEG photos that need their EXIF rewritten must go through fetch()
                 const needsExifRewrite =

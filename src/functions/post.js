@@ -1355,6 +1355,44 @@ export function shortcodeToId(shortcode) {
 }
 
 /**
+ * idToShortcode
+ * @description Converts numeric media ID to Instagram post shortcode.
+ *              Uses BigInt to avoid 64-bit integer precision loss.
+ *
+ * @param  {String|BigInt} id
+ * @return {?String}
+ */
+export function idToShortcode(id) {
+    if (id === null || id === undefined) return null;
+
+    const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_';
+    const base = BigInt(64);
+
+    let mediaId;
+
+    try {
+        const clean = String(id).trim();
+        if (!/^\d+$/.test(clean)) return null;
+        mediaId = BigInt(clean);
+    } catch {
+        return null;
+    }
+
+    if (mediaId < 0n) return null;
+    if (mediaId === 0n) return alphabet[0];
+
+    let shortcode = '';
+
+    while (mediaId > 0n) {
+        const remainder = Number(mediaId % base);
+        shortcode = alphabet[remainder] + shortcode;
+        mediaId /= base;
+    }
+
+    return shortcode;
+}
+
+/**
  * getPostImages
  * @description Extract content images from a post container, excluding avatars,
  *              header icons, and tiny thumbnails.

@@ -2,7 +2,7 @@ import { USER_SETTING, state, userIdCache, $body, SVG, LEGACY_SETTING_MIGRATIONS
 import { _i18n } from "./i18n";
 import { getUserId } from "./api";
 import { getImageFromCache, mediaIdFromURL } from "./image_cache";
-import { registerPostClickHandlers } from "../functions/post";
+import { idToShortcode, registerPostClickHandlers } from "../functions/post";
 import { cleanupPostObservers, stopAllObservers, scheduleRouteCheck } from "../timer";
 /*! ESLINT IMPORT END !*/
 
@@ -1176,7 +1176,11 @@ export function saveFiles(downloadLink, metadata) {
             updateLoadingBar(true);
 
             const downloadName = getSaveFileName(downloadLink, metadata);
-            const { filetype, shortcode, sourceType } = metadata;
+            let { filetype, shortcode, sourceType } = metadata;
+
+            if (shortcode.match(/^\d+$/)) {
+                shortcode = idToShortcode(shortcode);
+            }
 
             // JPEG photos that need their EXIF rewritten must go through fetch()
             const needsExifRewrite =
