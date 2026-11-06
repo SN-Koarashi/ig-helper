@@ -234,12 +234,6 @@ $(function () {
         }
     });
 
-    $body.on('input', '.IG_POPUP_DIG #tempWrapper input#date_format', function () {
-        const val = $(this).val();
-        GM_setValue('G_RENAME_FORMAT', val);
-        state.fileRenameFormat = val;
-    });
-
     $body.on('click', 'a[data-needed="direct"]', function (e) {
         e.preventDefault();
         triggerLinkElement($(this), false);
