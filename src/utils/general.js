@@ -1178,7 +1178,7 @@ export function saveFiles(downloadLink, metadata) {
             const downloadName = getSaveFileName(downloadLink, metadata);
             let { filetype, shortcode, sourceType } = metadata;
 
-            if (shortcode.match(/^\d+$/)) {
+            if (shortcode?.match(/^\d+$/) != null) {
                 shortcode = idToShortcode(shortcode);
             }
 
