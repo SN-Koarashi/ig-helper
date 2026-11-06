@@ -17,7 +17,7 @@
 // @name:zh-CN         IG小助手
 // @name:zh-TW         IG小精靈
 // @namespace          https://github.snkms.com/
-// @version            5.1.5
+// @version            5.1.6
 // @description        Download photos and videos from Instagram posts in one click, including Stories, Reels, and profile pictures.
 // @description:ar     نزّل صورًا ومقاطع فيديو من منشورات Instagram بنقرة واحدة، بما في ذلك القصص وReels وصور الملف الشخصي.
 // @description:de     Lade Fotos und Videos aus Instagram-Beiträgen mit einem Klick herunter, einschließlich Stories, Reels und Profilbildern.
@@ -2700,7 +2700,7 @@
                                 sourceType: 'photo',
                                 timestamp: USER_SETTING.RENAME_PUBLISH_DATE ? publish_time : new Date().getTime(),
                                 filetype: 'jpg',
-                                shortcode: ctx.mediaId || postPath
+                                shortcode: postPath || ctx.code || ctx.mediaId
                             });
 
                             updateLoadingBar(false);
@@ -2714,7 +2714,7 @@
                                 sourceType: 'photo',
                                 timestamp: USER_SETTING.RENAME_PUBLISH_DATE ? publish_time : new Date().getTime(),
                                 filetype: 'jpg',
-                                shortcode: ctx.mediaId || postPath
+                                shortcode: postPath || ctx.code || ctx.mediaId
                             });
 
                             updateLoadingBar(false);
@@ -2870,7 +2870,7 @@
                             sourceType: 'photo',
                             timestamp: USER_SETTING.RENAME_PUBLISH_DATE ? publish_time : new Date().getTime(),
                             filetype: 'jpg',
-                            shortcode: ctx.mediaId || postPath
+                            shortcode: postPath || ctx.code || ctx.mediaId
                         });
                         $('.IG_POPUP_DIG').remove();
                         return;
@@ -3297,6 +3297,12 @@
     function shortcodeToId(shortcode) {
         if (!shortcode || typeof shortcode !== 'string') return null;
         const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_';
+
+        if (shortcode.length > 28) {
+            // Instagram shortcodes longer than 28 characters are invalid for media ID conversion
+            shortcode = shortcode.substring(0, shortcode.length - 28);
+        }
+
         let mediaId = BigInt(0);
         const base = BigInt(64);
         const clean = shortcode.trim();
@@ -3407,11 +3413,11 @@
      *
      * @param  {JQuery} $article
      * @param  {?String} postPath
-     * @return {{ isVideo: Boolean, mediaId: ?String, cachedUrl: ?String, displayUrl: ?String, posterUrl: ?String, candidateIds: String[] }}
+     * @return {{ isVideo: Boolean, code: ?String, mediaId: ?String, cachedUrl: ?String, displayUrl: ?String, posterUrl: ?String, candidateIds: String[] }}
      */
     function getPostVisibleMediaContext($article, postPath) {
         if (!$article || $article.length === 0) {
-            return { isVideo: false, mediaId: null, cachedUrl: null, displayUrl: null, posterUrl: null, candidateIds: [] };
+            return { isVideo: false, code: null, mediaId: null, cachedUrl: null, displayUrl: null, posterUrl: null, candidateIds: [] };
         }
 
         const postMediaId = shortcodeToId(postPath);
@@ -3566,6 +3572,7 @@
 
         return {
             isVideo,
+            code: postPath || null,
             mediaId: resolvedMediaId || candidateIds[0] || postMediaId || null,
             cachedUrl,
             displayUrl: cachedUrl || displayUrl || candidateUrls[0] || null,
