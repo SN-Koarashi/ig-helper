@@ -707,13 +707,15 @@ export function registerPostClickHandlers() {
                 try {
                     if (USER_SETTING.CAPTURE_IMAGE_VIA_MEDIA_CACHE && !ctx.isVideo && ctx.cachedUrl) {
                         logger('[Restore cached visible resource]', ctx.mediaId);
+                        const index = getVisibleNodeIndex($article);
 
                         await saveFiles(ctx.cachedUrl, {
                             username: state.GL_username,
                             sourceType: 'photo',
                             timestamp: USER_SETTING.RENAME_PUBLISH_DATE ? publish_time : new Date().getTime(),
                             filetype: 'jpg',
-                            shortcode: postPath || ctx.code || ctx.mediaId
+                            shortcode: postPath || ctx.code || ctx.mediaId,
+                            index: index + 1
                         });
 
                         updateLoadingBar(false);
@@ -727,7 +729,8 @@ export function registerPostClickHandlers() {
                             sourceType: 'photo',
                             timestamp: USER_SETTING.RENAME_PUBLISH_DATE ? publish_time : new Date().getTime(),
                             filetype: 'jpg',
-                            shortcode: postPath || ctx.code || ctx.mediaId
+                            shortcode: postPath || ctx.code || ctx.mediaId,
+                            index: index + 1
                         });
 
                         updateLoadingBar(false);

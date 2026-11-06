@@ -46,7 +46,7 @@ $(function () {
             }, "\t");
             loggerStr += `${new Date(log.time).toISOString()}: ${jsonData}\n`
         });
-        $('.IG_POPUP_DIG .IG_POPUP_DIG_BODY textarea').text("Logger:\n" + loggerStr + "\n-----\n\nLocation: " + location.pathname + "\nDOM Tree with div#mount:\n" + text.innerHTML);
+        $('.IG_POPUP_DIG .IG_POPUP_DIG_BODY textarea').text("User Settings:\n" + JSON.stringify(USER_SETTING, null, "\t") + "\nLogger:\n" + loggerStr + "\n-----\n\nLocation: " + location.pathname + "\nDOM Tree with div#mount:\n" + text.innerHTML);
     }
 
     $body.on('click', '.IG_POPUP_DIG .IG_POPUP_DIG_BODY .IG_DISPLAY_DOM_TREE', function () {

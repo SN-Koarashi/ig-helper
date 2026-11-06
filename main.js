@@ -17,7 +17,7 @@
 // @name:zh-CN         IG小助手
 // @name:zh-TW         IG小精靈
 // @namespace          https://github.snkms.com/
-// @version            5.1.6
+// @version            5.1.7
 // @description        Download photos and videos from Instagram posts in one click, including Stories, Reels, and profile pictures.
 // @description:ar     نزّل صورًا ومقاطع فيديو من منشورات Instagram بنقرة واحدة، بما في ذلك القصص وReels وصور الملف الشخصي.
 // @description:de     Lade Fotos und Videos aus Instagram-Beiträgen mit einem Klick herunter, einschließlich Stories, Reels und Profilbildern.
@@ -2694,13 +2694,15 @@
                     try {
                         if (USER_SETTING.CAPTURE_IMAGE_VIA_MEDIA_CACHE && !ctx.isVideo && ctx.cachedUrl) {
                             logger('[Restore cached visible resource]', ctx.mediaId);
+                            const index = getVisibleNodeIndex($article);
 
                             await saveFiles(ctx.cachedUrl, {
                                 username: state.GL_username,
                                 sourceType: 'photo',
                                 timestamp: USER_SETTING.RENAME_PUBLISH_DATE ? publish_time : new Date().getTime(),
                                 filetype: 'jpg',
-                                shortcode: postPath || ctx.code || ctx.mediaId
+                                shortcode: postPath || ctx.code || ctx.mediaId,
+                                index: index + 1
                             });
 
                             updateLoadingBar(false);
@@ -2714,7 +2716,8 @@
                                 sourceType: 'photo',
                                 timestamp: USER_SETTING.RENAME_PUBLISH_DATE ? publish_time : new Date().getTime(),
                                 filetype: 'jpg',
-                                shortcode: postPath || ctx.code || ctx.mediaId
+                                shortcode: postPath || ctx.code || ctx.mediaId,
+                                index: index + 1
                             });
 
                             updateLoadingBar(false);
@@ -9510,7 +9513,7 @@
                 }, "\t");
                 loggerStr += `${new Date(log.time).toISOString()}: ${jsonData}\n`
             });
-            $('.IG_POPUP_DIG .IG_POPUP_DIG_BODY textarea').text("Logger:\n" + loggerStr + "\n-----\n\nLocation: " + location.pathname + "\nDOM Tree with div#mount:\n" + text.innerHTML);
+            $('.IG_POPUP_DIG .IG_POPUP_DIG_BODY textarea').text("User Settings:\n" + JSON.stringify(USER_SETTING, null, "\t") + "\nLogger:\n" + loggerStr + "\n-----\n\nLocation: " + location.pathname + "\nDOM Tree with div#mount:\n" + text.innerHTML);
         }
 
         $body.on('click', '.IG_POPUP_DIG .IG_POPUP_DIG_BODY .IG_DISPLAY_DOM_TREE', function () {
