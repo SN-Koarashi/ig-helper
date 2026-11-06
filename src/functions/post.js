@@ -701,7 +701,9 @@ export function registerPostClickHandlers() {
             ).getTime();
 
             if (USER_SETTING.DIRECT_DOWNLOAD_VISIBLE_RESOURCE) {
+                $('.IG_POPUP_DIG').remove();
                 updateLoadingBar(true);
+                IG_createDM(true, true);
                 IG_setDM(true);
                 const index = getVisibleNodeIndex($article);
 
@@ -743,6 +745,8 @@ export function registerPostClickHandlers() {
                         ".IG_POPUP_DIG .IG_POPUP_DIG_MAIN .IG_POPUP_DIG_BODY",
                         ""
                     );
+
+                    console.log(totalInserted);
 
                     if (!totalInserted || totalInserted < 1) {
                         alert('Cannot find download URL. .IG_DW_MAIN #totalInserted not found.');
@@ -1045,6 +1049,7 @@ export async function createMediaListDOM(postURL, selector, message) {
         });
         updatePopupSelectionSummary();
 
+        console.log($target.find('a').length);
         return $target.find('a').length;
     }
     catch (err) {
