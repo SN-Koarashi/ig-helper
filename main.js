@@ -17,7 +17,7 @@
 // @name:zh-CN         IG小助手
 // @name:zh-TW         IG小精靈
 // @namespace          https://github.snkms.com/
-// @version            5.1.7
+// @version            5.1.7.1
 // @description        Download photos and videos from Instagram posts in one click, including Stories, Reels, and profile pictures.
 // @description:ar     نزّل صورًا ومقاطع فيديو من منشورات Instagram بنقرة واحدة، بما في ذلك القصص وReels وصور الملف الشخصي.
 // @description:de     Lade Fotos und Videos aus Instagram-Beiträgen mit einem Klick herunter, einschließlich Stories, Reels und Profilbildern.
@@ -2690,11 +2690,11 @@
                 if (USER_SETTING.DIRECT_DOWNLOAD_VISIBLE_RESOURCE) {
                     updateLoadingBar(true);
                     IG_setDM(true);
+                    const index = getVisibleNodeIndex($article);
 
                     try {
                         if (USER_SETTING.CAPTURE_IMAGE_VIA_MEDIA_CACHE && !ctx.isVideo && ctx.cachedUrl) {
                             logger('[Restore cached visible resource]', ctx.mediaId);
-                            const index = getVisibleNodeIndex($article);
 
                             await saveFiles(ctx.cachedUrl, {
                                 username: state.GL_username,
@@ -2724,8 +2724,6 @@
                             $('.IG_POPUP_DIG').remove();
                             return;
                         }
-
-                        const index = getVisibleNodeIndex($article);
 
                         const totalInserted = await createMediaListDOM(
                             state.GL_postPath,
