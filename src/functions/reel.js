@@ -130,80 +130,41 @@ export async function onReels(isDownload, isVideo, isPreview, clickedButton) {
             let timestamp = new Date().getTime();
 
             if (USER_SETTING.RENAME_PUBLISH_DATE) {
-                if (result.type === 'query_hash') {
-                    timestamp = media.taken_at_timestamp;
-                }
-                else {
-                    timestamp = media.taken_at;
-                }
+                timestamp = media.taken_at || media.taken_at_timestamp;
             }
 
-            if (result.type === 'query_hash') {
-                if (isVideo && media.is_video) {
-                    if (isPreview) {
-                        openNewTab(media.video_url);
-                    }
-                    else {
-                        let type = 'mp4';
-                        saveFiles(media.video_url, {
-                            username: media.owner.username,
-                            sourceType: "reels",
-                            timestamp,
-                            filetype: type,
-                            shortcode: reelsPath,
-                            thumbnailURL: media.display_resources?.at(-1)?.src
-                        });
-                    }
+            if (isVideo && media.video_versions != null) {
+                if (isPreview) {
+                    openNewTab(media.video_versions[0].url);
                 }
                 else {
-                    if (isPreview) {
-                        openNewTab(media.display_resources.at(-1).src);
-                    }
-                    else {
-                        let type = 'jpg';
-                        saveFiles(media.display_resources.at(-1).src, {
-                            username: media.owner.username,
-                            sourceType: "reels",
-                            timestamp,
-                            filetype: type,
-                            shortcode: reelsPath
-                        });
-                    }
+                    let type = 'mp4';
+                    saveFiles(media.video_versions[0].url, {
+                        username: media.owner.username,
+                        sourceType: "reels",
+                        timestamp,
+                        filetype: type,
+                        shortcode: reelsPath,
+                        thumbnailURL: media.image_versions2?.candidates?.[0]?.url
+                    });
                 }
             }
             else {
-                if (isVideo && media.video_versions != null) {
-                    if (isPreview) {
-                        openNewTab(media.video_versions[0].url);
-                    }
-                    else {
-                        let type = 'mp4';
-                        saveFiles(media.video_versions[0].url, {
-                            username: media.owner.username,
-                            sourceType: "reels",
-                            timestamp,
-                            filetype: type,
-                            shortcode: reelsPath,
-                            thumbnailURL: media.image_versions2?.candidates?.[0]?.url
-                        });
-                    }
+                if (isPreview) {
+                    openNewTab(media.image_versions2.candidates[0].url);
                 }
                 else {
-                    if (isPreview) {
-                        openNewTab(media.image_versions2.candidates[0].url);
-                    }
-                    else {
-                        let type = 'jpg';
-                        saveFiles(media.image_versions2.candidates[0].url, {
-                            username: media.owner.username,
-                            sourceType: "reels",
-                            timestamp,
-                            filetype: type,
-                            shortcode: reelsPath
-                        });
-                    }
+                    let type = 'jpg';
+                    saveFiles(media.image_versions2.candidates[0].url, {
+                        username: media.owner.username,
+                        sourceType: "reels",
+                        timestamp,
+                        filetype: type,
+                        shortcode: reelsPath
+                    });
                 }
             }
+
 
             updateLoadingBar(false);
         }

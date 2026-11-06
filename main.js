@@ -17,7 +17,7 @@
 // @name:zh-CN         IG小助手
 // @name:zh-TW         IG小精靈
 // @namespace          https://github.snkms.com/
-// @version            5.1.4
+// @version            5.1.5
 // @description        Download photos and videos from Instagram posts in one click, including Stories, Reels, and profile pictures.
 // @description:ar     نزّل صورًا ومقاطع فيديو من منشورات Instagram بنقرة واحدة، بما في ذلك القصص وReels وصور الملف الشخصي.
 // @description:de     Lade Fotos und Videos aus Instagram-Beiträgen mit einem Klick herunter, einschließlich Stories, Reels und Profilbildern.
@@ -2477,7 +2477,7 @@
             if (url) {
                 openImageViewer(url);
             } else {
-                alert("Cannot find resource url.");
+                alert("Cannot find resource url. #IG_IMAGE_VIEWER");
             }
         });
 
@@ -2530,7 +2530,7 @@
                 );
 
                 if (!totalInserted || totalInserted < 1) {
-                    alert('Cannot find thumbnail URL.');
+                    alert('Cannot find thumbnail URL. .IG_THUMBNAIL_MAIN #totalInserted not found.');
                     return;
                 }
 
@@ -2545,7 +2545,7 @@
                     $videoThumbnail.trigger("click");
                 }
                 else {
-                    alert('Cannot find thumbnail URL.');
+                    alert('Cannot find thumbnail URL. .IG_THUMBNAIL_MAIN .videoThumbnail not found.');
                 }
             }
             catch (err) {
@@ -2598,7 +2598,7 @@
                 );
 
                 if (!totalInserted || totalInserted < 1) {
-                    alert('Cannot find open tab URL.');
+                    alert('Cannot find open tab URL. .IG_POPUP_DIG .IG_POPUP_DIG_MAIN .IG_POPUP_DIG_BODY not found.');
                     return;
                 }
 
@@ -2606,7 +2606,7 @@
                 const $linkElement = $popupBody.find('a[data-globalindex="' + (index + 1) + '"]');
 
                 if ($linkElement.length === 0) {
-                    alert('Cannot find open tab URL.');
+                    alert('Cannot find open tab URL. .IG_POPUP_DIG .IG_POPUP_DIG_MAIN .IG_POPUP_DIG_BODY a[data-globalindex="' + (index + 1) + '"] not found.');
                     return;
                 }
 
@@ -2615,12 +2615,12 @@
                     openNewTab(replaceSameOriginHost(href));
                 }
                 else {
-                    alert('Cannot find open tab URL.');
+                    alert('Cannot find open tab URL. No href attribute found on the link element.');
                 }
             }
             catch (err) {
                 logger('registerPostClickHandlers .IG_NEWTAB_MAIN', err);
-                alert('Cannot find open tab URL.');
+                alert('Cannot find open tab URL. .IG_POPUP_DIG .IG_POPUP_DIG_MAIN .IG_POPUP_DIG_BODY a[data-globalindex] not found.');
             }
             finally {
                 updateLoadingBar(false);
@@ -2731,7 +2731,7 @@
                         );
 
                         if (!totalInserted || totalInserted < 1) {
-                            alert('Cannot find download URL.');
+                            alert('Cannot find download URL. .IG_DW_MAIN #totalInserted not found.');
                             return;
                         }
 
@@ -2743,7 +2743,7 @@
                             $targetLink.trigger("click");
                         }
                         else {
-                            alert('Cannot find download URL.');
+                            alert('Cannot find download URL. .IG_DW_MAIN $targetLink not found.');
                         }
                     }
                     catch (err) {
@@ -2942,84 +2942,19 @@
             $target.find('a').remove();
             $target.append('<p id="_SNLOAD">' + message + '</p>');
             $('.IG_POPUP_DIG #batch_download_selected, .IG_POPUP_DIG #batch_download_direct').prop('disabled', true);
-            // Optionally resolve post/reel media through Instagram's current
-            // PolarisPostRootQuery. DIRECT_DOWNLOAD_ALL additionally uses the legacy
-            // query_hash response only to discover the media IDs before resolving URLs
-            // through Polaris.
+
             let result = await getPostMediaWithProvider(postURL);
             let resource = filterResourceData(result.data);
             const resourceShortcode = resource.code || resource.shortcode || postURL;
 
-            if (result.type === 'query_hash') {
-                let idx = 1;
+            if (resource.carousel_media) {
+                logger('carousel_media');
 
-                // GraphVideo
-                if (resource.__typename == "GraphVideo" && resource.video_url) {
-                    $target.append(`<a media-id="${resource.id}" datetime="${resource.taken_at_timestamp}" data-blob="true" data-needed="direct" data-path="${resource.shortcode}" data-name="video" data-type="mp4" data-username="${resource.owner.username}" data-globalIndex="${idx}" href="javascript:;" data-href="${resource.video_url}"><img width="100" src="${resource.display_resources[1].src}" /><br/>- <span data-ih-locale="VID">${_i18n("VID")}</span> ${idx} -</a>`);
-                    idx++;
-
-                }
-                // GraphImage
-                if (resource.__typename == "GraphImage") {
-                    $target.append(`<a media-id="${resource.id}" datetime="${resource.taken_at_timestamp}" data-blob="true" data-needed="direct" data-path="${resource.shortcode}" data-name="photo" data-type="jpg" data-username="${resource.owner.username}" data-globalIndex="${idx}" href="javascript:;" data-href="${resource.display_resources[resource.display_resources.length - 1].src}"><img width="100" src="${resource.display_resources[1].src}" /><br/>- <span data-ih-locale="IMG">${_i18n("IMG")}</span> ${idx} -</a>`);
-                    idx++;
-                }
-                // GraphSidecar
-                if (resource.__typename == "GraphSidecar" && resource.edge_sidecar_to_children) {
-                    for (let e of resource.edge_sidecar_to_children.edges) {
-                        if (e.node.__typename == "GraphVideo") {
-                            $target.append(`<a media-id="${e.node.id}" datetime="${resource.taken_at_timestamp}" data-blob="true" data-needed="direct" data-path="${resource.shortcode}" data-name="video" data-type="mp4" data-username="${resource.owner.username}" data-globalIndex="${idx}" href="javascript:;" data-href="${e.node.video_url}"><img width="100" src="${e.node.display_resources[1].src}" /><br/>- <span data-ih-locale-title="VID">${_i18n("VID")}</span> ${idx} -</a>`);
-                        }
-
-                        if (e.node.__typename == "GraphImage") {
-                            $target.append(`<a media-id="${e.node.id}" datetime="${resource.taken_at_timestamp}" data-blob="true" data-needed="direct" data-path="${resource.shortcode}" data-name="photo" data-type="jpg" data-username="${resource.owner.username}" data-globalIndex="${idx}" href="javascript:;" data-href="${e.node.display_resources[e.node.display_resources.length - 1].src}"><img width="100" src="${e.node.display_resources[1].src}" /><br/>- <span data-ih-locale="IMG">${_i18n("IMG")}</span> ${idx} -</a>`);
-                        }
-                        idx++;
-                    }
-                }
-            }
-            else {
-                if (resource.carousel_media) {
-                    logger('carousel_media');
-
-                    resource.carousel_media.forEach((mda, ind) => {
-                        let idx = ind + 1;
-                        // Image
-                        if (mda.video_versions == null) {
-                            mda.image_versions2.candidates.sort(function (a, b) {
-                                let aSTP = new URL(a.url).searchParams.get('stp');
-                                let bSTP = new URL(b.url).searchParams.get('stp');
-
-                                if (aSTP && bSTP) {
-                                    if (aSTP.length > bSTP.length) return 1;
-                                    if (aSTP.length < bSTP.length) return -1;
-                                }
-                                else {
-                                    if (a.width < b.width) return 1;
-                                    if (a.width > b.width) return -1;
-                                }
-
-                                return 0;
-                            });
-
-                            let itemUrl = mda.image_versions2.candidates[0].url;
-                            if (USER_SETTING.CAPTURE_IMAGE_VIA_MEDIA_CACHE) {
-                                const cachedImg = getImageFromCache(String(mda.pk));
-                                if (cachedImg) itemUrl = cachedImg;
-                            }
-                            $target.append(`<a media-id="${mda.pk}" datetime="${mda.taken_at || resource.taken_at}" data-blob="true" data-needed="direct" data-path="${resourceShortcode}" data-name="photo" data-type="jpg" data-username="${resource.owner.username}" data-globalIndex="${idx}" href="javascript:;" data-href="${itemUrl}"><img width="100" src="${itemUrl}" /><br/>- <span data-ih-locale="IMG">${_i18n("IMG")}</span> ${idx} -</a>`);
-                        }
-                        // Video
-                        else {
-                            $target.append(`<a media-id="${mda.pk}" datetime="${mda.taken_at || resource.taken_at}" data-blob="true" data-needed="direct" data-path="${resourceShortcode}" data-name="video" data-type="mp4" data-username="${resource.owner.username}" data-globalIndex="${idx}" href="javascript:;" data-href="${mda.video_versions[0].url}"><img width="100" src="${mda.image_versions2.candidates[0].url}" /><br/>- <span data-ih-locale="VID">${_i18n("VID")}</span> ${idx} -</a>`);
-                        }
-                    });
-                }
-                else {
-                    let idx = 1;
+                resource.carousel_media.forEach((mda, ind) => {
+                    let idx = ind + 1;
                     // Image
-                    if (resource.video_versions == null) {
-                        resource.image_versions2.candidates.sort(function (a, b) {
+                    if (mda.video_versions == null) {
+                        mda.image_versions2.candidates.sort(function (a, b) {
                             let aSTP = new URL(a.url).searchParams.get('stp');
                             let bSTP = new URL(b.url).searchParams.get('stp');
 
@@ -3035,19 +2970,52 @@
                             return 0;
                         });
 
-                        let itemUrl = resource.image_versions2.candidates[0].url;
+                        let itemUrl = mda.image_versions2.candidates[0].url;
                         if (USER_SETTING.CAPTURE_IMAGE_VIA_MEDIA_CACHE) {
-                            const cachedImg = getImageFromCache(String(resource.pk));
+                            const cachedImg = getImageFromCache(String(mda.pk));
                             if (cachedImg) itemUrl = cachedImg;
                         }
-                        $target.append(`<a media-id="${resource.pk}" datetime="${resource.taken_at}" data-blob="true" data-needed="direct" data-path="${resourceShortcode}" data-name="photo" data-type="jpg" data-username="${resource.owner.username}" data-globalIndex="${idx}" href="javascript:;" data-href="${itemUrl}"><img width="100" src="${itemUrl}" /><br/>- <span data-ih-locale="IMG">${_i18n("IMG")}</span> ${idx} -</a>`);
+                        $target.append(`<a media-id="${mda.pk}" datetime="${mda.taken_at || resource.taken_at}" data-blob="true" data-needed="direct" data-path="${resourceShortcode}" data-name="photo" data-type="jpg" data-username="${resource.owner.username}" data-globalIndex="${idx}" href="javascript:;" data-href="${itemUrl}"><img width="100" src="${itemUrl}" /><br/>- <span data-ih-locale="IMG">${_i18n("IMG")}</span> ${idx} -</a>`);
                     }
                     // Video
                     else {
-                        $target.append(`<a media-id="${resource.pk}" datetime="${resource.taken_at}" data-blob="true" data-needed="direct" data-path="${resourceShortcode}" data-name="video" data-type="mp4" data-username="${resource.owner.username}" data-globalIndex="${idx}" href="javascript:;" data-href="${resource.video_versions[0].url}"><img width="100" src="${resource.image_versions2.candidates[0].url}" /><br/>- <span data-ih-locale="VID">${_i18n("VID")}</span> ${idx} -</a>`);
+                        $target.append(`<a media-id="${mda.pk}" datetime="${mda.taken_at || resource.taken_at}" data-blob="true" data-needed="direct" data-path="${resourceShortcode}" data-name="video" data-type="mp4" data-username="${resource.owner.username}" data-globalIndex="${idx}" href="javascript:;" data-href="${mda.video_versions[0].url}"><img width="100" src="${mda.image_versions2.candidates[0].url}" /><br/>- <span data-ih-locale="VID">${_i18n("VID")}</span> ${idx} -</a>`);
                     }
+                });
+            }
+            else {
+                let idx = 1;
+                // Image
+                if (resource.video_versions == null) {
+                    resource.image_versions2.candidates.sort(function (a, b) {
+                        let aSTP = new URL(a.url).searchParams.get('stp');
+                        let bSTP = new URL(b.url).searchParams.get('stp');
+
+                        if (aSTP && bSTP) {
+                            if (aSTP.length > bSTP.length) return 1;
+                            if (aSTP.length < bSTP.length) return -1;
+                        }
+                        else {
+                            if (a.width < b.width) return 1;
+                            if (a.width > b.width) return -1;
+                        }
+
+                        return 0;
+                    });
+
+                    let itemUrl = resource.image_versions2.candidates[0].url;
+                    if (USER_SETTING.CAPTURE_IMAGE_VIA_MEDIA_CACHE) {
+                        const cachedImg = getImageFromCache(String(resource.pk));
+                        if (cachedImg) itemUrl = cachedImg;
+                    }
+                    $target.append(`<a media-id="${resource.pk}" datetime="${resource.taken_at}" data-blob="true" data-needed="direct" data-path="${resourceShortcode}" data-name="photo" data-type="jpg" data-username="${resource.owner.username}" data-globalIndex="${idx}" href="javascript:;" data-href="${itemUrl}"><img width="100" src="${itemUrl}" /><br/>- <span data-ih-locale="IMG">${_i18n("IMG")}</span> ${idx} -</a>`);
+                }
+                // Video
+                else {
+                    $target.append(`<a media-id="${resource.pk}" datetime="${resource.taken_at}" data-blob="true" data-needed="direct" data-path="${resourceShortcode}" data-name="video" data-type="mp4" data-username="${resource.owner.username}" data-globalIndex="${idx}" href="javascript:;" data-href="${resource.video_versions[0].url}"><img width="100" src="${resource.image_versions2.candidates[0].url}" /><br/>- <span data-ih-locale="VID">${_i18n("VID")}</span> ${idx} -</a>`);
                 }
             }
+
 
             $("#_SNLOAD").remove();
             $('.IG_POPUP_DIG #batch_download_selected, .IG_POPUP_DIG #batch_download_direct').prop('disabled', false);
@@ -3947,80 +3915,41 @@
                 let timestamp = new Date().getTime();
 
                 if (USER_SETTING.RENAME_PUBLISH_DATE) {
-                    if (result.type === 'query_hash') {
-                        timestamp = media.taken_at_timestamp;
-                    }
-                    else {
-                        timestamp = media.taken_at;
-                    }
+                    timestamp = media.taken_at || media.taken_at_timestamp;
                 }
 
-                if (result.type === 'query_hash') {
-                    if (isVideo && media.is_video) {
-                        if (isPreview) {
-                            openNewTab(media.video_url);
-                        }
-                        else {
-                            let type = 'mp4';
-                            saveFiles(media.video_url, {
-                                username: media.owner.username,
-                                sourceType: "reels",
-                                timestamp,
-                                filetype: type,
-                                shortcode: reelsPath,
-                                thumbnailURL: media.display_resources?.at(-1)?.src
-                            });
-                        }
+                if (isVideo && media.video_versions != null) {
+                    if (isPreview) {
+                        openNewTab(media.video_versions[0].url);
                     }
                     else {
-                        if (isPreview) {
-                            openNewTab(media.display_resources.at(-1).src);
-                        }
-                        else {
-                            let type = 'jpg';
-                            saveFiles(media.display_resources.at(-1).src, {
-                                username: media.owner.username,
-                                sourceType: "reels",
-                                timestamp,
-                                filetype: type,
-                                shortcode: reelsPath
-                            });
-                        }
+                        let type = 'mp4';
+                        saveFiles(media.video_versions[0].url, {
+                            username: media.owner.username,
+                            sourceType: "reels",
+                            timestamp,
+                            filetype: type,
+                            shortcode: reelsPath,
+                            thumbnailURL: media.image_versions2?.candidates?.[0]?.url
+                        });
                     }
                 }
                 else {
-                    if (isVideo && media.video_versions != null) {
-                        if (isPreview) {
-                            openNewTab(media.video_versions[0].url);
-                        }
-                        else {
-                            let type = 'mp4';
-                            saveFiles(media.video_versions[0].url, {
-                                username: media.owner.username,
-                                sourceType: "reels",
-                                timestamp,
-                                filetype: type,
-                                shortcode: reelsPath,
-                                thumbnailURL: media.image_versions2?.candidates?.[0]?.url
-                            });
-                        }
+                    if (isPreview) {
+                        openNewTab(media.image_versions2.candidates[0].url);
                     }
                     else {
-                        if (isPreview) {
-                            openNewTab(media.image_versions2.candidates[0].url);
-                        }
-                        else {
-                            let type = 'jpg';
-                            saveFiles(media.image_versions2.candidates[0].url, {
-                                username: media.owner.username,
-                                sourceType: "reels",
-                                timestamp,
-                                filetype: type,
-                                shortcode: reelsPath
-                            });
-                        }
+                        let type = 'jpg';
+                        saveFiles(media.image_versions2.candidates[0].url, {
+                            username: media.owner.username,
+                            sourceType: "reels",
+                            timestamp,
+                            filetype: type,
+                            shortcode: reelsPath
+                        });
                     }
                 }
+
 
                 updateLoadingBar(false);
             }
@@ -6051,23 +5980,10 @@
 
     /**
      * getPostMediaWithProvider
-     * @description Resolve post/reel media through the selected provider. When the
-     *              Polaris setting is disabled this preserves the legacy path.
-     *              With DIRECT_DOWNLOAD_ALL, QueryID is used only to discover media
-     *              IDs; media URLs are still resolved by PolarisPostRootQuery.
-     *
-     *              Every path funnels through here (this is the single call site for
-     *              PolarisPostRootQuery/getBlobMediaWithQueryID/getBlobMediaWithQueryHash
-     *              from createMediaListDOM and onReels), so once a result is obtained
-     *              its owner is used to opportunistically validate/self-heal the
-     *              username -> userId cache via reconcileOwnerFromApiResponse(). Shortcode
-     *              posts/reels have no "expected username" known ahead of the request
-     *              (unlike getStories), so this never blocks or delays
-     *              serving the resource — the shortcode already fully determines the
-     *              correct content on its own.
+     * @description Unified aggregation point for post resources.
      *
      * @param  {String}  postPath
-     * @return {Promise<{ type: 'polaris'|'query_id'|'query_hash', data: Object }>}
+     * @return {Promise<{ type: 'GraphQL', data: Object }>}
      */
     async function getPostMediaWithProvider(postPath) {
         if (state.GL_dataCache.posts && state.GL_dataCache.posts[postPath]) {
@@ -6127,7 +6043,7 @@
                         let obj = JSON.parse(response.response);
                         logger("getMediaList()", obj);
 
-                        resolve({ type: 'query_id', data: obj.data.xdt_api__v1__media__shortcode__web_info.items[0] });
+                        resolve({ type: 'GraphQL', data: obj.data.xdt_api__v1__media__shortcode__web_info.items[0] });
                     }
                     catch (err) {
                         logger('getMediaList()', 'reject', err.message);
@@ -8205,7 +8121,7 @@
                 return;
             }
 
-            alert('Cannot find download URL.');
+            alert('triggerLinkElement(): Cannot find download URL.');
         } catch (err) {
             console.error('Occur error in triggerLinkElement:', err);
             logger('Occur error in triggerLinkElement:', err);

@@ -1989,7 +1989,7 @@ export async function triggerLinkElement($element, isPreview = false) {
             return;
         }
 
-        alert('Cannot find download URL.');
+        alert('triggerLinkElement(): Cannot find download URL.');
     } catch (err) {
         console.error('Occur error in triggerLinkElement:', err);
         logger('Occur error in triggerLinkElement:', err);
