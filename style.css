@@ -675,7 +675,7 @@ div[class]:hover+.volume_slider>div,
     display: flex;
     right: 15px;
     bottom: 15px;
-    z-index: 50000;
+    z-index: 2147483020;
     width: fit-content;
     align-items: center;
     flex-direction: row;
