@@ -17,7 +17,7 @@
 // @name:zh-CN         IG小助手
 // @name:zh-TW         IG小精靈
 // @namespace          https://github.snkms.com/
-// @version            5.2.0
+// @version            5.2.1
 // @description        Download photos and videos from Instagram posts in one click, including Stories, Reels, and profile pictures.
 // @description:ar     نزّل صورًا ومقاطع فيديو من منشورات Instagram بنقرة واحدة، بما في ذلك القصص وReels وصور الملف الشخصي.
 // @description:de     Lade Fotos und Videos aus Instagram-Beiträgen mit einem Klick herunter, einschließlich Stories, Reels und Profilbildern.
@@ -7934,7 +7934,7 @@
 
         const exifDateString = `${formatExifDate(metadata.timestamp)}\0`;
         const username = `${(metadata.username || 'unknown').toString()}\0`;
-        const url = `https://www.instagram.com/p/${metadata.shortcode}/`;
+        const url = `https://www.instagram.com/p/${metadata.shortcode}/?img_index=${metadata.index || 1}`;
         const commentUrl = `https://www.instagram.com/uid/${metadata.uid || 'unknown'}`;
 
         const dateBytes = enc(exifDateString);
