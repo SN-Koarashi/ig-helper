@@ -1175,12 +1175,12 @@ export function saveFiles(downloadLink, metadata) {
         setTimeout(() => {
             updateLoadingBar(true);
 
-            const downloadName = getSaveFileName(downloadLink, metadata);
-            let { filetype, shortcode, sourceType } = metadata;
-
-            if (shortcode?.match(/^\d+$/) != null) {
-                shortcode = idToShortcode(shortcode);
+            if (metadata?.shortcode?.match(/^\d+$/) != null) {
+                metadata.shortcode = idToShortcode(metadata.shortcode);
             }
+
+            const downloadName = getSaveFileName(downloadLink, metadata);
+            const { filetype, shortcode, sourceType } = metadata;
 
             // JPEG photos that need their EXIF rewritten must go through fetch()
             const needsExifRewrite =
