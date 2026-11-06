@@ -713,7 +713,7 @@ export function registerPostClickHandlers() {
                             sourceType: 'photo',
                             timestamp: USER_SETTING.RENAME_PUBLISH_DATE ? publish_time : new Date().getTime(),
                             filetype: 'jpg',
-                            shortcode: ctx.mediaId || postPath
+                            shortcode: postPath || ctx.code || ctx.mediaId
                         });
 
                         updateLoadingBar(false);
@@ -727,7 +727,7 @@ export function registerPostClickHandlers() {
                             sourceType: 'photo',
                             timestamp: USER_SETTING.RENAME_PUBLISH_DATE ? publish_time : new Date().getTime(),
                             filetype: 'jpg',
-                            shortcode: ctx.mediaId || postPath
+                            shortcode: postPath || ctx.code || ctx.mediaId
                         });
 
                         updateLoadingBar(false);
@@ -883,7 +883,7 @@ export function registerPostClickHandlers() {
                         sourceType: 'photo',
                         timestamp: USER_SETTING.RENAME_PUBLISH_DATE ? publish_time : new Date().getTime(),
                         filetype: 'jpg',
-                        shortcode: ctx.mediaId || postPath
+                        shortcode: postPath || ctx.code || ctx.mediaId
                     });
                     $('.IG_POPUP_DIG').remove();
                     return;
@@ -1310,6 +1310,12 @@ export async function batchDownloadPostFiles($elements) {
 export function shortcodeToId(shortcode) {
     if (!shortcode || typeof shortcode !== 'string') return null;
     const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_';
+
+    if (shortcode.length > 28) {
+        // Instagram shortcodes longer than 28 characters are invalid for media ID conversion
+        shortcode = shortcode.substring(0, shortcode.length - 28);
+    }
+
     let mediaId = BigInt(0);
     const base = BigInt(64);
     const clean = shortcode.trim();
@@ -1420,11 +1426,11 @@ function getPostImages($container) {
  *
  * @param  {JQuery} $article
  * @param  {?String} postPath
- * @return {{ isVideo: Boolean, mediaId: ?String, cachedUrl: ?String, displayUrl: ?String, posterUrl: ?String, candidateIds: String[] }}
+ * @return {{ isVideo: Boolean, code: ?String, mediaId: ?String, cachedUrl: ?String, displayUrl: ?String, posterUrl: ?String, candidateIds: String[] }}
  */
 function getPostVisibleMediaContext($article, postPath) {
     if (!$article || $article.length === 0) {
-        return { isVideo: false, mediaId: null, cachedUrl: null, displayUrl: null, posterUrl: null, candidateIds: [] };
+        return { isVideo: false, code: null, mediaId: null, cachedUrl: null, displayUrl: null, posterUrl: null, candidateIds: [] };
     }
 
     const postMediaId = shortcodeToId(postPath);
@@ -1579,6 +1585,7 @@ function getPostVisibleMediaContext($article, postPath) {
 
     return {
         isVideo,
+        code: postPath || null,
         mediaId: resolvedMediaId || candidateIds[0] || postMediaId || null,
         cachedUrl,
         displayUrl: cachedUrl || displayUrl || candidateUrls[0] || null,
