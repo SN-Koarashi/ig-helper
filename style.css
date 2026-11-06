@@ -558,10 +558,6 @@ kbd {
     fill: rgb(var(--ig-primary-text));
 }
 
-.IG_POPUP_DIG_BTN svg {
-    fill: rgb(var(--ig-primary-text));
-}
-
 #tempWrapper .IG_POPUP_DIG_BTN {
     right: 5px;
     transform: translateY(-50%);
@@ -682,7 +678,6 @@ div[class]:hover+.volume_slider>div,
     display: flex;
     right: 15px;
     bottom: 15px;
-    z-index: 2147483020;
     z-index: 2147483020;
     width: fit-content;
     align-items: center;
