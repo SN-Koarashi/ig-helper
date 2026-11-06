@@ -1,6 +1,7 @@
 import { locale_manifest, PARENT_CHILD_MAPPING, state, SVG, USER_SETTING, $body } from "../settings";
 import { callNotification, getPlatformModifierKey, logger, reloadScript } from "./general";
 import { _i18n } from "./i18n";
+import { showRenameFormatEditor } from "./rename_format";
 /*! ESLINT IMPORT END !*/
 
 /**
@@ -262,13 +263,7 @@ export function showSetting() {
         if (name === 'AUTO_RENAME') {
             $popupBody.find(`input[id="${name}"]`).parent('label').on('contextmenu', function (e) {
                 e.preventDefault();
-                const $this = $(this);
-                if (!$this.find('#tempWrapper').length) {
-                    $this.append('<div id="tempWrapper"></div>')
-                        .children('#tempWrapper')
-                        .append(`<input id="date_format" value="${state.fileRenameFormat}" />`)
-                        .append(`<div class="IG_POPUP_DIG_BTN">${SVG.CLOSE}</div>`);
-                }
+                showRenameFormatEditor();
             });
         }
     }

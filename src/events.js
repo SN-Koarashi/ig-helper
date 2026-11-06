@@ -47,7 +47,7 @@ $(function () {
             }, "\t");
             loggerStr += `${new Date(log.time).toISOString()}: ${jsonData}\n`
         });
-        $('.IG_POPUP_DIG .IG_POPUP_DIG_BODY textarea').text("Logger:\n" + loggerStr + "\n-----\n\nLocation: " + location.pathname + "\nDOM Tree with div#mount:\n" + text.innerHTML);
+        $('.IG_POPUP_DIG .IG_POPUP_DIG_BODY textarea').text("User Settings:\n" + JSON.stringify(USER_SETTING, null, "\t") + "\nLogger:\n" + loggerStr + "\n-----\n\nLocation: " + location.pathname + "\nDOM Tree with div#mount:\n" + text.innerHTML);
     }
 
     $body.on('click', '.IG_POPUP_DIG .IG_POPUP_DIG_BODY .IG_DISPLAY_DOM_TREE', function () {
@@ -233,12 +233,6 @@ $(function () {
                 }
             }
         }
-    });
-
-    $body.on('input', '.IG_POPUP_DIG #tempWrapper input#date_format', function () {
-        const val = $(this).val();
-        GM_setValue('G_RENAME_FORMAT', val);
-        state.fileRenameFormat = val;
     });
 
     $body.on('click', 'a[data-needed="direct"]', function (e) {

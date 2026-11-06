@@ -40,6 +40,8 @@ export const LEGACY_SETTING_MIGRATIONS = {
     'NEW_TAB_OPEN_HIGHEST_VIDEO_VIA_REELS_MEDIA_API': 'NEW_TAB_OPEN_HIGHEST_VIDEO_VIA_GRAPHQL'
 };
 
+export const DEFAULT_RENAME_FORMAT = '%USERNAME%-%SOURCE_TYPE%-%SHORTCODE%-%YEAR%%MONTH%%DAY%_%HOUR%%MINUTE%%SECOND%_%ORIGINAL_NAME_FIRST%';
+
 export const IMAGE_CACHE_KEY = 'URLS_OF_IMAGES_TEMPORARILY_STORED';
 export const IMAGE_CACHE_MAX_AGE = 12 * 60 * 60 * 1000;
 export const IMAGE_MAX_CACHE_ITEMS = 500;
@@ -94,7 +96,7 @@ export var state = {
     // rapidly on successive stories.
     storyDownloadInProgress: false,
     highlightDownloadInProgress: false,
-    fileRenameFormat: (GM_getValue('G_RENAME_FORMAT')) ? GM_getValue('G_RENAME_FORMAT') : '%USERNAME%-%SOURCE_TYPE%-%SHORTCODE%-%YEAR%%MONTH%%DAY%_%HOUR%%MINUTE%%SECOND%_%ORIGINAL_NAME_FIRST%',
+    fileRenameFormat: (GM_getValue('G_RENAME_FORMAT')) ? GM_getValue('G_RENAME_FORMAT') : DEFAULT_RENAME_FORMAT,
     registerMenuIds: [],
     locale: {},
     lang: GM_getValue('UI_LANGUAGE') || navigator.language || navigator.userLanguage,

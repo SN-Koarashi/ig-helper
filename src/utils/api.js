@@ -641,23 +641,10 @@ export function getUserHighSizeProfile(userId) {
 
 /**
  * getPostMediaWithProvider
- * @description Resolve post/reel media through the selected provider. When the
- *              Polaris setting is disabled this preserves the legacy path.
- *              With DIRECT_DOWNLOAD_ALL, QueryID is used only to discover media
- *              IDs; media URLs are still resolved by PolarisPostRootQuery.
- *
- *              Every path funnels through here (this is the single call site for
- *              PolarisPostRootQuery/getBlobMediaWithQueryID/getBlobMediaWithQueryHash
- *              from createMediaListDOM and onReels), so once a result is obtained
- *              its owner is used to opportunistically validate/self-heal the
- *              username -> userId cache via reconcileOwnerFromApiResponse(). Shortcode
- *              posts/reels have no "expected username" known ahead of the request
- *              (unlike getStories), so this never blocks or delays
- *              serving the resource — the shortcode already fully determines the
- *              correct content on its own.
+ * @description Unified aggregation point for post resources.
  *
  * @param  {String}  postPath
- * @return {Promise<{ type: 'polaris'|'query_id'|'query_hash', data: Object }>}
+ * @return {Promise<{ type: 'GraphQL', data: Object }>}
  */
 export async function getPostMediaWithProvider(postPath) {
     if (state.GL_dataCache.posts && state.GL_dataCache.posts[postPath]) {
@@ -717,7 +704,7 @@ export function getMediaList(postPath) {
                     let obj = JSON.parse(response.response);
                     logger("getMediaList()", obj);
 
-                    resolve({ type: 'query_id', data: obj.data.xdt_api__v1__media__shortcode__web_info.items[0] });
+                    resolve({ type: 'GraphQL', data: obj.data.xdt_api__v1__media__shortcode__web_info.items[0] });
                 }
                 catch (err) {
                     logger('getMediaList()', 'reject', err.message);

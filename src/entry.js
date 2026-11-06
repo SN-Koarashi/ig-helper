@@ -22,6 +22,7 @@ FS_IMPORT('./metadata.js');
     FS_IMPORT('./utils/api.js');
     FS_IMPORT('./utils/general.js');
     FS_IMPORT('./utils/dialog.js');
+    FS_IMPORT('./utils/rename_format.js');
     FS_IMPORT('./utils/image_viewer.js');
     FS_IMPORT('./utils/image_cache.js');
     FS_IMPORT('./utils/i18n.js');

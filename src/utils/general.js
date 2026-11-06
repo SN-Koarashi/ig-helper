@@ -2,7 +2,7 @@ import { USER_SETTING, state, userIdCache, $body, SVG, LEGACY_SETTING_MIGRATIONS
 import { _i18n } from "./i18n";
 import { getUserId } from "./api";
 import { getImageFromCache, mediaIdFromURL } from "./image_cache";
-import { registerPostClickHandlers } from "../functions/post";
+import { idToShortcode, registerPostClickHandlers } from "../functions/post";
 import { cleanupPostObservers, stopAllObservers, scheduleRouteCheck } from "../timer";
 /*! ESLINT IMPORT END !*/
 
@@ -1175,6 +1175,10 @@ export function saveFiles(downloadLink, metadata) {
         setTimeout(() => {
             updateLoadingBar(true);
 
+            if (metadata?.shortcode?.match(/^\d+$/) != null) {
+                metadata.shortcode = idToShortcode(metadata.shortcode);
+            }
+
             const downloadName = getSaveFileName(downloadLink, metadata);
             const { filetype, shortcode, sourceType } = metadata;
 
@@ -1788,7 +1792,7 @@ async function changeExifData(blob, metadata) {
 
     const exifDateString = `${formatExifDate(metadata.timestamp)}\0`;
     const username = `${(metadata.username || 'unknown').toString()}\0`;
-    const url = `https://www.instagram.com/p/${metadata.shortcode}/`;
+    const url = `https://www.instagram.com/p/${metadata.shortcode}/?img_index=${metadata.index || 1}`;
     const commentUrl = `https://www.instagram.com/uid/${metadata.uid || 'unknown'}`;
 
     const dateBytes = enc(exifDateString);
@@ -1985,7 +1989,7 @@ export async function triggerLinkElement($element, isPreview = false) {
             return;
         }
 
-        alert('Cannot find download URL.');
+        alert('triggerLinkElement(): Cannot find download URL.');
     } catch (err) {
         console.error('Occur error in triggerLinkElement:', err);
         logger('Occur error in triggerLinkElement:', err);

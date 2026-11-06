@@ -17,7 +17,7 @@
 // @name:zh-CN         IG小助手
 // @name:zh-TW         IG小精靈
 // @namespace          https://github.snkms.com/
-// @version            5.1.1
+// @version            5.2.2
 // @description        Download photos and videos from Instagram posts in one click, including Stories, Reels, and profile pictures.
 // @description:ar     نزّل صورًا ومقاطع فيديو من منشورات Instagram بنقرة واحدة، بما في ذلك القصص وReels وصور الملف الشخصي.
 // @description:de     Lade Fotos und Videos aus Instagram-Beiträgen mit einem Klick herunter, einschließlich Stories, Reels und Profilbildern.
@@ -53,7 +53,7 @@
 // @connect            raw.githubusercontent.com
 // @require            https://cdn.jsdelivr.net/npm/mediabunny@1.34.5/dist/bundles/mediabunny.min.cjs#sha256-wUFR+x2bDvpqgMAVGy2CvGvULyjTGvGy4UUAm8rae5U=
 // @require            https://code.jquery.com/jquery-4.0.0.min.js#sha256-OaVG6prZf4v69dPg6PhVattBXkcOWQB62pdZ3ORyrao=
-// @resource           INTERNAL_CSS https://cdn.jsdelivr.net/gh/SN-Koarashi/ig-helper@master/style.css?v=5.1.0
+// @resource           INTERNAL_CSS https://cdn.jsdelivr.net/gh/SN-Koarashi/ig-helper@master/style.css
 // @resource           LOCALE_MANIFEST https://cdn.jsdelivr.net/gh/SN-Koarashi/ig-helper@master/locale/manifest.json
 // @supportURL         https://github.com/SN-Koarashi/ig-helper/
 // @contributionURL    https://ko-fi.com/snkoarashi
@@ -111,6 +111,8 @@
         'NEW_TAB_OPEN_HIGHEST_VIDEO_VIA_REELS_MEDIA_API': 'NEW_TAB_OPEN_HIGHEST_VIDEO_VIA_GRAPHQL'
     };
 
+    const DEFAULT_RENAME_FORMAT = '%USERNAME%-%SOURCE_TYPE%-%SHORTCODE%-%YEAR%%MONTH%%DAY%_%HOUR%%MINUTE%%SECOND%_%ORIGINAL_NAME_FIRST%';
+
     const IMAGE_CACHE_KEY = 'URLS_OF_IMAGES_TEMPORARILY_STORED';
     const IMAGE_CACHE_MAX_AGE = 12 * 60 * 60 * 1000;
     const IMAGE_MAX_CACHE_ITEMS = 500;
@@ -164,7 +166,7 @@
         // rapidly on successive stories.
         storyDownloadInProgress: false,
         highlightDownloadInProgress: false,
-        fileRenameFormat: (GM_getValue('G_RENAME_FORMAT')) ? GM_getValue('G_RENAME_FORMAT') : '%USERNAME%-%SOURCE_TYPE%-%SHORTCODE%-%YEAR%%MONTH%%DAY%_%HOUR%%MINUTE%%SECOND%_%ORIGINAL_NAME_FIRST%',
+        fileRenameFormat: (GM_getValue('G_RENAME_FORMAT')) ? GM_getValue('G_RENAME_FORMAT') : DEFAULT_RENAME_FORMAT,
         registerMenuIds: [],
         locale: {},
         lang: GM_getValue('UI_LANGUAGE') || navigator.language || navigator.userLanguage,
@@ -2477,7 +2479,7 @@
             if (url) {
                 openImageViewer(url);
             } else {
-                alert("Cannot find resource url.");
+                alert("Cannot find resource url. #IG_IMAGE_VIEWER");
             }
         });
 
@@ -2530,7 +2532,7 @@
                 );
 
                 if (!totalInserted || totalInserted < 1) {
-                    alert('Cannot find thumbnail URL.');
+                    alert('Cannot find thumbnail URL. .IG_THUMBNAIL_MAIN #totalInserted not found.');
                     return;
                 }
 
@@ -2545,7 +2547,7 @@
                     $videoThumbnail.trigger("click");
                 }
                 else {
-                    alert('Cannot find thumbnail URL.');
+                    alert('Cannot find thumbnail URL. .IG_THUMBNAIL_MAIN .videoThumbnail not found.');
                 }
             }
             catch (err) {
@@ -2598,7 +2600,7 @@
                 );
 
                 if (!totalInserted || totalInserted < 1) {
-                    alert('Cannot find open tab URL.');
+                    alert('Cannot find open tab URL. .IG_POPUP_DIG .IG_POPUP_DIG_MAIN .IG_POPUP_DIG_BODY not found.');
                     return;
                 }
 
@@ -2606,7 +2608,7 @@
                 const $linkElement = $popupBody.find('a[data-globalindex="' + (index + 1) + '"]');
 
                 if ($linkElement.length === 0) {
-                    alert('Cannot find open tab URL.');
+                    alert('Cannot find open tab URL. .IG_POPUP_DIG .IG_POPUP_DIG_MAIN .IG_POPUP_DIG_BODY a[data-globalindex="' + (index + 1) + '"] not found.');
                     return;
                 }
 
@@ -2615,12 +2617,12 @@
                     openNewTab(replaceSameOriginHost(href));
                 }
                 else {
-                    alert('Cannot find open tab URL.');
+                    alert('Cannot find open tab URL. No href attribute found on the link element.');
                 }
             }
             catch (err) {
                 logger('registerPostClickHandlers .IG_NEWTAB_MAIN', err);
-                alert('Cannot find open tab URL.');
+                alert('Cannot find open tab URL. .IG_POPUP_DIG .IG_POPUP_DIG_MAIN .IG_POPUP_DIG_BODY a[data-globalindex] not found.');
             }
             finally {
                 updateLoadingBar(false);
@@ -2688,8 +2690,11 @@
                 ).getTime();
 
                 if (USER_SETTING.DIRECT_DOWNLOAD_VISIBLE_RESOURCE) {
+                    $('.IG_POPUP_DIG').remove();
                     updateLoadingBar(true);
+                    IG_createDM(true, true);
                     IG_setDM(true);
+                    const index = getVisibleNodeIndex($article);
 
                     try {
                         if (USER_SETTING.CAPTURE_IMAGE_VIA_MEDIA_CACHE && !ctx.isVideo && ctx.cachedUrl) {
@@ -2700,7 +2705,8 @@
                                 sourceType: 'photo',
                                 timestamp: USER_SETTING.RENAME_PUBLISH_DATE ? publish_time : new Date().getTime(),
                                 filetype: 'jpg',
-                                shortcode: ctx.mediaId || postPath
+                                shortcode: postPath || ctx.code || ctx.mediaId,
+                                index: index + 1
                             });
 
                             updateLoadingBar(false);
@@ -2714,7 +2720,8 @@
                                 sourceType: 'photo',
                                 timestamp: USER_SETTING.RENAME_PUBLISH_DATE ? publish_time : new Date().getTime(),
                                 filetype: 'jpg',
-                                shortcode: ctx.mediaId || postPath
+                                shortcode: postPath || ctx.code || ctx.mediaId,
+                                index: index + 1
                             });
 
                             updateLoadingBar(false);
@@ -2722,16 +2729,16 @@
                             return;
                         }
 
-                        const index = getVisibleNodeIndex($article);
-
                         const totalInserted = await createMediaListDOM(
                             state.GL_postPath,
                             ".IG_POPUP_DIG .IG_POPUP_DIG_MAIN .IG_POPUP_DIG_BODY",
                             ""
                         );
 
+                        console.log(totalInserted);
+
                         if (!totalInserted || totalInserted < 1) {
-                            alert('Cannot find download URL.');
+                            alert('Cannot find download URL. .IG_DW_MAIN #totalInserted not found.');
                             return;
                         }
 
@@ -2743,7 +2750,7 @@
                             $targetLink.trigger("click");
                         }
                         else {
-                            alert('Cannot find download URL.');
+                            alert('Cannot find download URL. .IG_DW_MAIN $targetLink not found.');
                         }
                     }
                     catch (err) {
@@ -2870,7 +2877,7 @@
                             sourceType: 'photo',
                             timestamp: USER_SETTING.RENAME_PUBLISH_DATE ? publish_time : new Date().getTime(),
                             filetype: 'jpg',
-                            shortcode: ctx.mediaId || postPath
+                            shortcode: postPath || ctx.code || ctx.mediaId
                         });
                         $('.IG_POPUP_DIG').remove();
                         return;
@@ -2942,84 +2949,19 @@
             $target.find('a').remove();
             $target.append('<p id="_SNLOAD">' + message + '</p>');
             $('.IG_POPUP_DIG #batch_download_selected, .IG_POPUP_DIG #batch_download_direct').prop('disabled', true);
-            // Optionally resolve post/reel media through Instagram's current
-            // PolarisPostRootQuery. DIRECT_DOWNLOAD_ALL additionally uses the legacy
-            // query_hash response only to discover the media IDs before resolving URLs
-            // through Polaris.
+
             let result = await getPostMediaWithProvider(postURL);
             let resource = filterResourceData(result.data);
             const resourceShortcode = resource.code || resource.shortcode || postURL;
 
-            if (result.type === 'query_hash') {
-                let idx = 1;
+            if (resource.carousel_media) {
+                logger('carousel_media');
 
-                // GraphVideo
-                if (resource.__typename == "GraphVideo" && resource.video_url) {
-                    $target.append(`<a media-id="${resource.id}" datetime="${resource.taken_at_timestamp}" data-blob="true" data-needed="direct" data-path="${resource.shortcode}" data-name="video" data-type="mp4" data-username="${resource.owner.username}" data-globalIndex="${idx}" href="javascript:;" data-href="${resource.video_url}"><img width="100" src="${resource.display_resources[1].src}" /><br/>- <span data-ih-locale="VID">${_i18n("VID")}</span> ${idx} -</a>`);
-                    idx++;
-
-                }
-                // GraphImage
-                if (resource.__typename == "GraphImage") {
-                    $target.append(`<a media-id="${resource.id}" datetime="${resource.taken_at_timestamp}" data-blob="true" data-needed="direct" data-path="${resource.shortcode}" data-name="photo" data-type="jpg" data-username="${resource.owner.username}" data-globalIndex="${idx}" href="javascript:;" data-href="${resource.display_resources[resource.display_resources.length - 1].src}"><img width="100" src="${resource.display_resources[1].src}" /><br/>- <span data-ih-locale="IMG">${_i18n("IMG")}</span> ${idx} -</a>`);
-                    idx++;
-                }
-                // GraphSidecar
-                if (resource.__typename == "GraphSidecar" && resource.edge_sidecar_to_children) {
-                    for (let e of resource.edge_sidecar_to_children.edges) {
-                        if (e.node.__typename == "GraphVideo") {
-                            $target.append(`<a media-id="${e.node.id}" datetime="${resource.taken_at_timestamp}" data-blob="true" data-needed="direct" data-path="${resource.shortcode}" data-name="video" data-type="mp4" data-username="${resource.owner.username}" data-globalIndex="${idx}" href="javascript:;" data-href="${e.node.video_url}"><img width="100" src="${e.node.display_resources[1].src}" /><br/>- <span data-ih-locale-title="VID">${_i18n("VID")}</span> ${idx} -</a>`);
-                        }
-
-                        if (e.node.__typename == "GraphImage") {
-                            $target.append(`<a media-id="${e.node.id}" datetime="${resource.taken_at_timestamp}" data-blob="true" data-needed="direct" data-path="${resource.shortcode}" data-name="photo" data-type="jpg" data-username="${resource.owner.username}" data-globalIndex="${idx}" href="javascript:;" data-href="${e.node.display_resources[e.node.display_resources.length - 1].src}"><img width="100" src="${e.node.display_resources[1].src}" /><br/>- <span data-ih-locale="IMG">${_i18n("IMG")}</span> ${idx} -</a>`);
-                        }
-                        idx++;
-                    }
-                }
-            }
-            else {
-                if (resource.carousel_media) {
-                    logger('carousel_media');
-
-                    resource.carousel_media.forEach((mda, ind) => {
-                        let idx = ind + 1;
-                        // Image
-                        if (mda.video_versions == null) {
-                            mda.image_versions2.candidates.sort(function (a, b) {
-                                let aSTP = new URL(a.url).searchParams.get('stp');
-                                let bSTP = new URL(b.url).searchParams.get('stp');
-
-                                if (aSTP && bSTP) {
-                                    if (aSTP.length > bSTP.length) return 1;
-                                    if (aSTP.length < bSTP.length) return -1;
-                                }
-                                else {
-                                    if (a.width < b.width) return 1;
-                                    if (a.width > b.width) return -1;
-                                }
-
-                                return 0;
-                            });
-
-                            let itemUrl = mda.image_versions2.candidates[0].url;
-                            if (USER_SETTING.CAPTURE_IMAGE_VIA_MEDIA_CACHE) {
-                                const cachedImg = getImageFromCache(String(mda.pk));
-                                if (cachedImg) itemUrl = cachedImg;
-                            }
-                            $target.append(`<a media-id="${mda.pk}" datetime="${mda.taken_at || resource.taken_at}" data-blob="true" data-needed="direct" data-path="${resourceShortcode}" data-name="photo" data-type="jpg" data-username="${resource.owner.username}" data-globalIndex="${idx}" href="javascript:;" data-href="${itemUrl}"><img width="100" src="${itemUrl}" /><br/>- <span data-ih-locale="IMG">${_i18n("IMG")}</span> ${idx} -</a>`);
-                        }
-                        // Video
-                        else {
-                            $target.append(`<a media-id="${mda.pk}" datetime="${mda.taken_at || resource.taken_at}" data-blob="true" data-needed="direct" data-path="${resourceShortcode}" data-name="video" data-type="mp4" data-username="${resource.owner.username}" data-globalIndex="${idx}" href="javascript:;" data-href="${mda.video_versions[0].url}"><img width="100" src="${mda.image_versions2.candidates[0].url}" /><br/>- <span data-ih-locale="VID">${_i18n("VID")}</span> ${idx} -</a>`);
-                        }
-                    });
-                }
-                else {
-                    let idx = 1;
+                resource.carousel_media.forEach((mda, ind) => {
+                    let idx = ind + 1;
                     // Image
-                    if (resource.video_versions == null) {
-                        resource.image_versions2.candidates.sort(function (a, b) {
+                    if (mda.video_versions == null) {
+                        mda.image_versions2.candidates.sort(function (a, b) {
                             let aSTP = new URL(a.url).searchParams.get('stp');
                             let bSTP = new URL(b.url).searchParams.get('stp');
 
@@ -3035,19 +2977,52 @@
                             return 0;
                         });
 
-                        let itemUrl = resource.image_versions2.candidates[0].url;
+                        let itemUrl = mda.image_versions2.candidates[0].url;
                         if (USER_SETTING.CAPTURE_IMAGE_VIA_MEDIA_CACHE) {
-                            const cachedImg = getImageFromCache(String(resource.pk));
+                            const cachedImg = getImageFromCache(String(mda.pk));
                             if (cachedImg) itemUrl = cachedImg;
                         }
-                        $target.append(`<a media-id="${resource.pk}" datetime="${resource.taken_at}" data-blob="true" data-needed="direct" data-path="${resourceShortcode}" data-name="photo" data-type="jpg" data-username="${resource.owner.username}" data-globalIndex="${idx}" href="javascript:;" data-href="${itemUrl}"><img width="100" src="${itemUrl}" /><br/>- <span data-ih-locale="IMG">${_i18n("IMG")}</span> ${idx} -</a>`);
+                        $target.append(`<a media-id="${mda.pk}" datetime="${mda.taken_at || resource.taken_at}" data-blob="true" data-needed="direct" data-path="${resourceShortcode}" data-name="photo" data-type="jpg" data-username="${resource.owner.username}" data-globalIndex="${idx}" href="javascript:;" data-href="${itemUrl}"><img width="100" src="${itemUrl}" /><br/>- <span data-ih-locale="IMG">${_i18n("IMG")}</span> ${idx} -</a>`);
                     }
                     // Video
                     else {
-                        $target.append(`<a media-id="${resource.pk}" datetime="${resource.taken_at}" data-blob="true" data-needed="direct" data-path="${resourceShortcode}" data-name="video" data-type="mp4" data-username="${resource.owner.username}" data-globalIndex="${idx}" href="javascript:;" data-href="${resource.video_versions[0].url}"><img width="100" src="${resource.image_versions2.candidates[0].url}" /><br/>- <span data-ih-locale="VID">${_i18n("VID")}</span> ${idx} -</a>`);
+                        $target.append(`<a media-id="${mda.pk}" datetime="${mda.taken_at || resource.taken_at}" data-blob="true" data-needed="direct" data-path="${resourceShortcode}" data-name="video" data-type="mp4" data-username="${resource.owner.username}" data-globalIndex="${idx}" href="javascript:;" data-href="${mda.video_versions[0].url}"><img width="100" src="${mda.image_versions2.candidates[0].url}" /><br/>- <span data-ih-locale="VID">${_i18n("VID")}</span> ${idx} -</a>`);
                     }
+                });
+            }
+            else {
+                let idx = 1;
+                // Image
+                if (resource.video_versions == null) {
+                    resource.image_versions2.candidates.sort(function (a, b) {
+                        let aSTP = new URL(a.url).searchParams.get('stp');
+                        let bSTP = new URL(b.url).searchParams.get('stp');
+
+                        if (aSTP && bSTP) {
+                            if (aSTP.length > bSTP.length) return 1;
+                            if (aSTP.length < bSTP.length) return -1;
+                        }
+                        else {
+                            if (a.width < b.width) return 1;
+                            if (a.width > b.width) return -1;
+                        }
+
+                        return 0;
+                    });
+
+                    let itemUrl = resource.image_versions2.candidates[0].url;
+                    if (USER_SETTING.CAPTURE_IMAGE_VIA_MEDIA_CACHE) {
+                        const cachedImg = getImageFromCache(String(resource.pk));
+                        if (cachedImg) itemUrl = cachedImg;
+                    }
+                    $target.append(`<a media-id="${resource.pk}" datetime="${resource.taken_at}" data-blob="true" data-needed="direct" data-path="${resourceShortcode}" data-name="photo" data-type="jpg" data-username="${resource.owner.username}" data-globalIndex="${idx}" href="javascript:;" data-href="${itemUrl}"><img width="100" src="${itemUrl}" /><br/>- <span data-ih-locale="IMG">${_i18n("IMG")}</span> ${idx} -</a>`);
+                }
+                // Video
+                else {
+                    $target.append(`<a media-id="${resource.pk}" datetime="${resource.taken_at}" data-blob="true" data-needed="direct" data-path="${resourceShortcode}" data-name="video" data-type="mp4" data-username="${resource.owner.username}" data-globalIndex="${idx}" href="javascript:;" data-href="${resource.video_versions[0].url}"><img width="100" src="${resource.image_versions2.candidates[0].url}" /><br/>- <span data-ih-locale="VID">${_i18n("VID")}</span> ${idx} -</a>`);
                 }
             }
+
 
             $("#_SNLOAD").remove();
             $('.IG_POPUP_DIG #batch_download_selected, .IG_POPUP_DIG #batch_download_direct').prop('disabled', false);
@@ -3063,6 +3038,7 @@
             });
             updatePopupSelectionSummary();
 
+            console.log($target.find('a').length);
             return $target.find('a').length;
         }
         catch (err) {
@@ -3329,6 +3305,12 @@
     function shortcodeToId(shortcode) {
         if (!shortcode || typeof shortcode !== 'string') return null;
         const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_';
+
+        if (shortcode.length > 28) {
+            // Instagram shortcodes longer than 28 characters are invalid for media ID conversion
+            shortcode = shortcode.substring(0, shortcode.length - 28);
+        }
+
         let mediaId = BigInt(0);
         const base = BigInt(64);
         const clean = shortcode.trim();
@@ -3339,6 +3321,44 @@
             mediaId = mediaId * base + BigInt(idx);
         }
         return mediaId.toString();
+    }
+
+    /**
+     * idToShortcode
+     * @description Converts numeric media ID to Instagram post shortcode.
+     *              Uses BigInt to avoid 64-bit integer precision loss.
+     *
+     * @param  {String|BigInt} id
+     * @return {?String}
+     */
+    function idToShortcode(id) {
+        if (id === null || id === undefined) return null;
+
+        const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_';
+        const base = BigInt(64);
+
+        let mediaId;
+
+        try {
+            const clean = String(id).trim();
+            if (!/^\d+$/.test(clean)) return null;
+            mediaId = BigInt(clean);
+        } catch {
+            return null;
+        }
+
+        if (mediaId < 0n) return null;
+        if (mediaId === 0n) return alphabet[0];
+
+        let shortcode = '';
+
+        while (mediaId > 0n) {
+            const remainder = Number(mediaId % base);
+            shortcode = alphabet[remainder] + shortcode;
+            mediaId /= base;
+        }
+
+        return shortcode;
     }
 
     /**
@@ -3401,11 +3421,11 @@
      *
      * @param  {JQuery} $article
      * @param  {?String} postPath
-     * @return {{ isVideo: Boolean, mediaId: ?String, cachedUrl: ?String, displayUrl: ?String, posterUrl: ?String, candidateIds: String[] }}
+     * @return {{ isVideo: Boolean, code: ?String, mediaId: ?String, cachedUrl: ?String, displayUrl: ?String, posterUrl: ?String, candidateIds: String[] }}
      */
     function getPostVisibleMediaContext($article, postPath) {
         if (!$article || $article.length === 0) {
-            return { isVideo: false, mediaId: null, cachedUrl: null, displayUrl: null, posterUrl: null, candidateIds: [] };
+            return { isVideo: false, code: null, mediaId: null, cachedUrl: null, displayUrl: null, posterUrl: null, candidateIds: [] };
         }
 
         const postMediaId = shortcodeToId(postPath);
@@ -3560,6 +3580,7 @@
 
         return {
             isVideo,
+            code: postPath || null,
             mediaId: resolvedMediaId || candidateIds[0] || postMediaId || null,
             cachedUrl,
             displayUrl: cachedUrl || displayUrl || candidateUrls[0] || null,
@@ -3909,80 +3930,41 @@
                 let timestamp = new Date().getTime();
 
                 if (USER_SETTING.RENAME_PUBLISH_DATE) {
-                    if (result.type === 'query_hash') {
-                        timestamp = media.taken_at_timestamp;
-                    }
-                    else {
-                        timestamp = media.taken_at;
-                    }
+                    timestamp = media.taken_at || media.taken_at_timestamp;
                 }
 
-                if (result.type === 'query_hash') {
-                    if (isVideo && media.is_video) {
-                        if (isPreview) {
-                            openNewTab(media.video_url);
-                        }
-                        else {
-                            let type = 'mp4';
-                            saveFiles(media.video_url, {
-                                username: media.owner.username,
-                                sourceType: "reels",
-                                timestamp,
-                                filetype: type,
-                                shortcode: reelsPath,
-                                thumbnailURL: media.display_resources?.at(-1)?.src
-                            });
-                        }
+                if (isVideo && media.video_versions != null) {
+                    if (isPreview) {
+                        openNewTab(media.video_versions[0].url);
                     }
                     else {
-                        if (isPreview) {
-                            openNewTab(media.display_resources.at(-1).src);
-                        }
-                        else {
-                            let type = 'jpg';
-                            saveFiles(media.display_resources.at(-1).src, {
-                                username: media.owner.username,
-                                sourceType: "reels",
-                                timestamp,
-                                filetype: type,
-                                shortcode: reelsPath
-                            });
-                        }
+                        let type = 'mp4';
+                        saveFiles(media.video_versions[0].url, {
+                            username: media.owner.username,
+                            sourceType: "reels",
+                            timestamp,
+                            filetype: type,
+                            shortcode: reelsPath,
+                            thumbnailURL: media.image_versions2?.candidates?.[0]?.url
+                        });
                     }
                 }
                 else {
-                    if (isVideo && media.video_versions != null) {
-                        if (isPreview) {
-                            openNewTab(media.video_versions[0].url);
-                        }
-                        else {
-                            let type = 'mp4';
-                            saveFiles(media.video_versions[0].url, {
-                                username: media.owner.username,
-                                sourceType: "reels",
-                                timestamp,
-                                filetype: type,
-                                shortcode: reelsPath,
-                                thumbnailURL: media.image_versions2?.candidates?.[0]?.url
-                            });
-                        }
+                    if (isPreview) {
+                        openNewTab(media.image_versions2.candidates[0].url);
                     }
                     else {
-                        if (isPreview) {
-                            openNewTab(media.image_versions2.candidates[0].url);
-                        }
-                        else {
-                            let type = 'jpg';
-                            saveFiles(media.image_versions2.candidates[0].url, {
-                                username: media.owner.username,
-                                sourceType: "reels",
-                                timestamp,
-                                filetype: type,
-                                shortcode: reelsPath
-                            });
-                        }
+                        let type = 'jpg';
+                        saveFiles(media.image_versions2.candidates[0].url, {
+                            username: media.owner.username,
+                            sourceType: "reels",
+                            timestamp,
+                            filetype: type,
+                            shortcode: reelsPath
+                        });
                     }
                 }
+
 
                 updateLoadingBar(false);
             }
@@ -6013,23 +5995,10 @@
 
     /**
      * getPostMediaWithProvider
-     * @description Resolve post/reel media through the selected provider. When the
-     *              Polaris setting is disabled this preserves the legacy path.
-     *              With DIRECT_DOWNLOAD_ALL, QueryID is used only to discover media
-     *              IDs; media URLs are still resolved by PolarisPostRootQuery.
-     *
-     *              Every path funnels through here (this is the single call site for
-     *              PolarisPostRootQuery/getBlobMediaWithQueryID/getBlobMediaWithQueryHash
-     *              from createMediaListDOM and onReels), so once a result is obtained
-     *              its owner is used to opportunistically validate/self-heal the
-     *              username -> userId cache via reconcileOwnerFromApiResponse(). Shortcode
-     *              posts/reels have no "expected username" known ahead of the request
-     *              (unlike getStories), so this never blocks or delays
-     *              serving the resource — the shortcode already fully determines the
-     *              correct content on its own.
+     * @description Unified aggregation point for post resources.
      *
      * @param  {String}  postPath
-     * @return {Promise<{ type: 'polaris'|'query_id'|'query_hash', data: Object }>}
+     * @return {Promise<{ type: 'GraphQL', data: Object }>}
      */
     async function getPostMediaWithProvider(postPath) {
         if (state.GL_dataCache.posts && state.GL_dataCache.posts[postPath]) {
@@ -6089,7 +6058,7 @@
                         let obj = JSON.parse(response.response);
                         logger("getMediaList()", obj);
 
-                        resolve({ type: 'query_id', data: obj.data.xdt_api__v1__media__shortcode__web_info.items[0] });
+                        resolve({ type: 'GraphQL', data: obj.data.xdt_api__v1__media__shortcode__web_info.items[0] });
                     }
                     catch (err) {
                         logger('getMediaList()', 'reject', err.message);
@@ -7353,6 +7322,10 @@
             setTimeout(() => {
                 updateLoadingBar(true);
 
+                if (metadata?.shortcode?.match(/^\d+$/) != null) {
+                    metadata.shortcode = idToShortcode(metadata.shortcode);
+                }
+
                 const downloadName = getSaveFileName(downloadLink, metadata);
                 const { filetype, shortcode, sourceType } = metadata;
 
@@ -7966,7 +7939,7 @@
 
         const exifDateString = `${formatExifDate(metadata.timestamp)}\0`;
         const username = `${(metadata.username || 'unknown').toString()}\0`;
-        const url = `https://www.instagram.com/p/${metadata.shortcode}/`;
+        const url = `https://www.instagram.com/p/${metadata.shortcode}/?img_index=${metadata.index || 1}`;
         const commentUrl = `https://www.instagram.com/uid/${metadata.uid || 'unknown'}`;
 
         const dateBytes = enc(exifDateString);
@@ -8163,7 +8136,7 @@
                 return;
             }
 
-            alert('Cannot find download URL.');
+            alert('triggerLinkElement(): Cannot find download URL.');
         } catch (err) {
             console.error('Occur error in triggerLinkElement:', err);
             logger('Occur error in triggerLinkElement:', err);
@@ -8826,13 +8799,7 @@
             if (name === 'AUTO_RENAME') {
                 $popupBody.find(`input[id="${name}"]`).parent('label').on('contextmenu', function (e) {
                     e.preventDefault();
-                    const $this = $(this);
-                    if (!$this.find('#tempWrapper').length) {
-                        $this.append('<div id="tempWrapper"></div>')
-                            .children('#tempWrapper')
-                            .append(`<input id="date_format" value="${state.fileRenameFormat}" />`)
-                            .append(`<div class="IG_POPUP_DIG_BTN">${SVG.CLOSE}</div>`);
-                    }
+                    showRenameFormatEditor();
                 });
             }
         }
@@ -8902,6 +8869,560 @@
         $span.append(`<button style="margin: 3px;" class="IG_REPORT_FORK"><a href="https://greasyfork.org/en/scripts/404535-ig-helper/feedback" target="_blank">${_i18n('REPORT_FORK')}</a></button>`);
         $span.append(`<button style="margin: 3px;" class="IG_REPORT_GITHUB"><a href="https://github.com/SN-Koarashi/ig-helper/issues" target="_blank">${_i18n('REPORT_GITHUB')}</a></button>`);
         $span.append(`<button style="margin: 3px;" class="IG_REPORT_DISCORD"><a href="https://discord.gg/q3KT4hdq8x" target="_blank">${_i18n('REPORT_DISCORD')}</a></button>`);
+    }
+
+    /**
+     * RENAME_FORMAT_KEYS
+     * @description Parameters supported by getSaveFileName().
+     *              Keep this list in sync with the replacements map in getSaveFileName().
+     */
+    const RENAME_FORMAT_KEYS = [
+        'USERNAME',
+        'SOURCE_TYPE',
+        'SHORTCODE',
+        'YEAR',
+        '2-YEAR',
+        'MONTH',
+        'DAY',
+        'HOUR',
+        'MINUTE',
+        'SECOND',
+        'ORIGINAL_NAME',
+        'ORIGINAL_NAME_FIRST',
+        'INDEX',
+        'UID'
+    ];
+
+    /**
+     * RENAME_FORMAT_SEPARATORS
+     * @description Literal text chips offered in the rename format editor.
+     */
+    const RENAME_FORMAT_SEPARATORS = ['-', '_', '.', ' ', '(', ')', '[', ']'];
+
+    /**
+     * parseRenameFormat
+     * @description Split a rename format string into a list of param / text tokens.
+     *              Unknown %PLACEHOLDER% values are kept as literal text, matching the
+     *              behavior of getSaveFileName().
+     *
+     * @param  {String}  format
+     * @return {Array<{type: String, key?: String, value?: String}>}
+     */
+    function parseRenameFormat(format) {
+        const tokens = [];
+        const regex = /%([\w-]+)%/g;
+        let lastIndex = 0;
+        let match;
+
+        const pushText = (text) => {
+            if (!text) return;
+            const prev = tokens.at(-1);
+            if (prev && prev.type === 'text') {
+                prev.value += text;
+            }
+            else {
+                tokens.push({ type: 'text', value: text });
+            }
+        };
+
+        while ((match = regex.exec(format || '')) !== null) {
+            const key = match[1].toUpperCase();
+            pushText(format.slice(lastIndex, match.index));
+
+            if (RENAME_FORMAT_KEYS.includes(key)) {
+                tokens.push({ type: 'param', key });
+            }
+            else {
+                pushText(match[0]);
+            }
+
+            lastIndex = regex.lastIndex;
+        }
+
+        pushText((format || '').slice(lastIndex));
+        return tokens;
+    }
+
+    /**
+     * serializeRenameFormat
+     * @description Convert a token list back into a rename format string.
+     *
+     * @param  {Array}  tokens
+     * @return {String}
+     */
+    function serializeRenameFormat(tokens) {
+        return tokens.map((token) => (token.type === 'param') ? `%${token.key}%` : token.value).join('');
+    }
+
+    /**
+     * getRenameFormatDescriptions
+     * @description Read the localized description of every parameter from AUTO_RENAME_INTRO
+     *              (lines formatted as "%KEY% - description"), so no extra translation is needed.
+     *
+     * @return {Object<String, String>}
+     */
+    function getRenameFormatDescriptions() {
+        const result = {};
+        const intro = _i18n('AUTO_RENAME_INTRO') || '';
+
+        intro.split('\n').forEach((line) => {
+            const match = line.trim().match(/^%([\w-]+)%\s*[-–—:：]\s*(.+)$/);
+            if (match) {
+                result[match[1].toUpperCase()] = match[2].trim();
+            }
+        });
+
+        return result;
+    }
+
+    /**
+     * getRenameFormatSamples
+     * @description Sample values used for the chip hints and the live preview.
+     *
+     * @return {Object<String, String>}
+     */
+    function getRenameFormatSamples() {
+        const date = new Date();
+        const pad = (n) => n.toString().padStart(2, '0');
+        const originalName = '321565527_679025940443063_4318007696887450953_n';
+
+        return {
+            'USERNAME': 'instagram',
+            'SOURCE_TYPE': 'photo',
+            'SHORTCODE': 'C1a2B3c4D5e',
+            'YEAR': date.getFullYear().toString(),
+            '2-YEAR': date.getFullYear().toString().slice(-2),
+            'MONTH': pad(date.getMonth() + 1),
+            'DAY': pad(date.getDate()),
+            'HOUR': pad(date.getHours()),
+            'MINUTE': pad(date.getMinutes()),
+            'SECOND': pad(date.getSeconds()),
+            'ORIGINAL_NAME': originalName,
+            'ORIGINAL_NAME_FIRST': originalName.split('_').at(0),
+            'INDEX': '0',
+            'UID': '25025320'
+        };
+    }
+
+    /**
+     * showRenameFormatEditor
+     * @description Show a modal that lets the user build the AUTO_RENAME file name format
+     *              by dragging parameter chips into a format builder.
+     *
+     * @return {void}
+     */
+    function showRenameFormatEditor() {
+        $('.IG_RENAME_DIG').remove();
+        $(document).off('.IG_RENAME_DIG');
+
+        const descriptions = getRenameFormatDescriptions();
+        const samples = getRenameFormatSamples();
+        const invalidChars = /[\\/:*?"<>|]/g;
+
+        let tokens = parseRenameFormat(state.fileRenameFormat);
+        let dragPayload = null;
+        let dropIndex = null;
+
+        const $dialog = $(`
+            <div class="IG_RENAME_DIG">
+                <div class="IG_RENAME_DIG_BG"></div>
+                <div class="IG_RENAME_DIG_MAIN" role="dialog" aria-modal="true">
+                    <div class="IG_RENAME_DIG_HEAD">
+                        <div class="ih-rf-title"></div>
+                        <div class="IG_RENAME_DIG_CLOSE" role="button"></div>
+                    </div>
+
+                    <div class="ih-rf-section" data-key="RENAME_FORMAT_BUILDER"></div>
+                    <div class="ih-rf-builder">
+                        <span class="ih-rf-empty"></span>
+                        <span class="ih-rf-caret"></span>
+                    </div>
+
+                    <div class="ih-rf-palettes">
+                        <div class="ih-rf-section" data-key="RENAME_FORMAT_PARAMS"></div>
+                        <div class="ih-rf-palette ih-rf-palette-params"></div>
+
+                        <div class="ih-rf-section" data-key="RENAME_FORMAT_SEPARATORS"></div>
+                        <div class="ih-rf-palette ih-rf-palette-text"></div>
+                    </div>
+
+                    <div class="ih-rf-section" data-key="RENAME_FORMAT_PREVIEW"></div>
+                    <div class="ih-rf-preview"></div>
+
+                    <details class="ih-rf-advanced">
+                        <summary></summary>
+                        <input type="text" class="ih-rf-raw" spellcheck="false" autocomplete="off" />
+                    </details>
+
+                    <div class="ih-rf-actions">
+                        <button type="button" class="ih-rf-btn ih-rf-reset"></button>
+                        <button type="button" class="ih-rf-btn ih-rf-cancel"></button>
+                        <button type="button" class="ih-rf-btn is-primary ih-rf-save"></button>
+                    </div>
+                </div>
+            </div>
+        `);
+
+        // Static texts
+        $dialog.find('.ih-rf-title').text(_i18n('RENAME_FORMAT_TITLE'));
+        $dialog.find('.IG_RENAME_DIG_CLOSE').html(SVG.CLOSE).attr('title', _i18n('CLOSE')).attr('aria-label', _i18n('CLOSE'));
+        $dialog.find('.ih-rf-section').each(function () {
+            $(this).text(_i18n($(this).data('key')));
+        });
+        $dialog.find('.ih-rf-empty').text(_i18n('RENAME_FORMAT_EMPTY'));
+        $dialog.find('.ih-rf-advanced > summary').text(_i18n('RENAME_FORMAT_RAW'));
+        $dialog.find('.ih-rf-reset').text(_i18n('RENAME_FORMAT_RESET'));
+        $dialog.find('.ih-rf-cancel').text(_i18n('RENAME_FORMAT_CANCEL'));
+        $dialog.find('.ih-rf-save').text(_i18n('RENAME_FORMAT_SAVE'));
+
+        const $builder = $dialog.find('.ih-rf-builder');
+        const $caret = $builder.find('.ih-rf-caret');
+        const $raw = $dialog.find('.ih-rf-raw');
+        const $preview = $dialog.find('.ih-rf-preview');
+        const $save = $dialog.find('.ih-rf-save');
+
+        // Palette: parameters
+        const $paramPalette = $dialog.find('.ih-rf-palette-params');
+        RENAME_FORMAT_KEYS.forEach((key) => {
+            $paramPalette.append(
+                $('<span class="ih-rf-chip is-param" draggable="true"></span>')
+                    .attr('data-key', key)
+                    .attr('title', descriptions[key] || key)
+                    .append($('<span class="ih-rf-label"></span>').text(key))
+                    .append($('<span class="ih-rf-sample"></span>').text(samples[key]))
+            );
+        });
+
+        // Palette: separators & custom text
+        const $textPalette = $dialog.find('.ih-rf-palette-text');
+        RENAME_FORMAT_SEPARATORS.forEach((text) => {
+            $textPalette.append(
+                $('<span class="ih-rf-chip is-text" draggable="true"></span>')
+                    .attr('data-text', text)
+                    .append($('<span class="ih-rf-label"></span>').text(visualizeText(text)))
+            );
+        });
+        $textPalette.append(
+            $('<span class="ih-rf-chip is-text is-custom" draggable="true"></span>')
+                .attr('data-custom', 'true')
+                .append($('<span class="ih-rf-label"></span>').text('＋ ' + _i18n('RENAME_FORMAT_CUSTOM_TEXT')))
+        );
+
+        $body.append($dialog);
+        refresh();
+
+        /* ---------- rendering ---------- */
+
+        function visualizeText(text) {
+            return text.replace(/ /g, '␣');
+        }
+
+        function createTokenChip(token, index) {
+            const $chip = $('<span class="ih-rf-token" draggable="true"></span>').attr('data-index', index);
+
+            if (token.type === 'param') {
+                $chip.addClass('is-param')
+                    .attr('title', descriptions[token.key] || token.key)
+                    .append($('<span class="ih-rf-label"></span>').text(token.key));
+            }
+            else {
+                $chip.addClass('is-text')
+                    .attr('title', _i18n('RENAME_FORMAT_EDIT_TEXT'))
+                    .append($('<span class="ih-rf-label"></span>').text(visualizeText(token.value)));
+            }
+
+            $chip.append(
+                $('<button type="button" class="ih-rf-remove">×</button>')
+                    .attr('title', _i18n('RENAME_FORMAT_REMOVE'))
+                    .attr('aria-label', _i18n('RENAME_FORMAT_REMOVE'))
+            );
+
+            return $chip;
+        }
+
+        function renderPreview() {
+            $preview.empty();
+            tokens.forEach((token) => {
+                if (token.type === 'param') {
+                    $preview.append($('<span class="is-param"></span>').text(samples[token.key]));
+                }
+                else {
+                    $preview.append(document.createTextNode(token.value));
+                }
+            });
+            $preview.append($('<span class="ih-rf-ext"></span>').text('.jpg'));
+        }
+
+        function refresh(options = {}) {
+            $builder.children('.ih-rf-token').remove();
+            tokens.forEach((token, index) => {
+                createTokenChip(token, index).insertBefore($caret);
+            });
+            $builder.toggleClass('is-empty', tokens.length === 0);
+
+            if (!options.fromRaw) {
+                $raw.val(serializeRenameFormat(tokens));
+            }
+
+            renderPreview();
+            $save.prop('disabled', tokens.length === 0);
+        }
+
+        /* ---------- token operations ---------- */
+
+        function insertToken(token, index) {
+            tokens.splice(index, 0, { ...token });
+            refresh();
+        }
+
+        function moveToken(from, to) {
+            if (to === from || to === from + 1) return;
+            const [token] = tokens.splice(from, 1);
+            tokens.splice((from < to) ? to - 1 : to, 0, token);
+            refresh();
+        }
+
+        function removeToken(index) {
+            tokens.splice(index, 1);
+            refresh();
+        }
+
+        function getPaletteToken($chip) {
+            if ($chip.attr('data-key')) {
+                return { type: 'param', key: $chip.attr('data-key') };
+            }
+            if ($chip.attr('data-custom')) {
+                return { type: 'text', value: '', custom: true };
+            }
+            return { type: 'text', value: $chip.attr('data-text') };
+        }
+
+        function addFromPalette(token, index) {
+            const isCustom = token.custom === true;
+            delete token.custom;
+            insertToken(token, index);
+            if (isCustom) {
+                startTextEdit(index);
+            }
+        }
+
+        function startTextEdit(index) {
+            const token = tokens[index];
+            if (!token || token.type !== 'text') return;
+
+            const $chip = $builder.children(`.ih-rf-token[data-index="${index}"]`);
+            const $input = $('<input type="text" class="ih-rf-text-input" spellcheck="false" />')
+                .val(token.value)
+                .attr('size', Math.max(token.value.length, 3));
+
+            $chip.attr('draggable', 'false').addClass('is-editing').find('.ih-rf-label').replaceWith($input);
+            $input.trigger('focus').trigger('select');
+
+            let finished = false;
+            const commit = (cancel) => {
+                if (finished) return;
+                finished = true;
+
+                if (!cancel) {
+                    token.value = $input.val().replace(invalidChars, '');
+                }
+                if (!token.value) {
+                    tokens.splice(tokens.indexOf(token), 1);
+                }
+                refresh();
+            };
+
+            $input.on('input', function () {
+                $input.attr('size', Math.max($input.val().length, 3));
+            });
+            $input.on('keydown', function (e) {
+                e.stopPropagation();
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    commit(false);
+                }
+                else if (e.key === 'Escape') {
+                    e.preventDefault();
+                    commit(true);
+                }
+            });
+            $input.on('blur', () => commit(false));
+        }
+
+        /* ---------- drag & drop ---------- */
+
+        function getInsertIndex(clientX, clientY) {
+            const chips = $builder.children('.ih-rf-token').toArray();
+            for (let i = 0; i < chips.length; i++) {
+                const rect = chips[i].getBoundingClientRect();
+                if (clientY < rect.top) return i;
+                if (clientY <= rect.bottom && clientX < rect.left + rect.width / 2) return i;
+            }
+            return chips.length;
+        }
+
+        function showCaret(index) {
+            const chips = $builder.children('.ih-rf-token').toArray();
+            const base = $builder[0].getBoundingClientRect();
+            let left = 10, top = 9, height = 28;
+
+            if (chips.length > 0) {
+                const isEnd = index >= chips.length;
+                const rect = chips[isEnd ? chips.length - 1 : index].getBoundingClientRect();
+                left = (isEnd ? rect.right + 2 : rect.left - 4) - base.left;
+                top = rect.top - base.top;
+                height = rect.height;
+            }
+
+            $caret.css({ left: left + 'px', top: top + 'px', height: height + 'px' }).addClass('is-visible');
+        }
+
+        function endDrag() {
+            dragPayload = null;
+            dropIndex = null;
+            $caret.removeClass('is-visible');
+            $builder.removeClass('is-over');
+            $dialog.find('.is-dragging, .will-remove').removeClass('is-dragging will-remove');
+        }
+
+        $dialog.on('dragstart', '.ih-rf-palette .ih-rf-chip', function (e) {
+            const token = getPaletteToken($(this));
+            dragPayload = { source: 'palette', token };
+
+            const dt = e.originalEvent.dataTransfer;
+            dt.effectAllowed = 'copy';
+            dt.setData('text/plain', serializeRenameFormat([token]));
+        });
+
+        $builder.on('dragstart', '.ih-rf-token', function (e) {
+            const $chip = $(this);
+            if ($chip.hasClass('is-editing')) {
+                e.preventDefault();
+                return;
+            }
+
+            dragPayload = { source: 'builder', index: parseInt($chip.attr('data-index'), 10) };
+            $chip.addClass('is-dragging');
+
+            const dt = e.originalEvent.dataTransfer;
+            dt.effectAllowed = 'move';
+            dt.setData('text/plain', serializeRenameFormat([tokens[dragPayload.index]]));
+        });
+
+        $dialog.on('dragover', function (e) {
+            if (!dragPayload) return;
+
+            const dt = e.originalEvent.dataTransfer;
+            const inBuilder = $(e.target).closest('.ih-rf-builder').length > 0;
+
+            if (inBuilder) {
+                e.preventDefault();
+                dt.dropEffect = (dragPayload.source === 'palette') ? 'copy' : 'move';
+                dropIndex = getInsertIndex(e.originalEvent.clientX, e.originalEvent.clientY);
+                showCaret(dropIndex);
+                $builder.addClass('is-over');
+                $builder.find('.will-remove').removeClass('will-remove');
+            }
+            else {
+                dropIndex = null;
+                $caret.removeClass('is-visible');
+                $builder.removeClass('is-over');
+
+                // Dragging a token out of the builder removes it on drop.
+                if (dragPayload.source === 'builder') {
+                    e.preventDefault();
+                    dt.dropEffect = 'move';
+                    $builder.find('.is-dragging').addClass('will-remove');
+                }
+            }
+        });
+
+        $dialog.on('drop', function (e) {
+            if (!dragPayload) return;
+            e.preventDefault();
+
+            const payload = dragPayload;
+            const index = dropIndex;
+            endDrag();
+
+            if (index !== null) {
+                if (payload.source === 'palette') {
+                    addFromPalette(payload.token, index);
+                }
+                else {
+                    moveToken(payload.index, index);
+                }
+            }
+            else if (payload.source === 'builder') {
+                removeToken(payload.index);
+            }
+        });
+
+        $dialog.on('dragend', endDrag);
+
+        /* ---------- clicks & inputs ---------- */
+
+        // Click a palette chip to append it (also the fallback for touch devices).
+        $dialog.on('click', '.ih-rf-palette .ih-rf-chip', function () {
+            addFromPalette(getPaletteToken($(this)), tokens.length);
+        });
+
+        $builder.on('click', '.ih-rf-remove', function (e) {
+            e.stopPropagation();
+            removeToken(parseInt($(this).closest('.ih-rf-token').attr('data-index'), 10));
+        });
+
+        $builder.on('click', '.ih-rf-token.is-text:not(.is-editing)', function () {
+            startTextEdit(parseInt($(this).attr('data-index'), 10));
+        });
+
+        $raw.on('input', function () {
+            tokens = parseRenameFormat($raw.val());
+            refresh({ fromRaw: true });
+        });
+
+        $raw.on('keydown', function (e) {
+            e.stopPropagation();
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                save();
+            }
+            else if (e.key === 'Escape') {
+                e.preventDefault();
+                closeEditor();
+            }
+        });
+
+        $dialog.on('click', '.IG_RENAME_DIG_CLOSE, .IG_RENAME_DIG_BG, .ih-rf-cancel', closeEditor);
+
+        $dialog.on('click', '.ih-rf-reset', function () {
+            tokens = parseRenameFormat(DEFAULT_RENAME_FORMAT);
+            refresh();
+        });
+
+        $save.on('click', save);
+
+        $(document).on('keydown.IG_RENAME_DIG', function (e) {
+            // [Esc] or [Alt+Q] closes the editor
+            if (e.key === 'Escape' || (e.altKey && e.which == 81)) {
+                closeEditor();
+            }
+        });
+
+        function save() {
+            const format = serializeRenameFormat(tokens);
+            if (!format) return;
+
+            GM_setValue('G_RENAME_FORMAT', format);
+            state.fileRenameFormat = format;
+            logger('Rename format saved:', format);
+            closeEditor();
+        }
+
+        function closeEditor() {
+            $(document).off('.IG_RENAME_DIG');
+            $dialog.remove();
+        }
     }
 
     var detectMovingViewerTimer = null;
@@ -9416,6 +9937,19 @@
                 "HOTKEY_DOWNLOAD_STORY_KEY": "Download Story",
                 "HOTKEY_CONFLICT_WARNING": "This hotkey may conflict with other settings.",
                 "HOTKEY_RESET": "Reset",
+                "RENAME_FORMAT_TITLE": "File Rename Format",
+                "RENAME_FORMAT_BUILDER": "Format (drag to reorder, drag out to remove)",
+                "RENAME_FORMAT_EMPTY": "Drag parameters here",
+                "RENAME_FORMAT_PARAMS": "Parameters (drag or click to add)",
+                "RENAME_FORMAT_SEPARATORS": "Separators & Text",
+                "RENAME_FORMAT_CUSTOM_TEXT": "Custom text",
+                "RENAME_FORMAT_PREVIEW": "Preview",
+                "RENAME_FORMAT_RAW": "Edit raw format",
+                "RENAME_FORMAT_EDIT_TEXT": "Click to edit",
+                "RENAME_FORMAT_REMOVE": "Remove",
+                "RENAME_FORMAT_RESET": "Restore Default",
+                "RENAME_FORMAT_CANCEL": "Cancel",
+                "RENAME_FORMAT_SAVE": "Save",
                 "USE_EXTERNAL_DOWNLOAD_MODE": "Use External Download Mode",
                 "USE_EXTERNAL_DOWNLOAD_MODE_INTRO": "Enabling this feature will cause the script to use extended download functions (such as GM_download) to download files, resolving the issue of missing files when download multiple files.\n\nPlease note: Enabling this feature may cause the file renaming function to malfunction. Please ensure that the download mode in your extended feature settings is set to Native."
             }
@@ -9545,7 +10079,7 @@
                 }, "\t");
                 loggerStr += `${new Date(log.time).toISOString()}: ${jsonData}\n`
             });
-            $('.IG_POPUP_DIG .IG_POPUP_DIG_BODY textarea').text("Logger:\n" + loggerStr + "\n-----\n\nLocation: " + location.pathname + "\nDOM Tree with div#mount:\n" + text.innerHTML);
+            $('.IG_POPUP_DIG .IG_POPUP_DIG_BODY textarea').text("User Settings:\n" + JSON.stringify(USER_SETTING, null, "\t") + "\nLogger:\n" + loggerStr + "\n-----\n\nLocation: " + location.pathname + "\nDOM Tree with div#mount:\n" + text.innerHTML);
         }
 
         $body.on('click', '.IG_POPUP_DIG .IG_POPUP_DIG_BODY .IG_DISPLAY_DOM_TREE', function () {
@@ -9731,12 +10265,6 @@
                     }
                 }
             }
-        });
-
-        $body.on('input', '.IG_POPUP_DIG #tempWrapper input#date_format', function () {
-            const val = $(this).val();
-            GM_setValue('G_RENAME_FORMAT', val);
-            state.fileRenameFormat = val;
         });
 
         $body.on('click', 'a[data-needed="direct"]', function (e) {

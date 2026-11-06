@@ -490,7 +490,7 @@ export function registerPostClickHandlers() {
         if (url) {
             openImageViewer(url);
         } else {
-            alert("Cannot find resource url.");
+            alert("Cannot find resource url. #IG_IMAGE_VIEWER");
         }
     });
 
@@ -543,7 +543,7 @@ export function registerPostClickHandlers() {
             );
 
             if (!totalInserted || totalInserted < 1) {
-                alert('Cannot find thumbnail URL.');
+                alert('Cannot find thumbnail URL. .IG_THUMBNAIL_MAIN #totalInserted not found.');
                 return;
             }
 
@@ -558,7 +558,7 @@ export function registerPostClickHandlers() {
                 $videoThumbnail.trigger("click");
             }
             else {
-                alert('Cannot find thumbnail URL.');
+                alert('Cannot find thumbnail URL. .IG_THUMBNAIL_MAIN .videoThumbnail not found.');
             }
         }
         catch (err) {
@@ -611,7 +611,7 @@ export function registerPostClickHandlers() {
             );
 
             if (!totalInserted || totalInserted < 1) {
-                alert('Cannot find open tab URL.');
+                alert('Cannot find open tab URL. .IG_POPUP_DIG .IG_POPUP_DIG_MAIN .IG_POPUP_DIG_BODY not found.');
                 return;
             }
 
@@ -619,7 +619,7 @@ export function registerPostClickHandlers() {
             const $linkElement = $popupBody.find('a[data-globalindex="' + (index + 1) + '"]');
 
             if ($linkElement.length === 0) {
-                alert('Cannot find open tab URL.');
+                alert('Cannot find open tab URL. .IG_POPUP_DIG .IG_POPUP_DIG_MAIN .IG_POPUP_DIG_BODY a[data-globalindex="' + (index + 1) + '"] not found.');
                 return;
             }
 
@@ -628,12 +628,12 @@ export function registerPostClickHandlers() {
                 openNewTab(replaceSameOriginHost(href));
             }
             else {
-                alert('Cannot find open tab URL.');
+                alert('Cannot find open tab URL. No href attribute found on the link element.');
             }
         }
         catch (err) {
             logger('registerPostClickHandlers .IG_NEWTAB_MAIN', err);
-            alert('Cannot find open tab URL.');
+            alert('Cannot find open tab URL. .IG_POPUP_DIG .IG_POPUP_DIG_MAIN .IG_POPUP_DIG_BODY a[data-globalindex] not found.');
         }
         finally {
             updateLoadingBar(false);
@@ -701,8 +701,11 @@ export function registerPostClickHandlers() {
             ).getTime();
 
             if (USER_SETTING.DIRECT_DOWNLOAD_VISIBLE_RESOURCE) {
+                $('.IG_POPUP_DIG').remove();
                 updateLoadingBar(true);
+                IG_createDM(true, true);
                 IG_setDM(true);
+                const index = getVisibleNodeIndex($article);
 
                 try {
                     if (USER_SETTING.CAPTURE_IMAGE_VIA_MEDIA_CACHE && !ctx.isVideo && ctx.cachedUrl) {
@@ -713,7 +716,8 @@ export function registerPostClickHandlers() {
                             sourceType: 'photo',
                             timestamp: USER_SETTING.RENAME_PUBLISH_DATE ? publish_time : new Date().getTime(),
                             filetype: 'jpg',
-                            shortcode: ctx.mediaId || postPath
+                            shortcode: postPath || ctx.code || ctx.mediaId,
+                            index: index + 1
                         });
 
                         updateLoadingBar(false);
@@ -727,7 +731,8 @@ export function registerPostClickHandlers() {
                             sourceType: 'photo',
                             timestamp: USER_SETTING.RENAME_PUBLISH_DATE ? publish_time : new Date().getTime(),
                             filetype: 'jpg',
-                            shortcode: ctx.mediaId || postPath
+                            shortcode: postPath || ctx.code || ctx.mediaId,
+                            index: index + 1
                         });
 
                         updateLoadingBar(false);
@@ -735,16 +740,16 @@ export function registerPostClickHandlers() {
                         return;
                     }
 
-                    const index = getVisibleNodeIndex($article);
-
                     const totalInserted = await createMediaListDOM(
                         state.GL_postPath,
                         ".IG_POPUP_DIG .IG_POPUP_DIG_MAIN .IG_POPUP_DIG_BODY",
                         ""
                     );
 
+                    console.log(totalInserted);
+
                     if (!totalInserted || totalInserted < 1) {
-                        alert('Cannot find download URL.');
+                        alert('Cannot find download URL. .IG_DW_MAIN #totalInserted not found.');
                         return;
                     }
 
@@ -756,7 +761,7 @@ export function registerPostClickHandlers() {
                         $targetLink.trigger("click");
                     }
                     else {
-                        alert('Cannot find download URL.');
+                        alert('Cannot find download URL. .IG_DW_MAIN $targetLink not found.');
                     }
                 }
                 catch (err) {
@@ -883,7 +888,7 @@ export function registerPostClickHandlers() {
                         sourceType: 'photo',
                         timestamp: USER_SETTING.RENAME_PUBLISH_DATE ? publish_time : new Date().getTime(),
                         filetype: 'jpg',
-                        shortcode: ctx.mediaId || postPath
+                        shortcode: postPath || ctx.code || ctx.mediaId
                     });
                     $('.IG_POPUP_DIG').remove();
                     return;
@@ -955,84 +960,19 @@ export async function createMediaListDOM(postURL, selector, message) {
         $target.find('a').remove();
         $target.append('<p id="_SNLOAD">' + message + '</p>');
         $('.IG_POPUP_DIG #batch_download_selected, .IG_POPUP_DIG #batch_download_direct').prop('disabled', true);
-        // Optionally resolve post/reel media through Instagram's current
-        // PolarisPostRootQuery. DIRECT_DOWNLOAD_ALL additionally uses the legacy
-        // query_hash response only to discover the media IDs before resolving URLs
-        // through Polaris.
+
         let result = await getPostMediaWithProvider(postURL);
         let resource = filterResourceData(result.data);
         const resourceShortcode = resource.code || resource.shortcode || postURL;
 
-        if (result.type === 'query_hash') {
-            let idx = 1;
+        if (resource.carousel_media) {
+            logger('carousel_media');
 
-            // GraphVideo
-            if (resource.__typename == "GraphVideo" && resource.video_url) {
-                $target.append(`<a media-id="${resource.id}" datetime="${resource.taken_at_timestamp}" data-blob="true" data-needed="direct" data-path="${resource.shortcode}" data-name="video" data-type="mp4" data-username="${resource.owner.username}" data-globalIndex="${idx}" href="javascript:;" data-href="${resource.video_url}"><img width="100" src="${resource.display_resources[1].src}" /><br/>- <span data-ih-locale="VID">${_i18n("VID")}</span> ${idx} -</a>`);
-                idx++;
-
-            }
-            // GraphImage
-            if (resource.__typename == "GraphImage") {
-                $target.append(`<a media-id="${resource.id}" datetime="${resource.taken_at_timestamp}" data-blob="true" data-needed="direct" data-path="${resource.shortcode}" data-name="photo" data-type="jpg" data-username="${resource.owner.username}" data-globalIndex="${idx}" href="javascript:;" data-href="${resource.display_resources[resource.display_resources.length - 1].src}"><img width="100" src="${resource.display_resources[1].src}" /><br/>- <span data-ih-locale="IMG">${_i18n("IMG")}</span> ${idx} -</a>`);
-                idx++;
-            }
-            // GraphSidecar
-            if (resource.__typename == "GraphSidecar" && resource.edge_sidecar_to_children) {
-                for (let e of resource.edge_sidecar_to_children.edges) {
-                    if (e.node.__typename == "GraphVideo") {
-                        $target.append(`<a media-id="${e.node.id}" datetime="${resource.taken_at_timestamp}" data-blob="true" data-needed="direct" data-path="${resource.shortcode}" data-name="video" data-type="mp4" data-username="${resource.owner.username}" data-globalIndex="${idx}" href="javascript:;" data-href="${e.node.video_url}"><img width="100" src="${e.node.display_resources[1].src}" /><br/>- <span data-ih-locale-title="VID">${_i18n("VID")}</span> ${idx} -</a>`);
-                    }
-
-                    if (e.node.__typename == "GraphImage") {
-                        $target.append(`<a media-id="${e.node.id}" datetime="${resource.taken_at_timestamp}" data-blob="true" data-needed="direct" data-path="${resource.shortcode}" data-name="photo" data-type="jpg" data-username="${resource.owner.username}" data-globalIndex="${idx}" href="javascript:;" data-href="${e.node.display_resources[e.node.display_resources.length - 1].src}"><img width="100" src="${e.node.display_resources[1].src}" /><br/>- <span data-ih-locale="IMG">${_i18n("IMG")}</span> ${idx} -</a>`);
-                    }
-                    idx++;
-                }
-            }
-        }
-        else {
-            if (resource.carousel_media) {
-                logger('carousel_media');
-
-                resource.carousel_media.forEach((mda, ind) => {
-                    let idx = ind + 1;
-                    // Image
-                    if (mda.video_versions == null) {
-                        mda.image_versions2.candidates.sort(function (a, b) {
-                            let aSTP = new URL(a.url).searchParams.get('stp');
-                            let bSTP = new URL(b.url).searchParams.get('stp');
-
-                            if (aSTP && bSTP) {
-                                if (aSTP.length > bSTP.length) return 1;
-                                if (aSTP.length < bSTP.length) return -1;
-                            }
-                            else {
-                                if (a.width < b.width) return 1;
-                                if (a.width > b.width) return -1;
-                            }
-
-                            return 0;
-                        });
-
-                        let itemUrl = mda.image_versions2.candidates[0].url;
-                        if (USER_SETTING.CAPTURE_IMAGE_VIA_MEDIA_CACHE) {
-                            const cachedImg = getImageFromCache(String(mda.pk));
-                            if (cachedImg) itemUrl = cachedImg;
-                        }
-                        $target.append(`<a media-id="${mda.pk}" datetime="${mda.taken_at || resource.taken_at}" data-blob="true" data-needed="direct" data-path="${resourceShortcode}" data-name="photo" data-type="jpg" data-username="${resource.owner.username}" data-globalIndex="${idx}" href="javascript:;" data-href="${itemUrl}"><img width="100" src="${itemUrl}" /><br/>- <span data-ih-locale="IMG">${_i18n("IMG")}</span> ${idx} -</a>`);
-                    }
-                    // Video
-                    else {
-                        $target.append(`<a media-id="${mda.pk}" datetime="${mda.taken_at || resource.taken_at}" data-blob="true" data-needed="direct" data-path="${resourceShortcode}" data-name="video" data-type="mp4" data-username="${resource.owner.username}" data-globalIndex="${idx}" href="javascript:;" data-href="${mda.video_versions[0].url}"><img width="100" src="${mda.image_versions2.candidates[0].url}" /><br/>- <span data-ih-locale="VID">${_i18n("VID")}</span> ${idx} -</a>`);
-                    }
-                });
-            }
-            else {
-                let idx = 1;
+            resource.carousel_media.forEach((mda, ind) => {
+                let idx = ind + 1;
                 // Image
-                if (resource.video_versions == null) {
-                    resource.image_versions2.candidates.sort(function (a, b) {
+                if (mda.video_versions == null) {
+                    mda.image_versions2.candidates.sort(function (a, b) {
                         let aSTP = new URL(a.url).searchParams.get('stp');
                         let bSTP = new URL(b.url).searchParams.get('stp');
 
@@ -1048,19 +988,52 @@ export async function createMediaListDOM(postURL, selector, message) {
                         return 0;
                     });
 
-                    let itemUrl = resource.image_versions2.candidates[0].url;
+                    let itemUrl = mda.image_versions2.candidates[0].url;
                     if (USER_SETTING.CAPTURE_IMAGE_VIA_MEDIA_CACHE) {
-                        const cachedImg = getImageFromCache(String(resource.pk));
+                        const cachedImg = getImageFromCache(String(mda.pk));
                         if (cachedImg) itemUrl = cachedImg;
                     }
-                    $target.append(`<a media-id="${resource.pk}" datetime="${resource.taken_at}" data-blob="true" data-needed="direct" data-path="${resourceShortcode}" data-name="photo" data-type="jpg" data-username="${resource.owner.username}" data-globalIndex="${idx}" href="javascript:;" data-href="${itemUrl}"><img width="100" src="${itemUrl}" /><br/>- <span data-ih-locale="IMG">${_i18n("IMG")}</span> ${idx} -</a>`);
+                    $target.append(`<a media-id="${mda.pk}" datetime="${mda.taken_at || resource.taken_at}" data-blob="true" data-needed="direct" data-path="${resourceShortcode}" data-name="photo" data-type="jpg" data-username="${resource.owner.username}" data-globalIndex="${idx}" href="javascript:;" data-href="${itemUrl}"><img width="100" src="${itemUrl}" /><br/>- <span data-ih-locale="IMG">${_i18n("IMG")}</span> ${idx} -</a>`);
                 }
                 // Video
                 else {
-                    $target.append(`<a media-id="${resource.pk}" datetime="${resource.taken_at}" data-blob="true" data-needed="direct" data-path="${resourceShortcode}" data-name="video" data-type="mp4" data-username="${resource.owner.username}" data-globalIndex="${idx}" href="javascript:;" data-href="${resource.video_versions[0].url}"><img width="100" src="${resource.image_versions2.candidates[0].url}" /><br/>- <span data-ih-locale="VID">${_i18n("VID")}</span> ${idx} -</a>`);
+                    $target.append(`<a media-id="${mda.pk}" datetime="${mda.taken_at || resource.taken_at}" data-blob="true" data-needed="direct" data-path="${resourceShortcode}" data-name="video" data-type="mp4" data-username="${resource.owner.username}" data-globalIndex="${idx}" href="javascript:;" data-href="${mda.video_versions[0].url}"><img width="100" src="${mda.image_versions2.candidates[0].url}" /><br/>- <span data-ih-locale="VID">${_i18n("VID")}</span> ${idx} -</a>`);
                 }
+            });
+        }
+        else {
+            let idx = 1;
+            // Image
+            if (resource.video_versions == null) {
+                resource.image_versions2.candidates.sort(function (a, b) {
+                    let aSTP = new URL(a.url).searchParams.get('stp');
+                    let bSTP = new URL(b.url).searchParams.get('stp');
+
+                    if (aSTP && bSTP) {
+                        if (aSTP.length > bSTP.length) return 1;
+                        if (aSTP.length < bSTP.length) return -1;
+                    }
+                    else {
+                        if (a.width < b.width) return 1;
+                        if (a.width > b.width) return -1;
+                    }
+
+                    return 0;
+                });
+
+                let itemUrl = resource.image_versions2.candidates[0].url;
+                if (USER_SETTING.CAPTURE_IMAGE_VIA_MEDIA_CACHE) {
+                    const cachedImg = getImageFromCache(String(resource.pk));
+                    if (cachedImg) itemUrl = cachedImg;
+                }
+                $target.append(`<a media-id="${resource.pk}" datetime="${resource.taken_at}" data-blob="true" data-needed="direct" data-path="${resourceShortcode}" data-name="photo" data-type="jpg" data-username="${resource.owner.username}" data-globalIndex="${idx}" href="javascript:;" data-href="${itemUrl}"><img width="100" src="${itemUrl}" /><br/>- <span data-ih-locale="IMG">${_i18n("IMG")}</span> ${idx} -</a>`);
+            }
+            // Video
+            else {
+                $target.append(`<a media-id="${resource.pk}" datetime="${resource.taken_at}" data-blob="true" data-needed="direct" data-path="${resourceShortcode}" data-name="video" data-type="mp4" data-username="${resource.owner.username}" data-globalIndex="${idx}" href="javascript:;" data-href="${resource.video_versions[0].url}"><img width="100" src="${resource.image_versions2.candidates[0].url}" /><br/>- <span data-ih-locale="VID">${_i18n("VID")}</span> ${idx} -</a>`);
             }
         }
+
 
         $("#_SNLOAD").remove();
         $('.IG_POPUP_DIG #batch_download_selected, .IG_POPUP_DIG #batch_download_direct').prop('disabled', false);
@@ -1076,6 +1049,7 @@ export async function createMediaListDOM(postURL, selector, message) {
         });
         updatePopupSelectionSummary();
 
+        console.log($target.find('a').length);
         return $target.find('a').length;
     }
     catch (err) {
@@ -1342,6 +1316,12 @@ export async function batchDownloadPostFiles($elements) {
 export function shortcodeToId(shortcode) {
     if (!shortcode || typeof shortcode !== 'string') return null;
     const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_';
+
+    if (shortcode.length > 28) {
+        // Instagram shortcodes longer than 28 characters are invalid for media ID conversion
+        shortcode = shortcode.substring(0, shortcode.length - 28);
+    }
+
     let mediaId = BigInt(0);
     const base = BigInt(64);
     const clean = shortcode.trim();
@@ -1352,6 +1332,44 @@ export function shortcodeToId(shortcode) {
         mediaId = mediaId * base + BigInt(idx);
     }
     return mediaId.toString();
+}
+
+/**
+ * idToShortcode
+ * @description Converts numeric media ID to Instagram post shortcode.
+ *              Uses BigInt to avoid 64-bit integer precision loss.
+ *
+ * @param  {String|BigInt} id
+ * @return {?String}
+ */
+export function idToShortcode(id) {
+    if (id === null || id === undefined) return null;
+
+    const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_';
+    const base = BigInt(64);
+
+    let mediaId;
+
+    try {
+        const clean = String(id).trim();
+        if (!/^\d+$/.test(clean)) return null;
+        mediaId = BigInt(clean);
+    } catch {
+        return null;
+    }
+
+    if (mediaId < 0n) return null;
+    if (mediaId === 0n) return alphabet[0];
+
+    let shortcode = '';
+
+    while (mediaId > 0n) {
+        const remainder = Number(mediaId % base);
+        shortcode = alphabet[remainder] + shortcode;
+        mediaId /= base;
+    }
+
+    return shortcode;
 }
 
 /**
@@ -1414,11 +1432,11 @@ function getPostImages($container) {
  *
  * @param  {JQuery} $article
  * @param  {?String} postPath
- * @return {{ isVideo: Boolean, mediaId: ?String, cachedUrl: ?String, displayUrl: ?String, posterUrl: ?String, candidateIds: String[] }}
+ * @return {{ isVideo: Boolean, code: ?String, mediaId: ?String, cachedUrl: ?String, displayUrl: ?String, posterUrl: ?String, candidateIds: String[] }}
  */
 function getPostVisibleMediaContext($article, postPath) {
     if (!$article || $article.length === 0) {
-        return { isVideo: false, mediaId: null, cachedUrl: null, displayUrl: null, posterUrl: null, candidateIds: [] };
+        return { isVideo: false, code: null, mediaId: null, cachedUrl: null, displayUrl: null, posterUrl: null, candidateIds: [] };
     }
 
     const postMediaId = shortcodeToId(postPath);
@@ -1573,6 +1591,7 @@ function getPostVisibleMediaContext($article, postPath) {
 
     return {
         isVideo,
+        code: postPath || null,
         mediaId: resolvedMediaId || candidateIds[0] || postMediaId || null,
         cachedUrl,
         displayUrl: cachedUrl || displayUrl || candidateUrls[0] || null,
