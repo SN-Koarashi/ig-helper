@@ -15,7 +15,7 @@
 - Download the resources currently displayed in the post with one click.
 - Open the resource in a new window.
 - Download the video thumbnail.
-- Fetch high-quality photos or videos through the Media API.
+- Fetch high-quality photos or videos through the GraphQL.
 - Disable video looping.
 - Enable the native HTML5 video controller for video resources.
 - Download the user's profile picture.
@@ -88,13 +88,14 @@ Install the generated main.js file in your userscript manager.
 - Document new functions and features
 
 ## Contributiner
-### [@Yomisana](https://github.com/yomisana)
-- Menu design suggestions and batch-download ideas
-- Enhancement suggestions
-
 ### [@sn-o-w](https://github.com/sn-o-w)
 - Text translation (Romanian)
 - Miscellaneous optimizations and enhancements, plus code debugging
+- Reworked post, story and highlight lookups, and fixed carousel item detection and thumbnail button display in stories and highlights
+
+### [@Yomisana](https://github.com/yomisana)
+- Menu design suggestions and batch-download ideas
+- Enhancement suggestions
 
 <a href="https://github.com/SN-Koarashi/ig-helper/graphs/contributors">
   <img src="https://contrib.rocks/image?repo=SN-Koarashi/ig-helper" />
