@@ -1,7 +1,8 @@
 import { SVG, state } from "../settings";
 import {
     logger, getStoryProgress, getStoryProgressIndex, updateLoadingBar,
-    getMediaIdOfStoryOrHighlightFromEmbeddedJSON, getCurrentStoryItemIndex
+    getMediaIdOfStoryOrHighlightFromEmbeddedJSON, getCurrentStoryItemIndex,
+    getHighlightCurrentTimeElement
 } from "../utils/general";
 import {
     getHighlightStories, getMediaInfo, getReelsMedia, getStories, getUserId
@@ -18,7 +19,6 @@ const USERNAME_PATTERN = /^[A-Za-z0-9._]{1,30}$/;
 const TEXT_MENTION_PATTERN = /(^|\s)@([A-Za-z0-9._]{1,30})(?=$|\s|[.,:;!?)\]])/g;
 const STORY_POSITION_SELECTOR = '.IG_DWSTORY_POSITION, .IG_DWHISTORY_POSITION';
 const STORY_CONTROL_SELECTOR = '.IG_DWSTORY, .IG_DWSTORY_ALL, .IG_DWNEWTAB, .IG_DWSTORY_THUMBNAIL, .IG_DWHISTORY, .IG_DWHISTORY_ALL, .IG_DWHINEWTAB, .IG_DWHISTORY_THUMBNAIL, .IG_DWSTORY_TAGGED_PROFILES';
-const STORY_TIMESTAMP_SELECTOR = 'time[datetime]';
 const PROFILE_PATH_BLOCKLIST = new Set([
     'accounts', 'data', 'direct', 'explore', 'legal', 'p', 'popular', 'reel', 'reels', 'stories', 'web'
 ]);
@@ -205,12 +205,7 @@ function getCurrentStoryMediaIdFromLocation() {
  */
 function getVisibleTaggedStoryTimestamp(scope) {
     const $scope = getActiveStoryScope(scope);
-    const $time = $scope.find(STORY_TIMESTAMP_SELECTOR).filter(function () {
-        const $this = $(this);
-        return $this.is(':visible')
-            && $this.closest('a[href^="/stories/highlights/"]').length === 0
-            && $this.closest('[role="button"]').length === 0;
-    }).first();
+    const $time = $scope.length ? getHighlightCurrentTimeElement($scope) : $();
 
     if (!$time.length) return null;
 
@@ -405,12 +400,20 @@ function resolveCurrentStoryItem(source, username, scope) {
     if (!items?.length) return null;
 
     const urlMediaId = getCurrentStoryMediaIdFromLocation();
+    if (urlMediaId) {
+        const matchingItem = items.find(item => storyItemMatchesMediaId(item, urlMediaId));
+        if (matchingItem) return matchingItem;
+
+        if (items.some(item => getStoryItemIds(item).length)) return null;
+    }
+
     const embeddedMediaId = getMediaIdOfStoryOrHighlightFromEmbeddedJSON(
         getCurrentStoryItemIndex(username) ?? 0, username
     );
-    const matchingId = urlMediaId || embeddedMediaId;
-    const matchingItem = matchingId ? items.find(item => storyItemMatchesMediaId(item, matchingId)) : null;
-    if (matchingItem) return matchingItem;
+    const embeddedItem = embeddedMediaId
+        ? items.find(item => storyItemMatchesMediaId(item, embeddedMediaId))
+        : null;
+    if (embeddedItem) return embeddedItem;
 
     const timestampItem = resolveStoryItemByVisibleTimestamp(source, scope);
     if (getCurrentHighlightIdFromLocation() && timestampItem) return timestampItem;
@@ -775,7 +778,7 @@ function extractVisibleStoryTaggedProfiles(excludeUsername, button) {
  * @param  {*}  source
  * @param  {?String}  username
  * @param  {HTMLElement|JQuery|null}  scope
- * @return {TaggedProfileState}
+ * @return {?TaggedProfileState}
  */
 function createTaggedProfileStateFromSource(source, username, scope) {
     const sourceUsername = getStorySourceOwnerUsername(source);
@@ -784,6 +787,8 @@ function createTaggedProfileStateFromSource(source, username, scope) {
     }
     const ownerUsername = sourceUsername || username || null;
     const item = resolveCurrentStoryItem(source, ownerUsername, scope);
+    if (!item) return null;
+
     const itemId = item?.pk ?? getStoryItemIds(item)[0];
     const mediaId = itemId ? `${itemId}`.split('_')[0] : getCurrentStoryMediaIdFromLocation();
 
@@ -801,12 +806,14 @@ function createTaggedProfileStateFromSource(source, username, scope) {
  * @param  {*}  mediaInfo
  * @param  {String}  mediaId
  * @param  {?String}  username
- * @return {TaggedProfileState}
+ * @return {?TaggedProfileState}
  */
 function createTaggedProfileStateFromMediaInfo(mediaInfo, mediaId, username) {
-    const item = (mediaInfo?.items || []).find(value => storyItemMatchesMediaId(value, mediaId))
-        || mediaInfo?.items?.[0]
-        || null;
+    const items = Array.isArray(mediaInfo?.items) ? mediaInfo.items : [];
+    const item = items.find(value => storyItemMatchesMediaId(value, mediaId))
+        // A single ID-less item is still usable: the request targeted this media ID.
+        || (items.length === 1 && !getStoryItemIds(items[0]).length ? items[0] : null);
+    if (!item) return null;
 
     return {
         mediaId,
@@ -816,14 +823,14 @@ function createTaggedProfileStateFromMediaInfo(mediaInfo, mediaId, username) {
 }
 
 /**
- * mergeFallbackState
- * @description Merge newly resolved identifiers into a fallback state.
+ * mergeFallbackIdentity
+ * @description Update media ID and owner without changing the selected profiles or detection method.
  *
  * @param  {TaggedProfileState}  fallbackState
  * @param  {TaggedProfileState}  nextState
  * @return {TaggedProfileState}
  */
-function mergeFallbackState(fallbackState, nextState) {
+function mergeFallbackIdentity(fallbackState, nextState) {
     return {
         mediaId: nextState.mediaId || fallbackState.mediaId,
         profiles: fallbackState.profiles,
@@ -833,45 +840,31 @@ function mergeFallbackState(fallbackState, nextState) {
 }
 
 /**
- * resolveCurrentStoryTaggedProfiles
- * @description Resolve tagged profiles through DOM, cached payload, media-info, and reels-media fallbacks.
+ * resolveHighlightTaggedProfiles
+ * @description Resolve a highlight item, then use the first source with profiles.
  *
- * @param  {?String}  username
+ * @param  {String}  highlightId
+ * @param  {?String}  activeUsername
  * @param  {HTMLElement}  button
+ * @param  {TaggedProfile[]}  directProfiles
+ * @param  {TaggedProfile[]}  textProfiles
  * @return {Promise<TaggedProfileState>}
  */
-async function resolveCurrentStoryTaggedProfiles(username, button) {
-    const usernames = getCurrentStoryUsernameCandidates(username, button);
-    const mediaId = getCurrentStoryMediaIdFromLocation();
-    const highlightId = getCurrentHighlightIdFromLocation();
-    const activeUsername = usernames[0] || username || null;
-    let fallbackState = { mediaId, profiles: [], username: activeUsername, source: null };
-    let hasResolvedSource = false;
+async function resolveHighlightTaggedProfiles(highlightId, activeUsername, button, directProfiles, textProfiles) {
+    let fallbackState = { mediaId: null, profiles: [], username: activeUsername, source: null };
+    let matchedItem = false;
     let lastError = null;
 
-    const { directProfiles, textProfiles } = extractVisibleStoryTaggedProfiles(activeUsername, button);
-    if (directProfiles.length && !highlightId) {
-        const directState = { mediaId, profiles: directProfiles, username: activeUsername, source: 'DOM links' };
-        logger('[taggedProfiles]', 'source: dom');
-        return directState;
-    }
-
-    if (highlightId) {
-        try {
-            const highlightPayload = await getCachedHighlightStories(highlightId);
-            hasResolvedSource = getStoryItems(highlightPayload) !== null;
-            const highlightState = createTaggedProfileStateFromSource(highlightPayload, activeUsername, button);
-            fallbackState = mergeFallbackState(fallbackState, highlightState);
+    try {
+        const highlightPayload = await getCachedHighlightStories(highlightId);
+        const highlightState = createTaggedProfileStateFromSource(highlightPayload, activeUsername, button);
+        if (highlightState) {
+            matchedItem = true;
+            fallbackState = mergeFallbackIdentity(fallbackState, highlightState);
 
             if (directProfiles.length) {
-                const directState = {
-                    mediaId: highlightState.mediaId || fallbackState.mediaId,
-                    profiles: directProfiles,
-                    username: highlightState.username || activeUsername,
-                    source: 'DOM links'
-                };
                 logger('[taggedProfiles]', 'source: dom');
-                return directState;
+                return { ...fallbackState, profiles: directProfiles, source: 'DOM links' };
             }
             if (highlightState.profiles.length) {
                 logger('[taggedProfiles]', 'source: highlight');
@@ -880,46 +873,58 @@ async function resolveCurrentStoryTaggedProfiles(username, button) {
 
             if (highlightState.mediaId) {
                 const mediaInfo = await getCachedMediaInfo(highlightState.mediaId);
-                hasResolvedSource = hasResolvedSource || Array.isArray(mediaInfo?.items);
                 const mediaInfoState = createTaggedProfileStateFromMediaInfo(
-                    mediaInfo,
-                    highlightState.mediaId,
-                    highlightState.username || activeUsername
+                    mediaInfo, highlightState.mediaId, highlightState.username || activeUsername
                 );
-
-                if (mediaInfoState.profiles.length) {
+                if (mediaInfoState?.profiles.length) {
                     logger('[taggedProfiles]', 'source: media-info');
                     return { ...mediaInfoState, source: 'Media info API' };
                 }
             }
         }
-        catch (err) {
-            lastError = err;
-            logger('[taggedProfiles]', 'highlight lookup failed', err);
-        }
-
-        if (directProfiles.length) {
-            const directState = { ...fallbackState, profiles: directProfiles, source: 'DOM links' };
-            logger('[taggedProfiles]', 'source: dom');
-            return directState;
-        }
-        if (textProfiles.length) {
-            const textState = { ...fallbackState, profiles: textProfiles, source: 'Text mentions' };
-            logger('[taggedProfiles]', 'source: text');
-            return textState;
-        }
-        if (!hasResolvedSource) throw lastError || new Error('Unrecognized highlight response');
-        logger('[taggedProfiles]', 'empty');
-        return fallbackState;
     }
+    catch (err) {
+        lastError = err;
+        logger('[taggedProfiles]', 'highlight lookup failed', err);
+    }
+
+    if (directProfiles.length) {
+        logger('[taggedProfiles]', 'source: dom');
+        return { ...fallbackState, profiles: directProfiles, source: 'DOM links' };
+    }
+    if (textProfiles.length) {
+        logger('[taggedProfiles]', 'source: text');
+        return { ...fallbackState, profiles: textProfiles, source: 'Text mentions' };
+    }
+    if (!matchedItem) throw lastError || new Error('Could not identify active highlight item');
+    logger('[taggedProfiles]', 'empty');
+    return fallbackState;
+}
+
+/**
+ * resolveRegularStoryTaggedProfiles
+ * @description Look up a regular story in source priority order without merging sources.
+ *
+ * @param  {String[]}  usernames
+ * @param  {?String}  mediaId
+ * @param  {?String}  activeUsername
+ * @param  {HTMLElement}  button
+ * @param  {TaggedProfile[]}  textProfiles
+ * @return {Promise<TaggedProfileState>}
+ */
+async function resolveRegularStoryTaggedProfiles(usernames, mediaId, activeUsername, button, textProfiles) {
+    let fallbackState = { mediaId, profiles: [], username: activeUsername, source: null };
+    let matchedItem = false;
+    let lastError = null;
 
     for (const candidateUsername of usernames) {
         try {
             const storyPayload = await getCachedStories(candidateUsername);
-            hasResolvedSource = hasResolvedSource || getStoryItems(storyPayload) !== null;
             const storyState = createTaggedProfileStateFromSource(storyPayload, candidateUsername, button);
-            fallbackState = mergeFallbackState(fallbackState, storyState);
+            if (!storyState) continue;
 
+            matchedItem = true;
+            fallbackState = mergeFallbackIdentity(fallbackState, storyState);
             if (storyState.profiles.length) {
                 logger('[taggedProfiles]', 'source: story');
                 return { ...storyState, source: 'Story GraphQL' };
@@ -934,13 +939,14 @@ async function resolveCurrentStoryTaggedProfiles(username, button) {
     if (mediaId) {
         try {
             const mediaInfo = await getCachedMediaInfo(mediaId);
-            hasResolvedSource = hasResolvedSource || Array.isArray(mediaInfo?.items);
             const mediaInfoState = createTaggedProfileStateFromMediaInfo(mediaInfo, mediaId, activeUsername);
-            fallbackState = mergeFallbackState(fallbackState, mediaInfoState);
-
-            if (mediaInfoState.profiles.length) {
-                logger('[taggedProfiles]', 'source: media-info');
-                return { ...mediaInfoState, source: 'Media info API' };
+            if (mediaInfoState) {
+                matchedItem = true;
+                fallbackState = mergeFallbackIdentity(fallbackState, mediaInfoState);
+                if (mediaInfoState.profiles.length) {
+                    logger('[taggedProfiles]', 'source: media-info');
+                    return { ...mediaInfoState, source: 'Media info API' };
+                }
             }
         }
         catch (err) {
@@ -952,10 +958,11 @@ async function resolveCurrentStoryTaggedProfiles(username, button) {
     for (const candidateUsername of usernames) {
         try {
             const reelsMediaPayload = await getCachedReelsMedia(candidateUsername);
-            hasResolvedSource = hasResolvedSource || getStoryItems(reelsMediaPayload) !== null;
             const reelsMediaState = createTaggedProfileStateFromSource(reelsMediaPayload, candidateUsername, button);
-            fallbackState = mergeFallbackState(fallbackState, reelsMediaState);
+            if (!reelsMediaState) continue;
 
+            matchedItem = true;
+            fallbackState = mergeFallbackIdentity(fallbackState, reelsMediaState);
             if (reelsMediaState.profiles.length) {
                 logger('[taggedProfiles]', 'source: reels-media');
                 return { ...reelsMediaState, source: 'Reels media API' };
@@ -968,13 +975,39 @@ async function resolveCurrentStoryTaggedProfiles(username, button) {
     }
 
     if (textProfiles.length) {
-        const textState = { ...fallbackState, profiles: textProfiles, source: 'Text mentions' };
         logger('[taggedProfiles]', 'source: text');
-        return textState;
+        return { ...fallbackState, profiles: textProfiles, source: 'Text mentions' };
     }
-    if (!hasResolvedSource) throw lastError || new Error('Unrecognized story response');
+    if (!matchedItem) throw lastError || new Error('Could not identify active story item');
     logger('[taggedProfiles]', 'empty');
     return fallbackState;
+}
+
+/**
+ * Use the first source with profiles, without merging different detection methods.
+ * Stories: DOM links -> Story GraphQL -> media info -> reels media -> visible text.
+ * Highlights: try Highlight GraphQL to identify the item; prefer DOM links,
+ * Highlight GraphQL mentions, media info, and finally visible text.
+ *
+ * @param  {?String}  username
+ * @param  {HTMLElement}  button
+ * @return {Promise<TaggedProfileState>}
+ */
+async function resolveCurrentStoryTaggedProfiles(username, button) {
+    const usernames = getCurrentStoryUsernameCandidates(username, button);
+    const mediaId = getCurrentStoryMediaIdFromLocation();
+    const highlightId = getCurrentHighlightIdFromLocation();
+    const activeUsername = usernames[0] || username || null;
+    const { directProfiles, textProfiles } = extractVisibleStoryTaggedProfiles(activeUsername, button);
+
+    if (!highlightId && directProfiles.length) {
+        logger('[taggedProfiles]', 'source: dom');
+        return { mediaId, profiles: directProfiles, username: activeUsername, source: 'DOM links' };
+    }
+    if (highlightId) {
+        return resolveHighlightTaggedProfiles(highlightId, activeUsername, button, directProfiles, textProfiles);
+    }
+    return resolveRegularStoryTaggedProfiles(usernames, mediaId, activeUsername, button, textProfiles);
 }
 
 /**
