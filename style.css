@@ -3,6 +3,14 @@
     color: rgb(0, 0, 0, 0.85);
 }
 
+/* Shared design tokens, same values as the Rename Format editor */
+.IG_POPUP_DIG,
+.circle_wrapper,
+#scrollWrapper {
+    --ih-accent: var(--ig-primary-button, 0, 149, 246);
+    --ih-line: var(--ig-separator, 219, 219, 219);
+}
+
 .IG_POPUP_DIG {
     position: fixed;
     left: 0px;
@@ -10,6 +18,7 @@
     bottom: 0px;
     top: 0px;
     z-index: 2147483000;
+    font-size: 14px;
 }
 
 .IG_POPUP_DIG.hidden {
@@ -29,28 +38,40 @@
     bottom: 0px;
     top: 0px;
     z-index: 2147483000;
-    background: rgba(0, 0, 0, .75);
+    background: rgba(0, 0, 0, .6);
 }
 
 .IG_POPUP_DIG_MAIN {
     z-index: 2147483000;
-    padding: 10px 15px;
+    padding: 16px 18px;
     top: 7%;
     position: absolute;
     left: 50%;
     transform: translateX(-50%);
-    width: 500px;
+    box-sizing: border-box;
+    width: min(500px, calc(100vw - 32px));
     background: #fff;
     background: rgb(var(--ig-secondary-background));
     color: #000;
     color: rgb(var(--ig-primary-text));
-    border-radius: 7px;
+    border-radius: 12px;
+    box-shadow: 0 12px 40px rgba(0, 0, 0, .35);
+    max-height: calc(95vh - 7%);
+    overflow: hidden;
 }
 
 .IG_POPUP_DIG_BODY {
     min-height: 100px;
     max-height: 70vh;
     overflow-y: auto;
+    scrollbar-width: thin;
+    /* Room for the 2px hover ring, which overflow-y would otherwise clip */
+    padding: 4px;
+    margin: 0 -4px;
+}
+
+.IG_POPUP_DIG_BODY svg {
+    color: rgb(var(--ig-primary-text));
 }
 
 .IG_POPUP_DIG_BODY a {
@@ -61,7 +82,70 @@
     font-size: 1rem;
     line-height: 1rem;
     text-align: center;
-    border-radius: 5px;
+    border-radius: 8px;
+}
+
+/* Buttons, same look as .ih-rf-btn */
+.IG_POPUP_DIG button {
+    padding: 7px 16px;
+    border-radius: 8px;
+    background: rgb(var(--ig-secondary-background));
+    color: rgb(var(--ig-primary-text));
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    opacity: 0.8;
+    border: 1px solid rgb(var(--ig-primary-text));
+    box-sizing: border-box;
+}
+
+.IG_POPUP_DIG button:hover {
+    opacity: 1;
+}
+
+.IG_POPUP_DIG button a {
+    display: inline;
+    padding: 0;
+    color: inherit;
+    font-size: inherit;
+    line-height: inherit;
+    text-decoration: none;
+}
+
+/* Form fields, same look as .ih-rf-raw */
+.IG_POPUP_DIG select,
+.IG_POPUP_DIG textarea,
+.IG_POPUP_DIG input[type="number"],
+.IG_POPUP_DIG input#date_format {
+    box-sizing: border-box;
+    padding: 6px 10px;
+    border: 1px solid rgb(var(--ih-line));
+    border-radius: 8px;
+    outline: none;
+    background: rgb(var(--ig-primary-background, 255, 255, 255));
+    color: inherit;
+    font-size: 13px;
+}
+
+.IG_POPUP_DIG select:focus,
+.IG_POPUP_DIG textarea:focus,
+.IG_POPUP_DIG input[type="number"]:focus,
+.IG_POPUP_DIG input#date_format:focus {
+    border-color: rgb(var(--ih-accent));
+}
+
+.IG_POPUP_DIG textarea {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+
+.IG_POPUP_DIG input[type="range"],
+.IG_POPUP_DIG input[type="checkbox"] {
+    accent-color: rgb(var(--ih-accent));
+}
+
+.IG_POPUP_DIG #langSelect {
+    max-width: 100%;
+    margin: 8px 0 4px;
 }
 
 .IG_DW_MAIN,
@@ -136,7 +220,8 @@
     padding: 2px;
     line-height: 0;
     background: #fff;
-    border-radius: 5px;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, .2);
     cursor: pointer;
     z-index: 5;
 }
@@ -150,7 +235,8 @@
     padding: 2px;
     line-height: 0;
     background: #fff;
-    border-radius: 5px;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, .2);
     cursor: pointer;
     z-index: 5;
     color: #000;
@@ -166,7 +252,8 @@
     padding: 2px;
     line-height: 1;
     background: #fff;
-    border-radius: 5px;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, .2);
     cursor: pointer;
     z-index: 5;
 }
@@ -184,7 +271,8 @@
     align-items: center;
     justify-content: center;
     background: #fff;
-    border-radius: 5px;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, .2);
     color: #000;
     cursor: default;
     font-size: 10px;
@@ -241,7 +329,8 @@
     background: #fff;
     border-radius: 50%;
     cursor: pointer;
-    border: 1px solid #ccc
+    border: 1px solid #ccc;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, .2);
 }
 
 .IG_DWPROFILE svg {
@@ -256,13 +345,13 @@
     text-decoration: none;
     text-align: left;
     width: 100%;
-    min-height: 30px;
-    padding: 5px;
-    padding-right: 60px;
-    line-height: 18px;
-    font-size: 18px;
+    min-height: 36px;
+    padding: 8px 10px;
+    padding-right: 64px;
+    line-height: 20px;
+    font-size: 15px;
     box-sizing: border-box;
-    border-radius: 5px;
+    border-radius: 8px;
     vertical-align: middle;
     outline: none;
     cursor: pointer;
@@ -270,12 +359,33 @@
     -moz-user-select: none;
     -webkit-user-select: none;
     user-select: none;
-    margin: 5px 0px;
+    margin: 2px 0px;
+    transition: background-color .15s;
 }
 
 .globalSettings:hover {
     background: #e7e7e7;
     background: rgb(var(--ig-secondary-button-hover));
+}
+
+/* Hotkey controls use inline styles, so !important is needed here */
+.globalSettings .hotkey-preset,
+.globalSettings .hotkey-reset {
+    padding: 5px 10px !important;
+    border: 1px solid rgb(var(--ih-line)) !important;
+    border-radius: 8px !important;
+    color: inherit !important;
+    font-size: 13px !important;
+}
+
+.globalSettings .hotkey-preset {
+    background: rgb(var(--ig-primary-background, 255, 255, 255)) !important;
+}
+
+.globalSettings .hotkey-reset {
+    border-color: transparent !important;
+    background: rgb(var(--ig-secondary-button, 239, 239, 239)) !important;
+    font-weight: 600;
 }
 
 .globalSettings:hover>span {
@@ -288,51 +398,51 @@
 
 .globalSettings input#date_format {
     width: calc(100% - 50px);
-    background: rgb(var(--ig-secondary-background));
-    border: 1px solid;
     position: relative;
     top: 50%;
     transform: translateY(-50%);
 }
 
+/* iOS-style toggle */
 .globalSettings .chbtn {
-    width: 40px;
-    height: 15px;
-    background: #9c9c9c;
+    width: 38px;
+    height: 22px;
+    background: #c7c7c7;
+    background: rgb(var(--ih-line));
     display: inline-block;
     vertical-align: middle;
-    border-radius: 7px;
+    border-radius: 11px;
     position: absolute;
     right: 15px;
     top: 50%;
-    transition: background 0.2s;
+    transition: background 0.15s;
     transform: translateY(-50%);
 }
 
 .globalSettings .chbtn .rounds {
-    width: 20px;
-    height: 20px;
-    background: #777;
+    width: 18px;
+    height: 18px;
+    background: #fff;
     display: inline-block;
     vertical-align: middle;
     border-radius: 50%;
     position: absolute;
-    left: 0px;
-    top: -3px;
-    transition: left 0.15s, background 0.15s;
+    left: 2px;
+    top: 2px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, .3);
+    transition: left 0.15s;
 }
 
 .globalSettings input:checked~.chbtn {
-    background: #004c5a;
+    background: rgb(var(--ih-accent));
 }
 
 .globalSettings input:checked~.chbtn .rounds {
-    left: 20px;
-    background: #048aa4;
+    left: 18px;
 }
 
 .checkbox {
-    font-size: 18px;
+    font-size: 15px;
     vertical-align: middle;
     margin: 0px 7px;
     user-select: none;
@@ -340,7 +450,7 @@
 }
 
 .checkbox input {
-    transform: scale(1.5);
+    transform: scale(1.3);
     margin-right: 10px;
 }
 
@@ -352,10 +462,11 @@
     width: 50px;
     height: 100%;
     border-right: 1px solid;
+    border-color: rgb(var(--ih-line));
     background: #e7e7e7;
     background: rgb(var(--ig-secondary-button-hover));
     cursor: pointer;
-    border-radius: 7px 0px 0px 7px;
+    border-radius: 9px 0px 0px 9px;
 }
 
 .inner_box~span {
@@ -363,11 +474,16 @@
     height: 100%;
     width: 100%;
     display: block;
-    border-radius: 7px 0px 0px 7px;
+    border-radius: 9px 0px 0px 9px;
+    transition: background-color .15s;
 }
 
 .inner_box:checked~span {
-    background: rgb(var(--ig-success));
+    background: rgb(var(--ih-accent));
+}
+
+.inner_box:checked~span:after {
+    border-color: #fff;
 }
 
 .inner_box~span:after {
@@ -403,32 +519,55 @@
 
 .IG_POPUP_DIG_BODY>div {
     position: relative;
-    border: 1px solid #000;
-    border: 1px solid rgb(var(--ig-primary-text));
-    margin: 5px 0px;
-    border-radius: 7px;
+    border: 1px solid #dbdbdb;
+    border: 1px solid rgb(var(--ih-line));
+    margin: 6px 0px;
+    border-radius: 10px;
+    transition: background-color .15s, box-shadow .15s;
 }
 
 .IG_POPUP_DIG_BODY>div:hover {
     background: rgba(var(--ig-hover-overlay));
+    box-shadow: 0 0 0 2px rgba(var(--ih-accent), .25);
 }
 
 .IG_POPUP_DIG_TITLE {
-    padding-bottom: 5px;
+    margin-bottom: 8px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid rgb(var(--ih-line));
+}
+
+/* Header layout comes from inline styles in IG_createDM() */
+.IG_POPUP_DIG_TITLE>div:first-child>div:first-child {
+    font-size: 12px;
+    opacity: .7;
+}
+
+.IG_POPUP_DIG_TITLE>div:first-child>div:nth-child(2) {
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.IG_POPUP_DIG_TITLE #post_info {
+    opacity: .7;
 }
 
 .IG_POPUP_DIG_TITLE button {
-    font-size: 14px;
     vertical-align: middle;
-    margin: 0px 7px;
+    margin: 8px 4px 4px;
 }
 
 kbd {
-    font-weight: bold;
-    padding: 4px 5px;
+    display: inline-block;
+    padding: 1px 6px;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 11px;
+    font-weight: 600;
+    line-height: 16px;
     background: rgb(var(--ig-primary-background));
-    border-radius: 3px;
-    border: 1px solid rgb(var(--ig-primary-text));
+    border-radius: 6px;
+    border: 1px solid rgb(var(--ig-separator, 219, 219, 219));
+    border-bottom-width: 2px;
 }
 
 .globalSettings #tempWrapper {
@@ -451,11 +590,8 @@ kbd {
 
 .globalSettings #tempWrapper input[type="number"] {
     display: inline-block;
-    width: 50px;
-    border-radius: 7px;
-    outline: 0px;
-    background: transparent;
-    border: 1px solid;
+    width: 64px;
+    padding: 3px 6px;
     position: relative;
     top: 50%;
     transform: translateY(-50%);
@@ -482,7 +618,9 @@ kbd {
     cursor: pointer;
     margin: 5px 0px;
     border: 1px solid;
-    border-color: rgb(var(--ig-separator));
+    border-color: rgb(var(--ih-line));
+    box-shadow: 0 4px 12px rgba(0, 0, 0, .2);
+    transition: background-color .15s;
 }
 
 #scrollWrapper .button-up:hover,
@@ -527,7 +665,8 @@ kbd {
     padding: 7px;
     cursor: pointer;
     line-height: 0;
-    border-radius: 5px;
+    border-radius: 8px;
+    transition: background-color .15s;
 }
 
 .IG_POPUP_DIG_BODY .videoThumbnail {
@@ -538,7 +677,8 @@ kbd {
     padding: 7px;
     cursor: pointer;
     line-height: 0;
-    border-radius: 5px;
+    border-radius: 8px;
+    transition: background-color .15s;
 }
 
 .IG_POPUP_DIG_BODY .newTab:hover,
@@ -549,9 +689,16 @@ kbd {
 .IG_POPUP_DIG_BTN {
     cursor: pointer;
     position: absolute;
-    right: 0px;
-    top: 0px;
+    right: -4px;
+    top: -4px;
+    padding: 4px;
     line-height: 0;
+    border-radius: 50%;
+    transition: background-color .15s;
+}
+
+.IG_POPUP_DIG_BTN:hover {
+    background: rgba(var(--ih-line), .5);
 }
 
 .IG_POPUP_DIG_BTN svg {
@@ -559,7 +706,7 @@ kbd {
 }
 
 #tempWrapper .IG_POPUP_DIG_BTN {
-    right: 5px;
+    right: 2px;
     transform: translateY(-50%);
     top: 50%;
 }
@@ -682,15 +829,16 @@ div[class]:hover+.volume_slider>div,
     width: fit-content;
     align-items: center;
     flex-direction: row;
-    padding: 7px;
-    border-radius: 7px;
-    box-shadow: 0 0 5px #202020;
+    padding: 8px 12px;
+    border: 1px solid rgb(var(--ih-line));
+    border-radius: 12px;
+    box-shadow: 0 12px 40px rgba(0, 0, 0, .35);
     background: rgb(var(--ig-secondary-background));
 }
 
 .circle_wrapper circle {
     display: inline-block;
-    border: 2px solid rgba(255, 152, 0, 0.9);
+    border: 2px solid rgb(var(--ih-accent));
     opacity: .9;
     border-left: 2px solid rgba(0, 0, 0, 0);
     border-right: 2px solid rgba(0, 0, 0, 0);
@@ -702,8 +850,8 @@ div[class]:hover+.volume_slider>div,
 }
 
 .circle_wrapper span {
-    font-size: 16px;
-    font-family: monospace;
+    font-size: 14px;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
     color: rgb(var(--ig-primary-text));
 }
 
@@ -1060,14 +1208,15 @@ div[class]:hover+.volume_slider>div,
 
 .IG_RENAME_DIG .ih-rf-btn {
     padding: 7px 16px;
-    border: 0;
     border-radius: 8px;
-    background: rgb(var(--ig-secondary-button, 239, 239, 239));
-    color: rgb(var(--ig-secondary-text));
+    background: rgb(var(--ig-secondary-background));
+    color: rgb(var(--ig-primary-text));
     font-size: 14px;
     font-weight: 600;
     cursor: pointer;
     opacity: 0.8;
+    border: 1px solid rgb(var(--ig-primary-text));
+    box-sizing: border-box;
 }
 
 .IG_RENAME_DIG .ih-rf-btn:hover {
@@ -1077,6 +1226,7 @@ div[class]:hover+.volume_slider>div,
 .IG_RENAME_DIG .ih-rf-btn.is-primary {
     background: rgb(var(--ih-rf-accent));
     color: #fff;
+    border: 1px solid transparent;
 }
 
 .IG_RENAME_DIG .ih-rf-btn:disabled {
@@ -1085,11 +1235,6 @@ div[class]:hover+.volume_slider>div,
 }
 
 /* ==== */
-.IG_TAGGED_PROFILES_DIALOG .IG_POPUP_DIG_MAIN {
-    width: min(500px, calc(100% - 30px));
-    box-sizing: border-box;
-}
-
 .IG_TAGGED_PROFILES_DIALOG .IG_POPUP_DIG_BODY {
     min-height: 0;
 }
@@ -1101,9 +1246,9 @@ div[class]:hover+.volume_slider>div,
     gap: 12px;
     margin: 0 0 8px;
     padding: 0 0 8px;
-    border-bottom: 1px solid rgba(0, 0, 0, 0.16);
-    border-color: rgba(var(--ig-primary-text), 0.16);
+    border-bottom: 1px solid rgb(var(--ih-line));
     font-size: 12px;
+    opacity: .7;
 }
 
 .IG_TAGGED_PROFILE_MEDIA_ID {
@@ -1117,7 +1262,7 @@ div[class]:hover+.volume_slider>div,
 
 .IG_TAGGED_PROFILE_MEDIA_ID code {
     color: inherit;
-    font-family: monospace;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
 }
 
 .IG_TAGGED_PROFILE_LIST {
@@ -1131,13 +1276,14 @@ div[class]:hover+.volume_slider>div,
 .IG_TAGGED_PROFILE_LIST li {
     margin: 0;
     overflow: hidden;
-    border: 1px solid rgba(0, 0, 0, 0.18);
-    border-color: rgba(var(--ig-primary-text), 0.18);
-    border-radius: 7px;
+    border: 1px solid rgb(var(--ih-line));
+    border-radius: 10px;
+    transition: background-color .15s, box-shadow .15s;
 }
 
 .IG_TAGGED_PROFILE_LIST li:hover {
     background: rgba(var(--ig-hover-overlay));
+    box-shadow: 0 0 0 2px rgba(var(--ih-accent), .25);
 }
 
 .IG_TAGGED_PROFILE_LINK {
@@ -1185,12 +1331,13 @@ div[class]:hover+.volume_slider>div,
     display: flex;
     align-items: center;
     justify-content: center;
-    border: 1px dashed rgba(0, 0, 0, 0.22);
-    border-color: rgba(var(--ig-primary-text), 0.22);
-    border-radius: 7px;
+    border: 2px dashed rgb(var(--ih-line));
+    border-radius: 8px;
     text-align: center;
+    opacity: .7;
 }
 
 .IG_TAGGED_PROFILE_ERROR {
     border-style: solid;
+    opacity: 1;
 }
