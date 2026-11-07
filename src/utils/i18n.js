@@ -43,7 +43,6 @@ export function translateText() {
             "NO_TAGGED_PROFILES": "No tagged profiles found.",
             "TAGGED_PROFILES_LOAD_FAILED": "Unable to load tagged profiles.",
             "MEDIA_ID": "Media ID",
-            "DETECTION_METHOD": "Detection method",
             "VIDEO_THUMBNAIL": "Download Video Thumbnail",
             "LOAD_BLOB_ONE": "Loading Blob Media...",
             "LOAD_BLOB_MULTIPLE": "Loading Blob Media and Others...",

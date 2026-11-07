@@ -24,7 +24,6 @@ const STORY_POSITION_SELECTOR = '.IG_DWSTORY_POSITION, .IG_DWHISTORY_POSITION';
  * @property {?String} mediaId Active story media ID when available.
  * @property {?String} username Story or highlight owner's username.
  * @property {TaggedProfile[]} profiles Tagged or mentioned profiles.
- * @property {?String} [source] Detection method label shown in the dialog.
  */
 
 /**
@@ -475,8 +474,8 @@ async function resolveHighlightTaggedProfiles(highlightId, activeUsername, butto
     const result = createTaggedProfileStateFromSource(payload, activeUsername, button);
     if (!result) throw new Error('Could not identify active highlight item');
 
-    logger('resolveHighlightTaggedProfiles',result.profiles.length ? 'source: highlight' : 'empty');
-    return { ...result, source: result.profiles.length ? 'Highlight GraphQL' : null };
+    logger('resolveHighlightTaggedProfiles', result.profiles.length ? 'source: highlight' : 'empty');
+    return result;
 }
 
 /**
@@ -500,9 +499,9 @@ async function resolveRegularStoryTaggedProfiles(usernames, mediaId, button) {
 
             if (result.profiles.length) {
                 logger('resolveRegularStoryTaggedProfiles', 'source: story');
-                return { ...result, source: 'Story GraphQL' };
+                return result;
             }
-            emptyState = { ...result, mediaId: result.mediaId || mediaId, source: null };
+            emptyState = { ...result, mediaId: result.mediaId || mediaId };
         }
         catch (err) {
             lastError = err;
@@ -580,7 +579,6 @@ function setCachedProfileState(identitySignature, profileState) {
     profileCache[identitySignature] = {
         mediaId: profileState.mediaId || '',
         username: profileState.username || '',
-        source: profileState.source || null,
         profiles: profiles.map(profile => ({
             username: profile.username,
             href: profile.href || `https://www.instagram.com/${profile.username}/`
@@ -619,10 +617,9 @@ function createTaggedProfileLink(profile) {
  * @param  {TaggedProfile[]}  profiles - Profiles to list
  * @param  {?String}  [mediaId=null] - Media ID shown in the dialog header
  * @param  {?String}  [errorMessage=null] - Error shown instead of the list
- * @param  {?String}  [source=null] - Detection method label
  * @return {void}
  */
-function showStoryTaggedProfilesDialog(profiles, mediaId = null, errorMessage = null, source = null) {
+function showStoryTaggedProfilesDialog(profiles, mediaId = null, errorMessage = null) {
     $('.IG_POPUP_DIG').remove();
     IG_createDM(false, false);
 
@@ -641,10 +638,6 @@ function showStoryTaggedProfilesDialog(profiles, mediaId = null, errorMessage = 
             .append($('<p />', { class: 'IG_TAGGED_PROFILE_MEDIA_ID' })
                 .append($('<span />', { text: `${_i18n('MEDIA_ID')}:` }))
                 .append($('<code />', { text: displayMediaId })))
-            .append($('<p />', {
-                class: 'IG_TAGGED_PROFILE_SOURCE',
-                text: `${_i18n('DETECTION_METHOD')}: ${source || '-'}`
-            }))
     );
 
     if (errorMessage || !profiles.length) {
@@ -686,7 +679,7 @@ export async function onStoryTaggedProfiles(button) {
 
     const cached = getCachedProfileState(identitySignature);
     if (cached) {
-        showStoryTaggedProfilesDialog(cached.profiles, cached.mediaId, null, cached.source);
+        showStoryTaggedProfilesDialog(cached.profiles, cached.mediaId);
         return;
     }
 
@@ -701,7 +694,7 @@ export async function onStoryTaggedProfiles(button) {
         }
 
         setCachedProfileState(identitySignature, profileState);
-        showStoryTaggedProfilesDialog(profileState.profiles, profileState.mediaId, null, profileState.source);
+        showStoryTaggedProfilesDialog(profileState.profiles, profileState.mediaId);
     }
     catch (err) {
         logger('onStoryTaggedProfiles', err);

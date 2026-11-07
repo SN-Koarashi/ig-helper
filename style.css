@@ -1120,13 +1120,6 @@ div[class]:hover+.volume_slider>div,
     font-family: monospace;
 }
 
-.IG_TAGGED_PROFILE_SOURCE {
-    min-width: 0;
-    margin: 0;
-    text-align: right;
-    overflow-wrap: anywhere;
-}
-
 .IG_TAGGED_PROFILE_LIST {
     display: grid;
     gap: 6px;
