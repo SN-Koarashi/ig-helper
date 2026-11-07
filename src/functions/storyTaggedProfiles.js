@@ -485,11 +485,10 @@ async function resolveHighlightTaggedProfiles(highlightId, activeUsername, butto
  *
  * @param  {String[]}  usernames - Candidate story owner usernames, tried in order
  * @param  {?String}  mediaId - Media ID from the URL, used when the item has none
- * @param  {?String}  activeUsername - Expected story owner's username
  * @param  {HTMLElement}  button - Tagged-profiles button element
  * @return {Promise<TaggedProfileState>}
  */
-async function resolveRegularStoryTaggedProfiles(usernames, mediaId, activeUsername, button) {
+async function resolveRegularStoryTaggedProfiles(usernames, mediaId, button) {
     let emptyState = null;
     let lastError = null;
 
@@ -534,7 +533,7 @@ async function resolveCurrentStoryTaggedProfiles(username, button) {
     if (highlightId) {
         return resolveHighlightTaggedProfiles(highlightId, activeUsername, button);
     }
-    return resolveRegularStoryTaggedProfiles(usernames, getCurrentStoryMediaIdFromLocation(), activeUsername, button);
+    return resolveRegularStoryTaggedProfiles(usernames, getCurrentStoryMediaIdFromLocation(), button);
 }
 
 /**
