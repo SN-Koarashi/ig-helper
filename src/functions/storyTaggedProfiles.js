@@ -11,11 +11,7 @@ import { IG_createDM } from "../utils/dialog";
 
 const PROFILE_CACHE_MAX_AGE = 5 * 60 * 1000;
 const STORY_TIMESTAMP_TOLERANCE = 5;
-const USERNAME_PATTERN = /^[A-Za-z0-9._]{1,30}$/;
 const STORY_POSITION_SELECTOR = '.IG_DWSTORY_POSITION, .IG_DWHISTORY_POSITION';
-const PROFILE_PATH_BLOCKLIST = new Set([
-    'accounts', 'data', 'direct', 'explore', 'legal', 'p', 'popular', 'reel', 'reels', 'stories', 'web'
-]);
 
 /**
  * @typedef {Object} TaggedProfile
@@ -31,17 +27,6 @@ const PROFILE_PATH_BLOCKLIST = new Set([
  */
 
 /**
- * isUsername
- * @description Check whether a value is a possible Instagram username.
- *
- * @param  {*}  value
- * @return {Boolean}
- */
-function isUsername(value) {
-    return typeof value === 'string' && USERNAME_PATTERN.test(value);
-}
-
-/**
  * pushUniqueUsername
  * @description Add a username to an array when it is not already present.
  *
@@ -50,35 +35,11 @@ function isUsername(value) {
  * @return {void}
  */
 function pushUniqueUsername(usernames, username) {
-    if (!isUsername(username)) return;
+    if (typeof username !== 'string' || !username) return;
 
     const normalizedUsername = username.toLowerCase();
     if (!usernames.some(value => value.toLowerCase() === normalizedUsername)) {
         usernames.push(username);
-    }
-}
-
-/**
- * getUsernameFromProfileHref
- * @description Resolve an Instagram profile username from a profile link.
- *
- * @param  {?String}  href
- * @return {?String}
- */
-function getUsernameFromProfileHref(href) {
-    if (!href) return null;
-
-    try {
-        const url = new URL(href, location.origin);
-        const paths = url.pathname.split('/').filter(Boolean);
-        const username = paths[0] || '';
-
-        if (!/(^|\.)instagram\.com$/i.test(url.hostname)) return null;
-        if (paths.length !== 1 || PROFILE_PATH_BLOCKLIST.has(username.toLowerCase())) return null;
-        return isUsername(username) ? username : null;
-    }
-    catch {
-        return null;
     }
 }
 
@@ -106,37 +67,7 @@ function getCurrentStoryUsernameFromLocation() {
     const paths = location.pathname.split('/').filter(Boolean);
     if (paths[0] !== 'stories' || paths[1] === 'highlights') return null;
 
-    return isUsername(paths[1]) ? paths[1] : null;
-}
-
-/**
- * getCurrentStoryUsernameFromHeader
- * @description Get the story or highlight owner from the visible viewer header.
- *
- * @param  {HTMLElement|JQuery|null}  scope
- * @return {?String}
- */
-function getCurrentStoryUsernameFromHeader(scope) {
-    const $scope = getActiveStoryScope(scope);
-    const username = $scope.find('header a[href]').map(function () {
-        return getUsernameFromProfileHref($(this).attr('href'));
-    }).get().find(Boolean);
-
-    if (username) return username;
-
-    const legacyUsername = $('body > div section._ac0a header._ac0k ._ac0l a + div a').first().text()?.trim();
-    return isUsername(legacyUsername) ? legacyUsername : null;
-}
-
-/**
- * getCurrentStoryUsername
- * @description Resolve the current story or highlight owner's username.
- *
- * @param  {HTMLElement|JQuery|null}  scope
- * @return {?String}
- */
-function getCurrentStoryUsername(scope) {
-    return getCurrentStoryUsernameFromLocation() || getCurrentStoryUsernameFromHeader(scope);
+    return paths[1] || null;
 }
 
 /**
@@ -144,15 +75,13 @@ function getCurrentStoryUsername(scope) {
  * @description Build a de-duplicated list of possible story owner usernames.
  *
  * @param  {?String}  preferredUsername
- * @param  {HTMLElement|JQuery|null}  scope
  * @return {String[]}
  */
-function getCurrentStoryUsernameCandidates(preferredUsername, scope) {
+function getCurrentStoryUsernameCandidates(preferredUsername) {
     const usernames = [];
 
     pushUniqueUsername(usernames, preferredUsername);
     pushUniqueUsername(usernames, getCurrentStoryUsernameFromLocation());
-    pushUniqueUsername(usernames, getCurrentStoryUsernameFromHeader(scope));
 
     return usernames;
 }
@@ -209,7 +138,7 @@ function getVisibleTaggedStoryTimestamp(scope) {
  * @return {String}
  */
 function getCurrentStoryIdentitySignature(scope) {
-    const username = getCurrentStoryUsernameCandidates(null, scope).join('|');
+    const username = getCurrentStoryUsernameCandidates($(scope).attr('data-story-owner')).join('|');
     const mediaId = getCurrentStoryMediaIdFromLocation() || '';
     const highlightId = getCurrentHighlightIdFromLocation() || '';
     const $controlRoot = scope ? $(scope).parent() : $();
@@ -255,7 +184,7 @@ function getStoryItems(source) {
 function getStorySourceOwnerUsername(source) {
     const reel = getGraphQLReel(source);
     const username = reel?.user?.username || reel?.owner?.username;
-    return isUsername(username) ? username : null;
+    return typeof username === 'string' ? username : null;
 }
 
 /**
@@ -488,13 +417,13 @@ function extractStoryTaggedProfiles(item, excludeUsername) {
     // GraphQL: items[index].story_bloks_stickers[].bloks_sticker.sticker_data.ig_mention.username
     for (const sticker of stickers) {
         const username = sticker?.bloks_sticker?.sticker_data?.ig_mention?.username;
-        if (!isUsername(username) || username.toLowerCase() === excludeUsername?.toLowerCase()) continue;
+        if (typeof username !== 'string' || !username || username.toLowerCase() === excludeUsername?.toLowerCase()) continue;
 
         const key = username.toLowerCase();
         if (!profiles.has(key)) {
             profiles.set(key, {
                 username,
-                href: `https://www.instagram.com/${username}/`
+                href: `https://www.instagram.com/${encodeURIComponent(username)}/`
             });
         }
     }
@@ -595,7 +524,7 @@ async function resolveRegularStoryTaggedProfiles(usernames, mediaId, activeUsern
  * @return {Promise<TaggedProfileState>}
  */
 async function resolveCurrentStoryTaggedProfiles(username, button) {
-    const usernames = getCurrentStoryUsernameCandidates(username, button);
+    const usernames = getCurrentStoryUsernameCandidates(username);
     const activeUsername = usernames[0] || username || null;
     const highlightId = getCurrentHighlightIdFromLocation();
 
@@ -744,7 +673,7 @@ function showStoryTaggedProfilesDialog(profiles, mediaId = null, errorMessage = 
  * @return {Promise<void>}
  */
 export async function onStoryTaggedProfiles(button) {
-    const username = getCurrentStoryUsername(button) || $(button).attr('data-story-owner') || null;
+    const username = getCurrentStoryUsernameFromLocation() || $(button).attr('data-story-owner') || null;
     const identitySignature = getCurrentStoryIdentitySignature(button);
 
     if (!username && !getCurrentStoryMediaIdFromLocation() && !getCurrentHighlightIdFromLocation()) {
@@ -822,6 +751,6 @@ export function setStoryTaggedProfilesButton($element, username) {
         $element.append($button);
     }
 
-    const resolvedUsername = username || getCurrentStoryUsername($button.get(0));
+    const resolvedUsername = username || getCurrentStoryUsernameFromLocation();
     $button.attr('data-story-owner', resolvedUsername || '');
 }
