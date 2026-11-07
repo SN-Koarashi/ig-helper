@@ -4,21 +4,15 @@ import {
     getMediaIdOfStoryOrHighlightFromEmbeddedJSON, getCurrentStoryItemIndex,
     getHighlightCurrentTimeElement
 } from "../utils/general";
-import {
-    getHighlightStories, getMediaInfo, getReelsMedia, getStories, getUserId
-} from "../utils/api";
+import { getHighlightStories, getStories, getUserId } from "../utils/api";
 import { _i18n } from "../utils/i18n";
 import { IG_createDM } from "../utils/dialog";
 /*! ESLINT IMPORT END !*/
 
 const PROFILE_CACHE_MAX_AGE = 5 * 60 * 1000;
-const MEDIA_INFO_CACHE_MAX_AGE = 5 * 60 * 1000;
-const REELS_MEDIA_CACHE_MAX_AGE = 60 * 1000;
 const STORY_TIMESTAMP_TOLERANCE = 5;
 const USERNAME_PATTERN = /^[A-Za-z0-9._]{1,30}$/;
-const TEXT_MENTION_PATTERN = /(^|\s)@([A-Za-z0-9._]{1,30})(?=$|\s|[.,:;!?)\]])/g;
 const STORY_POSITION_SELECTOR = '.IG_DWSTORY_POSITION, .IG_DWHISTORY_POSITION';
-const STORY_CONTROL_SELECTOR = '.IG_DWSTORY, .IG_DWSTORY_ALL, .IG_DWNEWTAB, .IG_DWSTORY_THUMBNAIL, .IG_DWHISTORY, .IG_DWHISTORY_ALL, .IG_DWHINEWTAB, .IG_DWHISTORY_THUMBNAIL, .IG_DWSTORY_TAGGED_PROFILES';
 const PROFILE_PATH_BLOCKLIST = new Set([
     'accounts', 'data', 'direct', 'explore', 'legal', 'p', 'popular', 'reel', 'reels', 'stories', 'web'
 ]);
@@ -34,12 +28,6 @@ const PROFILE_PATH_BLOCKLIST = new Set([
  * @property {?String} mediaId Active story media ID when available.
  * @property {?String} username Story or highlight owner's username.
  * @property {TaggedProfile[]} profiles Tagged or mentioned profiles.
- */
-
-/**
- * @typedef {Object} VisibleTaggedProfiles
- * @property {TaggedProfile[]} directProfiles Profiles exposed through visible profile links.
- * @property {TaggedProfile[]} textProfiles Profiles detected from visible text-only mentions.
  */
 
 /**
@@ -233,54 +221,41 @@ function getCurrentStoryIdentitySignature(scope) {
 }
 
 /**
+ * getGraphQLReel
+ * @description Get the Story or Highlight reel from the existing GraphQL responses.
+ *
+ * @param  {*}  source
+ * @return {?Object}
+ */
+function getGraphQLReel(source) {
+    return source?.data?.xdt_api__v1__feed__reels_media?.reels_media?.[0]
+        || source?.data?.xdt_api__v1__feed__reels_media__connection?.edges?.[0]?.node
+        || null;
+}
+
+/**
  * getStoryItems
- * @description Extract story items; return null for an unrecognized payload.
+ * @description Read the items from a Story or Highlight GraphQL reel.
  *
  * @param  {*}  source
  * @return {?Object[]}
  */
 function getStoryItems(source) {
-    if (!source || typeof source !== 'object') return null;
-    if (Array.isArray(source)) return source;
-    if (Array.isArray(source.items)) return source.items;
-    if (Array.isArray(source.reels_media?.[0]?.items)) return source.reels_media[0].items;
-    if (Array.isArray(source.data?.reels_media?.[0]?.items)) return source.data.reels_media[0].items;
-    if (Array.isArray(source.data?.xdt_api__v1__feed__reels_media?.reels_media?.[0]?.items))
-        return source.data.xdt_api__v1__feed__reels_media.reels_media[0].items;
-    if (Array.isArray(source.data?.xdt_api__v1__feed__reels_media__connection?.edges?.[0]?.node?.items))
-        return source.data.xdt_api__v1__feed__reels_media__connection.edges[0].node.items;
-
-    const reels = source.reels || source.data?.reels || {};
-    const reel = Object.values(reels).find(value => Array.isArray(value?.items));
-    return reel?.items || null;
+    const items = getGraphQLReel(source)?.items;
+    return Array.isArray(items) ? items : null;
 }
 
 /**
  * getStorySourceOwnerUsername
- * @description Extract the story owner username from supported payload shapes.
+ * @description Read the owner from a Story or Highlight GraphQL reel.
  *
  * @param  {*}  source
  * @return {?String}
  */
 function getStorySourceOwnerUsername(source) {
-    const reels = source?.reels || source?.data?.reels || {};
-    const reel = Object.values(reels).find(value => Array.isArray(value?.items));
-    const username = source?.user?.username
-        || source?.owner?.username
-        || source?.reels_media?.[0]?.user?.username
-        || source?.reels_media?.[0]?.owner?.username
-        || source?.data?.reels_media?.[0]?.user?.username
-        || source?.data?.reels_media?.[0]?.owner?.username
-        || source?.data?.xdt_api__v1__feed__reels_media?.reels_media?.[0]?.user?.username
-        || source?.data?.xdt_api__v1__feed__reels_media?.reels_media?.[0]?.owner?.username
-        || source?.data?.xdt_api__v1__feed__reels_media__connection?.edges?.[0]?.node?.user?.username
-        || source?.data?.xdt_api__v1__feed__reels_media__connection?.edges?.[0]?.node?.owner?.username
-        || reel?.user?.username
-        || reel?.owner?.username
-        || '';
-
-    const normalizedUsername = typeof username === 'string' ? username.trim() : '';
-    return isUsername(normalizedUsername) ? normalizedUsername : null;
+    const reel = getGraphQLReel(source);
+    const username = reel?.user?.username || reel?.owner?.username;
+    return isUsername(username) ? username : null;
 }
 
 /**
@@ -291,7 +266,7 @@ function getStorySourceOwnerUsername(source) {
  * @return {String[]}
  */
 function getStoryItemIds(item) {
-    const ids = [item?.id, item?.pk, item?.media_id, item?.mediaid]
+    const ids = [item?.id, item?.pk]
         .filter(id => id != null)
         .map(id => `${id}`);
 
@@ -422,64 +397,31 @@ function resolveCurrentStoryItem(source, username, scope) {
 }
 
 /**
- * getDataCacheBucket
- * @description Get or create a named bucket in the shared data cache.
- *
- * @param  {String}  name
- * @return {Object}
- */
-function getDataCacheBucket(name) {
-    if (state.GL_dataCache[name] == null) {
-        state.GL_dataCache[name] = {};
-    }
-    return state.GL_dataCache[name];
-}
-
-/**
  * getCachedValue
- * @description Return a cached value or de-duplicate its in-flight producer request.
+ * @description Reuse upstream's cache and deduplicate in-flight GraphQL requests.
  *
  * @param  {Object}  bucket
  * @param  {Object}  requestBucket
  * @param  {String|Number}  key
  * @param  {Function}  producer
- * @param  {?Number}  maxAge - Optional cache lifetime in milliseconds
  * @return {Promise<*>}
  */
-function getCachedValue(bucket, requestBucket, key, producer, maxAge = null) {
+function getCachedValue(bucket, requestBucket, key, producer) {
     const originalKey = `${key}`;
     const normalizedKey = originalKey.toLowerCase();
-    const hasNormalizedValue = Object.prototype.hasOwnProperty.call(bucket, normalizedKey);
-    const hasOriginalValue = Object.prototype.hasOwnProperty.call(bucket, originalKey);
-
-    if (hasNormalizedValue || hasOriginalValue) {
-        const cacheKey = hasNormalizedValue ? normalizedKey : originalKey;
-        const cached = bucket[cacheKey];
-
-        if (maxAge == null) {
-            return Promise.resolve(cached);
-        }
-        if (cached?.createdAt && Date.now() - cached.createdAt <= maxAge) {
-            return Promise.resolve(cached.value);
-        }
-
-        delete bucket[normalizedKey];
-        delete bucket[originalKey];
+    const cacheKey = Object.prototype.hasOwnProperty.call(bucket, normalizedKey)
+        ? normalizedKey
+        : originalKey;
+    if (Object.prototype.hasOwnProperty.call(bucket, cacheKey)) {
+        return Promise.resolve(bucket[cacheKey]);
     }
     if (requestBucket[normalizedKey]) return requestBucket[normalizedKey];
 
     requestBucket[normalizedKey] = Promise.resolve()
         .then(producer)
         .then(result => {
-            const cached = maxAge == null ? result : {
-                value: result,
-                createdAt: Date.now()
-            };
-
-            bucket[normalizedKey] = cached;
-            if (originalKey !== normalizedKey) {
-                bucket[originalKey] = cached;
-            }
+            bucket[normalizedKey] = result;
+            if (originalKey !== normalizedKey) bucket[originalKey] = result;
             return result;
         })
         .finally(() => {
@@ -498,7 +440,7 @@ function getCachedValue(bucket, requestBucket, key, producer, maxAge = null) {
  */
 async function getCachedStories(username) {
     return getCachedValue(
-        getDataCacheBucket('stories'),
+        state.GL_dataCache.stories,
         state.GL_dataCache.storyTaggedProfiles.requests.stories,
         username,
         async () => {
@@ -519,122 +461,21 @@ async function getCachedStories(username) {
  */
 async function getCachedHighlightStories(highlightId) {
     return getCachedValue(
-        getDataCacheBucket('highlights'),
+        state.GL_dataCache.highlights,
         state.GL_dataCache.storyTaggedProfiles.requests.highlights,
         highlightId,
-        () => getHighlightStories(highlightId)
-    );
-}
-
-/**
- * getCachedMediaInfo
- * @description Get media-info fallback data for a story item.
- *
- * @param  {String}  mediaId
- * @return {Promise<Object>}
- */
-async function getCachedMediaInfo(mediaId) {
-    return getCachedValue(
-        state.GL_dataCache.storyTaggedProfiles.mediaInfo,
-        state.GL_dataCache.storyTaggedProfiles.requests.mediaInfo,
-        mediaId,
-        () => getMediaInfo(mediaId),
-        MEDIA_INFO_CACHE_MAX_AGE
-    );
-}
-
-/**
- * getCachedReelsMedia
- * @description Get the mobile reels-media fallback for a regular-story owner.
- *
- * @param  {String}  username
- * @return {Promise<Object>}
- */
-async function getCachedReelsMedia(username) {
-    return getCachedValue(
-        state.GL_dataCache.storyTaggedProfiles.reelsMedia,
-        state.GL_dataCache.storyTaggedProfiles.requests.reelsMedia,
-        username,
         async () => {
-            const userInfo = await getUserId(username);
-            const userId = userInfo?.user?.pk ?? userInfo?.user?.id;
-            if (!userId) throw new Error(`Could not resolve user ID for @${username}`);
-            return getReelsMedia(String(userId));
-        },
-        REELS_MEDIA_CACHE_MAX_AGE
+            const response = await getHighlightStories(highlightId);
+            const items = response?.data?.xdt_api__v1__feed__reels_media__connection?.edges?.[0]?.node?.items;
+            if (Array.isArray(items)) items.reverse();
+            return response;
+        }
     );
-}
-
-/**
- * getMentionUsername
- * @description Extract a username from supported mention object shapes.
- *
- * @param  {*}  mention
- * @return {?String}
- */
-function getMentionUsername(mention) {
-    const username = mention?.username
-        || mention?.user?.username
-        || mention?.profile?.username
-        || mention?.profile_user?.username
-        || mention?.tappable_user?.username
-        || mention?.ig_mention?.username
-        || mention?.profile_owner?.username
-        || '';
-
-    const normalizedUsername = typeof username === 'string' ? username.trim() : '';
-    return isUsername(normalizedUsername) ? normalizedUsername : null;
-}
-
-/**
- * addTaggedProfile
- * @description Add a valid tagged profile to a de-duplicated profile map.
- *
- * @param  {Map<String, TaggedProfile>}  profiles
- * @param  {*}  mention
- * @param  {?String}  excludeUsername
- * @return {void}
- */
-function addTaggedProfile(profiles, mention, excludeUsername) {
-    const username = getMentionUsername(mention);
-    if (!username) return;
-    if (excludeUsername && username.toLowerCase() === excludeUsername.toLowerCase()) return;
-
-    const normalizedUsername = username.toLowerCase();
-    if (!profiles.has(normalizedUsername)) {
-        profiles.set(normalizedUsername, {
-            username,
-            href: `https://www.instagram.com/${username}/`
-        });
-    }
-}
-
-/**
- * hasBlockedProfileContext
- * @description Check whether a payload path describes non-profile attribution data.
- *
- * @param  {String[]}  path
- * @return {Boolean}
- */
-function hasBlockedProfileContext(path) {
-    return path.some(key => /music|audio|artist|song|sound|feed_media|media_attributions|attribution|owner|viewer/i.test(`${key}`));
-}
-
-/**
- * hasMentionContext
- * @description Check whether a payload path can contain story mention metadata.
- *
- * @param  {String[]}  path
- * @return {Boolean}
- */
-function hasMentionContext(path) {
-    return !hasBlockedProfileContext(path)
-        && path.some(key => /mention|tappable|sticker|tag|usertags|bloks/i.test(`${key}`));
 }
 
 /**
  * extractStoryTaggedProfiles
- * @description Recursively extract tagged or mentioned profiles from a story item.
+ * @description Extract GraphQL mention stickers from the currently selected item.
  *
  * @param  {*}  item
  * @param  {?String}  excludeUsername
@@ -642,133 +483,22 @@ function hasMentionContext(path) {
  */
 function extractStoryTaggedProfiles(item, excludeUsername) {
     const profiles = new Map();
-    const visited = new WeakSet();
+    const stickers = Array.isArray(item?.story_bloks_stickers) ? item.story_bloks_stickers : [];
 
-    /**
-     * Walk nested story metadata while preserving the current property path.
-     *
-     * @param  {*}  source
-     * @param  {String[]}  path
-     * @return {void}
-     */
-    function walk(source, path = []) {
-        if (!source || typeof source !== 'object' || visited.has(source)) return;
-        visited.add(source);
+    // GraphQL: items[index].story_bloks_stickers[].bloks_sticker.sticker_data.ig_mention.username
+    for (const sticker of stickers) {
+        const username = sticker?.bloks_sticker?.sticker_data?.ig_mention?.username;
+        if (!isUsername(username) || username.toLowerCase() === excludeUsername?.toLowerCase()) continue;
 
-        Object.keys(source).forEach(key => {
-            const value = source[key];
-            const nextPath = path.concat(key);
-
-            if (key === 'ig_mention' && !hasBlockedProfileContext(nextPath)) {
-                addTaggedProfile(profiles, value, excludeUsername);
-                return;
-            }
-            if (value && typeof value === 'object' && hasMentionContext(nextPath)) {
-                addTaggedProfile(profiles, value, excludeUsername);
-            }
-
-            walk(value, nextPath);
-        });
+        const key = username.toLowerCase();
+        if (!profiles.has(key)) {
+            profiles.set(key, {
+                username,
+                href: `https://www.instagram.com/${username}/`
+            });
+        }
     }
-
-    walk(item);
     return Array.from(profiles.values());
-}
-
-/**
- * rectanglesOverlap
- * @description Check whether two DOM rectangles overlap.
- *
- * @param  {?DOMRect}  left
- * @param  {?DOMRect}  right
- * @return {Boolean}
- */
-function rectanglesOverlap(left, right) {
-    return Boolean(left && right
-        && left.width > 0 && left.height > 0
-        && right.width > 0 && right.height > 0
-        && left.right >= right.left
-        && left.left <= right.right
-        && left.bottom >= right.top
-        && left.top <= right.bottom);
-}
-
-/**
- * getLargestVisibleStoryMediaRect
- * @description Get the largest visible image or video rectangle in a story scope.
- *
- * @param  {JQuery}  $scope
- * @return {?DOMRect}
- */
-function getLargestVisibleStoryMediaRect($scope) {
-    let mediaRect = null;
-    let mediaArea = 0;
-
-    $scope.find('video:visible, img[referrerpolicy]:visible, img[crossorigin]:visible').each(function () {
-        const rect = this.getBoundingClientRect?.();
-        const area = rect ? rect.width * rect.height : 0;
-
-        if (area > mediaArea) {
-            mediaArea = area;
-            mediaRect = rect;
-        }
-    });
-
-    return mediaRect;
-}
-
-/**
- * extractVisibleStoryTaggedProfiles
- * @description Extract direct profile links and text-only @mentions over the active story media.
- *
- * @param  {?String}  excludeUsername
- * @param  {HTMLElement}  button
- * @return {VisibleTaggedProfiles}
- */
-function extractVisibleStoryTaggedProfiles(excludeUsername, button) {
-    const directProfiles = new Map();
-    const textProfiles = new Map();
-    const $button = $(button);
-    const $sectionScope = $button.closest('section:visible');
-    const $scope = $sectionScope.length ? $sectionScope : $button.parent();
-
-    if (!$scope.length) return { directProfiles: [], textProfiles: [] };
-
-    const mediaRect = getLargestVisibleStoryMediaRect($scope);
-
-    $scope.find('a[href]:visible').each(function () {
-        if ($(this).closest(STORY_CONTROL_SELECTOR).length) return;
-
-        const username = getUsernameFromProfileHref($(this).attr('href'));
-        const rect = this.getBoundingClientRect?.();
-        if (username && rectanglesOverlap(rect, mediaRect)) {
-            addTaggedProfile(directProfiles, { username }, excludeUsername);
-        }
-    });
-
-    if (mediaRect) {
-        $scope.find('span:visible, div:visible').each(function () {
-            if ($(this).closest(STORY_CONTROL_SELECTOR).length) return;
-
-            const rect = this.getBoundingClientRect?.();
-            const text = ($(this).text() || '').trim();
-            if (!text || text.length > 120 || !rectanglesOverlap(rect, mediaRect)) return;
-
-            TEXT_MENTION_PATTERN.lastIndex = 0;
-            let match = null;
-            while ((match = TEXT_MENTION_PATTERN.exec(text)) !== null) {
-                addTaggedProfile(textProfiles, { username: match[2] }, excludeUsername);
-            }
-        });
-    }
-
-    for (const key of directProfiles.keys()) {
-        textProfiles.delete(key);
-    }
-    return {
-        directProfiles: Array.from(directProfiles.values()),
-        textProfiles: Array.from(textProfiles.values())
-    };
 }
 
 /**
@@ -800,135 +530,48 @@ function createTaggedProfileStateFromSource(source, username, scope) {
 }
 
 /**
- * createTaggedProfileStateFromMediaInfo
- * @description Build tagged-profile state from a media-info payload.
- *
- * @param  {*}  mediaInfo
- * @param  {String}  mediaId
- * @param  {?String}  username
- * @return {?TaggedProfileState}
- */
-function createTaggedProfileStateFromMediaInfo(mediaInfo, mediaId, username) {
-    const items = Array.isArray(mediaInfo?.items) ? mediaInfo.items : [];
-    const item = items.find(value => storyItemMatchesMediaId(value, mediaId))
-        // A single ID-less item is still usable: the request targeted this media ID.
-        || (items.length === 1 && !getStoryItemIds(items[0]).length ? items[0] : null);
-    if (!item) return null;
-
-    return {
-        mediaId,
-        profiles: extractStoryTaggedProfiles(item, username),
-        username
-    };
-}
-
-/**
- * mergeFallbackIdentity
- * @description Update media ID and owner without changing the selected profiles or detection method.
- *
- * @param  {TaggedProfileState}  fallbackState
- * @param  {TaggedProfileState}  nextState
- * @return {TaggedProfileState}
- */
-function mergeFallbackIdentity(fallbackState, nextState) {
-    return {
-        mediaId: nextState.mediaId || fallbackState.mediaId,
-        profiles: fallbackState.profiles,
-        username: nextState.username || fallbackState.username,
-        source: fallbackState.source
-    };
-}
-
-/**
  * resolveHighlightTaggedProfiles
- * @description Resolve a highlight item, then use the first source with profiles.
+ * @description Look up mention stickers for the active Highlight using GraphQL.
  *
  * @param  {String}  highlightId
  * @param  {?String}  activeUsername
  * @param  {HTMLElement}  button
- * @param  {TaggedProfile[]}  directProfiles
- * @param  {TaggedProfile[]}  textProfiles
  * @return {Promise<TaggedProfileState>}
  */
-async function resolveHighlightTaggedProfiles(highlightId, activeUsername, button, directProfiles, textProfiles) {
-    let fallbackState = { mediaId: null, profiles: [], username: activeUsername, source: null };
-    let matchedItem = false;
-    let lastError = null;
+async function resolveHighlightTaggedProfiles(highlightId, activeUsername, button) {
+    const payload = await getCachedHighlightStories(highlightId);
+    const result = createTaggedProfileStateFromSource(payload, activeUsername, button);
+    if (!result) throw new Error('Could not identify active highlight item');
 
-    try {
-        const highlightPayload = await getCachedHighlightStories(highlightId);
-        const highlightState = createTaggedProfileStateFromSource(highlightPayload, activeUsername, button);
-        if (highlightState) {
-            matchedItem = true;
-            fallbackState = mergeFallbackIdentity(fallbackState, highlightState);
-
-            if (directProfiles.length) {
-                logger('[taggedProfiles]', 'source: dom');
-                return { ...fallbackState, profiles: directProfiles, source: 'DOM links' };
-            }
-            if (highlightState.profiles.length) {
-                logger('[taggedProfiles]', 'source: highlight');
-                return { ...highlightState, source: 'Highlight GraphQL' };
-            }
-
-            if (highlightState.mediaId) {
-                const mediaInfo = await getCachedMediaInfo(highlightState.mediaId);
-                const mediaInfoState = createTaggedProfileStateFromMediaInfo(
-                    mediaInfo, highlightState.mediaId, highlightState.username || activeUsername
-                );
-                if (mediaInfoState?.profiles.length) {
-                    logger('[taggedProfiles]', 'source: media-info');
-                    return { ...mediaInfoState, source: 'Media info API' };
-                }
-            }
-        }
-    }
-    catch (err) {
-        lastError = err;
-        logger('[taggedProfiles]', 'highlight lookup failed', err);
-    }
-
-    if (directProfiles.length) {
-        logger('[taggedProfiles]', 'source: dom');
-        return { ...fallbackState, profiles: directProfiles, source: 'DOM links' };
-    }
-    if (textProfiles.length) {
-        logger('[taggedProfiles]', 'source: text');
-        return { ...fallbackState, profiles: textProfiles, source: 'Text mentions' };
-    }
-    if (!matchedItem) throw lastError || new Error('Could not identify active highlight item');
-    logger('[taggedProfiles]', 'empty');
-    return fallbackState;
+    logger('[taggedProfiles]', result.profiles.length ? 'source: highlight' : 'empty');
+    return { ...result, source: result.profiles.length ? 'Highlight GraphQL' : null };
 }
 
 /**
  * resolveRegularStoryTaggedProfiles
- * @description Look up a regular story in source priority order without merging sources.
+ * @description Look up mention stickers for the active Story using GraphQL.
  *
  * @param  {String[]}  usernames
  * @param  {?String}  mediaId
  * @param  {?String}  activeUsername
  * @param  {HTMLElement}  button
- * @param  {TaggedProfile[]}  textProfiles
  * @return {Promise<TaggedProfileState>}
  */
-async function resolveRegularStoryTaggedProfiles(usernames, mediaId, activeUsername, button, textProfiles) {
-    let fallbackState = { mediaId, profiles: [], username: activeUsername, source: null };
-    let matchedItem = false;
+async function resolveRegularStoryTaggedProfiles(usernames, mediaId, activeUsername, button) {
+    let emptyState = null;
     let lastError = null;
 
     for (const candidateUsername of usernames) {
         try {
-            const storyPayload = await getCachedStories(candidateUsername);
-            const storyState = createTaggedProfileStateFromSource(storyPayload, candidateUsername, button);
-            if (!storyState) continue;
+            const payload = await getCachedStories(candidateUsername);
+            const result = createTaggedProfileStateFromSource(payload, candidateUsername, button);
+            if (!result) continue;
 
-            matchedItem = true;
-            fallbackState = mergeFallbackIdentity(fallbackState, storyState);
-            if (storyState.profiles.length) {
+            if (result.profiles.length) {
                 logger('[taggedProfiles]', 'source: story');
-                return { ...storyState, source: 'Story GraphQL' };
+                return { ...result, source: 'Story GraphQL' };
             }
+            emptyState = { ...result, mediaId: result.mediaId || mediaId, source: null };
         }
         catch (err) {
             lastError = err;
@@ -936,58 +579,16 @@ async function resolveRegularStoryTaggedProfiles(usernames, mediaId, activeUsern
         }
     }
 
-    if (mediaId) {
-        try {
-            const mediaInfo = await getCachedMediaInfo(mediaId);
-            const mediaInfoState = createTaggedProfileStateFromMediaInfo(mediaInfo, mediaId, activeUsername);
-            if (mediaInfoState) {
-                matchedItem = true;
-                fallbackState = mergeFallbackIdentity(fallbackState, mediaInfoState);
-                if (mediaInfoState.profiles.length) {
-                    logger('[taggedProfiles]', 'source: media-info');
-                    return { ...mediaInfoState, source: 'Media info API' };
-                }
-            }
-        }
-        catch (err) {
-            lastError = err;
-            logger('[taggedProfiles]', 'media-info lookup failed', err);
-        }
+    if (emptyState) {
+        logger('[taggedProfiles]', 'empty');
+        return emptyState;
     }
-
-    for (const candidateUsername of usernames) {
-        try {
-            const reelsMediaPayload = await getCachedReelsMedia(candidateUsername);
-            const reelsMediaState = createTaggedProfileStateFromSource(reelsMediaPayload, candidateUsername, button);
-            if (!reelsMediaState) continue;
-
-            matchedItem = true;
-            fallbackState = mergeFallbackIdentity(fallbackState, reelsMediaState);
-            if (reelsMediaState.profiles.length) {
-                logger('[taggedProfiles]', 'source: reels-media');
-                return { ...reelsMediaState, source: 'Reels media API' };
-            }
-        }
-        catch (err) {
-            lastError = err;
-            logger('[taggedProfiles]', 'reels-media lookup failed', err);
-        }
-    }
-
-    if (textProfiles.length) {
-        logger('[taggedProfiles]', 'source: text');
-        return { ...fallbackState, profiles: textProfiles, source: 'Text mentions' };
-    }
-    if (!matchedItem) throw lastError || new Error('Could not identify active story item');
-    logger('[taggedProfiles]', 'empty');
-    return fallbackState;
+    throw lastError || new Error('Could not identify active story item');
 }
 
 /**
- * Use the first source with profiles, without merging different detection methods.
- * Stories: DOM links -> Story GraphQL -> media info -> reels media -> visible text.
- * Highlights: try Highlight GraphQL to identify the item; prefer DOM links,
- * Highlight GraphQL mentions, media info, and finally visible text.
+ * resolveCurrentStoryTaggedProfiles
+ * @description Use the existing GraphQL response for Stories and Highlights.
  *
  * @param  {?String}  username
  * @param  {HTMLElement}  button
@@ -995,19 +596,13 @@ async function resolveRegularStoryTaggedProfiles(usernames, mediaId, activeUsern
  */
 async function resolveCurrentStoryTaggedProfiles(username, button) {
     const usernames = getCurrentStoryUsernameCandidates(username, button);
-    const mediaId = getCurrentStoryMediaIdFromLocation();
-    const highlightId = getCurrentHighlightIdFromLocation();
     const activeUsername = usernames[0] || username || null;
-    const { directProfiles, textProfiles } = extractVisibleStoryTaggedProfiles(activeUsername, button);
+    const highlightId = getCurrentHighlightIdFromLocation();
 
-    if (!highlightId && directProfiles.length) {
-        logger('[taggedProfiles]', 'source: dom');
-        return { mediaId, profiles: directProfiles, username: activeUsername, source: 'DOM links' };
-    }
     if (highlightId) {
-        return resolveHighlightTaggedProfiles(highlightId, activeUsername, button, directProfiles, textProfiles);
+        return resolveHighlightTaggedProfiles(highlightId, activeUsername, button);
     }
-    return resolveRegularStoryTaggedProfiles(usernames, mediaId, activeUsername, button, textProfiles);
+    return resolveRegularStoryTaggedProfiles(usernames, getCurrentStoryMediaIdFromLocation(), activeUsername, button);
 }
 
 /**

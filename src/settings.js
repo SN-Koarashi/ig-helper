@@ -116,13 +116,9 @@ export var state = {
         posts: {},
         storyTaggedProfiles: {
             profiles: {},
-            mediaInfo: {},
-            reelsMedia: {},
             requests: {
                 stories: {},
-                highlights: {},
-                mediaInfo: {},
-                reelsMedia: {}
+                highlights: {}
             }
         }
     },
