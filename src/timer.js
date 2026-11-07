@@ -13,6 +13,7 @@ import { onReels, attachReelsButtons } from "./functions/reel";
 import { onProfileAvatar, skipSharedWithYouDialog } from "./functions/profile";
 import { onHighlightsStory, onHighlightsStoryThumbnail, getHighlightsStoryUsername } from "./functions/highlight";
 import { onStory, onStoryThumbnail } from "./functions/story";
+import { setStoryTaggedProfilesButton } from "./functions/storyTaggedProfiles";
 /*! ESLINT IMPORT END !*/
 
 /*******************************/
@@ -310,7 +311,7 @@ function handleRouteChange(attempt) {
                 // OPTIMIZATION: Single combined selector + .remove() — replaces 8 separate
                 // $('.CLASS').length checks + removes. Behavior is identical because
                 // .remove() is a no-op on an empty set.
-                $('.IG_DWSTORY, .IG_DWSTORY_ALL, .IG_DWNEWTAB, .IG_DWSTORY_THUMBNAIL, .IG_DWSTORY_POSITION, .IG_DWHISTORY, .IG_DWHISTORY_ALL, .IG_DWHINEWTAB, .IG_DWHISTORY_THUMBNAIL, .IG_DWHISTORY_POSITION').remove();
+                $('.IG_DWSTORY, .IG_DWSTORY_ALL, .IG_DWNEWTAB, .IG_DWSTORY_THUMBNAIL, .IG_DWSTORY_TAGGED_PROFILES, .IG_DWSTORY_POSITION, .IG_DWHISTORY, .IG_DWHISTORY_ALL, .IG_DWHINEWTAB, .IG_DWHISTORY_THUMBNAIL, .IG_DWHISTORY_POSITION').remove();
                 restoreMarkedContainers();
             }
         }
@@ -902,6 +903,10 @@ function checkStoryButtons() {
             // text once fresh, valid progress data is available.
             setStoryProgressIndexByUsername($('.IG_DWHISTORY').parent(), getHighlightsStoryUsername(), 'IG_DWHISTORY_POSITION');
             updateHighlightThumbnailButton();
+            const $highlightContainer = $('.IG_DWHISTORY').parent();
+            if (!$highlightContainer.find('.IG_DWSTORY_TAGGED_PROFILES').length) {
+                setStoryTaggedProfilesButton($highlightContainer, getHighlightsStoryUsername());
+            }
             return;
         }
 
@@ -938,6 +943,10 @@ function checkStoryButtons() {
         const username = $("body > div section._ac0a header._ac0k ._ac0l a + div a").first().text() || location.pathname.split("/").filter(s => s.length > 0).at(1);
         setStoryProgressIndexByUsername($('.IG_DWSTORY').parent(), username, 'IG_DWSTORY_POSITION');
         updateStoryThumbnailButton();
+        const $storyContainer = $('.IG_DWSTORY').parent();
+        if (!$storyContainer.find('.IG_DWSTORY_TAGGED_PROFILES').length) {
+            setStoryTaggedProfilesButton($storyContainer, username);
+        }
         return;
     }
 
