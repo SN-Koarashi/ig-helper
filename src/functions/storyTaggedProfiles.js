@@ -24,14 +24,15 @@ const STORY_POSITION_SELECTOR = '.IG_DWSTORY_POSITION, .IG_DWHISTORY_POSITION';
  * @property {?String} mediaId Active story media ID when available.
  * @property {?String} username Story or highlight owner's username.
  * @property {TaggedProfile[]} profiles Tagged or mentioned profiles.
+ * @property {?String} [source] Detection method label shown in the dialog.
  */
 
 /**
  * pushUniqueUsername
  * @description Add a username to an array when it is not already present.
  *
- * @param  {String[]}  usernames
- * @param  {?String}  username
+ * @param  {String[]}  usernames - List of usernames to append to
+ * @param  {?String}  username - Username to add
  * @return {void}
  */
 function pushUniqueUsername(usernames, username) {
@@ -47,7 +48,7 @@ function pushUniqueUsername(usernames, username) {
  * getActiveStoryScope
  * @description Get the visible story section associated with a control element.
  *
- * @param  {HTMLElement|JQuery|null}  scope
+ * @param  {HTMLElement|JQuery|null}  scope - Element inside the story viewer
  * @return {JQuery}
  */
 function getActiveStoryScope(scope) {
@@ -74,7 +75,7 @@ function getCurrentStoryUsernameFromLocation() {
  * getCurrentStoryUsernameCandidates
  * @description Build a de-duplicated list of possible story owner usernames.
  *
- * @param  {?String}  preferredUsername
+ * @param  {?String}  preferredUsername - Username to place first
  * @return {String[]}
  */
 function getCurrentStoryUsernameCandidates(preferredUsername) {
@@ -117,7 +118,7 @@ function getCurrentStoryMediaIdFromLocation() {
  * getVisibleTaggedStoryTimestamp
  * @description Get the visible story item's timestamp in seconds.
  *
- * @param  {HTMLElement|JQuery|null}  scope
+ * @param  {HTMLElement|JQuery|null}  scope - Element inside the story viewer
  * @return {?Number}
  */
 function getVisibleTaggedStoryTimestamp(scope) {
@@ -131,19 +132,30 @@ function getVisibleTaggedStoryTimestamp(scope) {
 }
 
 /**
+ * getStoryPositionText
+ * @description Read the visible "current / total" position text near a story control.
+ *
+ * @param  {HTMLElement|JQuery|null}  scope - Element inside the story controls
+ * @return {String}
+ */
+function getStoryPositionText(scope) {
+    const $controlRoot = scope ? $(scope).parent() : $();
+    return ($controlRoot.find(STORY_POSITION_SELECTOR).first().text()
+        || $(STORY_POSITION_SELECTOR).first().text()).trim();
+}
+
+/**
  * getCurrentStoryIdentitySignature
  * @description Create a cache key for the currently visible story or highlight item.
  *
- * @param  {HTMLElement|JQuery|null}  scope
+ * @param  {HTMLElement|JQuery|null}  scope - Tagged-profiles button element
  * @return {String}
  */
 function getCurrentStoryIdentitySignature(scope) {
     const username = getCurrentStoryUsernameCandidates($(scope).attr('data-story-owner')).join('|');
     const mediaId = getCurrentStoryMediaIdFromLocation() || '';
     const highlightId = getCurrentHighlightIdFromLocation() || '';
-    const $controlRoot = scope ? $(scope).parent() : $();
-    const positionText = ($controlRoot.find(STORY_POSITION_SELECTOR).first().text()
-        || $(STORY_POSITION_SELECTOR).first().text()).trim();
+    const positionText = getStoryPositionText(scope);
     const visibleTimestamp = getVisibleTaggedStoryTimestamp(scope) || '';
 
     return [location.pathname, username, mediaId, highlightId, positionText, visibleTimestamp].join('::');
@@ -153,7 +165,7 @@ function getCurrentStoryIdentitySignature(scope) {
  * getGraphQLReel
  * @description Get the Story or Highlight reel from the existing GraphQL responses.
  *
- * @param  {*}  source
+ * @param  {*}  source - Story or Highlight GraphQL response
  * @return {?Object}
  */
 function getGraphQLReel(source) {
@@ -166,7 +178,7 @@ function getGraphQLReel(source) {
  * getStoryItems
  * @description Read the items from a Story or Highlight GraphQL reel.
  *
- * @param  {*}  source
+ * @param  {*}  source - Story or Highlight GraphQL response
  * @return {?Object[]}
  */
 function getStoryItems(source) {
@@ -178,7 +190,7 @@ function getStoryItems(source) {
  * getStorySourceOwnerUsername
  * @description Read the owner from a Story or Highlight GraphQL reel.
  *
- * @param  {*}  source
+ * @param  {*}  source - Story or Highlight GraphQL response
  * @return {?String}
  */
 function getStorySourceOwnerUsername(source) {
@@ -191,7 +203,7 @@ function getStorySourceOwnerUsername(source) {
  * getStoryItemIds
  * @description Get all media ID variants exposed by a story item.
  *
- * @param  {*}  item
+ * @param  {*}  item - Story item from the reel
  * @return {String[]}
  */
 function getStoryItemIds(item) {
@@ -213,8 +225,8 @@ function getStoryItemIds(item) {
  * storyItemMatchesMediaId
  * @description Check whether a story item matches a media ID.
  *
- * @param  {*}  item
- * @param  {?String}  mediaId
+ * @param  {*}  item - Story item from the reel
+ * @param  {?String}  mediaId - Media ID to compare against
  * @return {Boolean}
  */
 function storyItemMatchesMediaId(item, mediaId) {
@@ -225,8 +237,8 @@ function storyItemMatchesMediaId(item, mediaId) {
  * getVisibleStoryProgress
  * @description Read the active story position from the progress UI.
  *
- * @param  {?String}  username
- * @param  {HTMLElement|JQuery|null}  scope
+ * @param  {?String}  username - Story owner's username
+ * @param  {HTMLElement|JQuery|null}  scope - Element inside the story controls
  * @return {?Object}
  */
 function getVisibleStoryProgress(username, scope) {
@@ -234,10 +246,7 @@ function getVisibleStoryProgress(username, scope) {
     const progress = getStoryProgressIndex($header);
     if (progress != null) return progress;
 
-    const $controlRoot = scope ? $(scope).parent() : $();
-    const positionText = ($controlRoot.find(STORY_POSITION_SELECTOR).first().text()
-        || $(STORY_POSITION_SELECTOR).first().text()).trim();
-    const match = positionText.match(/^(\d+)\s*\/\s*(\d+)$/);
+    const match = getStoryPositionText(scope).match(/^(\d+)\s*\/\s*(\d+)$/);
     if (!match) return null;
 
     return {
@@ -250,9 +259,9 @@ function getVisibleStoryProgress(username, scope) {
  * resolveStoryItemByProgress
  * @description Resolve the active story item from the visible progress position.
  *
- * @param  {*}  source
- * @param  {?String}  username
- * @param  {HTMLElement|JQuery|null}  scope
+ * @param  {*}  source - Story or Highlight GraphQL response
+ * @param  {?String}  username - Story owner's username
+ * @param  {HTMLElement|JQuery|null}  scope - Element inside the story controls
  * @return {?Object}
  */
 function resolveStoryItemByProgress(source, username, scope) {
@@ -269,8 +278,8 @@ function resolveStoryItemByProgress(source, username, scope) {
  * resolveStoryItemByVisibleTimestamp
  * @description Resolve the active story item by matching its visible timestamp.
  *
- * @param  {*}  source
- * @param  {HTMLElement|JQuery|null}  scope
+ * @param  {*}  source - Story or Highlight GraphQL response
+ * @param  {HTMLElement|JQuery|null}  scope - Element inside the story viewer
  * @return {?Object}
  */
 function resolveStoryItemByVisibleTimestamp(source, scope) {
@@ -294,9 +303,9 @@ function resolveStoryItemByVisibleTimestamp(source, scope) {
  * resolveCurrentStoryItem
  * @description Resolve the currently visible item from a story or highlight payload.
  *
- * @param  {*}  source
- * @param  {?String}  username
- * @param  {HTMLElement|JQuery|null}  scope
+ * @param  {*}  source - Story or Highlight GraphQL response
+ * @param  {?String}  username - Story owner's username
+ * @param  {HTMLElement|JQuery|null}  scope - Element inside the story viewer
  * @return {?Object}
  */
 function resolveCurrentStoryItem(source, username, scope) {
@@ -329,42 +338,36 @@ function resolveCurrentStoryItem(source, username, scope) {
  * getCachedValue
  * @description Reuse upstream's cache and deduplicate in-flight GraphQL requests.
  *
- * @param  {Object}  bucket
- * @param  {Object}  requestBucket
- * @param  {String|Number}  key
- * @param  {Function}  producer
+ * @param  {Object}  bucket - Data cache bucket, e.g. state.GL_dataCache.stories
+ * @param  {Object}  requestBucket - Map of in-flight requests for the same bucket
+ * @param  {String}  key - Cache key, used as-is like story.js / highlight.js
+ * @param  {Function}  producer - Fetches the value on a cache miss
  * @return {Promise<*>}
  */
 function getCachedValue(bucket, requestBucket, key, producer) {
-    const originalKey = `${key}`;
-    const normalizedKey = originalKey.toLowerCase();
-    const cacheKey = Object.prototype.hasOwnProperty.call(bucket, normalizedKey)
-        ? normalizedKey
-        : originalKey;
-    if (Object.prototype.hasOwnProperty.call(bucket, cacheKey)) {
-        return Promise.resolve(bucket[cacheKey]);
+    if (Object.prototype.hasOwnProperty.call(bucket, key)) {
+        return Promise.resolve(bucket[key]);
     }
-    if (requestBucket[normalizedKey]) return requestBucket[normalizedKey];
+    if (requestBucket[key]) return requestBucket[key];
 
-    requestBucket[normalizedKey] = Promise.resolve()
+    requestBucket[key] = Promise.resolve()
         .then(producer)
         .then(result => {
-            bucket[normalizedKey] = result;
-            if (originalKey !== normalizedKey) bucket[originalKey] = result;
+            bucket[key] = result;
             return result;
         })
         .finally(() => {
-            delete requestBucket[normalizedKey];
+            delete requestBucket[key];
         });
 
-    return requestBucket[normalizedKey];
+    return requestBucket[key];
 }
 
 /**
  * getCachedStories
  * @description Get a regular-story payload from cache or the existing story API flow.
  *
- * @param  {String}  username
+ * @param  {String}  username - Story owner's username
  * @return {Promise<Object>}
  */
 async function getCachedStories(username) {
@@ -385,7 +388,7 @@ async function getCachedStories(username) {
  * getCachedHighlightStories
  * @description Get a highlight payload from cache or the existing highlight API flow.
  *
- * @param  {String}  highlightId
+ * @param  {String}  highlightId - Highlight ID from the URL
  * @return {Promise<Object>}
  */
 async function getCachedHighlightStories(highlightId) {
@@ -406,8 +409,8 @@ async function getCachedHighlightStories(highlightId) {
  * extractStoryTaggedProfiles
  * @description Extract GraphQL mention stickers from the currently selected item.
  *
- * @param  {*}  item
- * @param  {?String}  excludeUsername
+ * @param  {*}  item - Active story item
+ * @param  {?String}  excludeUsername - Username to leave out, usually the story owner
  * @return {TaggedProfile[]}
  */
 function extractStoryTaggedProfiles(item, excludeUsername) {
@@ -434,9 +437,9 @@ function extractStoryTaggedProfiles(item, excludeUsername) {
  * createTaggedProfileStateFromSource
  * @description Build tagged-profile state from a story or highlight payload.
  *
- * @param  {*}  source
- * @param  {?String}  username
- * @param  {HTMLElement|JQuery|null}  scope
+ * @param  {*}  source - Story or Highlight GraphQL response
+ * @param  {?String}  username - Expected story owner's username
+ * @param  {HTMLElement|JQuery|null}  scope - Element inside the story viewer
  * @return {?TaggedProfileState}
  */
 function createTaggedProfileStateFromSource(source, username, scope) {
@@ -462,9 +465,9 @@ function createTaggedProfileStateFromSource(source, username, scope) {
  * resolveHighlightTaggedProfiles
  * @description Look up mention stickers for the active Highlight using GraphQL.
  *
- * @param  {String}  highlightId
- * @param  {?String}  activeUsername
- * @param  {HTMLElement}  button
+ * @param  {String}  highlightId - Highlight ID from the URL
+ * @param  {?String}  activeUsername - Expected highlight owner's username
+ * @param  {HTMLElement}  button - Tagged-profiles button element
  * @return {Promise<TaggedProfileState>}
  */
 async function resolveHighlightTaggedProfiles(highlightId, activeUsername, button) {
@@ -472,7 +475,7 @@ async function resolveHighlightTaggedProfiles(highlightId, activeUsername, butto
     const result = createTaggedProfileStateFromSource(payload, activeUsername, button);
     if (!result) throw new Error('Could not identify active highlight item');
 
-    logger('[taggedProfiles]', result.profiles.length ? 'source: highlight' : 'empty');
+    logger('resolveHighlightTaggedProfiles',result.profiles.length ? 'source: highlight' : 'empty');
     return { ...result, source: result.profiles.length ? 'Highlight GraphQL' : null };
 }
 
@@ -480,10 +483,10 @@ async function resolveHighlightTaggedProfiles(highlightId, activeUsername, butto
  * resolveRegularStoryTaggedProfiles
  * @description Look up mention stickers for the active Story using GraphQL.
  *
- * @param  {String[]}  usernames
- * @param  {?String}  mediaId
- * @param  {?String}  activeUsername
- * @param  {HTMLElement}  button
+ * @param  {String[]}  usernames - Candidate story owner usernames, tried in order
+ * @param  {?String}  mediaId - Media ID from the URL, used when the item has none
+ * @param  {?String}  activeUsername - Expected story owner's username
+ * @param  {HTMLElement}  button - Tagged-profiles button element
  * @return {Promise<TaggedProfileState>}
  */
 async function resolveRegularStoryTaggedProfiles(usernames, mediaId, activeUsername, button) {
@@ -497,19 +500,19 @@ async function resolveRegularStoryTaggedProfiles(usernames, mediaId, activeUsern
             if (!result) continue;
 
             if (result.profiles.length) {
-                logger('[taggedProfiles]', 'source: story');
+                logger('resolveRegularStoryTaggedProfiles', 'source: story');
                 return { ...result, source: 'Story GraphQL' };
             }
             emptyState = { ...result, mediaId: result.mediaId || mediaId, source: null };
         }
         catch (err) {
             lastError = err;
-            logger('[taggedProfiles]', 'story lookup failed', err);
+            logger('resolveRegularStoryTaggedProfiles', 'story lookup failed', err);
         }
     }
 
     if (emptyState) {
-        logger('[taggedProfiles]', 'empty');
+        logger('resolveRegularStoryTaggedProfiles', 'empty');
         return emptyState;
     }
     throw lastError || new Error('Could not identify active story item');
@@ -519,8 +522,8 @@ async function resolveRegularStoryTaggedProfiles(usernames, mediaId, activeUsern
  * resolveCurrentStoryTaggedProfiles
  * @description Use the existing GraphQL response for Stories and Highlights.
  *
- * @param  {?String}  username
- * @param  {HTMLElement}  button
+ * @param  {?String}  username - Story owner's username
+ * @param  {HTMLElement}  button - Tagged-profiles button element
  * @return {Promise<TaggedProfileState>}
  */
 async function resolveCurrentStoryTaggedProfiles(username, button) {
@@ -538,7 +541,7 @@ async function resolveCurrentStoryTaggedProfiles(username, button) {
  * getCachedProfileState
  * @description Get a non-expired final tagged-profile result.
  *
- * @param  {String}  identitySignature
+ * @param  {String}  identitySignature - Key from getCurrentStoryIdentitySignature()
  * @return {?TaggedProfileState}
  */
 function getCachedProfileState(identitySignature) {
@@ -549,11 +552,11 @@ function getCachedProfileState(identitySignature) {
     const cacheAge = Date.now() - cached.createdAt;
     if (!cached.profiles?.length || cacheAge > PROFILE_CACHE_MAX_AGE) {
         delete profileCache[identitySignature];
-        logger('[taggedProfiles]', cached.profiles?.length ? 'cache expired' : 'cache invalid');
+        logger('getCachedProfileState', cached.profiles?.length ? 'cache expired' : 'cache invalid');
         return null;
     }
 
-    logger('[taggedProfiles]', 'cache hit');
+    logger('getCachedProfileState', 'cache hit');
     return cached;
 }
 
@@ -561,8 +564,8 @@ function getCachedProfileState(identitySignature) {
  * setCachedProfileState
  * @description Cache a successful final tagged-profile result.
  *
- * @param  {String}  identitySignature
- * @param  {TaggedProfileState}  profileState
+ * @param  {String}  identitySignature - Key from getCurrentStoryIdentitySignature()
+ * @param  {TaggedProfileState}  profileState - Resolved result to cache
  * @return {void}
  */
 function setCachedProfileState(identitySignature, profileState) {
@@ -591,7 +594,7 @@ function setCachedProfileState(identitySignature, profileState) {
  * createTaggedProfileLink
  * @description Create a popup link for one tagged profile.
  *
- * @param  {TaggedProfile}  profile
+ * @param  {TaggedProfile}  profile - Profile to link to
  * @return {JQuery}
  */
 function createTaggedProfileLink(profile) {
@@ -614,9 +617,10 @@ function createTaggedProfileLink(profile) {
  * showStoryTaggedProfilesDialog
  * @description Show tagged profiles in an IG Helper popup dialog.
  *
- * @param  {TaggedProfile[]}  profiles
- * @param  {?String}  mediaId
- * @param  {?String}  errorMessage
+ * @param  {TaggedProfile[]}  profiles - Profiles to list
+ * @param  {?String}  [mediaId=null] - Media ID shown in the dialog header
+ * @param  {?String}  [errorMessage=null] - Error shown instead of the list
+ * @param  {?String}  [source=null] - Detection method label
  * @return {void}
  */
 function showStoryTaggedProfilesDialog(profiles, mediaId = null, errorMessage = null, source = null) {
@@ -669,7 +673,7 @@ function showStoryTaggedProfilesDialog(profiles, mediaId = null, errorMessage = 
  * onStoryTaggedProfiles
  * @description Resolve and display tagged profiles for the active story item.
  *
- * @param  {HTMLElement}  button
+ * @param  {HTMLElement}  button - Clicked tagged-profiles button
  * @return {Promise<void>}
  */
 export async function onStoryTaggedProfiles(button) {
@@ -693,7 +697,7 @@ export async function onStoryTaggedProfiles(button) {
         const currentIdentitySignature = getCurrentStoryIdentitySignature(button);
 
         if (currentIdentitySignature !== identitySignature) {
-            logger('onStoryTaggedProfiles()', 'Discarded stale story result after navigation.');
+            logger('onStoryTaggedProfiles', 'Discarded stale story result after navigation.');
             return;
         }
 
@@ -701,10 +705,10 @@ export async function onStoryTaggedProfiles(button) {
         showStoryTaggedProfilesDialog(profileState.profiles, profileState.mediaId, null, profileState.source);
     }
     catch (err) {
-        logger('onStoryTaggedProfiles()', err);
+        logger('onStoryTaggedProfiles', err);
 
         if (getCurrentStoryIdentitySignature(button) !== identitySignature) {
-            logger('onStoryTaggedProfiles()', 'Discarded stale story error after navigation.');
+            logger('onStoryTaggedProfiles','Discarded stale story error after navigation.');
             return;
         }
 
@@ -738,8 +742,8 @@ function createStoryTaggedProfilesButton() {
  * setStoryTaggedProfilesButton
  * @description Add or update the tagged-profiles control in a story viewer.
  *
- * @param  {JQuery}  $element
- * @param  {?String}  username
+ * @param  {JQuery}  $element - Story control container to append the button to
+ * @param  {?String}  username - Story owner's username
  * @return {void}
  */
 export function setStoryTaggedProfilesButton($element, username) {
