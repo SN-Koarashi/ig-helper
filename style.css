@@ -18,7 +18,7 @@
     bottom: 0px;
     top: 0px;
     z-index: 2147483000;
-    font-size: 14px;
+    font-size: 16px;
 }
 
 .IG_POPUP_DIG.hidden {
@@ -442,7 +442,7 @@
 }
 
 .checkbox {
-    font-size: 15px;
+    font-size: 16px;
     vertical-align: middle;
     margin: 0px 7px;
     user-select: none;
