@@ -644,7 +644,7 @@ export function buildGraphQLData(docId, variables, friendlyName, crn, rootName) 
         __spin_t: siteData?.__spin_t || '',
         __comet_req: siteData?.comet_env || '',
         __ccg: 'EXCELLENT',
-        dpr: siteData?.pr,
+        dpr: '3',
         jazoest: getJazoest(getDTSG()),
         __user: '0',
         __a: '1',
@@ -660,6 +660,10 @@ export function buildGraphQLData(docId, variables, friendlyName, crn, rootName) 
 
     let headers = {
         // "User-Agent": webViewAgent,
+        'Dpr': '3',
+        'Sec-Ch-Dpr': '3',
+        'Viewport-Width': '3840',
+        'Sec-Ch-Viewport-Width': '3840',
         'X-IG-App-ID': getAppID() || '0',
         'X-CSRFToken': getCookie('csrftoken') || '',
         'X-Fb-Friendly-Name': friendlyName,
