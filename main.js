@@ -17,7 +17,7 @@
 // @name:zh-CN         IG小助手
 // @name:zh-TW         IG小精靈
 // @namespace          https://github.snkms.com/
-// @version            5.4.1
+// @version            5.4.2
 // @description        Download photos and videos from Instagram posts in one click, including Stories, Reels, and profile pictures.
 // @description:ar     نزّل صورًا ومقاطع فيديو من منشورات Instagram بنقرة واحدة، بما في ذلك القصص وReels وصور الملف الشخصي.
 // @description:de     Lade Fotos und Videos aus Instagram-Beiträgen mit einem Klick herunter, einschließlich Stories, Reels und Profilbildern.
@@ -2814,38 +2814,20 @@
                     let multiple = $resourceItems.length;
                     let blob = USER_SETTING.FORCE_FETCH_ALL_RESOURCES;
 
-                    if (multiple) {
-                        $resourceItems.each(function () {
-                            let element_videos = $(this).parent().parent().parent().find('video');
-                            if (element_videos && element_videos.attr('src')) {
-                                blob = true;
-                            }
-                        });
-
-                        if (blob) {
-                            await createMediaListDOM(
-                                state.GL_postPath,
-                                ".IG_POPUP_DIG .IG_POPUP_DIG_MAIN .IG_POPUP_DIG_BODY",
-                                _i18n("LOAD_BLOB_MULTIPLE")
-                            );
-                        }
-                        else {
-                            const $popupBody = $('.IG_POPUP_DIG .IG_POPUP_DIG_MAIN .IG_POPUP_DIG_BODY');
+                    if (USER_SETTING.FORCE_FETCH_ALL_RESOURCES) {
+                        await createMediaListDOM(
+                            state.GL_postPath,
+                            ".IG_POPUP_DIG .IG_POPUP_DIG_MAIN .IG_POPUP_DIG_BODY",
+                            multiple ? _i18n("LOAD_BLOB_MULTIPLE") : _i18n("LOAD_BLOB_ONE")
+                        );
+                    }
+                    else {
+                        // When there is no intention to force fetching, first check if the resource can be obtained from the DOM.
+                        if (multiple) {
                             $resourceItems.each(function () {
-                                s++;
-                                const $this = $(this);
-                                let element_videos = $this.find('video');
-                                let element_images = getPostImages($this);
-                                let imgLink = (element_images.attr('srcset')) ? element_images.attr('srcset').split(" ")[0] : element_images.attr('src');
-                                let itemMediaId = imgLink ? mediaIdFromURL(imgLink) : null;
-                                let cachedItem = (USER_SETTING.CAPTURE_IMAGE_VIA_MEDIA_CACHE && itemMediaId) ? getImageFromCache(itemMediaId) : null;
-                                if (cachedItem) imgLink = cachedItem;
-
+                                let element_videos = $(this).parent().parent().parent().find('video');
                                 if (element_videos && element_videos.attr('src')) {
                                     blob = true;
-                                }
-                                if (element_images.length > 0 && imgLink) {
-                                    $popupBody.append(`<a media-id="${itemMediaId || ''}" datetime="${publish_time}" data-needed="direct" data-path="${state.GL_postPath}" data-name="photo" data-type="jpg" data-username="${state.GL_username || ''}" data-globalIndex="${s}" href="javascript:;" data-href="${imgLink}"><img width="100" src="${imgLink}" /><br/>- <span data-ih-locale="IMG">${_i18n("IMG")}</span> ${s} -</a>`);
                                 }
                             });
 
@@ -2853,37 +2835,73 @@
                                 await createMediaListDOM(
                                     state.GL_postPath,
                                     ".IG_POPUP_DIG .IG_POPUP_DIG_MAIN .IG_POPUP_DIG_BODY",
-                                    _i18n("LOAD_BLOB_RELOAD")
+                                    _i18n("LOAD_BLOB_MULTIPLE")
                                 );
                             }
-                        }
-                    }
-                    else {
-                        s++;
-                        let element_videos = $article.find('video');
-                        let element_images = getPostImages($article);
-                        let imgLink = (element_images.attr('srcset')) ? element_images.attr('srcset').split(" ")[0] : element_images.attr('src');
+                            else {
+                                const $popupBody = $('.IG_POPUP_DIG .IG_POPUP_DIG_MAIN .IG_POPUP_DIG_BODY');
+                                $resourceItems.each(function () {
+                                    s++;
+                                    const $this = $(this);
+                                    let element_videos = $this.find('video');
+                                    let element_images = getPostImages($this);
+                                    let imgLink = (element_images.attr('srcset')) ? element_images.attr('srcset').split(" ")[0] : element_images.attr('src');
+                                    let itemMediaId = imgLink ? mediaIdFromURL(imgLink) : null;
+                                    let cachedItem = (USER_SETTING.CAPTURE_IMAGE_VIA_MEDIA_CACHE && itemMediaId) ? getImageFromCache(itemMediaId) : null;
+                                    if (cachedItem) imgLink = cachedItem;
 
-                        if (USER_SETTING.CAPTURE_IMAGE_VIA_MEDIA_CACHE && ctx.cachedUrl && !ctx.isVideo) {
-                            imgLink = ctx.cachedUrl;
-                        }
+                                    if (element_videos && element_videos.attr('src')) {
+                                        blob = true;
+                                    }
+                                    if (element_images.length > 0 && imgLink) {
+                                        $popupBody.append(`<a media-id="${itemMediaId || ''}" datetime="${publish_time}" data-needed="direct" data-path="${state.GL_postPath}" data-name="photo" data-type="jpg" data-username="${state.GL_username || ''}" data-globalIndex="${s}" href="javascript:;" data-href="${imgLink}"><img width="100" src="${imgLink}" /><br/>- <span data-ih-locale="IMG">${_i18n("IMG")}</span> ${s} -</a>`);
+                                    }
+                                });
 
-                        if (element_videos.length > 0 && element_videos.attr('src')) {
-                            await createMediaListDOM(
-                                state.GL_postPath,
-                                ".IG_POPUP_DIG .IG_POPUP_DIG_MAIN .IG_POPUP_DIG_BODY",
-                                _i18n("LOAD_BLOB_ONE")
-                            );
+                                if (blob) {
+                                    await createMediaListDOM(
+                                        state.GL_postPath,
+                                        ".IG_POPUP_DIG .IG_POPUP_DIG_MAIN .IG_POPUP_DIG_BODY",
+                                        _i18n("LOAD_BLOB_RELOAD")
+                                    );
+                                }
+                            }
                         }
-                        if (element_images.length > 0 && imgLink) {
-                            $('.IG_POPUP_DIG .IG_POPUP_DIG_MAIN .IG_POPUP_DIG_BODY').append(`<a media-id="${ctx.mediaId || ''}" datetime="${publish_time}" data-needed="direct" data-path="${state.GL_postPath}" data-name="photo" data-type="jpg" data-username="${state.GL_username || ''}" data-globalIndex="${s}" href="javascript:;" data-href="${imgLink}"><img width="100" src="${imgLink}" /><br/>- <span data-ih-locale="IMG">${_i18n("IMG")}</span> ${s} -</a>`);
-                        }
-                        else if (element_videos.length === 0 && !blob) {
-                            await createMediaListDOM(
-                                state.GL_postPath,
-                                ".IG_POPUP_DIG .IG_POPUP_DIG_MAIN .IG_POPUP_DIG_BODY",
-                                _i18n("LOAD_BLOB_ONE")
-                            );
+                        else {
+                            s++;
+                            let element_videos = $article.find('video');
+                            let element_images = getPostImages($article);
+                            let imgLink = (element_images.attr('srcset')) ? element_images.attr('srcset').split(" ")[0] : element_images.attr('src');
+
+                            if (USER_SETTING.CAPTURE_IMAGE_VIA_MEDIA_CACHE && ctx.cachedUrl && !ctx.isVideo) {
+                                imgLink = ctx.cachedUrl;
+                            }
+
+                            if (element_videos.length > 0 && element_videos.attr('src')) {
+                                await createMediaListDOM(
+                                    state.GL_postPath,
+                                    ".IG_POPUP_DIG .IG_POPUP_DIG_MAIN .IG_POPUP_DIG_BODY",
+                                    _i18n("LOAD_BLOB_ONE")
+                                );
+                            }
+                            if (element_images.length > 0 && imgLink) {
+                                $('.IG_POPUP_DIG .IG_POPUP_DIG_MAIN .IG_POPUP_DIG_BODY').append(`<a media-id="${ctx.mediaId || ''}" datetime="${publish_time}" data-needed="direct" data-path="${state.GL_postPath}" data-name="photo" data-type="jpg" data-username="${state.GL_username || ''}" data-globalIndex="${s}" href="javascript:;" data-href="${imgLink}"><img width="100" src="${imgLink}" /><br/>- <span data-ih-locale="IMG">${_i18n("IMG")}</span> ${s} -</a>`);
+                            }
+                            else if (element_videos.length === 0 && !blob) {
+                                await createMediaListDOM(
+                                    state.GL_postPath,
+                                    ".IG_POPUP_DIG .IG_POPUP_DIG_MAIN .IG_POPUP_DIG_BODY",
+                                    _i18n("LOAD_BLOB_ONE")
+                                );
+                            }
+
+                            if ($('.IG_POPUP_DIG .IG_POPUP_DIG_MAIN .IG_POPUP_DIG_BODY').find('a').length === 0) {
+                                await createMediaListDOM(
+                                    state.GL_postPath,
+                                    ".IG_POPUP_DIG .IG_POPUP_DIG_MAIN .IG_POPUP_DIG_BODY",
+                                    _i18n("LOAD_BLOB_ONE")
+                                );
+                            }
                         }
                     }
                 }
