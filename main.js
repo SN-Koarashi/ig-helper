@@ -17,7 +17,7 @@
 // @name:zh-CN         IG小助手
 // @name:zh-TW         IG小精靈
 // @namespace          https://github.snkms.com/
-// @version            5.3.1
+// @version            5.4.0
 // @description        Download photos and videos from Instagram posts in one click, including Stories, Reels, and profile pictures.
 // @description:ar     نزّل صورًا ومقاطع فيديو من منشورات Instagram بنقرة واحدة، بما في ذلك القصص وReels وصور الملف الشخصي.
 // @description:de     Lade Fotos und Videos aus Instagram-Beiträgen mit einem Klick herunter, einschließlich Stories, Reels und Profilbildern.
@@ -120,6 +120,17 @@
 
     const USER_ID_CACHE_KEY = 'USER_IDS_STORED';
     const USER_ID_MAX_CACHE_ITEMS = 1000;
+
+    // Persistent caches live in IndexedDB (see utils/cache.js); settings stay in GM storage.
+    const PERSISTENT_CACHE_DB_NAME = 'IG_HELPER';
+    const PERSISTENT_CACHE_DB_VERSION = 1;
+    const PERSISTENT_CACHE_STORE_NAME = 'DATA_CACHE';
+    const PERSISTENT_CACHE_FLUSH_DELAY = 500;
+    // Cache key -> `state` field holding its in-memory copy.
+    const PERSISTENT_CACHE_BINDINGS = {
+        [IMAGE_CACHE_KEY]: 'GL_imageCache',
+        [USER_ID_CACHE_KEY]: 'GL_userIdCache'
+    };
     /*******************************/
 
     // Icon download by Google Fonts Material Icon & Lucide
@@ -150,10 +161,22 @@
     const locale_manifest = JSON.parse(GM_getResourceText("LOCALE_MANIFEST"));
 
     const userIdCache = new Map();
-    const webViewAgent = "Mozilla/5.0 (Linux; Android 14; Build/UP1A.231005.007; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/156.0.8078.51 Mobile Safari/537.36 Instagram 452.1.0.53.64 Android (34/14; 520dpi; 1220x2712; Pixel; rothko; mt6989; en_US; 1096920925; IABMV/1)";
+    // export const webViewAgent = "Mozilla/5.0 (Linux; Android 14; Build/UP1A.231005.007; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/156.0.8078.51 Mobile Safari/537.36 Instagram 452.1.0.53.64 Android (34/14; 520dpi; 1220x2712; Pixel; rothko; mt6989; en_US; 1096920925; IABMV/1)";
     // Session-only hot cache for media discovered during the current page session.
     // Persistent media entries remain in state.GL_imageCache and are not preloaded here.
     const mediaCache = new Map();
+
+    // Runtime state of the persistent cache manager (utils/cache.js). Kept here because
+    // cache.js is bundled after initial.js, which calls the manager at startup.
+    const persistentCacheStore = {
+        backend: null,          // 'indexeddb' | 'gm'; null until initPersistentCache() settles
+        db: null,
+        readyPromise: null,
+        values: new Map(),      // cache key -> in-memory value (same object as its state field)
+        pending: new Set(),     // cache keys waiting to be written
+        flushTimer: null,
+        flushChain: Promise.resolve(true)
+    };
 
     // OPTIMIZATION: Cached jQuery body reference — used in many places, jQuery 4
     // creates a new wrapper for each $('body') call. Reusing $body avoids that
@@ -204,8 +227,9 @@
         GL_dialogTimer: null,
         GL_profileTimer: null,
         GL_reelsTimer: null,
-        GL_imageCache: GM_getValue(IMAGE_CACHE_KEY, {}),
-        GL_userIdCache: GM_getValue(USER_ID_CACHE_KEY, {}),
+        // Filled from IndexedDB by initPersistentCache(); empty until then.
+        GL_imageCache: {},
+        GL_userIdCache: {},
         GL_weakCache: {
             overlay: new WeakMap(),
             mutedButton: new WeakMap(),
@@ -214,8 +238,6 @@
         settingsHotkeyKeyCode: (GM_getValue('G_HOTKEY_SETTINGS_KEYCODE')) ? GM_getValue('G_HOTKEY_SETTINGS_KEYCODE') : 87,
         keySettingsHotkeyKeyCode: (GM_getValue('G_HOTKEY_KEY_SETTINGS_KEYCODE')) ? GM_getValue('G_HOTKEY_KEY_SETTINGS_KEYCODE') : 67,
         downloadStoryHotkeyKeyCode: (GM_getValue('G_HOTKEY_DOWNLOAD_STORY_KEYCODE')) ? GM_getValue('G_HOTKEY_DOWNLOAD_STORY_KEYCODE') : 83,
-        userIdCacheDirty: false,
-        userIdCacheSaveTimer: null,
         /**
          * resourceObserver
          * @description A single IntersectionObserver shared by all posts. It replaces the
@@ -270,7 +292,8 @@
 
     logger('Script Loaded', GM_info.script.name, 'version:', GM_info.script.version);
     registerPostClickHandlers();
-    purgeCache();
+    // Load persistent caches from IndexedDB, then drop expired image entries.
+    initPersistentCache().then(() => purgeCache());
     initRouteWatcher();
     /*******************************/
 
@@ -2295,7 +2318,6 @@
      */
     function createDownloadButton() {
         // Add download icon per each posts
-        // eslint-disable-next-line no-unused-vars
 
         /*
          * OPTIMIZATION:
@@ -2996,11 +3018,12 @@
                         });
 
                         let itemUrl = mda.image_versions2.candidates[0].url;
+                        let previewUrl = mda.image_versions2.candidates.at(-1).url;
                         if (USER_SETTING.CAPTURE_IMAGE_VIA_MEDIA_CACHE) {
                             const cachedImg = getImageFromCache(String(mda.pk));
                             if (cachedImg) itemUrl = cachedImg;
                         }
-                        $target.append(`<a media-id="${mda.pk}" datetime="${mda.taken_at || resource.taken_at}" data-blob="true" data-needed="direct" data-path="${resourceShortcode}" data-name="photo" data-type="jpg" data-username="${resource.owner.username}" data-globalIndex="${idx}" href="javascript:;" data-href="${itemUrl}"><img width="100" src="${itemUrl}" /><br/>- <span data-ih-locale="IMG">${_i18n("IMG")}</span> ${idx} -</a>`);
+                        $target.append(`<a media-id="${mda.pk}" datetime="${mda.taken_at || resource.taken_at}" data-blob="true" data-needed="direct" data-path="${resourceShortcode}" data-name="photo" data-type="jpg" data-username="${resource.owner.username}" data-globalIndex="${idx}" href="javascript:;" data-href="${itemUrl}"><img width="100" src="${previewUrl}" /><br/>- <span data-ih-locale="IMG">${_i18n("IMG")}</span> ${idx} -</a>`);
                     }
                     // Video
                     else {
@@ -3029,11 +3052,12 @@
                     });
 
                     let itemUrl = resource.image_versions2.candidates[0].url;
+                    let previewUrl = resource.image_versions2.candidates.at(-1).url;
                     if (USER_SETTING.CAPTURE_IMAGE_VIA_MEDIA_CACHE) {
                         const cachedImg = getImageFromCache(String(resource.pk));
                         if (cachedImg) itemUrl = cachedImg;
                     }
-                    $target.append(`<a media-id="${resource.pk}" datetime="${resource.taken_at}" data-blob="true" data-needed="direct" data-path="${resourceShortcode}" data-name="photo" data-type="jpg" data-username="${resource.owner.username}" data-globalIndex="${idx}" href="javascript:;" data-href="${itemUrl}"><img width="100" src="${itemUrl}" /><br/>- <span data-ih-locale="IMG">${_i18n("IMG")}</span> ${idx} -</a>`);
+                    $target.append(`<a media-id="${resource.pk}" datetime="${resource.taken_at}" data-blob="true" data-needed="direct" data-path="${resourceShortcode}" data-name="photo" data-type="jpg" data-username="${resource.owner.username}" data-globalIndex="${idx}" href="javascript:;" data-href="${itemUrl}"><img width="100" src="${previewUrl}" /><br/>- <span data-ih-locale="IMG">${_i18n("IMG")}</span> ${idx} -</a>`);
                 }
                 // Video
                 else {
@@ -5855,132 +5879,306 @@
 
     /* utils */
 
-    const DB_NAME = 'IG_HELPER';
-    const DB_VERSION = 1;
-    const STORE_NAME = 'DATA_CACHE';
+    /*
+    ──────────────────────────────────────────────────────────────
+           PERSISTENT CACHE MANAGER (IndexedDB)
+    ──────────────────────────────────────────────────────────────
+
+        Single access point for the persistent *caches* (PERSISTENT_CACHE_BINDINGS).
+        User settings are NOT managed here and stay in GM_setValue.
+
+        - getPersistentCache() is synchronous and served from an in-memory mirror.
+        - setPersistentCache() updates the mirror immediately; every change made in
+          the same PERSISTENT_CACHE_FLUSH_DELAY window is written in one transaction.
+        - initPersistentCache() loads the stored caches and puts them into their
+          `state` fields. Entries added before it settles are merged with the stored
+          ones (session entries win), so nothing captured early is lost.
+        - On first run, the old GM_setValue copy is moved into IndexedDB once, then
+          replaced by {} so the userscript manager stops preloading it on every page.
+        - If IndexedDB cannot be used, the caches fall back to GM_setValue as before.
+    */
+
+    /**
+     * idbRequest
+     * @description Wrap an IDBRequest into a Promise.
+     *
+     * @param  {IDBRequest} request
+     * @return {Promise<any>}
+     */
+    function idbRequest(request) {
+        return new Promise((resolve, reject) => {
+            request.onsuccess = () => resolve(request.result);
+            request.onerror = () => reject(request.error);
+        });
+    }
+
+    /**
+     * idbTransactionDone
+     * @description Resolve once a transaction has committed, reject if it fails or aborts.
+     *
+     * @param  {IDBTransaction} transaction
+     * @return {Promise<void>}
+     */
+    function idbTransactionDone(transaction) {
+        return new Promise((resolve, reject) => {
+            transaction.oncomplete = () => resolve();
+            transaction.onerror = () => reject(transaction.error);
+            transaction.onabort = () => reject(transaction.error ?? new Error('Transaction aborted'));
+        });
+    }
 
     /**
      * openDB
-     * @description Open (or create on first run) the IG_HELPER IndexedDB database
-     *              used to persist larger data caches that don't fit comfortably in
-     *              GM_setValue.
+     * @description Open (or create on first run) the IG_HELPER IndexedDB database.
+     *              The connection closes itself when another tab upgrades the schema;
+     *              getPersistentCacheDB() reopens it on the next access.
      *
      * @return {Promise<IDBDatabase>}
      */
     function openDB() {
         return new Promise((resolve, reject) => {
-            const request = indexedDB.open(DB_NAME, DB_VERSION);
+            const request = indexedDB.open(PERSISTENT_CACHE_DB_NAME, PERSISTENT_CACHE_DB_VERSION);
 
-            request.onupgradeneeded = (event) => {
-                const db = event.target.result;
-                if (!db.objectStoreNames.contains(STORE_NAME)) {
-                    db.createObjectStore(STORE_NAME, { keyPath: 'id' });
+            request.onupgradeneeded = () => {
+                const db = request.result;
+                if (!db.objectStoreNames.contains(PERSISTENT_CACHE_STORE_NAME)) {
+                    db.createObjectStore(PERSISTENT_CACHE_STORE_NAME, { keyPath: 'id' });
                 }
             };
 
-            request.onsuccess = (event) => resolve(event.target.result);
-            request.onerror = (event) => reject(`Database open failed: ${event.target.error}`);
+            request.onsuccess = () => {
+                const db = request.result;
+                const forget = () => {
+                    if (persistentCacheStore.db === db) persistentCacheStore.db = null;
+                };
+                db.onversionchange = () => {
+                    db.close();
+                    forget();
+                };
+                db.onclose = forget;
+                resolve(db);
+            };
+            request.onerror = () => reject(request.error);
+            request.onblocked = () => reject(new Error('IndexedDB open blocked by another tab'));
         });
     }
 
     /**
-     * addData
-     * @description Insert a new record into the DATA_CACHE object store. Fails if a
-     *              record with the same key already exists (use updateData for upsert).
+     * getPersistentCacheDB
+     * @description Return the shared connection, opening it if needed.
      *
-     * @param {string|number} id
-     * @param  {Object}  data
-     * @return {Promise<IDBValidKey>}
+     * @return {Promise<IDBDatabase>}
      */
-    async function addData(id, data) {
-        const db = await openDB();
-        return new Promise((resolve, reject) => {
-            const transaction = db.transaction(STORE_NAME, 'readwrite');
-            const store = transaction.objectStore(STORE_NAME);
-            const request = store.add({
-                ...data,
-                id
+    async function getPersistentCacheDB() {
+        if (!persistentCacheStore.db) {
+            persistentCacheStore.db = await openDB();
+        }
+        return persistentCacheStore.db;
+    }
+
+    /**
+     * mergeCacheEntries
+     * @description Merge stored cache entries with entries added during this session.
+     *              Session entries win on conflict.
+     *
+     * @param  {any} stored
+     * @param  {any} session
+     * @return {any}
+     */
+    function mergeCacheEntries(stored, session) {
+        const isPlainObject = (value) => !!value && typeof value === 'object' && !Array.isArray(value);
+
+        if (!isPlainObject(stored)) return session;
+        if (!isPlainObject(session)) return stored;
+        return { ...stored, ...session };
+    }
+
+    /**
+     * initPersistentCache
+     * @description Load every persistent cache from IndexedDB (moving the old
+     *              GM_setValue copy over on first run) and put each one into its
+     *              `state` field. Safe to call many times: every call returns the
+     *              same promise. Never rejects; on failure it falls back to GM storage.
+     *
+     * @return {Promise<'indexeddb'|'gm'>} The backend in use.
+     */
+    function initPersistentCache() {
+        if (persistentCacheStore.readyPromise) return persistentCacheStore.readyPromise;
+
+        persistentCacheStore.readyPromise = (async () => {
+            const keys = Object.keys(PERSISTENT_CACHE_BINDINGS);
+            let stored = {};
+
+            try {
+                if (typeof indexedDB === 'undefined') {
+                    throw new Error('IndexedDB is not available');
+                }
+
+                const db = await getPersistentCacheDB();
+                const readStore = db.transaction(PERSISTENT_CACHE_STORE_NAME, 'readonly')
+                    .objectStore(PERSISTENT_CACHE_STORE_NAME);
+                const records = await Promise.all(keys.map((key) => idbRequest(readStore.get(key))));
+
+                const migrated = [];
+                keys.forEach((key, i) => {
+                    if (records[i] !== undefined) {
+                        stored[key] = records[i].value;
+                        return;
+                    }
+
+                    const legacyValue = GM_getValue(key);
+                    if (legacyValue !== undefined) {
+                        stored[key] = legacyValue;
+                        migrated.push(key);
+                    }
+                });
+
+                if (migrated.length > 0) {
+                    const transaction = db.transaction(PERSISTENT_CACHE_STORE_NAME, 'readwrite');
+                    const writeStore = transaction.objectStore(PERSISTENT_CACHE_STORE_NAME);
+                    const now = Date.now();
+
+                    for (const key of migrated) {
+                        writeStore.put({ id: key, value: stored[key], updatedAt: now });
+                    }
+                    await idbTransactionDone(transaction);
+
+                    // Only release the GM copy once IndexedDB has committed it.
+                    for (const key of migrated) {
+                        GM_setValue(key, {});
+                    }
+                    logger('initPersistentCache()', `moved ${migrated.join(', ')} from GM storage to IndexedDB`);
+                }
+
+                persistentCacheStore.backend = 'indexeddb';
+            }
+            catch (err) {
+                logger('initPersistentCache()', 'IndexedDB unavailable, falling back to GM storage', err);
+                persistentCacheStore.backend = 'gm';
+                stored = {};
+                for (const key of keys) {
+                    stored[key] = GM_getValue(key);
+                }
+            }
+
+            // Put each cache into its state field. This runs synchronously, so no
+            // write can slip in between reading the session entries and replacing them.
+            for (const key of keys) {
+                const field = PERSISTENT_CACHE_BINDINGS[key];
+                const session = state[field];
+                const hasSessionEntries = !!session && Object.keys(session).length > 0;
+                const merged = (stored[key] === undefined) ? session : mergeCacheEntries(stored[key], session);
+
+                state[field] = merged;
+                persistentCacheStore.values.set(key, merged);
+                if (hasSessionEntries) persistentCacheStore.pending.add(key);
+            }
+
+            // Best effort: persist pending writes before the tab goes away.
+            window.addEventListener('pagehide', () => flushPersistentCache());
+            document.addEventListener('visibilitychange', () => {
+                if (document.visibilityState === 'hidden') flushPersistentCache();
             });
 
-            request.onsuccess = () => resolve(request.result);
-            request.onerror = (event) => reject(`Insert failed: ${event.target.error}`);
-        });
+            if (persistentCacheStore.pending.size > 0) schedulePersistentCacheFlush();
+
+            return persistentCacheStore.backend;
+        })();
+
+        return persistentCacheStore.readyPromise;
     }
 
     /**
-     * getData
-     * @description Retrieve a record from the DATA_CACHE object store by key.
+     * setPersistentCache
+     * @description Update the in-memory value right away and queue a batched write.
      *
-     * @param  {number|string}  id
-     * @return {Promise<?Object>}
+     * @param  {string} key
+     * @param  {any}    value - Must be structured-cloneable.
+     * @return {void}
      */
-    async function getData(id) {
-        const db = await openDB();
-        return new Promise((resolve, reject) => {
-            const transaction = db.transaction(STORE_NAME, 'readonly');
-            const store = transaction.objectStore(STORE_NAME);
-            const request = store.get(id);
-
-            request.onsuccess = () => resolve(request.result);
-            request.onerror = (event) => reject(`Read failed: ${event.target.error}`);
-        });
+    function setPersistentCache(key, value) {
+        persistentCacheStore.values.set(key, value);
+        persistentCacheStore.pending.add(key);
+        schedulePersistentCacheFlush();
     }
 
     /**
-     * getAllData
-     * @description Retrieve every record from the DATA_CACHE object store.
+     * schedulePersistentCacheFlush
+     * @description Debounce writes so a burst of changes becomes one transaction.
      *
-     * @return {Promise<Array>}
+     * @return {void}
      */
-    async function getAllData() {
-        const db = await openDB();
-        return new Promise((resolve, reject) => {
-            const transaction = db.transaction(STORE_NAME, 'readonly');
-            const store = transaction.objectStore(STORE_NAME);
-            const request = store.getAll();
+    function schedulePersistentCacheFlush() {
+        if (persistentCacheStore.flushTimer) return;
 
-            request.onsuccess = () => resolve(request.result);
-            request.onerror = (event) => reject(`Read all failed: ${event.target.error}`);
-        });
+        persistentCacheStore.flushTimer = setTimeout(() => {
+            persistentCacheStore.flushTimer = null;
+            flushPersistentCache();
+        }, PERSISTENT_CACHE_FLUSH_DELAY);
     }
 
     /**
-     * updateData
-     * @description Upsert (insert-or-replace) a record into the DATA_CACHE object store.
+     * flushPersistentCache
+     * @description Write every pending change now. Flushes run one after another,
+     *              never in parallel. Starts initPersistentCache() if needed.
      *
-     * @param {number} id
-     * @param  {Object}  data
-     * @return {Promise<IDBValidKey>}
+     * @return {Promise<boolean>} False when the write failed (the keys stay queued).
      */
-    async function updateData(id, data) {
-        const db = await openDB();
-        return new Promise((resolve, reject) => {
-            const transaction = db.transaction(STORE_NAME, 'readwrite');
-            const store = transaction.objectStore(STORE_NAME);
+    function flushPersistentCache() {
+        if (persistentCacheStore.flushTimer) {
+            clearTimeout(persistentCacheStore.flushTimer);
+            persistentCacheStore.flushTimer = null;
+        }
 
-            const request = store.put({
-                ...data,
-                id
-            });
-
-            request.onsuccess = () => resolve(request.result);
-            request.onerror = (event) => reject(`Update failed: ${event.target.error}`);
-        });
+        persistentCacheStore.flushChain = persistentCacheStore.flushChain.then(writePendingPersistentCache);
+        return persistentCacheStore.flushChain;
     }
 
     /**
-     * @param {number} id
+     * writePendingPersistentCache
+     * @description Write the pending keys to the active backend. The value written is
+     *              the latest one in memory, so changes made after set() are included.
+     *              On failure, the keys are queued again for the next flush.
+     *
+     * @return {Promise<boolean>}
      */
-    async function deleteData(id) {
-        const db = await openDB();
-        return new Promise((resolve, reject) => {
-            const transaction = db.transaction(STORE_NAME, 'readwrite');
-            const store = transaction.objectStore(STORE_NAME);
-            const request = store.delete(id);
+    async function writePendingPersistentCache() {
+        await initPersistentCache();
+        if (persistentCacheStore.pending.size === 0) return true;
 
-            request.onsuccess = () => resolve(true);
-            request.onerror = (event) => reject(`Delete failed: ${event.target.error}`);
-        });
+        const batch = [...persistentCacheStore.pending];
+        persistentCacheStore.pending.clear();
+
+        try {
+            if (persistentCacheStore.backend === 'indexeddb') {
+                const db = await getPersistentCacheDB();
+                const transaction = db.transaction(PERSISTENT_CACHE_STORE_NAME, 'readwrite');
+                const store = transaction.objectStore(PERSISTENT_CACHE_STORE_NAME);
+                const now = Date.now();
+
+                for (const key of batch) {
+                    store.put({ id: key, value: persistentCacheStore.values.get(key), updatedAt: now });
+                }
+                await idbTransactionDone(transaction);
+            }
+            else {
+                for (const key of batch) {
+                    GM_setValue(key, persistentCacheStore.values.get(key));
+                }
+            }
+
+            return true;
+        }
+        catch (err) {
+            // The connection may be dead; reopen it on the next attempt.
+            persistentCacheStore.db = null;
+            for (const key of batch) {
+                persistentCacheStore.pending.add(key);
+            }
+
+            logger('flushPersistentCache()', `write failed, ${batch.length} key(s) queued again`, err);
+            return false;
+        }
     }
 
     /**
@@ -6024,7 +6222,7 @@
 
         if (existed) {
             delete state.GL_userIdCache[normalizedUsername];
-            state.userIdCacheDirty = true;
+            setPersistentCache(USER_ID_CACHE_KEY, state.GL_userIdCache);
         }
 
         userIdCache.delete(normalizedUsername);
@@ -6073,19 +6271,9 @@
             userIdCache.delete(randomUsername);
         }
 
-        state.userIdCacheDirty = true;
         state.GL_userIdCache[normalizedUsername] = normalizedUserId;
         userIdCache.set(normalizedUsername, { user: { id: normalizedUserId, pk: normalizedUserId } });
-
-        if (!state.userIdCacheSaveTimer) {
-            state.userIdCacheSaveTimer = setTimeout(() => {
-                if (state.userIdCacheDirty) {
-                    GM_setValue(USER_ID_CACHE_KEY, state.GL_userIdCache);
-                    state.userIdCacheDirty = false;
-                }
-                state.userIdCacheSaveTimer = null;
-            }, 500);
-        }
+        setPersistentCache(USER_ID_CACHE_KEY, state.GL_userIdCache);
 
         return true;
     }
@@ -6093,7 +6281,7 @@
     /**
      * getPersistedUserId
      * @description Read-only lookup of the userId persisted for `username` in the
-     *              GM persistent bucket (USER_IDS_STORED), without touching the
+     *              persistent cache (USER_IDS_STORED), without touching the
      *              in-memory userIdCache Map.
      *
      * @param  {String} username
@@ -6177,6 +6365,9 @@
 
         const normalizedUsername = String(username).trim().toLowerCase();
         if (!normalizedUsername) return;
+
+        // The decision below depends on the persisted mapping, so wait until it is loaded.
+        await initPersistentCache();
 
         if (isOwnerVerifiedThisSession(normalizedUsername)) return;
 
@@ -6633,7 +6824,7 @@
      * getUserId
      * @description Orchestrator + caching multi-layer:
      * 1) in-memory Map
-     * 2) persistent GM cache
+     * 2) persistent cache (IndexedDB)
      * 3) profile HTML
      * 4) Polaris GraphQL search
      *
@@ -6661,6 +6852,8 @@
             userIdCache.delete(normalizedUsername);
         }
 
+        // Make sure the persistent cache is loaded before falling through to a live lookup.
+        await initPersistentCache();
         const persistedId = state.GL_userIdCache?.[normalizedUsername];
 
         if (persistedId) {
@@ -6854,7 +7047,7 @@
             __spin_t: siteData?.__spin_t || '',
             __comet_req: siteData?.comet_env || '',
             __ccg: 'EXCELLENT',
-            dpr: siteData?.pr,
+            dpr: '3',
             jazoest: getJazoest(getDTSG()),
             __user: '0',
             __a: '1',
@@ -6870,6 +7063,10 @@
 
         let headers = {
             // "User-Agent": webViewAgent,
+            'Dpr': '3',
+            'Sec-Ch-Dpr': '3',
+            'Viewport-Width': '3840',
+            'Sec-Ch-Viewport-Width': '3840',
             'X-IG-App-ID': getAppID() || '0',
             'X-CSRFToken': getCookie('csrftoken') || '',
             'X-Fb-Friendly-Name': friendlyName,
@@ -10392,9 +10589,6 @@
         $(document).off('mousemove.igHelper');
     }
 
-    let mediaCacheDirty = false;
-    let mediaCacheSaveTimer = null;
-
     /**
      * purgeCache
      * @description Purge image cache entries older than 12 hours.
@@ -10419,7 +10613,7 @@
         }
 
         if (changed) {
-            GM_setValue(IMAGE_CACHE_KEY, state.GL_imageCache);
+            setPersistentCache(IMAGE_CACHE_KEY, state.GL_imageCache);
         }
     }
 
@@ -10519,18 +10713,8 @@
             mediaCache.delete(oldestId);
         }
 
-        mediaCacheDirty = true;
         state.GL_imageCache[mediaId] = entry;
-
-        if (!mediaCacheSaveTimer) {
-            mediaCacheSaveTimer = setTimeout(() => {
-                if (mediaCacheDirty) {
-                    GM_setValue(IMAGE_CACHE_KEY, state.GL_imageCache);
-                    mediaCacheDirty = false;
-                }
-                mediaCacheSaveTimer = null;
-            }, 500); // write in script storage every 500 ms
-        }
+        setPersistentCache(IMAGE_CACHE_KEY, state.GL_imageCache);
     }
 
     /**
@@ -10553,7 +10737,10 @@
 
         if ((Date.now() - entry.ts) > IMAGE_CACHE_MAX_AGE) {
             mediaCache.delete(mediaId);
-            delete state.GL_imageCache[mediaId];
+            if (state.GL_imageCache[mediaId]) {
+                delete state.GL_imageCache[mediaId];
+                setPersistentCache(IMAGE_CACHE_KEY, state.GL_imageCache);
+            }
             return null;
         }
 

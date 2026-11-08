@@ -1,139 +1,11 @@
 
 import {
-    state, userIdCache, USER_ID_MAX_CACHE_ITEMS,
-    USER_ID_CACHE_KEY
+    state, userIdCache, USER_ID_MAX_CACHE_ITEMS, USER_ID_CACHE_KEY
 } from "../settings";
 import { logger } from "./general";
 import { resolveUserIdLive } from "./api";
+import { initPersistentCache, setPersistentCache } from "./persistent_cache";
 /*! ESLINT IMPORT END !*/
-
-const DB_NAME = 'IG_HELPER';
-const DB_VERSION = 1;
-const STORE_NAME = 'DATA_CACHE';
-
-/**
- * openDB
- * @description Open (or create on first run) the IG_HELPER IndexedDB database
- *              used to persist larger data caches that don't fit comfortably in
- *              GM_setValue.
- *
- * @return {Promise<IDBDatabase>}
- */
-export function openDB() {
-    return new Promise((resolve, reject) => {
-        const request = indexedDB.open(DB_NAME, DB_VERSION);
-
-        request.onupgradeneeded = (event) => {
-            const db = event.target.result;
-            if (!db.objectStoreNames.contains(STORE_NAME)) {
-                db.createObjectStore(STORE_NAME, { keyPath: 'id' });
-            }
-        };
-
-        request.onsuccess = (event) => resolve(event.target.result);
-        request.onerror = (event) => reject(`Database open failed: ${event.target.error}`);
-    });
-}
-
-/**
- * addData
- * @description Insert a new record into the DATA_CACHE object store. Fails if a
- *              record with the same key already exists (use updateData for upsert).
- *
- * @param {string|number} id
- * @param  {Object}  data
- * @return {Promise<IDBValidKey>}
- */
-export async function addData(id, data) {
-    const db = await openDB();
-    return new Promise((resolve, reject) => {
-        const transaction = db.transaction(STORE_NAME, 'readwrite');
-        const store = transaction.objectStore(STORE_NAME);
-        const request = store.add({
-            ...data,
-            id
-        });
-
-        request.onsuccess = () => resolve(request.result);
-        request.onerror = (event) => reject(`Insert failed: ${event.target.error}`);
-    });
-}
-
-/**
- * getData
- * @description Retrieve a record from the DATA_CACHE object store by key.
- *
- * @param  {number|string}  id
- * @return {Promise<?Object>}
- */
-export async function getData(id) {
-    const db = await openDB();
-    return new Promise((resolve, reject) => {
-        const transaction = db.transaction(STORE_NAME, 'readonly');
-        const store = transaction.objectStore(STORE_NAME);
-        const request = store.get(id);
-
-        request.onsuccess = () => resolve(request.result);
-        request.onerror = (event) => reject(`Read failed: ${event.target.error}`);
-    });
-}
-
-/**
- * getAllData
- * @description Retrieve every record from the DATA_CACHE object store.
- *
- * @return {Promise<Array>}
- */
-export async function getAllData() {
-    const db = await openDB();
-    return new Promise((resolve, reject) => {
-        const transaction = db.transaction(STORE_NAME, 'readonly');
-        const store = transaction.objectStore(STORE_NAME);
-        const request = store.getAll();
-
-        request.onsuccess = () => resolve(request.result);
-        request.onerror = (event) => reject(`Read all failed: ${event.target.error}`);
-    });
-}
-
-/**
- * updateData
- * @description Upsert (insert-or-replace) a record into the DATA_CACHE object store.
- *
- * @param {number} id
- * @param  {Object}  data
- * @return {Promise<IDBValidKey>}
- */
-export async function updateData(id, data) {
-    const db = await openDB();
-    return new Promise((resolve, reject) => {
-        const transaction = db.transaction(STORE_NAME, 'readwrite');
-        const store = transaction.objectStore(STORE_NAME);
-
-        const request = store.put({
-            ...data,
-            id
-        });
-
-        request.onsuccess = () => resolve(request.result);
-        request.onerror = (event) => reject(`Update failed: ${event.target.error}`);
-    });
-}
-
-/**
- * @param {number} id
- */
-export async function deleteData(id) {
-    const db = await openDB();
-    return new Promise((resolve, reject) => {
-        const transaction = db.transaction(STORE_NAME, 'readwrite');
-        const store = transaction.objectStore(STORE_NAME);
-        const request = store.delete(id);
-
-        request.onsuccess = () => resolve(true);
-        request.onerror = (event) => reject(`Delete failed: ${event.target.error}`);
-    });
-}
 
 /**
  * findUsernameByUserId
@@ -176,7 +48,7 @@ export function removeUserIdCacheEntry(username) {
 
     if (existed) {
         delete state.GL_userIdCache[normalizedUsername];
-        state.userIdCacheDirty = true;
+        setPersistentCache(USER_ID_CACHE_KEY, state.GL_userIdCache);
     }
 
     userIdCache.delete(normalizedUsername);
@@ -225,19 +97,9 @@ export function putUserIdInCache(username, userId) {
         userIdCache.delete(randomUsername);
     }
 
-    state.userIdCacheDirty = true;
     state.GL_userIdCache[normalizedUsername] = normalizedUserId;
     userIdCache.set(normalizedUsername, { user: { id: normalizedUserId, pk: normalizedUserId } });
-
-    if (!state.userIdCacheSaveTimer) {
-        state.userIdCacheSaveTimer = setTimeout(() => {
-            if (state.userIdCacheDirty) {
-                GM_setValue(USER_ID_CACHE_KEY, state.GL_userIdCache);
-                state.userIdCacheDirty = false;
-            }
-            state.userIdCacheSaveTimer = null;
-        }, 500);
-    }
+    setPersistentCache(USER_ID_CACHE_KEY, state.GL_userIdCache);
 
     return true;
 }
@@ -245,7 +107,7 @@ export function putUserIdInCache(username, userId) {
 /**
  * getPersistedUserId
  * @description Read-only lookup of the userId persisted for `username` in the
- *              GM persistent bucket (USER_IDS_STORED), without touching the
+ *              persistent cache (USER_IDS_STORED), without touching the
  *              in-memory userIdCache Map.
  *
  * @param  {String} username
@@ -329,6 +191,9 @@ export async function reconcileOwnerFromApiResponse(username, userId) {
 
     const normalizedUsername = String(username).trim().toLowerCase();
     if (!normalizedUsername) return;
+
+    // The decision below depends on the persisted mapping, so wait until it is loaded.
+    await initPersistentCache();
 
     if (isOwnerVerifiedThisSession(normalizedUsername)) return;
 

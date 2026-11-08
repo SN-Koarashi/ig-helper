@@ -288,7 +288,6 @@ export function initPostVideoFunction($mainElement) {
  */
 export function createDownloadButton() {
     // Add download icon per each posts
-    // eslint-disable-next-line no-unused-vars
 
     /*
      * OPTIMIZATION:

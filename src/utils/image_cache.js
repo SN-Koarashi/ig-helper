@@ -7,10 +7,8 @@
 import {
     IMAGE_CACHE_KEY, IMAGE_CACHE_MAX_AGE, IMAGE_MAX_CACHE_ITEMS, state, USER_SETTING, mediaCache
 } from "../settings";
+import { setPersistentCache } from "./persistent_cache";
 /*! ESLINT IMPORT END !*/
-
-let mediaCacheDirty = false;
-let mediaCacheSaveTimer = null;
 
 /**
  * purgeCache
@@ -36,7 +34,7 @@ export function purgeCache() {
     }
 
     if (changed) {
-        GM_setValue(IMAGE_CACHE_KEY, state.GL_imageCache);
+        setPersistentCache(IMAGE_CACHE_KEY, state.GL_imageCache);
     }
 }
 
@@ -136,18 +134,8 @@ export function putInCache(mediaId, url) {
         mediaCache.delete(oldestId);
     }
 
-    mediaCacheDirty = true;
     state.GL_imageCache[mediaId] = entry;
-
-    if (!mediaCacheSaveTimer) {
-        mediaCacheSaveTimer = setTimeout(() => {
-            if (mediaCacheDirty) {
-                GM_setValue(IMAGE_CACHE_KEY, state.GL_imageCache);
-                mediaCacheDirty = false;
-            }
-            mediaCacheSaveTimer = null;
-        }, 500); // write in script storage every 500 ms
-    }
+    setPersistentCache(IMAGE_CACHE_KEY, state.GL_imageCache);
 }
 
 /**
@@ -170,7 +158,10 @@ export function getImageFromCache(mediaId) {
 
     if ((Date.now() - entry.ts) > IMAGE_CACHE_MAX_AGE) {
         mediaCache.delete(mediaId);
-        delete state.GL_imageCache[mediaId];
+        if (state.GL_imageCache[mediaId]) {
+            delete state.GL_imageCache[mediaId];
+            setPersistentCache(IMAGE_CACHE_KEY, state.GL_imageCache);
+        }
         return null;
     }
 

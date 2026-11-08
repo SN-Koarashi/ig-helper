@@ -18,6 +18,7 @@ FS_IMPORT('./metadata.js');
     FS_IMPORT('./functions/story.js');
 
     /* utils */
+    FS_IMPORT('./utils/persistent_cache.js');
     FS_IMPORT('./utils/cache.js');
     FS_IMPORT('./utils/api.js');
     FS_IMPORT('./utils/general.js');

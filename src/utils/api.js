@@ -8,6 +8,7 @@ import {
     markOwnerVerified, findUsernameByUserId, removeUserIdCacheEntry
 } from "./cache";
 import { filterResourceData } from "../functions/post";
+import { initPersistentCache } from "./persistent_cache";
 /*! ESLINT IMPORT END !*/
 
 /**
@@ -423,7 +424,7 @@ export async function resolveUserIdLive(username) {
  * getUserId
  * @description Orchestrator + caching multi-layer:
  * 1) in-memory Map
- * 2) persistent GM cache
+ * 2) persistent cache (IndexedDB)
  * 3) profile HTML
  * 4) Polaris GraphQL search
  *
@@ -451,6 +452,8 @@ export async function getUserId(username) {
         userIdCache.delete(normalizedUsername);
     }
 
+    // Make sure the persistent cache is loaded before falling through to a live lookup.
+    await initPersistentCache();
     const persistedId = state.GL_userIdCache?.[normalizedUsername];
 
     if (persistedId) {

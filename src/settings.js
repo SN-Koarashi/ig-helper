@@ -49,6 +49,17 @@ export const POST_CACHE_MAX_ITEMS = 30;
 
 export const USER_ID_CACHE_KEY = 'USER_IDS_STORED';
 export const USER_ID_MAX_CACHE_ITEMS = 1000;
+
+// Persistent caches live in IndexedDB (see utils/cache.js); settings stay in GM storage.
+export const PERSISTENT_CACHE_DB_NAME = 'IG_HELPER';
+export const PERSISTENT_CACHE_DB_VERSION = 1;
+export const PERSISTENT_CACHE_STORE_NAME = 'DATA_CACHE';
+export const PERSISTENT_CACHE_FLUSH_DELAY = 500;
+// Cache key -> `state` field holding its in-memory copy.
+export const PERSISTENT_CACHE_BINDINGS = {
+    [IMAGE_CACHE_KEY]: 'GL_imageCache',
+    [USER_ID_CACHE_KEY]: 'GL_userIdCache'
+};
 /*******************************/
 
 // Icon download by Google Fonts Material Icon & Lucide
@@ -79,10 +90,22 @@ export const style = GM_getResourceText("INTERNAL_CSS");
 export const locale_manifest = JSON.parse(GM_getResourceText("LOCALE_MANIFEST"));
 
 export const userIdCache = new Map();
-export const webViewAgent = "Mozilla/5.0 (Linux; Android 14; Build/UP1A.231005.007; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/156.0.8078.51 Mobile Safari/537.36 Instagram 452.1.0.53.64 Android (34/14; 520dpi; 1220x2712; Pixel; rothko; mt6989; en_US; 1096920925; IABMV/1)";
+// export const webViewAgent = "Mozilla/5.0 (Linux; Android 14; Build/UP1A.231005.007; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/156.0.8078.51 Mobile Safari/537.36 Instagram 452.1.0.53.64 Android (34/14; 520dpi; 1220x2712; Pixel; rothko; mt6989; en_US; 1096920925; IABMV/1)";
 // Session-only hot cache for media discovered during the current page session.
 // Persistent media entries remain in state.GL_imageCache and are not preloaded here.
 export const mediaCache = new Map();
+
+// Runtime state of the persistent cache manager (utils/cache.js). Kept here because
+// cache.js is bundled after initial.js, which calls the manager at startup.
+export const persistentCacheStore = {
+    backend: null,          // 'indexeddb' | 'gm'; null until initPersistentCache() settles
+    db: null,
+    readyPromise: null,
+    values: new Map(),      // cache key -> in-memory value (same object as its state field)
+    pending: new Set(),     // cache keys waiting to be written
+    flushTimer: null,
+    flushChain: Promise.resolve(true)
+};
 
 // OPTIMIZATION: Cached jQuery body reference — used in many places, jQuery 4
 // creates a new wrapper for each $('body') call. Reusing $body avoids that
@@ -133,8 +156,9 @@ export var state = {
     GL_dialogTimer: null,
     GL_profileTimer: null,
     GL_reelsTimer: null,
-    GL_imageCache: GM_getValue(IMAGE_CACHE_KEY, {}),
-    GL_userIdCache: GM_getValue(USER_ID_CACHE_KEY, {}),
+    // Filled from IndexedDB by initPersistentCache(); empty until then.
+    GL_imageCache: {},
+    GL_userIdCache: {},
     GL_weakCache: {
         overlay: new WeakMap(),
         mutedButton: new WeakMap(),
@@ -143,8 +167,6 @@ export var state = {
     settingsHotkeyKeyCode: (GM_getValue('G_HOTKEY_SETTINGS_KEYCODE')) ? GM_getValue('G_HOTKEY_SETTINGS_KEYCODE') : 87,
     keySettingsHotkeyKeyCode: (GM_getValue('G_HOTKEY_KEY_SETTINGS_KEYCODE')) ? GM_getValue('G_HOTKEY_KEY_SETTINGS_KEYCODE') : 67,
     downloadStoryHotkeyKeyCode: (GM_getValue('G_HOTKEY_DOWNLOAD_STORY_KEYCODE')) ? GM_getValue('G_HOTKEY_DOWNLOAD_STORY_KEYCODE') : 83,
-    userIdCacheDirty: false,
-    userIdCacheSaveTimer: null,
     /**
      * resourceObserver
      * @description A single IntersectionObserver shared by all posts. It replaces the

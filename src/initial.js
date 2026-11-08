@@ -2,6 +2,7 @@ import { initSettings, checkingScriptUpdate, logger } from "./utils/general";
 import { getTranslationText, repaintingTranslations } from "./utils/i18n";
 import { style, state } from "./settings";
 import { purgeCache } from "./utils/image_cache";
+import { initPersistentCache } from "./utils/cache";
 import { registerMenuCommand } from "./utils/dialog";
 import { registerPostClickHandlers } from "./functions/post";
 import { initRouteWatcher } from "./timer";
@@ -31,6 +32,7 @@ getTranslationText(state.lang).then((res) => {
 
 logger('Script Loaded', GM_info.script.name, 'version:', GM_info.script.version);
 registerPostClickHandlers();
-purgeCache();
+// Load persistent caches from IndexedDB, then drop expired image entries.
+initPersistentCache().then(() => purgeCache());
 initRouteWatcher();
 /*******************************/
