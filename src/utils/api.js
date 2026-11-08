@@ -1,7 +1,8 @@
 import { userIdCache, state, POST_CACHE_MAX_ITEMS } from "../settings";
 import {
     logger, getAppID, getCookie, getLSD, getBloks, getDTSG, getSiteData, getJazoest,
-    genWebSessionId
+    genWebSessionId,
+    getHasteBitMapParams
 } from "./general";
 import {
     reconcileOwnerFromApiResponse, isOwnerVerifiedThisSession, putUserIdInCache,
@@ -631,6 +632,9 @@ export function getMediaList(postPath) {
 
 export function buildGraphQLData(docId, variables, friendlyName, crn, rootName) {
     const siteData = getSiteData();
+    const hasteData = getHasteBitMapParams();
+    logger('buildGraphQLData', { docId, variables, friendlyName, crn, rootName, siteData, hasteData });
+
     let body = {
         av: getCookie('ds_user_id') || '0',
         fb_api_caller_class: 'RelayModern',
@@ -646,6 +650,7 @@ export function buildGraphQLData(docId, variables, friendlyName, crn, rootName) 
         __spin_b: siteData?.__spin_b || '',
         __spin_t: siteData?.__spin_t || '',
         __comet_req: siteData?.comet_env || '',
+        ...hasteData,
         __ccg: 'EXCELLENT',
         dpr: '3',
         jazoest: getJazoest(getDTSG()),

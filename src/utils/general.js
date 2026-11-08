@@ -6,6 +6,8 @@ import { idToShortcode, registerPostClickHandlers } from "../functions/post";
 import { cleanupPostObservers, stopAllObservers, scheduleRouteCheck } from "../timer";
 /*! ESLINT IMPORT END !*/
 
+const HASTE_BITMAP_ALPHABET = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ-_';
+
 /**
  * isMacOS
  * @description Detect whether the current browser runs on macOS. Used to pick the
@@ -188,6 +190,163 @@ export function findConfig(data, name) {
         }
     }
     return null;
+}
+
+/**
+ * encodeHasteBitMap
+ * @description Encode a set of indexes the same way as Instagram's BitMap.toCompressedString():
+ *              run-length encode the bitmap, write each run length as an Elias-gamma code,
+ *              then pack the bit string into 6-bit chunks with a custom base64 alphabet.
+ *
+ * @param  {Iterable<number>}  indexes
+ * @return {string}  An empty string when there are no indexes.
+ */
+function encodeHasteBitMap(indexes) {
+    const bits = [];
+    for (const index of indexes) {
+        if (Number.isInteger(index) && index >= 0) bits[index] = 1;
+    }
+    if (bits.length === 0) return '';
+
+    const gamma = (num) => {
+        const binary = num.toString(2);
+        return '0'.repeat(binary.length - 1) + binary;
+    };
+
+    let lastValue = bits[0] || 0;
+    let runLength = 1;
+    let output = String(lastValue);
+    for (let i = 1; i < bits.length; i++) {
+        const value = bits[i] || 0;
+        if (value === lastValue) {
+            runLength++;
+        }
+        else {
+            output += gamma(runLength);
+            lastValue = value;
+            runLength = 1;
+        }
+    }
+    output += gamma(runLength);
+
+    const chunks = (output + '00000').match(/[01]{6}/g) || [];
+    return chunks.map((chunk) => HASTE_BITMAP_ALPHABET[parseInt(chunk, 2)]).join('');
+}
+
+/**
+ * parseHasteResourceIndexes
+ * @description Parse a resource index string such as ":12,34,56" (HasteResourceIndexUtil format).
+ *
+ * @param  {string}  value
+ * @return {number[]}
+ */
+function parseHasteResourceIndexes(value) {
+    if (typeof value !== 'string' || value[0] !== ':') return [];
+    return value.slice(1).split(',').map((item) => parseInt(item, 10)).filter(Number.isInteger);
+}
+
+/**
+ * getHasteBitMapParams
+ * @description Rebuild the __dyn / __csr / __hsdp / __hblp / __sjsp request parameters from the
+ *              ServerJS payloads embedded in the current page, mirroring Instagram's own logic:
+ *              - __dyn  : define entries [name, deps, data, id] with id >= 0 (ServerJSDefine)
+ *              - __csr  : rsrcMap entries / data-bootloader-hash tags whose "c" flag is set,
+ *                         taken from their "p" indexes when BootloaderConfig.csrOn is true (Bootloader)
+ *              - __hsdp : indexUpgrades.__hsdp (Bootloader.handlePayload)
+ *              - __hblp : indexUpgrades.__hblp (Bootloader.handlePayload)
+ *              - __sjsp : phd2_indexes (ServerJS.handle)
+ *              Only the initial page state is covered: indexes that the browser adds later from
+ *              GraphQL / AJAX responses after SPA navigation are not included. Preloaded
+ *              AsyncData.resolve payloads are skipped, since Instagram only handles them once
+ *              they are consumed.
+ *
+ * @return {Object<string, string>}  Parameter name to value; empty bitmaps are omitted, just
+ *                                   like Instagram's getAsyncParams.
+ */
+export function getHasteBitMapParams() {
+    const dynIndexes = new Set();
+    const hasteIndexes = { __csr: new Set(), __hsdp: new Set(), __hblp: new Set(), __sjsp: new Set() };
+    const addHasteIndex = (name, index) => {
+        if (!hasteIndexes[name]) hasteIndexes[name] = new Set();
+        hasteIndexes[name].add(index);
+    };
+    const resources = [];
+    let csrOn = true;
+
+    const isDefineList = (value) => Array.isArray(value) &&
+        value.every((entry) => Array.isArray(entry) && typeof entry[0] === 'string');
+
+    const walk = (data) => {
+        const stack = [data];
+        while (stack.length) {
+            const node = stack.pop();
+            if (Array.isArray(node)) {
+                if (node[0] === 'AsyncData' && node[1] === 'resolve') continue;
+                if (node[0] === 'BootloaderConfig' && node[2] && typeof node[2] === 'object' && 'csrOn' in node[2]) {
+                    csrOn = !!node[2].csrOn;
+                }
+                stack.push(...node);
+                continue;
+            }
+            if (!node || typeof node !== 'object') continue;
+
+            if (isDefineList(node.define)) {
+                node.define.forEach((entry) => {
+                    if (Number.isInteger(entry[3]) && entry[3] >= 0) dynIndexes.add(entry[3]);
+                });
+            }
+            if (typeof node.phd2_indexes === 'string') {
+                parseHasteResourceIndexes(node.phd2_indexes).forEach((index) => addHasteIndex('__sjsp', index));
+            }
+            if (node.indexUpgrades && typeof node.indexUpgrades === 'object') {
+                Object.entries(node.indexUpgrades).forEach(([name, value]) => {
+                    parseHasteResourceIndexes(value).forEach((index) => addHasteIndex(name, index));
+                });
+            }
+            if (node.rsrcMap && typeof node.rsrcMap === 'object') {
+                resources.push(...Object.values(node.rsrcMap));
+            }
+            stack.push(...Object.values(node));
+        }
+    };
+
+    document.querySelectorAll('script[type="application/json"][data-sjs]').forEach((script) => {
+        try {
+            walk(JSON.parse(script.textContent));
+        }
+        catch {
+            // Ignore blocks that are not valid JSON.
+        }
+    });
+
+    document.querySelectorAll('script[data-bootloader-hash], link[data-bootloader-hash]').forEach((element) => {
+        const c = element.getAttribute('data-c');
+        resources.push({
+            type: element.tagName === 'LINK' ? 'css' : 'js',
+            p: element.getAttribute('data-p'),
+            c: c === '1' ? 1 : (c === '2' ? 2 : 0)
+        });
+    });
+
+    // csrOn is only known after every payload has been read, so __csr is collected last.
+    if (csrOn) {
+        resources.forEach((resource) => {
+            if (!resource || resource.type === 'async' || resource.type === 'csr' || resource.p == null || !resource.c) return;
+            parseHasteResourceIndexes(resource.p).forEach((index) => {
+                // 0 is HasteResourceIndexUtil.UNKNOWN_RESOURCE_INDEX
+                if (index !== 0) addHasteIndex('__csr', index);
+            });
+        });
+    }
+
+    const result = {};
+    const dyn = encodeHasteBitMap(dynIndexes);
+    if (dyn) result.__dyn = dyn;
+    Object.entries(hasteIndexes).forEach(([name, indexes]) => {
+        const value = encodeHasteBitMap(indexes);
+        if (value) result[name] = value;
+    });
+    return result;
 }
 
 /**
