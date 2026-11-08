@@ -989,11 +989,12 @@ export async function createMediaListDOM(postURL, selector, message) {
                     });
 
                     let itemUrl = mda.image_versions2.candidates[0].url;
+                    let previewUrl = mda.image_versions2.candidates.at(-1).url;
                     if (USER_SETTING.CAPTURE_IMAGE_VIA_MEDIA_CACHE) {
                         const cachedImg = getImageFromCache(String(mda.pk));
                         if (cachedImg) itemUrl = cachedImg;
                     }
-                    $target.append(`<a media-id="${mda.pk}" datetime="${mda.taken_at || resource.taken_at}" data-blob="true" data-needed="direct" data-path="${resourceShortcode}" data-name="photo" data-type="jpg" data-username="${resource.owner.username}" data-globalIndex="${idx}" href="javascript:;" data-href="${itemUrl}"><img width="100" src="${itemUrl}" /><br/>- <span data-ih-locale="IMG">${_i18n("IMG")}</span> ${idx} -</a>`);
+                    $target.append(`<a media-id="${mda.pk}" datetime="${mda.taken_at || resource.taken_at}" data-blob="true" data-needed="direct" data-path="${resourceShortcode}" data-name="photo" data-type="jpg" data-username="${resource.owner.username}" data-globalIndex="${idx}" href="javascript:;" data-href="${itemUrl}"><img width="100" src="${previewUrl}" /><br/>- <span data-ih-locale="IMG">${_i18n("IMG")}</span> ${idx} -</a>`);
                 }
                 // Video
                 else {
@@ -1022,11 +1023,12 @@ export async function createMediaListDOM(postURL, selector, message) {
                 });
 
                 let itemUrl = resource.image_versions2.candidates[0].url;
+                let previewUrl = resource.image_versions2.candidates.at(-1).url;
                 if (USER_SETTING.CAPTURE_IMAGE_VIA_MEDIA_CACHE) {
                     const cachedImg = getImageFromCache(String(resource.pk));
                     if (cachedImg) itemUrl = cachedImg;
                 }
-                $target.append(`<a media-id="${resource.pk}" datetime="${resource.taken_at}" data-blob="true" data-needed="direct" data-path="${resourceShortcode}" data-name="photo" data-type="jpg" data-username="${resource.owner.username}" data-globalIndex="${idx}" href="javascript:;" data-href="${itemUrl}"><img width="100" src="${itemUrl}" /><br/>- <span data-ih-locale="IMG">${_i18n("IMG")}</span> ${idx} -</a>`);
+                $target.append(`<a media-id="${resource.pk}" datetime="${resource.taken_at}" data-blob="true" data-needed="direct" data-path="${resourceShortcode}" data-name="photo" data-type="jpg" data-username="${resource.owner.username}" data-globalIndex="${idx}" href="javascript:;" data-href="${itemUrl}"><img width="100" src="${previewUrl}" /><br/>- <span data-ih-locale="IMG">${_i18n("IMG")}</span> ${idx} -</a>`);
             }
             // Video
             else {
