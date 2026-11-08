@@ -2,10 +2,10 @@ import { initSettings, checkingScriptUpdate, logger } from "./utils/general";
 import { getTranslationText, repaintingTranslations } from "./utils/i18n";
 import { style, state } from "./settings";
 import { purgeCache } from "./utils/image_cache";
-import { initPersistentCache } from "./utils/cache";
 import { registerMenuCommand } from "./utils/dialog";
 import { registerPostClickHandlers } from "./functions/post";
 import { initRouteWatcher } from "./timer";
+import { initPersistentCache } from "./utils/persistent_cache";
 /*! ESLINT IMPORT END !*/
 
 // initialization script

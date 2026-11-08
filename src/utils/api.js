@@ -264,126 +264,102 @@ export async function getUserIdViaProfileHtml(username) {
  * @param {String} username
  * @return {Promise<Object>}
  */
-async function getUserIdFromPolarisSearchBoxRefetchableQuery(username) {
-    const normalized = (username || '').replace(/^@+/, '').trim().toLowerCase();
+function getUserIdFromPolarisSearchBoxRefetchableQuery(username) {
+    return new Promise((resolve, reject) => {
+        const normalized = (username || '').replace(/^@+/, '').trim().toLowerCase();
 
-    if (!normalized) {
-        throw new Error('No username provided');
-    }
+        if (!normalized) {
+            reject(new Error('No username provided'));
+            return;
+        }
 
-    // Doc ID can change when Instagram updates the query.
-    const SEARCH_QUERY_DOC_ID = '27706427925724183';
-    const friendlyName = 'PolarisSearchBoxRefetchableQuery';
-    const lsd = getLSD();
-    const dtsg = getDTSG();
-    const apiURL = new URL('/graphql/query', window.location.origin);
-
-    const variables = {
-        data: {
-            context: 'blended',
-            include_reel: 'true',
-            query: normalized,
-            rank_token: '',
-            search_surface: 'web_top_search'
-        },
-        hasQuery: true
-    };
-
-    const body = new URLSearchParams({
-        __d: 'www',
-        __user: '0',
-        __a: '1',
-        __req: '1',
-        __comet_req: '7',
-        fb_api_caller_class: 'RelayModern',
-        fb_api_req_friendly_name: friendlyName,
-        server_timestamps: 'true',
-        doc_id: SEARCH_QUERY_DOC_ID,
-        variables: JSON.stringify(variables)
-    });
-
-    if (dtsg) {
-        body.set('fb_dtsg', dtsg);
-        body.set('jazoest', getJazoest(dtsg));
-    }
-
-    if (lsd) {
-        body.set('lsd', lsd);
-    }
-
-    const headers = {
-        'Content-Type': 'application/x-www-form-urlencoded',
-        'X-FB-Friendly-Name': friendlyName
-    };
-
-    if (lsd) {
-        headers['X-FB-LSD'] = lsd;
-    }
-
-    const response = await fetch(apiURL.href, {
-        method: 'POST',
-        credentials: 'include',
-        headers,
-        body: body.toString()
-    });
-
-    const responseText = await response.text();
-    let json;
-
-    try {
-        json = JSON.parse(responseText);
-        // eslint-disable-next-line no-unused-vars
-    } catch (err) {
-        throw new Error(
-            `Polaris search returned non-JSON (HTTP ${response.status})`
+        // Doc ID can change when Instagram updates the query.
+        const api = buildGraphQLData(
+            '27706427925724183',
+            {
+                "data": {
+                    "context": "blended",
+                    "include_reel": "true",
+                    "query": normalized,
+                    "rank_token": "",
+                    "search_surface": "web_top_search"
+                },
+                "hasQuery": true
+            },
+            'PolarisSearchBoxRefetchableQuery',
+            'comet.igweb.PolarisExploreRoute',
+            'xdt_api__v1__fbsearch__topsearch_connection'
         );
-    }
 
-    if (!response.ok) {
-        const apiError = json?.errors
-            ?.map((error) => error?.message)
-            .filter(Boolean)
-            .join('; ');
+        GM_xmlhttpRequest({
+            method: "POST",
+            url: api.url,
+            data: api.body,
+            headers: api.headers,
+            onload: function (response) {
+                try {
+                    let obj;
 
-        throw new Error(
-            `Polaris search failed with HTTP ${response.status}` +
-            (apiError ? `: ${apiError}` : '')
-        );
-    }
+                    try {
+                        obj = JSON.parse(response.response);
+                        // eslint-disable-next-line no-unused-vars
+                    } catch (err) {
+                        throw new Error(`Polaris search returned non-JSON (HTTP ${response.status})`);
+                    }
 
-    const users =
-        json?.data?.xdt_api__v1__fbsearch__topsearch_connection?.users;
+                    if (response.status < 200 || response.status >= 300) {
+                        const apiError = obj?.errors
+                            ?.map((error) => error?.message)
+                            .filter(Boolean)
+                            .join('; ');
 
-    if (!Array.isArray(users) || users.length === 0) {
-        throw new Error('Polaris search returned no users');
-    }
+                        throw new Error(
+                            `Polaris search failed with HTTP ${response.status}` +
+                            (apiError ? `: ${apiError}` : '')
+                        );
+                    }
 
-    // Keep the existing behavior: prefer an exact match, otherwise use the first result.
-    const result = users.find((item) =>
-        item.user?.username?.toLowerCase() === normalized
-    ) ?? users[0];
+                    const users = obj?.data?.xdt_api__v1__fbsearch__topsearch_connection?.users;
 
-    if (!result?.user) {
-        throw new Error('Polaris search result has no user');
-    }
+                    if (!Array.isArray(users) || users.length === 0) {
+                        throw new Error('Polaris search returned no users');
+                    }
 
-    const rawId = result.user.pk ?? result.user.id;
+                    // Prefer an exact match, otherwise use the first result.
+                    const result = users.find((item) =>
+                        item.user?.username?.toLowerCase() === normalized
+                    ) ?? users[0];
 
-    if (!rawId) {
-        throw new Error('Polaris search result has no user ID');
-    }
+                    if (!result?.user) {
+                        throw new Error('Polaris search result has no user');
+                    }
 
-    const id = String(rawId);
-    const user = {
-        ...result.user,
-        id,
-        pk: id
-    };
+                    const rawId = result.user.pk ?? result.user.id;
 
-    const userInfo = { ...result, user };
+                    if (!rawId) {
+                        throw new Error('Polaris search result has no user ID');
+                    }
 
-    logger('getUserIdFromPolarisSearchBoxRefetchableQuery()', userInfo);
-    return userInfo;
+                    const id = String(rawId);
+                    const userInfo = {
+                        ...result,
+                        user: { ...result.user, id, pk: id }
+                    };
+
+                    logger('getUserIdFromPolarisSearchBoxRefetchableQuery()', userInfo);
+                    resolve(userInfo);
+                }
+                catch (err) {
+                    logger('getUserIdFromPolarisSearchBoxRefetchableQuery()', 'reject', err.message);
+                    reject(err);
+                }
+            },
+            onerror: function (err) {
+                logger('getUserIdFromPolarisSearchBoxRefetchableQuery()', 'reject', err);
+                reject(err);
+            }
+        });
+    });
 }
 
 /**
@@ -567,7 +543,6 @@ export async function getPostMediaWithProvider(postPath) {
     try {
         const resource = filterResourceData(result.data);
         const ownerId = resource.owner?.pk ?? resource.owner?.id;
-
         if (resource.owner?.username && ownerId) {
             await reconcileOwnerFromApiResponse(resource.owner.username, ownerId);
         }

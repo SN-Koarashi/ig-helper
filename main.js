@@ -17,7 +17,7 @@
 // @name:zh-CN         IG小助手
 // @name:zh-TW         IG小精靈
 // @namespace          https://github.snkms.com/
-// @version            5.4.0
+// @version            5.4.1
 // @description        Download photos and videos from Instagram posts in one click, including Stories, Reels, and profile pictures.
 // @description:ar     نزّل صورًا ومقاطع فيديو من منشورات Instagram بنقرة واحدة، بما في ذلك القصص وReels وصور الملف الشخصي.
 // @description:de     Lade Fotos und Videos aus Instagram-Beiträgen mit einem Klick herunter, einschließlich Stories, Reels und Profilbildern.
@@ -6663,126 +6663,102 @@
      * @param {String} username
      * @return {Promise<Object>}
      */
-    async function getUserIdFromPolarisSearchBoxRefetchableQuery(username) {
-        const normalized = (username || '').replace(/^@+/, '').trim().toLowerCase();
+    function getUserIdFromPolarisSearchBoxRefetchableQuery(username) {
+        return new Promise((resolve, reject) => {
+            const normalized = (username || '').replace(/^@+/, '').trim().toLowerCase();
 
-        if (!normalized) {
-            throw new Error('No username provided');
-        }
+            if (!normalized) {
+                reject(new Error('No username provided'));
+                return;
+            }
 
-        // Doc ID can change when Instagram updates the query.
-        const SEARCH_QUERY_DOC_ID = '27706427925724183';
-        const friendlyName = 'PolarisSearchBoxRefetchableQuery';
-        const lsd = getLSD();
-        const dtsg = getDTSG();
-        const apiURL = new URL('/graphql/query', window.location.origin);
-
-        const variables = {
-            data: {
-                context: 'blended',
-                include_reel: 'true',
-                query: normalized,
-                rank_token: '',
-                search_surface: 'web_top_search'
-            },
-            hasQuery: true
-        };
-
-        const body = new URLSearchParams({
-            __d: 'www',
-            __user: '0',
-            __a: '1',
-            __req: '1',
-            __comet_req: '7',
-            fb_api_caller_class: 'RelayModern',
-            fb_api_req_friendly_name: friendlyName,
-            server_timestamps: 'true',
-            doc_id: SEARCH_QUERY_DOC_ID,
-            variables: JSON.stringify(variables)
-        });
-
-        if (dtsg) {
-            body.set('fb_dtsg', dtsg);
-            body.set('jazoest', getJazoest(dtsg));
-        }
-
-        if (lsd) {
-            body.set('lsd', lsd);
-        }
-
-        const headers = {
-            'Content-Type': 'application/x-www-form-urlencoded',
-            'X-FB-Friendly-Name': friendlyName
-        };
-
-        if (lsd) {
-            headers['X-FB-LSD'] = lsd;
-        }
-
-        const response = await fetch(apiURL.href, {
-            method: 'POST',
-            credentials: 'include',
-            headers,
-            body: body.toString()
-        });
-
-        const responseText = await response.text();
-        let json;
-
-        try {
-            json = JSON.parse(responseText);
-            // eslint-disable-next-line no-unused-vars
-        } catch (err) {
-            throw new Error(
-                `Polaris search returned non-JSON (HTTP ${response.status})`
+            // Doc ID can change when Instagram updates the query.
+            const api = buildGraphQLData(
+                '27706427925724183',
+                {
+                    "data": {
+                        "context": "blended",
+                        "include_reel": "true",
+                        "query": normalized,
+                        "rank_token": "",
+                        "search_surface": "web_top_search"
+                    },
+                    "hasQuery": true
+                },
+                'PolarisSearchBoxRefetchableQuery',
+                'comet.igweb.PolarisExploreRoute',
+                'xdt_api__v1__fbsearch__topsearch_connection'
             );
-        }
 
-        if (!response.ok) {
-            const apiError = json?.errors
-                ?.map((error) => error?.message)
-                .filter(Boolean)
-                .join('; ');
+            GM_xmlhttpRequest({
+                method: "POST",
+                url: api.url,
+                data: api.body,
+                headers: api.headers,
+                onload: function (response) {
+                    try {
+                        let obj;
 
-            throw new Error(
-                `Polaris search failed with HTTP ${response.status}` +
-                (apiError ? `: ${apiError}` : '')
-            );
-        }
+                        try {
+                            obj = JSON.parse(response.response);
+                            // eslint-disable-next-line no-unused-vars
+                        } catch (err) {
+                            throw new Error(`Polaris search returned non-JSON (HTTP ${response.status})`);
+                        }
 
-        const users =
-            json?.data?.xdt_api__v1__fbsearch__topsearch_connection?.users;
+                        if (response.status < 200 || response.status >= 300) {
+                            const apiError = obj?.errors
+                                ?.map((error) => error?.message)
+                                .filter(Boolean)
+                                .join('; ');
 
-        if (!Array.isArray(users) || users.length === 0) {
-            throw new Error('Polaris search returned no users');
-        }
+                            throw new Error(
+                                `Polaris search failed with HTTP ${response.status}` +
+                                (apiError ? `: ${apiError}` : '')
+                            );
+                        }
 
-        // Keep the existing behavior: prefer an exact match, otherwise use the first result.
-        const result = users.find((item) =>
-            item.user?.username?.toLowerCase() === normalized
-        ) ?? users[0];
+                        const users = obj?.data?.xdt_api__v1__fbsearch__topsearch_connection?.users;
 
-        if (!result?.user) {
-            throw new Error('Polaris search result has no user');
-        }
+                        if (!Array.isArray(users) || users.length === 0) {
+                            throw new Error('Polaris search returned no users');
+                        }
 
-        const rawId = result.user.pk ?? result.user.id;
+                        // Prefer an exact match, otherwise use the first result.
+                        const result = users.find((item) =>
+                            item.user?.username?.toLowerCase() === normalized
+                        ) ?? users[0];
 
-        if (!rawId) {
-            throw new Error('Polaris search result has no user ID');
-        }
+                        if (!result?.user) {
+                            throw new Error('Polaris search result has no user');
+                        }
 
-        const id = String(rawId);
-        const user = {
-            ...result.user,
-            id,
-            pk: id
-        };
+                        const rawId = result.user.pk ?? result.user.id;
 
-        const userInfo = { ...result, user };
+                        if (!rawId) {
+                            throw new Error('Polaris search result has no user ID');
+                        }
 
-        logger('getUserIdFromPolarisSearchBoxRefetchableQuery()', userInfo);
-        return userInfo;
+                        const id = String(rawId);
+                        const userInfo = {
+                            ...result,
+                            user: { ...result.user, id, pk: id }
+                        };
+
+                        logger('getUserIdFromPolarisSearchBoxRefetchableQuery()', userInfo);
+                        resolve(userInfo);
+                    }
+                    catch (err) {
+                        logger('getUserIdFromPolarisSearchBoxRefetchableQuery()', 'reject', err.message);
+                        reject(err);
+                    }
+                },
+                onerror: function (err) {
+                    logger('getUserIdFromPolarisSearchBoxRefetchableQuery()', 'reject', err);
+                    reject(err);
+                }
+            });
+        });
     }
 
     /**
@@ -6966,7 +6942,6 @@
         try {
             const resource = filterResourceData(result.data);
             const ownerId = resource.owner?.pk ?? resource.owner?.id;
-
             if (resource.owner?.username && ownerId) {
                 await reconcileOwnerFromApiResponse(resource.owner.username, ownerId);
             }
@@ -7031,6 +7006,9 @@
 
     function buildGraphQLData(docId, variables, friendlyName, crn, rootName) {
         const siteData = getSiteData();
+        const hasteData = getHasteBitMapParams();
+        logger('buildGraphQLData', { docId, variables, friendlyName, crn, rootName, siteData, hasteData });
+
         let body = {
             av: getCookie('ds_user_id') || '0',
             fb_api_caller_class: 'RelayModern',
@@ -7046,6 +7024,7 @@
             __spin_b: siteData?.__spin_b || '',
             __spin_t: siteData?.__spin_t || '',
             __comet_req: siteData?.comet_env || '',
+            ...hasteData,
             __ccg: 'EXCELLENT',
             dpr: '3',
             jazoest: getJazoest(getDTSG()),
@@ -7111,6 +7090,8 @@
         if (item.media_type != null) return item.media_type !== 1;
         return false;
     }
+
+    const HASTE_BITMAP_ALPHABET = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ-_';
 
     /**
      * isMacOS
@@ -7294,6 +7275,163 @@
             }
         }
         return null;
+    }
+
+    /**
+     * encodeHasteBitMap
+     * @description Encode a set of indexes the same way as Instagram's BitMap.toCompressedString():
+     *              run-length encode the bitmap, write each run length as an Elias-gamma code,
+     *              then pack the bit string into 6-bit chunks with a custom base64 alphabet.
+     *
+     * @param  {Iterable<number>}  indexes
+     * @return {string}  An empty string when there are no indexes.
+     */
+    function encodeHasteBitMap(indexes) {
+        const bits = [];
+        for (const index of indexes) {
+            if (Number.isInteger(index) && index >= 0) bits[index] = 1;
+        }
+        if (bits.length === 0) return '';
+
+        const gamma = (num) => {
+            const binary = num.toString(2);
+            return '0'.repeat(binary.length - 1) + binary;
+        };
+
+        let lastValue = bits[0] || 0;
+        let runLength = 1;
+        let output = String(lastValue);
+        for (let i = 1; i < bits.length; i++) {
+            const value = bits[i] || 0;
+            if (value === lastValue) {
+                runLength++;
+            }
+            else {
+                output += gamma(runLength);
+                lastValue = value;
+                runLength = 1;
+            }
+        }
+        output += gamma(runLength);
+
+        const chunks = (output + '00000').match(/[01]{6}/g) || [];
+        return chunks.map((chunk) => HASTE_BITMAP_ALPHABET[parseInt(chunk, 2)]).join('');
+    }
+
+    /**
+     * parseHasteResourceIndexes
+     * @description Parse a resource index string such as ":12,34,56" (HasteResourceIndexUtil format).
+     *
+     * @param  {string}  value
+     * @return {number[]}
+     */
+    function parseHasteResourceIndexes(value) {
+        if (typeof value !== 'string' || value[0] !== ':') return [];
+        return value.slice(1).split(',').map((item) => parseInt(item, 10)).filter(Number.isInteger);
+    }
+
+    /**
+     * getHasteBitMapParams
+     * @description Rebuild the __dyn / __csr / __hsdp / __hblp / __sjsp request parameters from the
+     *              ServerJS payloads embedded in the current page, mirroring Instagram's own logic:
+     *              - __dyn  : define entries [name, deps, data, id] with id >= 0 (ServerJSDefine)
+     *              - __csr  : rsrcMap entries / data-bootloader-hash tags whose "c" flag is set,
+     *                         taken from their "p" indexes when BootloaderConfig.csrOn is true (Bootloader)
+     *              - __hsdp : indexUpgrades.__hsdp (Bootloader.handlePayload)
+     *              - __hblp : indexUpgrades.__hblp (Bootloader.handlePayload)
+     *              - __sjsp : phd2_indexes (ServerJS.handle)
+     *              Only the initial page state is covered: indexes that the browser adds later from
+     *              GraphQL / AJAX responses after SPA navigation are not included. Preloaded
+     *              AsyncData.resolve payloads are skipped, since Instagram only handles them once
+     *              they are consumed.
+     *
+     * @return {Object<string, string>}  Parameter name to value; empty bitmaps are omitted, just
+     *                                   like Instagram's getAsyncParams.
+     */
+    function getHasteBitMapParams() {
+        const dynIndexes = new Set();
+        const hasteIndexes = { __csr: new Set(), __hsdp: new Set(), __hblp: new Set(), __sjsp: new Set() };
+        const addHasteIndex = (name, index) => {
+            if (!hasteIndexes[name]) hasteIndexes[name] = new Set();
+            hasteIndexes[name].add(index);
+        };
+        const resources = [];
+        let csrOn = true;
+
+        const isDefineList = (value) => Array.isArray(value) &&
+            value.every((entry) => Array.isArray(entry) && typeof entry[0] === 'string');
+
+        const walk = (data) => {
+            const stack = [data];
+            while (stack.length) {
+                const node = stack.pop();
+                if (Array.isArray(node)) {
+                    if (node[0] === 'AsyncData' && node[1] === 'resolve') continue;
+                    if (node[0] === 'BootloaderConfig' && node[2] && typeof node[2] === 'object' && 'csrOn' in node[2]) {
+                        csrOn = !!node[2].csrOn;
+                    }
+                    stack.push(...node);
+                    continue;
+                }
+                if (!node || typeof node !== 'object') continue;
+
+                if (isDefineList(node.define)) {
+                    node.define.forEach((entry) => {
+                        if (Number.isInteger(entry[3]) && entry[3] >= 0) dynIndexes.add(entry[3]);
+                    });
+                }
+                if (typeof node.phd2_indexes === 'string') {
+                    parseHasteResourceIndexes(node.phd2_indexes).forEach((index) => addHasteIndex('__sjsp', index));
+                }
+                if (node.indexUpgrades && typeof node.indexUpgrades === 'object') {
+                    Object.entries(node.indexUpgrades).forEach(([name, value]) => {
+                        parseHasteResourceIndexes(value).forEach((index) => addHasteIndex(name, index));
+                    });
+                }
+                if (node.rsrcMap && typeof node.rsrcMap === 'object') {
+                    resources.push(...Object.values(node.rsrcMap));
+                }
+                stack.push(...Object.values(node));
+            }
+        };
+
+        document.querySelectorAll('script[type="application/json"][data-sjs]').forEach((script) => {
+            try {
+                walk(JSON.parse(script.textContent));
+            }
+            catch {
+                // Ignore blocks that are not valid JSON.
+            }
+        });
+
+        document.querySelectorAll('script[data-bootloader-hash], link[data-bootloader-hash]').forEach((element) => {
+            const c = element.getAttribute('data-c');
+            resources.push({
+                type: element.tagName === 'LINK' ? 'css' : 'js',
+                p: element.getAttribute('data-p'),
+                c: c === '1' ? 1 : (c === '2' ? 2 : 0)
+            });
+        });
+
+        // csrOn is only known after every payload has been read, so __csr is collected last.
+        if (csrOn) {
+            resources.forEach((resource) => {
+                if (!resource || resource.type === 'async' || resource.type === 'csr' || resource.p == null || !resource.c) return;
+                parseHasteResourceIndexes(resource.p).forEach((index) => {
+                    // 0 is HasteResourceIndexUtil.UNKNOWN_RESOURCE_INDEX
+                    if (index !== 0) addHasteIndex('__csr', index);
+                });
+            });
+        }
+
+        const result = {};
+        const dyn = encodeHasteBitMap(dynIndexes);
+        if (dyn) result.__dyn = dyn;
+        Object.entries(hasteIndexes).forEach(([name, indexes]) => {
+            const value = encodeHasteBitMap(indexes);
+            if (value) result[name] = value;
+        });
+        return result;
     }
 
     /**
