@@ -8,31 +8,34 @@ import { initRouteWatcher } from "./timer";
 import { initPersistentCache } from "./utils/persistent_cache";
 /*! ESLINT IMPORT END !*/
 
-// initialization script
-initSettings();
-GM_addStyle(style);
-GM_addStyle(`
+// Delayed initialization to avoid React Hydration errors
+setTimeout(() => {
+    // initialization script
+    initSettings();
+    GM_addStyle(style);
+    GM_addStyle(`
     ._acay + .x24i39r { top: 37px !important; }
 `);
-registerMenuCommand();
-
-getTranslationText(state.lang).then((res) => {
-    state.locale[state.lang] = res;
-    repaintingTranslations();
     registerMenuCommand();
-    checkingScriptUpdate(300);
-}).catch((err) => {
-    registerMenuCommand();
-    checkingScriptUpdate(300);
 
-    if (!state.lang.startsWith('en')) {
-        console.error('getTranslationText catch error:', err);
-    }
-});
+    getTranslationText(state.lang).then((res) => {
+        state.locale[state.lang] = res;
+        repaintingTranslations();
+        registerMenuCommand();
+        checkingScriptUpdate(300);
+    }).catch((err) => {
+        registerMenuCommand();
+        checkingScriptUpdate(300);
 
-logger('Script Loaded', GM_info.script.name, 'version:', GM_info.script.version);
-registerPostClickHandlers();
-// Load persistent caches from IndexedDB, then drop expired image entries.
-initPersistentCache().then(() => purgeCache());
-initRouteWatcher();
+        if (!state.lang.startsWith('en')) {
+            console.error('getTranslationText catch error:', err);
+        }
+    });
+
+    logger('Script Loaded', GM_info.script.name, 'version:', GM_info.script.version);
+    registerPostClickHandlers();
+    // Load persistent caches from IndexedDB, then drop expired image entries.
+    initPersistentCache().then(() => purgeCache());
+    initRouteWatcher();
+}, 1500);
 /*******************************/
