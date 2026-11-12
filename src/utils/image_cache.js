@@ -185,6 +185,8 @@ export function registerPerformanceObserver() {
                 if (
                     !(u.includes('_e35') || u.includes('_e15') || u.includes('.webp?')) ||
                     u.includes('_e35_s') ||
+                    // Ignore images that are ads
+                    u.includes('_nc_ad') ||
                     u.match(/_[sp](\d+)x\1(?!\d)/)
                 ) {
                     return;
