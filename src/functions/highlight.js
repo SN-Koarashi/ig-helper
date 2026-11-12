@@ -356,7 +356,7 @@ export async function onHighlightsStory(isDownload, isPreview) {
                     return;
                 }
 
-                const videoUrl = target.video_versions?.at(-1)?.url || target.video_versions?.[0]?.url || target.video_resources?.at(-1)?.src;
+                const videoUrl = target.video_versions?.[target.video_versions.length - 1]?.url || target.video_versions?.[0]?.url || target.video_resources?.at(-1)?.src;
 
                 if (!videoUrl) {
                     alert('Cannot find highlight video URL.');
@@ -373,12 +373,12 @@ export async function onHighlightsStory(isDownload, isPreview) {
                         timestamp,
                         filetype: 'mp4',
                         shortcode: mediaId,
-                        thumbnailURL: target.image_versions2?.candidates?.at(-1)?.url || target.image_versions2?.candidates?.[0]?.url || target.display_url || target.display_resources?.at(-1)?.src
+                        thumbnailURL: target.image_versions2?.candidates?.[target.image_versions2.candidates.length - 1]?.url || target.image_versions2?.candidates?.[0]?.url || target.display_url || target.display_resources?.at(-1)?.src
                     });
                 }
             }
             else {
-                const imageUrl = target.image_versions2?.candidates?.at(-1)?.url || target.image_versions2?.candidates?.[0]?.url || target.display_url || target.display_resources?.at(-1)?.src;
+                const imageUrl = target.image_versions2?.candidates?.[target.image_versions2.candidates.length - 1]?.url || target.image_versions2?.candidates?.[0]?.url || target.display_url || target.display_resources?.at(-1)?.src;
 
                 if (!imageUrl) {
                     alert('Cannot find highlight image URL.');
@@ -670,7 +670,7 @@ export async function onHighlightsStoryThumbnail(isDownload) {
         }
 
         // Thumbnail is always an image — this must never enter the DASH/video path.
-        const thumbnailURL = target.image_versions2?.candidates?.at(-1)?.url ||
+        const thumbnailURL = target.image_versions2?.candidates?.[target.image_versions2.candidates.length - 1]?.url ||
             target.image_versions2?.candidates?.[0]?.url ||
             target.display_url ||
             target.display_resources?.at(-1)?.src;
