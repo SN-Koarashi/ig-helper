@@ -356,7 +356,7 @@ export async function onHighlightsStory(isDownload, isPreview) {
                     return;
                 }
 
-                const videoUrl = target.video_versions?.at(-1)?.url || target.video_versions?.[0]?.url || target.video_resources?.at(-1)?.src;
+                const videoUrl = target.video_versions?.[target.video_versions.length - 1]?.url || target.video_versions?.[0]?.url || target.video_resources?.at(-1)?.src;
 
                 if (!videoUrl) {
                     alert('Cannot find highlight video URL.');
