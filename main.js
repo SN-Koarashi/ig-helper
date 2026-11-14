@@ -17,7 +17,7 @@
 // @name:zh-CN         IG小助手
 // @name:zh-TW         IG小精靈
 // @namespace          https://github.snkms.com/
-// @version            5.4.3
+// @version            5.4.4
 // @description        Download photos and videos from Instagram posts in one click, including Stories, Reels, and profile pictures.
 // @description:ar     نزّل صورًا ومقاطع فيديو من منشورات Instagram بنقرة واحدة، بما في ذلك القصص وReels وصور الملف الشخصي.
 // @description:de     Lade Fotos und Videos aus Instagram-Beiträgen mit einem Klick herunter, einschließlich Stories, Reels und Profilbildern.
@@ -2486,7 +2486,7 @@
                 markContainerPositioned($childElement);
 
                 // Add the mark that download is ready
-                var username = $self.find("header > div:last-child > div:first-child span a").first().text() || $self.find('a[href^="/"]').filter(function () {
+                var username = $self.find(':is(header[data-interactable], article[data-interactable] div[data-interactable], div:has(+ hr)) a[href] div>span[dir="auto"]').filter(function () {
                     return $(this)?.text()?.length > 0;
                 }).first().text();
 
@@ -2547,7 +2547,7 @@
                         logger('[Restore cached post video thumbnail]', ctx.mediaId || postPath);
 
                         const publish_time = new Date(
-                            $article.find('a[href] time[datetime]').filter(function () {
+                            $article.find('a[href]>span[dir="auto"]>time[datetime]').filter(function () {
                                 let href = $(this).parents("a[href]").attr("href");
                                 return href?.startsWith("/p/") || href?.match(/\/([\w.\-_]+)\/(p|reel)\//ig) != null;
                             }).first().attr('datetime')
@@ -2726,7 +2726,7 @@
 
                 const ctx = getPostVisibleMediaContext($article, postPath);
                 const publish_time = new Date(
-                    $article.find('a[href] time[datetime]').filter(function () {
+                    $article.find('a[href]>span[dir="auto"]>time[datetime]').filter(function () {
                         let href = $(this).parents("a[href]").attr("href");
                         return href?.startsWith("/p/") || href?.match(/\/([\w.\-_]+)\/(p|reel)\//ig) != null;
                     }).first().attr('datetime')
@@ -10923,6 +10923,8 @@
                     if (
                         !(u.includes('_e35') || u.includes('_e15') || u.includes('.webp?')) ||
                         u.includes('_e35_s') ||
+                        // Ignore images that are ads
+                        u.includes('_nc_ad') ||
                         u.match(/_[sp](\d+)x\1(?!\d)/)
                     ) {
                         return;
