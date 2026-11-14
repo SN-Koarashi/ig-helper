@@ -514,7 +514,7 @@ export function registerPostClickHandlers() {
                     logger('[Restore cached post video thumbnail]', ctx.mediaId || postPath);
 
                     const publish_time = new Date(
-                        $article.find('a[href] time[datetime]').filter(function () {
+                        $article.find('a[href]>span[dir="auto"]>time[datetime]').filter(function () {
                             let href = $(this).parents("a[href]").attr("href");
                             return href?.startsWith("/p/") || href?.match(/\/([\w.\-_]+)\/(p|reel)\//ig) != null;
                         }).first().attr('datetime')
@@ -693,7 +693,7 @@ export function registerPostClickHandlers() {
 
             const ctx = getPostVisibleMediaContext($article, postPath);
             const publish_time = new Date(
-                $article.find('a[href] time[datetime]').filter(function () {
+                $article.find('a[href]>span[dir="auto"]>time[datetime]').filter(function () {
                     let href = $(this).parents("a[href]").attr("href");
                     return href?.startsWith("/p/") || href?.match(/\/([\w.\-_]+)\/(p|reel)\//ig) != null;
                 }).first().attr('datetime')
