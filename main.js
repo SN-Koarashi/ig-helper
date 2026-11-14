@@ -2486,7 +2486,7 @@
                 markContainerPositioned($childElement);
 
                 // Add the mark that download is ready
-                var username = $self.find("header > div:last-child > div:first-child span a").first().text() || $self.find('a[href^="/"]').filter(function () {
+                var username = $self.find(':is(header[data-interactable], article[data-interactable] div[data-interactable], div:has(+ hr)) a[href] div>span[dir="auto"]').filter(function () {
                     return $(this)?.text()?.length > 0;
                 }).first().text();
 
@@ -10923,6 +10923,8 @@
                     if (
                         !(u.includes('_e35') || u.includes('_e15') || u.includes('.webp?')) ||
                         u.includes('_e35_s') ||
+                        // Ignore images that are ads
+                        u.includes('_nc_ad') ||
                         u.match(/_[sp](\d+)x\1(?!\d)/)
                     ) {
                         return;
