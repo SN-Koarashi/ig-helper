@@ -33,6 +33,31 @@ export function getHighlightsStoryUsername() {
 }
 
 /**
+ * getBestCandidateUrl
+ * @description Return the URL from image_versions2.candidates with the largest height.
+ *
+ * @param  {?Object}  item
+ * @return {String}
+ */
+export function getBestCandidateUrl(item) {
+    const candidates = item?.image_versions2?.candidates;
+    if (Array.isArray(candidates) && candidates.length > 0) {
+        const best = candidates.reduce((max, c) => {
+            if (!c?.url) return max;
+            if (!max) return c;
+            if ((c.height || 0) !== (max.height || 0)) {
+                return (c.height || 0) > (max.height || 0) ? c : max;
+            }
+            return (c.width || 0) > (max.width || 0) ? c : max;
+        }, null);
+
+        if (best?.url) return best.url;
+    }
+
+    return item?.display_url || item?.display_resources?.at(-1)?.src || '';
+}
+
+/**
  * onHighlightsStoryAll
  * @description Trigger user's highlight all download event.
  *
@@ -69,11 +94,7 @@ export async function onHighlightsStoryAll() {
                         timestamp = item.taken_at_timestamp || item.taken_at;
                     }
 
-                    item.image_versions2.candidates.sort(function (a, b) {
-                        if (a.config_width < b.config_width) return 1;
-                        if (a.config_width > b.config_width) return -1;
-                        return 0;
-                    });
+                    item.image_versions2.candidates.sort((a, b) => (b.height || 0) - (a.height || 0));
 
                     if (item.is_video || item.video_versions != null) {
                         (async () => {
@@ -373,12 +394,12 @@ export async function onHighlightsStory(isDownload, isPreview) {
                         timestamp,
                         filetype: 'mp4',
                         shortcode: mediaId,
-                        thumbnailURL: target.image_versions2?.candidates?.at(-1)?.url || target.image_versions2?.candidates?.[0]?.url || target.display_url || target.display_resources?.at(-1)?.src
+                        thumbnailURL: getBestCandidateUrl(target)
                     });
                 }
             }
             else {
-                const imageUrl = target.image_versions2?.candidates?.at(-1)?.url || target.image_versions2?.candidates?.[0]?.url || target.display_url || target.display_resources?.at(-1)?.src;
+                const imageUrl = getBestCandidateUrl(target);
 
                 if (!imageUrl) {
                     alert('Cannot find highlight image URL.');
@@ -670,10 +691,7 @@ export async function onHighlightsStoryThumbnail(isDownload) {
         }
 
         // Thumbnail is always an image — this must never enter the DASH/video path.
-        const thumbnailURL = target.image_versions2?.candidates?.at(-1)?.url ||
-            target.image_versions2?.candidates?.[0]?.url ||
-            target.display_url ||
-            target.display_resources?.at(-1)?.src;
+        const thumbnailURL = getBestCandidateUrl(target);
 
         if (!thumbnailURL) {
             alert('No highlight thumbnail URL found.');
