@@ -17,7 +17,7 @@
 // @name:zh-CN         IG小助手
 // @name:zh-TW         IG小精靈
 // @namespace          https://github.snkms.com/
-// @version            5.4.4
+// @version            5.4.5
 // @description        Download photos and videos from Instagram posts in one click, including Stories, Reels, and profile pictures.
 // @description:ar     نزّل صورًا ومقاطع فيديو من منشورات Instagram بنقرة واحدة، بما في ذلك القصص وReels وصور الملف الشخصي.
 // @description:de     Lade Fotos und Videos aus Instagram-Beiträgen mit einem Klick herunter, einschließlich Stories, Reels und Profilbildern.
@@ -1384,6 +1384,31 @@
     }
 
     /**
+     * getBestCandidateUrl
+     * @description Return the URL from image_versions2.candidates with the largest height.
+     *
+     * @param  {?Object}  item
+     * @return {String}
+     */
+    function getBestCandidateUrl(item) {
+        const candidates = item?.image_versions2?.candidates;
+        if (Array.isArray(candidates) && candidates.length > 0) {
+            const best = candidates.reduce((max, c) => {
+                if (!c?.url) return max;
+                if (!max) return c;
+                if ((c.height || 0) !== (max.height || 0)) {
+                    return (c.height || 0) > (max.height || 0) ? c : max;
+                }
+                return (c.width || 0) > (max.width || 0) ? c : max;
+            }, null);
+
+            if (best?.url) return best.url;
+        }
+
+        return item?.display_url || item?.display_resources?.at(-1)?.src || '';
+    }
+
+    /**
      * onHighlightsStoryAll
      * @description Trigger user's highlight all download event.
      *
@@ -1420,11 +1445,7 @@
                             timestamp = item.taken_at_timestamp || item.taken_at;
                         }
 
-                        item.image_versions2.candidates.sort(function (a, b) {
-                            if (a.config_width < b.config_width) return 1;
-                            if (a.config_width > b.config_width) return -1;
-                            return 0;
-                        });
+                        item.image_versions2.candidates.sort((a, b) => (b.height || 0) - (a.height || 0));
 
                         if (item.is_video || item.video_versions != null) {
                             (async () => {
@@ -1724,12 +1745,12 @@
                             timestamp,
                             filetype: 'mp4',
                             shortcode: mediaId,
-                            thumbnailURL: target.image_versions2?.candidates?.at(-1)?.url || target.image_versions2?.candidates?.[0]?.url || target.display_url || target.display_resources?.at(-1)?.src
+                            thumbnailURL: getBestCandidateUrl(target)
                         });
                     }
                 }
                 else {
-                    const imageUrl = target.image_versions2?.candidates?.at(-1)?.url || target.image_versions2?.candidates?.[0]?.url || target.display_url || target.display_resources?.at(-1)?.src;
+                    const imageUrl = getBestCandidateUrl(target);
 
                     if (!imageUrl) {
                         alert('Cannot find highlight image URL.');
@@ -2021,10 +2042,7 @@
             }
 
             // Thumbnail is always an image — this must never enter the DASH/video path.
-            const thumbnailURL = target.image_versions2?.candidates?.at(-1)?.url ||
-                target.image_versions2?.candidates?.[0]?.url ||
-                target.display_url ||
-                target.display_resources?.at(-1)?.src;
+            const thumbnailURL = getBestCandidateUrl(target);
 
             if (!thumbnailURL) {
                 alert('No highlight thumbnail URL found.');
@@ -5027,11 +5045,7 @@
                     timestamp = item.taken_at_timestamp || item.taken_at;
                 }
 
-                item.image_versions2.candidates.sort(function (a, b) {
-                    if (a.width < b.width) return 1;
-                    if (a.width > b.width) return -1;
-                    return 0;
-                });
+                item.image_versions2.candidates.sort((a, b) => (b.height || 0) - (a.height || 0));
 
                 if (item.is_video || item.video_versions != null) {
                     $selector.append(`<a media-id="${item.id}" datetime="${timestamp}" data-blob="true" data-needed="direct" data-name="${type}" data-type="mp4" data-username="${username}" data-path="${item.id}" data-globalIndex="${idx + 1}" href="javascript:;" data-href="${item.video_versions[0].url}"><img width="100" src="${item.image_versions2.candidates[0].url}" /><br/>- <span data-ih-locale-title="VID">${_i18n("VID")}</span> ${idx} -</a>`);
@@ -5102,11 +5116,7 @@
                             timestamp = item.taken_at_timestamp || item.taken_at;
                         }
 
-                        item.image_versions2.candidates.sort(function (a, b) {
-                            if (a.width < b.width) return 1;
-                            if (a.width > b.width) return -1;
-                            return 0;
-                        });
+                        item.image_versions2.candidates.sort((a, b) => (b.height || 0) - (a.height || 0));
 
                         if (item.is_video || item.video_versions != null) {
                             saveFiles(item.video_versions[0].url, {
@@ -5499,16 +5509,17 @@
                                 timestamp,
                                 filetype: 'mp4',
                                 shortcode: mediaId,
-                                thumbnailURL: mediaItem.image_versions2?.candidates?.[0]?.url
+                                thumbnailURL: getBestCandidateUrl(mediaItem)
                             });
                         }
                     }
                     else {
+    					const bestStoryImgUrl = getBestCandidateUrl(mediaItem);
                         if (isPreview) {
-                            openNewTab(mediaItem.image_versions2.candidates[0].url);
+                            openNewTab(bestStoryImgUrl);
                         }
                         else {
-                            saveFiles(mediaItem.image_versions2.candidates[0].url, {
+                            saveFiles(bestStoryImgUrl, {
                                 username,
                                 sourceType: "stories",
                                 timestamp,
@@ -5630,10 +5641,7 @@
             let videoThumbnailURL = "";
             let mediaId = null;
             const selectThumbnail = item => {
-                const candidates = item?.image_versions2?.candidates || [];
-                const image = candidates.filter(candidate => candidate.url).reduce((best, candidate) =>
-                    !best || candidate.width > best.width ? candidate : best, null);
-                videoThumbnailURL = image?.url || item?.display_url || '';
+                videoThumbnailURL = getBestCandidateUrl(item);
                 if (videoThumbnailURL) {
                     mediaId = item.pk ?? item.id;
                     if (USER_SETTING.RENAME_PUBLISH_DATE) {
@@ -8745,7 +8753,7 @@
                 return false;
             }
 
-            const thumbnailURL = mediaItem?.image_versions2?.candidates?.[0]?.url || mediaItem?.display_url || mediaItem?.display_resources?.[0]?.src;
+            const thumbnailURL = getBestCandidateUrl(mediaItem);
 
             logger('[DASH]', 'best reps selected', {
                 apiKind: 'reels_media',
