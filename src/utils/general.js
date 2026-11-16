@@ -1639,7 +1639,7 @@ export async function tryHandleDashFromMediaItem({
             return false;
         }
 
-        const thumbnailURL = mediaItem?.image_versions2?.candidates?.[0]?.url || mediaItem?.display_url || mediaItem?.display_resources?.[0]?.src;
+        const thumbnailURL = getBestCandidateUrl(mediaItem);
 
         logger('[DASH]', 'best reps selected', {
             apiKind: 'reels_media',

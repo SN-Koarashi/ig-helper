@@ -46,11 +46,7 @@ export async function createStoryListDOM(obj, type) {
                 timestamp = item.taken_at_timestamp || item.taken_at;
             }
 
-            item.image_versions2.candidates.sort(function (a, b) {
-                if (a.width < b.width) return 1;
-                if (a.width > b.width) return -1;
-                return 0;
-            });
+            item.image_versions2.candidates.sort((a, b) => (b.height || 0) - (a.height || 0));
 
             if (item.is_video || item.video_versions != null) {
                 $selector.append(`<a media-id="${item.id}" datetime="${timestamp}" data-blob="true" data-needed="direct" data-name="${type}" data-type="mp4" data-username="${username}" data-path="${item.id}" data-globalIndex="${idx + 1}" href="javascript:;" data-href="${item.video_versions[0].url}"><img width="100" src="${item.image_versions2.candidates[0].url}" /><br/>- <span data-ih-locale-title="VID">${_i18n("VID")}</span> ${idx} -</a>`);
@@ -121,11 +117,7 @@ export async function onStoryAll() {
                         timestamp = item.taken_at_timestamp || item.taken_at;
                     }
 
-                    item.image_versions2.candidates.sort(function (a, b) {
-                        if (a.width < b.width) return 1;
-                        if (a.width > b.width) return -1;
-                        return 0;
-                    });
+                    item.image_versions2.candidates.sort((a, b) => (b.height || 0) - (a.height || 0));
 
                     if (item.is_video || item.video_versions != null) {
                         saveFiles(item.video_versions[0].url, {
@@ -518,16 +510,17 @@ export async function onStory(isDownload, isForce, isPreview) {
                             timestamp,
                             filetype: 'mp4',
                             shortcode: mediaId,
-                            thumbnailURL: mediaItem.image_versions2?.candidates?.[0]?.url
+                            thumbnailURL: getBestCandidateUrl(mediaItem)
                         });
                     }
                 }
                 else {
+					const bestStoryImgUrl = getBestCandidateUrl(mediaItem);
                     if (isPreview) {
-                        openNewTab(mediaItem.image_versions2.candidates[0].url);
+                        openNewTab(bestStoryImgUrl);
                     }
                     else {
-                        saveFiles(mediaItem.image_versions2.candidates[0].url, {
+                        saveFiles(bestStoryImgUrl, {
                             username,
                             sourceType: "stories",
                             timestamp,
@@ -649,10 +642,7 @@ export async function onStoryThumbnail(isDownload, isForce) {
         let videoThumbnailURL = "";
         let mediaId = null;
         const selectThumbnail = item => {
-            const candidates = item?.image_versions2?.candidates || [];
-            const image = candidates.filter(candidate => candidate.url).reduce((best, candidate) =>
-                !best || candidate.width > best.width ? candidate : best, null);
-            videoThumbnailURL = image?.url || item?.display_url || '';
+            videoThumbnailURL = getBestCandidateUrl(item);
             if (videoThumbnailURL) {
                 mediaId = item.pk ?? item.id;
                 if (USER_SETTING.RENAME_PUBLISH_DATE) {
