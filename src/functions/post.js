@@ -453,7 +453,7 @@ export function createDownloadButton() {
             markContainerPositioned($childElement);
 
             // Add the mark that download is ready
-            var username = $self.find(':is(header[data-interactable], article[data-interactable] div[data-interactable], div:has(+ hr)) a[href] div>span[dir="auto"]').filter(function () {
+            var username = $self.find(':is(header[data-interactable], article div.xbmvrgn + div[class]:not([style]), div:has(+ hr)) a[href] div>span[dir="auto"]').filter(function () {
                 return $(this)?.text()?.length > 0;
             }).first().text();
 
