@@ -13,6 +13,10 @@ import { _i18n, getTranslationText, repaintingTranslations } from "./utils/i18n"
 import { getImageFromCache, registerPerformanceObserver } from "./utils/image_cache";
 import { batchDownloadPostFiles, shortcodeToId } from "./functions/post";
 import { registerMenuCommand, showDebugDOM, showHotkeySetting, showSetting } from "./utils/dialog";
+import {
+    autoUnmuteAll, onAutoUnmutePlaying, onAutoUnmuteUserInput, onAutoUnmuteVolumeChange,
+    onAutoUnmuteSettingChange
+} from "./timer";
 /*! ESLINT IMPORT END !*/
 
 // Running if document is ready
@@ -184,6 +188,11 @@ $(function () {
                     GM_setValue(child, false);
                     $(`.IG_POPUP_DIG input#${child}`).prop('checked', false);
                 }
+            }
+
+            // Apply Auto-unmute to the videos that are already on screen
+            if (name.startsWith('AUTO_UNMUTE')) {
+                onAutoUnmuteSettingChange(name);
             }
 
             console.log('user settings', name, isChecked);
@@ -465,6 +474,21 @@ $(function () {
         });
 
         batchDownloadPostFiles(links);
+    });
+
+    // Auto-unmute: video events do not bubble, hence capture listeners
+    document.addEventListener('playing', onAutoUnmutePlaying, true);
+
+    document.addEventListener('volumechange', onAutoUnmuteVolumeChange, true);
+
+    // Real user input on the audio controls (manual mute/unmute detection)
+    ['pointerdown', 'click', 'keydown'].forEach((type) => {
+        document.addEventListener(type, onAutoUnmuteUserInput, { capture: true, passive: true });
+    });
+
+    // First user gesture: videos that were waiting for it can be unmuted now
+    ['pointerup', 'keydown'].forEach((type) => {
+        document.addEventListener(type, () => setTimeout(autoUnmuteAll, 50), { capture: true, once: true });
     });
 
     registerPerformanceObserver();

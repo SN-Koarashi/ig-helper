@@ -1082,3 +1082,413 @@ function stopStoryObserver() {
     clearTimeout(state.GL_storyDebounce);
 }
 
+const AUTO_UNMUTE_SCOPE_SETTINGS = {
+    posts: 'AUTO_UNMUTE_POSTS',
+    reels: 'AUTO_UNMUTE_REELS',
+    stories: 'AUTO_UNMUTE_STORIES',
+    highlights: 'AUTO_UNMUTE_HIGHLIGHTS'
+};
+// Speaker icons already used elsewhere in the script (language-independent)
+const AUTO_UNMUTE_ICON_MUTED = 'svg > path[d^="M1.5 13.3c-.8"]';
+const AUTO_UNMUTE_ICON_ON = 'svg > path[d^="M16.636 7.028a1.5"]';
+const AUTO_UNMUTE_ICON_ANY = AUTO_UNMUTE_ICON_MUTED + ', ' + AUTO_UNMUTE_ICON_ON;
+const AUTO_UNMUTE_SLIDER_SELECTOR = 'div[role="slider"][aria-valuenow]';
+const AUTO_UNMUTE_BOUNDARY_TAGS = new Set(['ARTICLE', 'SECTION', 'MAIN']);
+const AUTO_UNMUTE_TICK = 250;             // ms between checks while waiting for the button
+const AUTO_UNMUTE_MAX_TRIES = 20;         // ~5 s budget per event
+const AUTO_UNMUTE_DIAG_TRY = 8;           // log a snapshot of the page once, half way through
+const AUTO_UNMUTE_USER_WINDOW = 1200;     // ms after a real user input on the audio controls
+const AUTO_UNMUTE_VERIFY_DELAY = 400;     // ms before checking that a click unmuted the video
+const AUTO_UNMUTE_MAX_CLICKS = 2;         // methods attempted per video source (react, native)
+const AUTO_UNMUTE_ICON_GRACE = 800;       // ms: icon says "unmuted" while video.muted is still true
+
+// video -> { src, clicks, done, ... } for the current source (a manual mute stays respected for it)
+let autoUnmuteHandled = new WeakMap();
+// videos with a retry loop in progress
+const autoUnmutePending = new WeakSet();
+// video -> last known value of video.muted
+const autoUnmuteLastMuted = new WeakMap();
+// Last real user input on the audio controls: { at, scope }
+let autoUnmuteUserInput = null;
+
+/**
+ * getAutoUnmuteScope
+ * @description Content type of the current route: posts, reels, stories or highlights.
+ *
+ * @return {String}
+ */
+function getAutoUnmuteScope() {
+    const path = location.pathname;
+
+    if (path.startsWith('/stories/highlights/')) return 'highlights';
+    if (path.startsWith('/stories/')) return 'stories';
+    if (path.startsWith('/reels/') || path.startsWith('/reel/') || /^\/[^/]+\/reel\//.test(path)) return 'reels';
+
+    return 'posts';
+}
+
+/**
+ * isAutoUnmuteShown
+ * @description Whether an element is actually visible (stories/highlights keep the cards of
+ *              the previous/next stories in the DOM, with their own controls).
+ *
+ * @param  {HTMLElement}  element
+ * @return {Boolean}
+ */
+function isAutoUnmuteShown(element) {
+    if (!element.isConnected || element.getClientRects().length === 0) return false;
+    if (element.closest('[aria-hidden="true"], [inert], [hidden]')) return false;
+
+    // opacity: 0 / visibility: hidden on an ancestor is not visible in the element's own style
+    for (let node = element, depth = 0; node && node !== document.body && depth < 12; node = node.parentElement, depth++) {
+        const style = getComputedStyle(node);
+
+        if (style.display === 'none' || style.visibility === 'hidden' || parseFloat(style.opacity) === 0) {
+            return false;
+        }
+    }
+
+    return true;
+}
+
+/**
+ * findMuteButton
+ * @description Walk up from the video and return the button of the first ancestor that
+ *              contains a speaker icon matching iconSelector.
+ *              Stories/highlights: the first VISIBLE button (several cards are rendered).
+ *              Posts/reels: exactly one, otherwise it may belong to another post/reel.
+ *
+ * @param  {HTMLVideoElement}  video
+ * @param  {String}  scope - posts, reels, stories or highlights
+ * @param  {String}  [iconSelector=AUTO_UNMUTE_ICON_MUTED]
+ * @return {?HTMLElement}
+ */
+function findMuteButton(video, scope, iconSelector = AUTO_UNMUTE_ICON_MUTED) {
+    const storyScope = scope === 'stories' || scope === 'highlights';
+    // Stories/highlights: the controls live in the <section>, often 20+ levels above the video
+    const maxDepth = storyScope ? 60 : 14;
+    let node = video.parentElement;
+
+    for (let depth = 0; node && depth < maxDepth; depth++, node = node.parentElement) {
+        const buttons = [];
+
+        node.querySelectorAll(iconSelector).forEach((icon) => {
+            const button = icon.closest('[role="button"], button');
+
+            if (
+                button &&
+                !buttons.includes(button) &&
+                button.offsetWidth <= 100 &&
+                button.offsetHeight <= 100 &&
+                !button.disabled &&
+                button.getAttribute('aria-disabled') !== 'true' &&
+                (!storyScope || isAutoUnmuteShown(button))
+            ) {
+                buttons.push(button);
+            }
+        });
+
+        if (buttons.length === 1 || (storyScope && buttons.length > 1)) {
+            return buttons[0];
+        }
+
+        if (buttons.length > 1 || AUTO_UNMUTE_BOUNDARY_TAGS.has(node.tagName) || node.getAttribute('role') === 'dialog') {
+            return null;
+        }
+    }
+
+    return null;
+}
+
+/**
+ * findStorySliderButton
+ * @description Stories/highlights fallback: some layouts expose the mute control as a
+ *              volume slider (aria-valuenow="0" means muted) instead of a speaker icon.
+ *
+ * @param  {HTMLVideoElement}  video
+ * @return {?HTMLElement}
+ */
+function findStorySliderButton(video) {
+    const section = video.closest('section');
+    const slider = section
+        ? Array.from(section.querySelectorAll(AUTO_UNMUTE_SLIDER_SELECTOR)).find(isAutoUnmuteShown)
+        : null;
+
+    if (!slider) return null;
+
+    const value = (slider.getAttribute('aria-valuenow') || '').trim();
+    if (value === '' || Number(value) !== 0) return null;
+
+    const button = slider.querySelector('[role="button"], button') ||
+        slider.closest('[role="button"], button') ||
+        slider.parentElement?.querySelector('[role="button"], button') ||
+        null;
+
+    return button && !button.disabled && button.getAttribute('aria-disabled') !== 'true' ? button : null;
+}
+
+/**
+ * describeAutoUnmuteState
+ * @description One-line snapshot of what the page offers, for the debug log.
+ *
+ * @param  {HTMLVideoElement}  video
+ * @return {String}
+ */
+function describeAutoUnmuteState(video) {
+    return `muted icons on page: ${document.querySelectorAll(AUTO_UNMUTE_ICON_MUTED).length}, ` +
+        `sound-on icons: ${document.querySelectorAll(AUTO_UNMUTE_ICON_ON).length}, ` +
+        `sliders: ${document.querySelectorAll(AUTO_UNMUTE_SLIDER_SELECTOR).length}, ` +
+        `inside <section>: ${video.closest('section') !== null}, ` +
+        `video.muted: ${video.muted}, user activation: ${navigator.userActivation?.hasBeenActive}`;
+}
+
+/**
+ * tryAutoUnmute
+ * @description Unmute a playing video by clicking Instagram's own mute button, then verify
+ *              that it worked (React handler first, native click second). Retries while the
+ *              button is not rendered yet. Every exit is logged once per reason, so the
+ *              debug window (Alt+Z) shows why a video was left muted.
+ *
+ * @param  {HTMLVideoElement}  video
+ * @param  {Integer}  [attempt=0]
+ * @return {void}
+ */
+function tryAutoUnmute(video, attempt = 0) {
+    // Retries re-enter with attempt > 0; a fresh event must not start a second loop
+    if (attempt === 0 && autoUnmutePending.has(video)) return;
+
+    const stop = () => { autoUnmutePending.delete(video); };
+    const scope = getAutoUnmuteScope();
+    const src = video.currentSrc || video.src;
+
+    if (!video.isConnected || video.paused) return stop();
+
+    if (!USER_SETTING.AUTO_UNMUTE || !USER_SETTING[AUTO_UNMUTE_SCOPE_SETTINGS[scope]]) return stop();
+
+    // Per video source: how far we got (a reused <video> with another source starts over)
+    let info = autoUnmuteHandled.get(video);
+
+    if (!info || info.src !== src) {
+        info = { src, clicks: 0, done: false, desyncSince: 0, reason: '' };
+        autoUnmuteHandled.set(video, info);
+    }
+
+    // Log only when the reason changes, so the debug window stays readable
+    const note = (reason) => {
+        if (info.reason !== reason) {
+            info.reason = reason;
+            logger(`(${scope}) Auto-unmute: ${reason}`);
+        }
+    };
+
+    // Check again after `delay` ms, as long as the time budget is not exhausted
+    const retry = (delay = AUTO_UNMUTE_TICK) => {
+        if (attempt < AUTO_UNMUTE_MAX_TRIES) {
+            if (attempt === AUTO_UNMUTE_DIAG_TRY) {
+                logger(`(${scope}) Auto-unmute: still waiting (${describeAutoUnmuteState(video)})`);
+            }
+
+            autoUnmutePending.add(video);
+            setTimeout(() => tryAutoUnmute(video, attempt + 1), delay);
+        }
+        else {
+            note(`gave up waiting (${describeAutoUnmuteState(video)})`);
+            stop();
+        }
+    };
+
+    if (info.done) return stop();
+
+    // The user just touched the audio controls: wait for 'volumechange' to register it
+    if (autoUnmuteUserInput && Date.now() - autoUnmuteUserInput.at < AUTO_UNMUTE_USER_WINDOW) {
+        note('the user just touched the audio controls, waiting');
+        return retry();
+    }
+
+    // Muted manually for this content type: stay muted until the user unmutes,
+    // toggles the setting or refreshes the page
+    if (state.GL_unmuteManual[scope]) {
+        note('muted manually by the user, leaving it muted');
+        return stop();
+    }
+
+    // Already has sound: leave it alone for good, which also respects a manual mute made later
+    if (!video.muted) {
+        info.done = true;
+        note('video has sound, done');
+        return stop();
+    }
+
+    // Browsers refuse unmuted playback until the user has interacted with the page
+    if (navigator.userActivation && !navigator.userActivation.hasBeenActive) {
+        note('waiting for the first user gesture');
+        return stop();
+    }
+
+    const storyScope = scope === 'stories' || scope === 'highlights';
+    const button = findMuteButton(video, scope, AUTO_UNMUTE_ICON_MUTED) ||
+        (storyScope ? findStorySliderButton(video) : null);
+
+    if (!button) {
+        // The UI already says "sound on" while the element is still muted: usually a
+        // transition (Instagram is about to apply it). Give it a moment, then set it directly.
+        if (findMuteButton(video, scope, AUTO_UNMUTE_ICON_ON)) {
+            info.desyncSince = info.desyncSince || Date.now();
+
+            if (Date.now() - info.desyncSince >= AUTO_UNMUTE_ICON_GRACE) {
+                info.done = true;
+                note('icon says unmuted but the video is muted, setting it directly');
+                video.muted = false;
+                return stop();
+            }
+
+            note('icon says unmuted, waiting for the video to follow');
+        }
+        else {
+            note('waiting for the mute button');
+        }
+
+        return retry();
+    }
+
+    info.desyncSince = 0;
+
+    if (info.clicks >= AUTO_UNMUTE_MAX_CLICKS) {
+        info.done = true;
+        note('giving up: the mute button did not unmute the video');
+        return stop();
+    }
+
+    info.clicks++;
+    info.reason = '';
+    logger(`(${scope}) Auto-unmute: ${info.clicks === 1 ? 'react' : 'native'} click (attempt ${info.clicks}/${AUTO_UNMUTE_MAX_CLICKS})`);
+
+    try {
+        if (info.clicks === 1) {
+            triggerReactClickHandler(button);
+        }
+        else {
+            button.click();
+        }
+    }
+    catch (err) {
+        logger(`(${scope}) Auto-unmute: click failed`, err);
+    }
+
+    // Verify on the next check instead of assuming it worked
+    retry(AUTO_UNMUTE_VERIFY_DELAY);
+}
+
+/**
+ * autoUnmuteAll
+ * @description Catch up with videos that started playing before the script, the setting
+ *              or the first user gesture was ready (their 'playing' event already fired).
+ *
+ * @return {void}
+ */
+export function autoUnmuteAll() {
+    document.querySelectorAll('video').forEach((video) => tryAutoUnmute(video));
+}
+
+/**
+ * onAutoUnmutePlaying
+ * @description Capture listener for the 'playing' event (video events do not bubble):
+ *              remember the initial muted state of the video and start the auto-unmute check.
+ *
+ * @param  {Event}  e
+ * @return {void}
+ */
+export function onAutoUnmutePlaying(e) {
+    const video = e.target;
+    if (video.tagName !== 'VIDEO') return;
+
+    if (!autoUnmuteLastMuted.has(video)) {
+        autoUnmuteLastMuted.set(video, video.muted);
+    }
+
+    tryAutoUnmute(video);
+}
+
+/**
+ * onAutoUnmuteUserInput
+ * @description Remember that the USER (trusted event, not a click made by this script)
+ *              just touched the mute button / volume slider / pressed "M". The actual
+ *              mute state is read from the video on 'volumechange'.
+ *
+ * @param  {Event}  e
+ * @return {void}
+ */
+export function onAutoUnmuteUserInput(e) {
+    if (!e.isTrusted || !(e.target instanceof Element)) return;
+
+    let relevant = e.target.closest(AUTO_UNMUTE_SLIDER_SELECTOR) !== null ||
+        (e.target.tagName === 'VIDEO' && e.target.hasAttribute('controls'));
+
+    if (!relevant) {
+        const button = e.target.closest('[role="button"], button');
+
+        relevant = !!button &&
+            button.offsetWidth <= 100 &&
+            button.offsetHeight <= 100 &&
+            button.querySelector(AUTO_UNMUTE_ICON_ANY) !== null;
+    }
+
+    if (!relevant && e.type === 'keydown') {
+        relevant = (e.key === 'm' || e.key === 'M') &&
+            !e.ctrlKey && !e.metaKey && !e.altKey &&
+            !e.target.isContentEditable &&
+            e.target.closest('input, textarea, select') === null;
+    }
+
+    if (relevant) {
+        autoUnmuteUserInput = { at: Date.now(), scope: getAutoUnmuteScope() };
+    }
+}
+
+/**
+ * onAutoUnmuteVolumeChange
+ * @description A real mute/unmute flip right after a user input on the audio controls is a
+ *              manual intervention: muted -> remembered for that content type,
+ *              unmuted -> the memory is cleared.
+ *
+ * @param  {Event}  e
+ * @return {void}
+ */
+export function onAutoUnmuteVolumeChange(e) {
+    const video = e.target;
+    if (video.tagName !== 'VIDEO') return;
+
+    const previous = autoUnmuteLastMuted.get(video);
+    autoUnmuteLastMuted.set(video, video.muted);
+
+    if (previous === undefined || previous === video.muted || !USER_SETTING.AUTO_UNMUTE) return;
+    if (!autoUnmuteUserInput || Date.now() - autoUnmuteUserInput.at > AUTO_UNMUTE_USER_WINDOW) return;
+
+    const scope = autoUnmuteUserInput.scope;
+
+    if (state.GL_unmuteManual[scope] !== video.muted) {
+        state.GL_unmuteManual[scope] = video.muted;
+        logger(`(${scope}) Auto-unmute: manual ${video.muted ? 'mute' : 'unmute'} detected -> ${video.muted ? 'staying muted until you unmute' : 'auto-unmute resumes'}`);
+    }
+}
+
+/**
+ * onAutoUnmuteSettingChange
+ * @description An AUTO_UNMUTE* setting was toggled: forget the manual interventions and
+ *              re-evaluate every video already on screen from scratch.
+ *
+ * @param  {String}  settingName - AUTO_UNMUTE (all content types) or AUTO_UNMUTE_<TYPE>
+ * @return {void}
+ */
+export function onAutoUnmuteSettingChange(settingName) {
+    Object.entries(AUTO_UNMUTE_SCOPE_SETTINGS).forEach(([scope, name]) => {
+        if (settingName === 'AUTO_UNMUTE' || settingName === name) {
+            state.GL_unmuteManual[scope] = false;
+        }
+    });
+
+    autoUnmuteUserInput = null;
+    autoUnmuteHandled = new WeakMap();
+    logger('Auto-unmute: manual interventions forgotten (' + settingName + ')');
+    autoUnmuteAll();
+}

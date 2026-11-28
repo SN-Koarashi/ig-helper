@@ -4,7 +4,7 @@ import { style, state } from "./settings";
 import { purgeCache } from "./utils/image_cache";
 import { registerMenuCommand } from "./utils/dialog";
 import { registerPostClickHandlers } from "./functions/post";
-import { initRouteWatcher } from "./timer";
+import { initRouteWatcher, autoUnmuteAll } from "./timer";
 import { initPersistentCache } from "./utils/persistent_cache";
 /*! ESLINT IMPORT END !*/
 
@@ -37,5 +37,7 @@ setTimeout(() => {
     // Load persistent caches from IndexedDB, then drop expired image entries.
     initPersistentCache().then(() => purgeCache());
     initRouteWatcher();
+    // Catch up with videos that were already playing before the settings were loaded
+    autoUnmuteAll();
 }, 1500);
 /*******************************/

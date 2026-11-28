@@ -16,6 +16,11 @@ export const USER_SETTING = {
     'HTML5_VIDEO_CONTROL': false,
     'MODIFY_RESOURCE_EXIF': false,
     'MODIFY_VIDEO_VOLUME': false,
+    'AUTO_UNMUTE': false,
+    'AUTO_UNMUTE_POSTS': false,
+    'AUTO_UNMUTE_REELS': false,
+    'AUTO_UNMUTE_STORIES': false,
+    'AUTO_UNMUTE_HIGHLIGHTS': false,
     'PREFER_DASH_MANIFEST_FOR_STORIES_AND_HIGHLIGHTS': false,
     'NEW_TAB_OPEN_HIGHEST_VIDEO_VIA_GRAPHQL': false,
     'REDIRECT_CLICK_USER_STORY_PICTURE': false,
@@ -32,6 +37,12 @@ export const PARENT_CHILD_MAPPING = {
     ],
     'PREFER_DASH_MANIFEST_FOR_STORIES_AND_HIGHLIGHTS': [
         'NEW_TAB_OPEN_HIGHEST_VIDEO_VIA_GRAPHQL'
+    ],
+    'AUTO_UNMUTE': [
+        'AUTO_UNMUTE_POSTS',
+        'AUTO_UNMUTE_REELS',
+        'AUTO_UNMUTE_STORIES',
+        'AUTO_UNMUTE_HIGHLIGHTS'
     ]
 };
 
@@ -156,6 +167,8 @@ export var state = {
     GL_dialogTimer: null,
     GL_profileTimer: null,
     GL_reelsTimer: null,
+    // Manual mute overrides per content type. In-memory only: cleared on page refresh.
+    GL_unmuteManual: { posts: false, reels: false, stories: false, highlights: false },
     // Filled from IndexedDB by initPersistentCache(); empty until then.
     GL_imageCache: {},
     GL_userIdCache: {},
